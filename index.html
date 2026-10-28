@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agent HQ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+    <div id="labels"></div>
+
+    <header class="topbar panel">
+      <div class="brand">
+        <span class="logo"></span>
+        <div>
+          <h1>Agent HQ</h1>
+          <p>A team of AI agents shipping together</p>
+        </div>
+      </div>
+      <div class="clock" id="clock">Day 1 · 09:00</div>
+      <div class="speed" id="speed" role="group" aria-label="Simulation speed">
+        <button data-speed="0" title="Pause (Space)">❚❚</button>
+        <button data-speed="1">1×</button>
+        <button data-speed="2">2×</button>
+        <button data-speed="4">4×</button>
+      </div>
+      <button id="standup" class="btn">Call standup</button>
+      <button id="join" class="btn primary">Join</button>
+      <div class="stat"><b id="shipped">0</b> shipped</div>
+      <button id="panel-toggle" class="btn">Team</button>
+    </header>
+
+    <aside class="side panel">
+      <section>
+        <h2>Team</h2>
+        <div id="team"></div>
+      </section>
+      <section>
+        <h2>New request</h2>
+        <form id="task-form">
+          <input id="task-input" placeholder="e.g. Slack integration" maxlength="40" autocomplete="off" />
+          <button class="btn primary">Add</button>
+        </form>
+      </section>
+      <section class="feed-wrap">
+        <h2>Activity</h2>
+        <ol id="feed"></ol>
+      </section>
+    </aside>
+
+    <footer class="board panel" id="board"></footer>
+
+    <form id="chat" class="chat panel" autocomplete="off">
+      <input id="chat-input" placeholder="Say something… (Enter)" maxlength="80" />
+      <button class="btn primary">Send</button>
+    </form>
+
+    <dialog id="join-dialog" class="join">
+      <form id="join-form">
+        <div class="join-left">
+          <canvas id="join-preview" width="220" height="260"></canvas>
+          <button type="button" id="join-random" class="btn">🎲 Randomise</button>
+        </div>
+        <div class="join-fields">
+          <h2>Join the office</h2>
+          <p>Make your character, then walk around and say hi to the team.</p>
+          <label>Name <input id="join-name" maxlength="16" placeholder="Guest" autocomplete="off" /></label>
+          <div id="join-options"></div>
+          <div class="join-actions">
+            <button type="button" id="join-cancel" class="btn">Cancel</button>
+            <button class="btn primary">Join ♪</button>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="hint">Drag to orbit · Scroll to zoom · Click an agent to follow · Space to pause</div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
