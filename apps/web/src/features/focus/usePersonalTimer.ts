@@ -17,8 +17,8 @@ export interface PersonalTimer {
 }
 
 /**
- * A pomodoro that only drives your own status. The client runs the cycle and
- * reports each phase to the room, which shows it above your head.
+ * Your pomodoro. The client runs the focus/break cycle and reports each phase
+ * to the room, which shows it (and how long you've focused) above your head.
  */
 export function usePersonalTimer(room: StudyRoom | null, clockOffset: number) {
   const [timer, setTimer] = useState<PersonalTimer>({ phase: 'idle', endsAt: 0, focusMin: 25, breakMin: 5, cycle: 0 });
@@ -30,7 +30,6 @@ export function usePersonalTimer(room: StudyRoom | null, clockOffset: number) {
 
   const start = (focusMin: number, breakMin: number) => {
     const next: PersonalTimer = { phase: 'focus', endsAt: serverNow() + focusMin * MINUTE, focusMin, breakMin, cycle: 0 };
-    room?.send('timer:mode', { mode: 'personal' });
     report(next);
     setTimer(next);
     playChime('focus');
@@ -39,15 +38,8 @@ export function usePersonalTimer(room: StudyRoom | null, clockOffset: number) {
   const stop = () => {
     const next: PersonalTimer = { ...ref.current, phase: 'idle', endsAt: 0 };
     report(next);
-    room?.send('timer:mode', { mode: 'none' });
     setTimer(next);
   };
-
-  // If something else takes over your status (e.g. you start the room timer), park this one quietly
-  const mode = room?.state?.players?.get(room.sessionId)?.timerMode;
-  useEffect(() => {
-    if (mode && mode !== 'personal' && ref.current.phase !== 'idle') setTimer({ ...ref.current, phase: 'idle', endsAt: 0 });
-  }, [mode]);
 
   // Advance focus → break → focus when a phase runs out
   useEffect(() => {

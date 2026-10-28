@@ -13,7 +13,7 @@ import { StatsCard } from '../stats/StatsCard';
 const AvatarPreview = dynamic(() => import('../avatar/AvatarPreview').then((m) => m.AvatarPreview), { ssr: false });
 
 const ACCESSORY_LABELS: Record<Accessory, string> = {
-  none: 'ไม่มี', ribbon: 'โบว์', catEars: 'หูแมว', glasses: 'แว่น', headphones: 'หูฟัง', ahoge: 'อะโฮเกะ', twintails: 'ทวินเทล',
+  none: 'None', ribbon: 'Ribbon', catEars: 'Cat ears', glasses: 'Glasses', headphones: 'Headphones', ahoge: 'Ahoge', twintails: 'Twin-tails',
 };
 
 export function Lobby() {
@@ -61,19 +61,19 @@ export function Lobby() {
       <header>
         <p className="text-xs font-bold tracking-[0.2em] text-accent-ink uppercase">Demo</p>
         <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Chanom Study Room</h1>
-        <p className="mt-1 text-muted">ห้องอ่านหนังสือออนไลน์แบบ 3D เข้ามานั่งอ่านไปด้วยกัน ✨</p>
+        <p className="mt-1 text-muted">A cosy 3D study room. Come in and study together ✨</p>
       </header>
 
       <div className="grid gap-6 md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
         <section className="panel flex flex-col gap-4 p-5">
-          <h2 className="text-xs font-extrabold tracking-wider text-muted uppercase">ตัวละครของคุณ</h2>
+          <h2 className="text-xs font-extrabold tracking-wider text-muted uppercase">Your character</h2>
           <div className="flex gap-4">
             <div className="h-56 w-44 flex-none overflow-hidden rounded-2xl bg-gradient-to-b from-[#fff6fb] to-[#e3ecfb]">
               <AvatarPreview look={profile.look} />
             </div>
             <div className="flex min-w-0 flex-1 flex-col gap-3">
               <label className="flex flex-col gap-1 text-xs font-bold text-muted">
-                ชื่อเล่น
+                Nickname
                 <input
                   value={profile.name}
                   maxLength={NAME_MAX}
@@ -82,12 +82,12 @@ export function Lobby() {
                   className="rounded-xl border border-line bg-white px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-accent"
                 />
               </label>
-              <Swatches label="สีผม" colors={HAIR_COLORS} value={profile.look.hair} onPick={(hair) => setLook({ hair })} />
-              <Swatches label="สีชุด" colors={OUTFIT_COLORS} value={profile.look.outfit} onPick={(outfit) => setLook({ outfit })} />
+              <Swatches label="Hair" colors={HAIR_COLORS} value={profile.look.hair} onPick={(hair) => setLook({ hair })} />
+              <Swatches label="Outfit" colors={OUTFIT_COLORS} value={profile.look.outfit} onPick={(outfit) => setLook({ outfit })} />
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-bold text-muted">เครื่องประดับ</span>
+            <span className="text-xs font-bold text-muted">Accessory</span>
             <div className="flex flex-wrap gap-1.5">
               {ACCESSORIES.map((a) => (
                 <button
@@ -103,25 +103,25 @@ export function Lobby() {
             </div>
           </div>
           <button onClick={() => setProfile({ ...profile, look: randomLook() })} className="self-start rounded-xl border border-line bg-white px-3 py-1.5 text-sm font-bold hover:border-accent/50">
-            🎲 สุ่มชุด
+            🎲 Randomise
           </button>
         </section>
 
         <section className="panel flex flex-col gap-4 p-5">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-xs font-extrabold tracking-wider text-muted uppercase">ห้องสาธารณะ</h2>
-            <span className="text-xs text-muted">{offline ? 'เชื่อมต่อ server ไม่ได้' : `ออนไลน์ ${online} คน`}</span>
+            <h2 className="text-xs font-extrabold tracking-wider text-muted uppercase">Public rooms</h2>
+            <span className="text-xs text-muted">{offline ? "Can't reach the server" : `${online} online`}</span>
           </div>
           <button
             onClick={() => enter()}
             disabled={offline}
-            className="rounded-2xl bg-accent px-5 py-4 text-left text-white shadow-lg shadow-accent/30 transition hover:brightness-105 disabled:opacity-50"
+            className="rounded-2xl bg-accent px-5 py-4 text-left text-white shadow-lg shadow-accent/30 disabled:opacity-50"
           >
-            <span className="block text-lg font-extrabold">เข้าห้องอ่านหนังสือ 📚</span>
-            <span className="block text-sm opacity-90">ระบบจะพาไปห้องที่ยังว่าง ถ้าเต็มจะเปิดห้องใหม่ให้อัตโนมัติ</span>
+            <span className="block text-lg font-extrabold">Enter the library 📚</span>
+            <span className="block text-sm opacity-90">We'll find you a seat. When a room is full, a new one opens automatically.</span>
           </button>
           <ul className="flex flex-col gap-2">
-            {rooms?.length === 0 && <li className="py-6 text-center text-sm text-muted">ยังไม่มีใครอยู่ เป็นคนแรกเลย!</li>}
+            {rooms?.length === 0 && <li className="py-6 text-center text-sm text-muted">Nobody's here yet. Be the first!</li>}
             {rooms?.map((r) => {
               const full = r.clients >= r.maxClients;
               return (
@@ -137,9 +137,9 @@ export function Lobby() {
                   <button
                     onClick={() => enter(r.roomId)}
                     disabled={full}
-                    className="rounded-lg border border-line px-3 py-1 text-xs font-bold hover:border-accent/60 disabled:opacity-40"
+                    className="rounded-lg border border-line bg-white px-3 py-1 text-xs font-bold disabled:opacity-40"
                   >
-                    {full ? 'เต็ม' : 'เข้า'}
+                    {full ? 'Full' : 'Join'}
                   </button>
                 </li>
               );
@@ -163,7 +163,7 @@ function Swatches({ label, colors, value, onPick }: { label: string; colors: rea
             key={c}
             aria-label={c}
             onClick={() => onPick(c)}
-            className={`size-6 rounded-full border-2 border-white shadow-[0_0_0_1px_var(--line)] ${value === c ? 'shadow-[0_0_0_2px_var(--accent)]' : ''}`}
+            className={`size-6 rounded-full border-2 border-white shadow-[0_0_0_1px_var(--line)] transition-transform hover:scale-115 ${value === c ? 'shadow-[0_0_0_2px_var(--accent)]' : ''}`}
             style={{ background: c }}
           />
         ))}

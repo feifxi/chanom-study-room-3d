@@ -14,8 +14,8 @@ export function RoomSidebar({ room }: { room: StudyRoom }) {
   const [tab, setTab] = useState<Tab | null>(null);
   const tabs: { id: Tab; label: string }[] = [
     { id: 'todo', label: '📝 To-do' },
-    { id: 'ranks', label: '🏆 วันนี้' },
-    { id: 'ambient', label: '🎧 เสียง' },
+    { id: 'ranks', label: '🏆 Today' },
+    { id: 'ambient', label: '🎧 Sounds' },
     { id: 'help', label: '❔' },
   ];
   return (
@@ -25,7 +25,7 @@ export function RoomSidebar({ room }: { room: StudyRoom }) {
           <button
             key={t.id}
             onClick={() => setTab(tab === t.id ? null : t.id)}
-            className={`rounded-full border px-3 py-1 text-xs font-bold shadow-sm ${tab === t.id ? 'border-accent bg-accent text-white' : 'border-line bg-white/90'}`}
+            className={`rounded-full border px-3 py-1 text-xs font-bold whitespace-nowrap shadow-sm ${tab === t.id ? 'border-accent bg-accent text-white' : 'border-line bg-white/90'}`}
           >
             {t.label}
           </button>
@@ -41,9 +41,9 @@ export function RoomSidebar({ room }: { room: StudyRoom }) {
       </div>
       {tab === 'help' && (
         <div className="panel p-3 text-xs leading-relaxed text-muted">
-          WASD / ลูกศร เดิน · Shift วิ่ง · E นั่ง/ลุก · Enter แชท · ลากเมาส์หมุนกล้อง · Scroll ซูม
+          WASD / arrows to walk · Shift to run · E to sit/stand · Enter to chat · drag to orbit · scroll to zoom
           <br />
-          เปิดไมค์ได้ที่มุมขวาล่าง ยิ่งยืนใกล้ยิ่งได้ยินชัด · นั่งที่โต๊ะแล้วแชร์จอขึ้นโน้ตบุ๊กได้
+          Turn your mic on at the bottom right; the closer people stand, the louder they are. Sit at a table to share your screen with that table.
         </div>
       )}
     </div>
@@ -86,8 +86,8 @@ function TodoPanel() {
   return (
     <div className="panel flex flex-col gap-2 p-3">
       <div className="flex items-baseline justify-between">
-        <span className="text-xs font-extrabold tracking-wider text-muted uppercase">สิ่งที่ต้องทำ</span>
-        <span className="text-xs text-muted">{todos.length ? `เหลือ ${left}/${todos.length}` : 'เห็นแค่คุณคนเดียว'}</span>
+        <span className="text-xs font-extrabold tracking-wider text-muted uppercase">To-do</span>
+        <span className="text-xs text-muted">{todos.length ? `${left} of ${todos.length} left` : 'Only you can see this'}</span>
       </div>
       <form
         className="flex gap-1.5"
@@ -103,7 +103,7 @@ function TodoPanel() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Escape' && (e.target as HTMLInputElement).blur()}
-          placeholder="เช่น อ่านบทที่ 3"
+          placeholder="e.g. Read chapter 3"
           className="min-w-0 flex-1 rounded-lg border border-line bg-white px-2.5 py-1.5 text-sm outline-none focus:border-accent"
         />
         <button className="rounded-lg bg-accent px-3 text-sm font-bold text-white">+</button>
@@ -121,14 +121,14 @@ function TodoPanel() {
             <button
               onClick={() => setTodos((all) => all.filter((x) => x.id !== t.id))}
               className="text-xs text-muted opacity-0 group-hover:opacity-100 focus:opacity-100"
-              aria-label="ลบ"
+              aria-label="Delete"
             >
               ✕
             </button>
           </li>
         ))}
       </ul>
-      {todos.length > 0 && left === 0 && <p className="text-center text-sm font-bold">✨ เสร็จหมดแล้ว เก่งมาก!</p>}
+      {todos.length > 0 && left === 0 && <p className="text-center text-sm font-bold">✨ All done, great work!</p>}
     </div>
   );
 }
@@ -141,25 +141,25 @@ function RanksPanel({ room }: { room: StudyRoom }) {
   rows.sort((a, b) => b.todayMin - a.todayMin);
   return (
     <div className="panel flex flex-col gap-2 p-3">
-      <span className="text-xs font-extrabold tracking-wider text-muted uppercase">โฟกัสวันนี้ในห้องนี้</span>
+      <span className="text-xs font-extrabold tracking-wider text-muted uppercase">Focus today in this room</span>
       <ol className="flex max-h-64 flex-col gap-1 overflow-y-auto text-sm">
         {rows.map((r, i) => (
           <li key={r.id} className={`flex items-center gap-2 ${r.id === room.sessionId ? 'font-bold' : ''}`}>
             <span className="w-5 text-center">{['🥇', '🥈', '🥉'][i] ?? i + 1}</span>
             <span className="min-w-0 flex-1 truncate">
               {r.name}
-              {r.id === room.sessionId && ' (คุณ)'} {STATUS_ICON[r.status] ?? ''}
+              {r.id === room.sessionId && ' (you)'} {STATUS_ICON[r.status] ?? ''}
             </span>
             <span className="font-mono text-xs text-muted">{formatMinutes(r.todayMin)}</span>
           </li>
         ))}
       </ol>
-      <p className="text-[11px] text-muted">นับเฉพาะช่วงโฟกัสที่จบแล้ว อย่างน้อย 1 นาที</p>
+      <p className="text-[11px] text-muted">Counts finished focus stretches of 1 minute or more.</p>
     </div>
   );
 }
 
-const AMBIENT_LABEL: Record<AmbientSound, string> = { rain: '🌧️ ฝนตก', cafe: '☕ คาเฟ่', lofi: '🎵 Lo-fi' };
+const AMBIENT_LABEL: Record<AmbientSound, string> = { rain: '🌧️ Rain', cafe: '☕ Café', lofi: '🎵 Lo-fi' };
 
 function AmbientPanel() {
   const engine = useRef<AmbientEngine | null>(null);
@@ -174,7 +174,7 @@ function AmbientPanel() {
 
   return (
     <div className="panel flex flex-col gap-2.5 p-3">
-      <span className="text-xs font-extrabold tracking-wider text-muted uppercase">เสียงบรรยากาศ</span>
+      <span className="text-xs font-extrabold tracking-wider text-muted uppercase">Ambient sound</span>
       {AMBIENT_SOUNDS.map((s) => (
         <label key={s} className="flex items-center gap-2 text-sm">
           <button
@@ -191,11 +191,11 @@ function AmbientPanel() {
             value={levels[s]}
             onChange={(e) => set(s, Number(e.target.value))}
             className="min-w-0 flex-1 accent-[var(--accent)]"
-            aria-label={`ระดับเสียง ${AMBIENT_LABEL[s]}`}
+            aria-label={`${AMBIENT_LABEL[s]} volume`}
           />
         </label>
       ))}
-      <p className="text-[11px] text-muted">สร้างเสียงสดในเบราว์เซอร์ คนอื่นไม่ได้ยิน</p>
+      <p className="text-[11px] text-muted">Generated live in your browser. Only you hear it.</p>
     </div>
   );
 }

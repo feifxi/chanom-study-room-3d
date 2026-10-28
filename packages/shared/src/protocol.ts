@@ -1,5 +1,5 @@
 import type { AvatarLook } from './avatar';
-import type { RoomTimerView, TimerMode, TimerPhase } from './focus';
+import type { TimerPhase } from './focus';
 
 export const STATUSES = ['idle', 'focus', 'break', 'away'] as const;
 export type PlayerStatus = (typeof STATUSES)[number];
@@ -23,13 +23,8 @@ export interface ClientMessages {
   /** What you're studying, shown with the focus icon. */
   subject: { text: string };
   away: { on: boolean };
-  /** Choose which timer drives your status. */
-  'timer:mode': { mode: TimerMode };
-  /** Report your personal pomodoro phase (mode must be 'personal'). */
+  /** Report your pomodoro phase; the room shows it above your head. */
   'timer:personal': { phase: TimerPhase; endsAt: number };
-  /** Start the shared room timer (anyone can; you start following it). */
-  'timer:start': { focusMin: number; breakMin: number };
-  'timer:stop': Record<string, never>;
   /** Ask for the server time (answered with a `clock` message). */
   clock: Record<string, never>;
   /** Ask for a LiveKit token for this room (answered with `voice:token`). */
@@ -42,8 +37,6 @@ export interface ServerMessages {
   /** Reply to `clock`, used to line client clocks up with the server's. */
   clock: { serverNow: number };
   'voice:token': { url: string; token: string };
-  /** The shared room timer moved to a new phase. */
-  chime: { phase: TimerPhase };
 }
 
 export interface ChatMessage {
@@ -67,7 +60,8 @@ export interface PlayerView {
   /** Server epoch ms when the current focus/break ends (0 = no countdown). */
   statusEndsAt: number;
   subject: string;
-  timerMode: TimerMode;
+  /** Server epoch ms when the current focus stretch began (0 = not focusing). */
+  focusSince: number;
   todayMin: number;
   typing: boolean;
 }
@@ -86,7 +80,6 @@ export interface LeaderRowView {
 
 export interface StudyStateView {
   players: Map<string, PlayerView>;
-  timer: RoomTimerView;
 }
 
 /** Row returned by the lobby endpoint. */

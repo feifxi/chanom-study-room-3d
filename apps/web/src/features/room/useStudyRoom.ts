@@ -2,9 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Callbacks, Client, type Room } from '@colyseus/sdk';
-import { ROOM_NAME, type ChatMessage, type JoinOptions, type StudyStateView, type TimerPhase } from '@study/shared';
+import { ROOM_NAME, type ChatMessage, type JoinOptions, type StudyStateView } from '@study/shared';
 import { GAME_URL } from '@/lib/config';
-import { playChime } from '../focus/chime';
 
 export type StudyRoom = Room<any, StudyStateView>;
 
@@ -60,10 +59,6 @@ export function useStudyRoom(roomId: string | null, options: JoinOptions | null)
         r.onMessage('chat', (m: ChatMessage) => {
           setChat((log) => [...log.slice(-99), m]);
           setBubbles((b) => ({ ...b, [m.sessionId]: { text: m.text, until: Date.now() + BUBBLE_MS } }));
-        });
-        r.onMessage('chime', (m: { phase: TimerPhase }) => {
-          // Only chime for people following the shared timer
-          if (r.state?.players?.get(r.sessionId)?.timerMode === 'room') playChime(m.phase);
         });
         // Clock sync: assume the reply was stamped halfway through the round trip
         const sentAt = Date.now();

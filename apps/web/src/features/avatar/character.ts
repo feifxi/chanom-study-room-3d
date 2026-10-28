@@ -7,6 +7,9 @@ import type { AvatarLook } from '@study/shared';
  */
 
 const HEAD_Y = 1.1;
+/** Hip pivot height, and how far the body rises to rest on a chair seat (seat top ≈ 0.47 m). */
+const HIP_Y = 0.22;
+export const SIT_LIFT = 0.29;
 const R = 0.44;
 const SKIN = '#ffe6da';
 const INK = '#2b2140';
@@ -160,6 +163,9 @@ export class CharacterRig {
   private body = new THREE.Group();
   private head = new THREE.Group();
   private hands: THREE.Mesh[] = [];
+  private legs: THREE.Group[] = [];
+  /** 0 = standing, 1 = seated; eased so sitting down looks smooth. */
+  private sit = 0;
   private eyes: THREE.Group[] = [];
   private happyEyes: THREE.Mesh[] = [];
   private smile!: THREE.Mesh;
@@ -188,10 +194,15 @@ export class CharacterRig {
       mesh(tie, new THREE.ConeGeometry(0.05, 0.1, 10), trim, s * 0.05, 0, 0, { outline: 0.1 }).rotation.z = (s * Math.PI) / 2;
       mesh(tie, new THREE.ConeGeometry(0.03, 0.1, 8), trim, s * 0.025, -0.06, 0).rotation.z = Math.PI + s * 0.3;
     }
-    for (const s of [-1, 1]) {
-      mesh(b, new THREE.CapsuleGeometry(0.045, 0.08, 4, 8), skin, s * 0.08, 0.15, 0);
-      mesh(b, sphere(0.07), toon('#4a4560'), s * 0.08, 0.05, 0.03, { outline: 0.1 }).scale.set(1, 0.7, 1.35);
-    }
+    // Each leg hangs from a hip pivot so it can swing forward when seated
+    this.legs = [-1, 1].map((s) => {
+      const hip = new THREE.Group();
+      hip.position.set(s * 0.08, HIP_Y, 0);
+      b.add(hip);
+      mesh(hip, new THREE.CapsuleGeometry(0.045, 0.08, 4, 8), skin, 0, -0.07, 0);
+      mesh(hip, sphere(0.07), toon('#4a4560'), 0, -0.17, 0.03, { outline: 0.1 }).scale.set(1, 0.7, 1.35);
+      return hip;
+    });
     this.hands = [-1, 1].map((s) => mesh(b, sphere(0.06), skin, s * 0.23, 0.45, 0.05, { outline: 0.12 }));
 
     // Head and hair
@@ -241,14 +252,25 @@ export class CharacterRig {
     for (const part of this.sway) part.userData.base = part.rotation.clone();
   }
 
+  /** Current extra height from sitting (for placing labels above the head). */
+  get lift() {
+    return this.sit * SIT_LIFT;
+  }
+
   /** Advance animation. `targetYaw` is the facing angle to turn toward. */
   update(dt: number, t: number, targetYaw: number, pose: Pose) {
     this.yaw = angleLerp(this.yaw, targetYaw, Math.min(1, dt * 10));
     this.group.rotation.y = this.yaw;
 
+    this.sit += ((pose.seated ? 1 : 0) - this.sit) * Math.min(1, dt * 8);
     const hop = pose.walking ? Math.abs(Math.sin(t * 10)) : 0;
     const breathe = Math.sin(t * 2.4 + this.phase) * 0.015;
-    this.body.position.y = hop * 0.1;
+    this.body.position.y = hop * 0.1 + this.sit * SIT_LIFT;
+    // Seated: legs swing forward over the chair edge, feet dangling a little
+    const swingLegs = pose.walking ? Math.sin(t * 10) * 0.35 : 0;
+    this.legs.forEach((leg, i) => {
+      leg.rotation.x = -1.3 * this.sit + (i === 0 ? swingLegs : -swingLegs) + Math.sin(t * 1.7 + this.phase + i) * 0.06 * this.sit;
+    });
     this.body.scale.set(1 - hop * 0.03 + breathe, 1 + hop * 0.04 - breathe, 1);
     this.body.rotation.z = pose.walking ? Math.sin(t * 10) * 0.08 : 0;
 

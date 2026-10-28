@@ -10,5 +10,5 @@ export default function RoomPage() {
 }
 
 function RoomFallback() {
-  return <div className="grid h-full place-items-center text-sm text-muted">กำลังเปิดห้อง…</div>;
+  return <div className="grid h-full place-items-center text-sm text-muted">Opening the room…</div>;
 }

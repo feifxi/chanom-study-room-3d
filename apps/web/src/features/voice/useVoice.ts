@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Room as LiveKitRoom, RoomEvent, Track, type Participant, type RemoteTrack, type RemoteTrackPublication, type VideoTrack,
 } from 'livekit-client';
-import { VOICE_FAR, VOICE_NEAR } from '@study/shared';
+import { SEAT_BY_ID, VOICE_FAR, VOICE_NEAR } from '@study/shared';
 import type { LocalMotion } from '../room/Avatar';
 import type { StudyRoom } from '../room/useStudyRoom';
 
@@ -32,6 +32,7 @@ export interface Voice {
 }
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+const tableOf = (seatId: string | undefined) => (seatId ? SEAT_BY_ID.get(seatId)?.tableId : undefined);
 
 /** RMS level above which a voice counts as talking, and how long the indicator lingers after. */
 const TALK_LEVEL = 0.03;
@@ -94,6 +95,7 @@ const sameSet = (a: Set<string>, b: Set<string>) => a.size === b.size && [...a].
 /**
  * Proximity voice + screen share over LiveKit. Everyone in a study room joins
  * the matching LiveKit room muted; the closer someone stands, the louder they are.
+ * Screen shares are only subscribed by people seated at the sharer's table.
  */
 export function useVoice(room: StudyRoom | null, motion: React.RefObject<LocalMotion>): Voice {
   const lk = useRef<LiveKitRoom | null>(null);
@@ -113,6 +115,10 @@ export function useVoice(room: StudyRoom | null, motion: React.RefObject<LocalMo
     const audioEls = new Map<string, HTMLMediaElement>();
     const lkRoom = new LiveKitRoom({ adaptiveStream: true, dynacast: true });
     lk.current = lkRoom;
+    if (process.env.NODE_ENV !== 'production') {
+      const w = window as unknown as { __study?: Record<string, unknown> };
+      w.__study = { ...(w.__study ?? {}), lk: lkRoom };
+    }
     const talk = new TalkDetector();
     detector.current = talk;
     let serverSpeakers = new Set<string>();
@@ -123,9 +129,14 @@ export function useVoice(room: StudyRoom | null, motion: React.RefObject<LocalMo
       const list: ScreenShare[] = [];
       for (const p of everyone()) {
         const pub = p.getTrackPublication(Track.Source.ScreenShare);
-        if (pub?.track && !pub.isMuted) list.push({ identity: p.identity, track: pub.track as VideoTrack });
+        if (!pub?.track || pub.isMuted) continue;
+        // A remote publication keeps its track object after unsubscribing, so check the status
+        const visible = p === lkRoom.localParticipant || (pub as RemoteTrackPublication).subscriptionStatus === 'subscribed';
+        if (visible) list.push({ identity: p.identity, track: pub.track as VideoTrack });
       }
-      setShares(list);
+      setShares((prev) =>
+        prev.length === list.length && prev.every((s, i) => s.track === list[i]!.track) ? prev : list,
+      );
       setSharing(lkRoom.localParticipant.isScreenShareEnabled);
     };
 
@@ -177,7 +188,8 @@ export function useVoice(room: StudyRoom | null, motion: React.RefObject<LocalMo
 
     const onToken = async ({ url, token }: { url: string; token: string }) => {
       try {
-        await lkRoom.connect(url, token);
+        // Subscriptions are managed below: all voices, but screens only within your table
+        await lkRoom.connect(url, token, { autoSubscribe: false });
         if (cancelled) return;
         setStatus('connected');
         setNeedsAudioUnlock(!lkRoom.canPlaybackAudio);
@@ -193,17 +205,34 @@ export function useVoice(room: StudyRoom | null, motion: React.RefObject<LocalMo
     setStatus('connecting');
     room.send('voice:token', {});
 
-    // Proximity: scale each voice by how far away its avatar stands
+    // Proximity volume + who-sees-whose-screen, checked a few times a second
     const proximity = setInterval(() => {
       const me = motion.current;
       if (!me || lkRoom.state !== 'connected') return;
+      const myTable = tableOf(room.state.players?.get(room.sessionId)?.seatId);
+      let changed = false;
       for (const p of lkRoom.remoteParticipants.values()) {
         const other = room.state.players?.get(p.identity);
+        for (const pub of p.trackPublications.values()) {
+          const want =
+            pub.source === Track.Source.ScreenShare
+              ? !!myTable && tableOf(other?.seatId) === myTable
+              : pub.kind === Track.Kind.Audio;
+          // Compare with what we asked for (isDesired), not isSubscribed: that one is also false
+          // while a track is still connecting or paused by adaptive streaming.
+          if (pub.isDesired !== want) {
+            pub.setSubscribed(want);
+            changed = true;
+          }
+        }
         if (!other) continue;
         const d = Math.hypot(other.x - me.x, other.z - me.z);
         p.setVolume(clamp01(1 - (d - VOICE_NEAR) / (VOICE_FAR - VOICE_NEAR)));
       }
-    }, 200);
+      // Subscription changes settle asynchronously; resync the visible screens shortly after
+      if (changed) setTimeout(syncShares, 400);
+      syncShares();
+    }, 250);
 
     // Who's talking: server speakers plus local analysers, muted mics excluded
     const talkTimer = setInterval(() => {
@@ -261,14 +290,14 @@ export function useVoice(room: StudyRoom | null, motion: React.RefObject<LocalMo
         setMicOn(local.isMicrophoneEnabled);
         setError(null);
       } catch (e) {
-        setError(e instanceof Error ? `ไมค์: ${e.message}` : 'เปิดไมค์ไม่ได้');
+        setError(e instanceof Error ? `Mic: ${e.message}` : "Couldn't turn on the mic");
       }
     },
     async toggleShare() {
       const local = lk.current?.localParticipant;
       if (!local || !room) return;
       if (!sharing && !room.state.players?.get(room.sessionId)?.seatId) {
-        setError('นั่งที่โต๊ะก่อนนะ แล้วจอจะขึ้นบนโน้ตบุ๊กของคุณ');
+        setError('Sit at a table first. Your screen is shared with the people at that table.');
         return;
       }
       try {
@@ -276,7 +305,7 @@ export function useVoice(room: StudyRoom | null, motion: React.RefObject<LocalMo
         setSharing(local.isScreenShareEnabled);
         setError(null);
       } catch (e) {
-        setError(e instanceof Error ? `แชร์จอ: ${e.message}` : 'แชร์จอไม่ได้');
+        setError(e instanceof Error ? `Screen share: ${e.message}` : "Couldn't share your screen");
       }
     },
     async unlockAudio() {

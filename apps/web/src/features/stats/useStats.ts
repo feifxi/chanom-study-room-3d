@@ -37,10 +37,10 @@ export function useStats(visitorId: string | undefined): StatsState {
   return state;
 }
 
-/** 95 → "1 ชม. 35 น.", 40 → "40 น." */
+/** 95 → "1h 35m", 40 → "40m" */
 export function formatMinutes(min: number) {
   const m = Math.round(min);
-  if (m < 60) return `${m} น.`;
+  if (m < 60) return `${m}m`;
   const h = Math.floor(m / 60);
-  return m % 60 ? `${h} ชม. ${m % 60} น.` : `${h} ชม.`;
+  return m % 60 ? `${h}h ${m % 60}m` : `${h}h`;
 }

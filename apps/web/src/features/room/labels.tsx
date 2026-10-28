@@ -4,7 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { PlayerView } from '@study/shared';
 import type { Bubble } from './useStudyRoom';
-import { STATUS_ICON, useTick } from '../focus/FocusPanel';
+import { STATUS_ICON, minutesSince, useTick } from '../focus/FocusPanel';
 
 /**
  * Name tags, speech bubbles and typing dots live in one plain DOM layer over the
@@ -47,9 +47,10 @@ interface LayerProps {
   localId: string;
   bubbles: Record<string, Bubble>;
   voice: { speaking: Set<string>; micEnabled: Set<string>; sharing: Set<string> };
+  clockOffset: number;
 }
 
-export function LabelLayer({ board, ids, players, localId, bubbles, voice }: LayerProps) {
+export function LabelLayer({ board, ids, players, localId, bubbles, voice, clockOffset }: LayerProps) {
   useTick(1000); // status/subject come from synced state, which React doesn't watch
   const now = Date.now();
   return (
@@ -78,7 +79,7 @@ export function LabelLayer({ board, ids, players, localId, bubbles, voice }: Lay
               }}
               className="typing-dots"
               style={{ display: 'none' }}
-              aria-label="กำลังพิมพ์"
+              aria-label="Typing"
             >
               <span />
               <span />
@@ -99,8 +100,13 @@ export function LabelLayer({ board, ids, players, localId, bubbles, voice }: Lay
               {voice.sharing.has(id) && <span className="mr-1">🖥️</span>}
               {STATUS_ICON[player.status] && <span className="mr-1">{STATUS_ICON[player.status]}</span>}
               {player.name}
-              {isLocal && ' (คุณ)'}
-              {player.status === 'focus' && player.subject && <span className="ml-1 font-semibold opacity-75">· {player.subject}</span>}
+              {isLocal && ' (you)'}
+              {/* How long they've been focusing, so others know not to interrupt */}
+              {player.status === 'focus' && (
+                <span className="ml-1 font-semibold opacity-75">
+                  · {minutesSince(player.focusSince, clockOffset)}m{player.subject && ` · ${player.subject}`}
+                </span>
+              )}
             </div>
           </div>
         );

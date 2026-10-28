@@ -8,7 +8,7 @@ const H = 120;
 const PAD = { top: 18, right: 8, bottom: 20, left: 8 };
 const BAR = 22; // ≤ 24px thick, never fills the slot
 const BAR_COLOR = '#e0457b';
-const DAYS = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 /** Focus minutes for the last 7 days: one series, so no legend; today is labelled. */
 export function WeekChart({ days }: { days: { date: string; minutes: number }[] }) {
@@ -21,7 +21,7 @@ export function WeekChart({ days }: { days: { date: string; minutes: number }[] 
 
   return (
     <figure className="relative">
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="เวลาโฟกัส 7 วันล่าสุด">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Focus time over the last 7 days">
         {/* Recessive hairline baseline */}
         <line x1={PAD.left} x2={W - PAD.right} y1={base} y2={base} stroke="var(--line)" strokeWidth={1} />
         {days.map((d, i) => {
@@ -48,7 +48,7 @@ export function WeekChart({ days }: { days: { date: string; minutes: number }[] 
                 </text>
               )}
               <text x={cx} y={H - 5} textAnchor="middle" className={`text-[10px] ${isToday ? 'fill-ink font-bold' : 'fill-muted'}`}>
-                {isToday ? 'วันนี้' : weekday}
+                {isToday ? 'Today' : weekday}
               </text>
             </g>
           );
@@ -59,18 +59,18 @@ export function WeekChart({ days }: { days: { date: string; minutes: number }[] 
           className="pointer-events-none absolute -top-2 rounded-lg bg-ink px-2 py-1 text-xs whitespace-nowrap text-white shadow"
           style={{ left: `${((PAD.left + slot * hover + slot / 2) / W) * 100}%`, transform: 'translate(-50%, -100%)' }}
         >
-          {new Date(`${days[hover].date}T12:00:00+07:00`).toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short' })} ·{' '}
+          {new Date(`${days[hover].date}T12:00:00+07:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} ·{' '}
           {formatMinutes(days[hover].minutes)}
         </div>
       )}
       {/* Table view for screen readers */}
       <table className="sr-only">
-        <caption>เวลาโฟกัสรายวัน</caption>
+        <caption>Daily focus time</caption>
         <tbody>
           {days.map((d) => (
             <tr key={d.date}>
               <th scope="row">{d.date}</th>
-              <td>{d.minutes} นาที</td>
+              <td>{d.minutes} minutes</td>
             </tr>
           ))}
         </tbody>

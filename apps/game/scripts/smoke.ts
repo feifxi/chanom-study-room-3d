@@ -92,31 +92,25 @@ a.send('typing', { on: true });
 await sleep(7500);
 check('typing clears itself after going quiet', playerOf(b, a).typing === false);
 
-// 6. Pomodoro: shared room timer, personal timer, away
-const timer = () => (a.state as any).timer;
-const chimes: string[] = [];
-b.onMessage('chime', (m: any) => chimes.push(m.phase));
-a.send('timer:start', { focusMin: 0.05, breakMin: 0.05 }); // 3 s focus, 3 s break
+// 6. Pomodoro (personal only): status, subject, focus time and away
+a.send('timer:personal', { phase: 'focus', endsAt: Date.now() + 25 * 60_000 });
+a.send('subject', { text: '  Calculus  ' });
 await sleep(400);
-check('starting the room timer puts the starter in focus', me(a).status === 'focus' && me(a).timerMode === 'room' && timer().phase === 'focus');
-check('people not following stay idle', me(b).status === 'idle');
-b.send('timer:mode', { mode: 'room' });
-await sleep(300);
-check('following the room timer shows focus', me(b).status === 'focus' && me(b).statusEndsAt === timer().endsAt);
-await sleep(3500);
-check('room timer moves on to break for everyone', me(a).status === 'break' && me(b).status === 'break' && chimes.includes('break'));
+check('focus shows up with its subject and end time', me(a).status === 'focus' && me(a).subject === 'Calculus' && me(a).statusEndsAt > Date.now());
+check('others see when the focus stretch started', Math.abs(playerOf(b, a).focusSince - Date.now()) < 3000);
+check('people without a timer stay idle', me(b).status === 'idle' && me(b).focusSince === 0);
 a.send('away', { on: true });
 await sleep(300);
-check('away overrides the timer', me(a).status === 'away');
+check('away overrides the timer and ends the focus stretch', me(a).status === 'away' && me(a).focusSince === 0);
 a.send('away', { on: false });
-a.send('timer:stop', {});
 await sleep(300);
-check('stopping the room timer returns everyone to idle', me(a).status === 'idle' && me(b).status === 'idle' && timer().phase === 'idle');
-b.send('timer:mode', { mode: 'personal' });
-b.send('timer:personal', { phase: 'focus', endsAt: Date.now() + 25 * 60_000 });
-b.send('subject', { text: '  Calculus  ' });
+check('back from away resumes focus with a fresh start time', me(a).status === 'focus' && me(a).focusSince > 0);
+a.send('timer:personal', { phase: 'break', endsAt: Date.now() + 5 * 60_000 });
 await sleep(300);
-check('personal timer and subject show up', me(b).status === 'focus' && me(b).subject === 'Calculus' && me(b).statusEndsAt > Date.now());
+check('break ends the focus stretch', me(a).status === 'break' && me(a).focusSince === 0);
+a.send('timer:personal', { phase: 'idle', endsAt: 0 });
+await sleep(300);
+check('stopping returns to idle', me(a).status === 'idle');
 
 const t0 = Date.now();
 const clock = await new Promise<number>((resolve) => {

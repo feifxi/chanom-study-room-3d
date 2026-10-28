@@ -5,6 +5,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { ROOM, SEATS, TABLES } from '@study/shared';
 import type { DayLight } from './dayCycle';
+import { CHAIR_BACK } from './Avatar';
 
 const W = ROOM.width;
 const D = ROOM.depth;
@@ -118,7 +119,7 @@ function SeatProps() {
         const fz = Math.cos(s.yaw);
         return (
           <group key={s.id}>
-            <group position={[s.x - fx * 0.38, 0, s.z - fz * 0.38]} rotation={[0, s.yaw, 0]}>
+            <group position={[s.x - fx * CHAIR_BACK, 0, s.z - fz * CHAIR_BACK]} rotation={[0, s.yaw, 0]}>
               <Box size={[0.46, 0.06, 0.42]} position={[0, 0.44, 0]} color="#8a5a3a" />
               <Box size={[0.46, 0.5, 0.05]} position={[0, 0.72, -0.2]} color="#7a4e32" />
               {[-1, 1].flatMap((sx) => [-1, 1].map((sz) => (

@@ -8,12 +8,12 @@ const mono = JetBrains_Mono({ variable: '--font-mono-face', subsets: ['latin'] }
 
 export const metadata: Metadata = {
   title: 'Demo Chanom Study Room',
-  description: 'ห้องอ่านหนังสือออนไลน์แบบ 3D อ่านไปด้วยกันกับเพื่อนๆ',
+  description: 'A cosy 3D online study room. Study together with friends.',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="th" className={`${manrope.variable} ${thai.variable} ${mono.variable} h-full antialiased`}>
+    <html lang="en" className={`${manrope.variable} ${thai.variable} ${mono.variable} h-full antialiased`}>
       <body className="min-h-full">{children}</body>
     </html>
   );

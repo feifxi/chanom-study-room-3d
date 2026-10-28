@@ -9,8 +9,8 @@ import { OBSTACLES, ROOM_NAME, SEATS, randomLook } from '@study/shared';
 const URL = process.env.GAME_URL ?? 'http://localhost:2567';
 const COUNT = Number(process.argv[2] ?? 4);
 const NAMES = ['Mint', 'Ploy', 'Bank', 'Fern', 'Nine', 'Beam', 'June', 'Pond'];
-const SUBJECTS = ['Calculus', 'ภาษาอังกฤษ', 'Physics', 'ประวัติศาสตร์', 'Coding', 'Chemistry'];
-const LINES = ['สวัสดีทุกคน 👋', 'อ่านอะไรกันอยู่~', 'สู้ๆ นะ ✨', 'ขอนั่งด้วยคน!', 'พักแป๊บ ☕'];
+const SUBJECTS = ['Calculus', 'English', 'Physics', 'History', 'Coding', 'Chemistry'];
+const LINES = ['Hi everyone 👋', 'What are you studying?', 'You got this ✨', 'Mind if I sit here?', 'Quick break ☕'];
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const pick = <T>(a: readonly T[]) => a[Math.floor(Math.random() * a.length)]!;
 
@@ -51,7 +51,6 @@ async function bot(i: number) {
       room.send('sit', { seatId: seat.id });
       // Study at the desk on a personal pomodoro
       room.send('subject', { text: pick(SUBJECTS) });
-      room.send('timer:mode', { mode: 'personal' });
       room.send('timer:personal', { phase: 'focus', endsAt: Date.now() + 25 * 60_000 });
       await sleep(6000 + Math.random() * 8000);
       room.send('timer:personal', { phase: 'idle', endsAt: 0 });

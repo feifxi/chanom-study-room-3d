@@ -7,7 +7,7 @@ import { OrbitControls } from '@react-three/drei';
 import { CHAT_MAX, SPAWN, type RoomListing } from '@study/shared';
 import { GAME_URL } from '@/lib/config';
 import { FocusPanel } from '../focus/FocusPanel';
-import { ScreenShareTextures, VoiceBar } from '../voice/ScreenShares';
+import { ScreenShareTextures, TableScreens, VoiceBar } from '../voice/ScreenShares';
 import { RoomSidebar } from './RoomSidebar';
 import { useDayLight } from './dayCycle';
 import { useVoice } from '../voice/useVoice';
@@ -81,33 +81,28 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
           localId={room.sessionId}
           bubbles={bubbles}
           voice={{ speaking: voice.speaking, micEnabled: voice.micEnabled, sharing: sharingIds }}
+          clockOffset={clockOffset}
         />
       )}
 
       <header className="panel absolute top-4 left-4 flex items-center gap-3 px-4 py-2.5">
-        <Link href="/" className="text-sm font-bold text-muted hover:text-ink">← ออก</Link>
+        <Link href="/" className="text-sm font-bold text-muted hover:text-ink">← Leave</Link>
         <span className="h-4 w-px bg-line" />
         <div>
           <p className="text-sm font-extrabold leading-tight">{label ?? 'Chanom Study Room'}</p>
-          <p className="text-xs text-muted">{status === 'connected' ? `${playerIds.length} คนในห้อง` : statusText(status, error)}</p>
+          <p className="text-xs text-muted">{status === 'connected' ? `${playerIds.length} ${playerIds.length === 1 ? 'person' : 'people'} here` : statusText(status, error)}</p>
         </div>
       </header>
 
       {room && <RoomSidebar room={room} />}
 
       {room && <FocusPanel room={room} clockOffset={clockOffset} />}
-      {room && (
-        <VoiceBar
-          voice={voice}
-          seated={seated}
-          localId={room.sessionId}
-          names={(id) => room.state.players?.get(id)?.name ?? 'ใครบางคน'}
-        />
-      )}
+      {room && <VoiceBar voice={voice} seated={seated} />}
+      {room && <TableScreens voice={voice} localId={room.sessionId} names={(id) => room.state.players?.get(id)?.name ?? 'Someone'} />}
 
       {(nearSeat || seated) && (
         <div className="panel absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 text-sm font-bold">
-          {seated ? '📖 กำลังอ่านหนังสือ · กด E หรือเดินเพื่อลุก' : 'กด E เพื่อนั่ง'}
+          {seated ? '📖 Studying · press E or walk to stand up' : 'Press E to sit'}
         </div>
       )}
 
@@ -116,9 +111,9 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
       {status === 'error' && (
         <div className="absolute inset-0 grid place-items-center bg-black/20">
           <div className="panel max-w-sm p-6 text-center">
-            <p className="font-extrabold">เข้าห้องไม่ได้</p>
+            <p className="font-extrabold">Couldn't join the room</p>
             <p className="mt-1 text-sm text-muted">{error}</p>
-            <Link href="/" className="mt-4 inline-block rounded-xl bg-accent px-4 py-2 text-sm font-bold text-white">กลับไปหน้าแรก</Link>
+            <Link href="/" className="mt-4 inline-block rounded-xl bg-accent px-4 py-2 text-sm font-bold text-white">Back to the lobby</Link>
           </div>
         </div>
       )}
@@ -129,17 +124,18 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
 /** Dev-only: expose the scene to automated browser tests. */
 function DevSceneHandle() {
   const scene = useThree((s) => s.scene);
+  const camera = useThree((s) => s.camera);
   useEffect(() => {
     if (process.env.NODE_ENV === 'production') return;
     const w = window as unknown as { __study?: Record<string, unknown> };
-    w.__study = { ...(w.__study ?? {}), scene };
-  }, [scene]);
+    w.__study = { ...(w.__study ?? {}), scene, camera };
+  }, [scene, camera]);
   return null;
 }
 
 function statusText(status: string, error: string | null) {
-  if (status === 'connecting') return 'กำลังเชื่อมต่อ…';
-  if (status === 'closed') return 'หลุดการเชื่อมต่อ';
+  if (status === 'connecting') return 'Connecting…';
+  if (status === 'closed') return 'Disconnected';
   return error ?? '';
 }
 
@@ -199,7 +195,7 @@ function ChatPanel({ room, messages }: { room: StudyRoom; messages: { id: string
   return (
     <div className="panel absolute bottom-4 left-4 flex w-[min(340px,calc(100%-32px))] flex-col gap-2 p-3">
       <ol ref={list} className="flex max-h-40 flex-col gap-1 overflow-y-auto text-sm">
-        {messages.length === 0 && <li className="text-xs text-muted">ทักทายเพื่อนๆ ในห้องได้เลย 👋</li>}
+        {messages.length === 0 && <li className="text-xs text-muted">Say hi to the room 👋</li>}
         {messages.map((m) => (
           <li key={m.id} className="leading-snug">
             <b className={m.sessionId === room.sessionId ? 'text-accent-ink' : ''}>{m.name}</b>{' '}
@@ -229,10 +225,10 @@ function ChatPanel({ room, messages }: { room: StudyRoom; messages: { id: string
           }}
           onBlur={() => signalTyping(false)}
           onKeyDown={(e) => e.key === 'Escape' && input.current?.blur()}
-          placeholder="พิมพ์ข้อความ… (Enter)"
+          placeholder="Type a message… (Enter)"
           className="min-w-0 flex-1 rounded-lg border border-line bg-white px-3 py-1.5 text-sm outline-none focus:border-accent"
         />
-        <button className="rounded-lg bg-accent px-3 py-1.5 text-sm font-bold text-white">ส่ง</button>
+        <button className="rounded-lg bg-accent px-3 py-1.5 text-sm font-bold text-white">Send</button>
       </form>
     </div>
   );

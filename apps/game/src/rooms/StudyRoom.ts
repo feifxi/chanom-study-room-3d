@@ -2,13 +2,13 @@ import { Room, validate, type Client } from 'colyseus';
 import { AccessToken } from 'livekit-server-sdk';
 import { z } from 'zod';
 import {
-  BOUNDS, CHAT_MAX, MAX_PLAYERS, MAX_TIMER_MIN, MIN_TIMER_MIN, NAME_MAX, PATCH_RATE_MS, RUN_SPEED, SEAT_BY_ID,
-  SIT_REACH, SPAWN, SPEED_TOLERANCE, SUBJECT_MAX, TIMER_MODES, TIMER_PHASES, sanitizeLook,
+  BOUNDS, CHAT_MAX, MAX_PLAYERS, MAX_TIMER_MIN, NAME_MAX, PATCH_RATE_MS, RUN_SPEED, SEAT_BY_ID,
+  SIT_REACH, SPAWN, SPEED_TOLERANCE, SUBJECT_MAX, TIMER_PHASES, sanitizeLook,
   type ChatMessage, type PlayerStatus, type TimerPhase,
 } from '@study/shared';
 import { getTodayMinutes, upsertVisitor, type Db } from '@study/db';
 import { metrics } from '../metrics';
-import { Player, RoomTimer, StudyState } from '../state';
+import { Player, StudyState } from '../state';
 
 export interface StudyRoomMetadata {
   label: string;
@@ -53,7 +53,6 @@ function claimNumber(): number {
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const finite = z.number().refine(Number.isFinite);
-const timerMinutes = z.number().min(MIN_TIMER_MIN).max(MAX_TIMER_MIN);
 
 /** Per-player server-only bookkeeping (not synced). */
 interface Private {
@@ -163,13 +162,6 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
       this.refreshStatus(client.sessionId);
     }),
 
-    'timer:mode': validate(z.object({ mode: z.enum(TIMER_MODES) }), (client, msg) => {
-      const p = this.state.players.get(client.sessionId);
-      if (!p) return;
-      p.timerMode = msg.mode;
-      this.refreshStatus(client.sessionId);
-    }),
-
     'timer:personal': validate(z.object({ phase: z.enum(TIMER_PHASES), endsAt: finite }), (client, msg) => {
       const s = this.priv.get(client.sessionId);
       if (!s) return;
@@ -178,15 +170,6 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
       // Keep the end time plausible: in the future and no longer than one max-length segment.
       s.personalEndsAt = msg.phase === 'idle' ? 0 : clamp(msg.endsAt, now, now + MAX_TIMER_MIN * MINUTE);
       this.refreshStatus(client.sessionId);
-    }),
-
-    'timer:start': validate(z.object({ focusMin: timerMinutes, breakMin: timerMinutes }), (client, msg) => {
-      const timer = this.state.timer;
-      Object.assign(timer, { phase: 'focus', focusMin: msg.focusMin, breakMin: msg.breakMin, cycle: 0, endsAt: Date.now() + msg.focusMin * MINUTE });
-      const p = this.state.players.get(client.sessionId);
-      if (p) p.timerMode = 'room'; // whoever starts it follows it
-      this.broadcast('chime', { phase: 'focus' });
-      this.refreshAll();
     }),
 
     /**
@@ -206,16 +189,11 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
       client.send('clock', { serverNow: Date.now() });
     },
 
-    'timer:stop': () => {
-      Object.assign(this.state.timer, { phase: 'idle', endsAt: 0, cycle: 0 });
-      this.refreshAll();
-    },
   };
 
   onCreate() {
     const number = claimNumber();
     this.setMetadata({ number, label: `Library #${number}` });
-    this.state.timer = new RoomTimer();
 
     this.clock.setInterval(() => this.tick(), 1000);
   }
@@ -274,46 +252,26 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
         if (p) p.typing = false;
       }
     }
-
-    // Advance the shared pomodoro: focus → break → focus …
-    const timer = this.state.timer;
-    if (timer.phase !== 'idle' && now >= timer.endsAt) {
-      if (timer.phase === 'focus') {
-        timer.phase = 'break';
-        timer.endsAt = now + timer.breakMin * MINUTE;
-      } else {
-        timer.phase = 'focus';
-        timer.cycle += 1;
-        timer.endsAt = now + timer.focusMin * MINUTE;
-      }
-      this.broadcast('chime', { phase: timer.phase as TimerPhase });
-      this.refreshAll();
-    }
   }
 
-  private refreshAll() {
-    for (const id of this.priv.keys()) this.refreshStatus(id);
-  }
-
-  /** Derive a player's visible status from away/timer state, tracking focus stretches. */
+  /** Derive a player's visible status from away + their pomodoro, tracking focus stretches. */
   private refreshStatus(id: string) {
     const p = this.state.players.get(id);
     const s = this.priv.get(id);
     if (!p || !s) return;
-    const timer = this.state.timer;
     let status: PlayerStatus = 'idle';
     let endsAt = 0;
     if (s.away) {
       status = 'away';
-    } else if (p.timerMode === 'room' && timer.phase !== 'idle') {
-      status = timer.phase as PlayerStatus;
-      endsAt = timer.endsAt;
-    } else if (p.timerMode === 'personal' && s.personalPhase !== 'idle') {
+    } else if (s.personalPhase !== 'idle') {
       status = s.personalPhase;
       endsAt = s.personalEndsAt;
     }
 
-    if (p.status !== 'focus' && status === 'focus') s.focusStartedAt = Date.now();
+    if (p.status !== 'focus' && status === 'focus') {
+      s.focusStartedAt = Date.now();
+      p.focusSince = s.focusStartedAt;
+    }
     if (p.status === 'focus' && status !== 'focus') this.endFocus(id);
     p.status = status;
     p.statusEndsAt = endsAt;
@@ -326,6 +284,7 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
     const endedAt = new Date();
     const startedAt = new Date(s.focusStartedAt);
     s.focusStartedAt = 0;
+    p.focusSince = 0;
     const minutes = (endedAt.getTime() - startedAt.getTime()) / MINUTE;
     p.todayMin += Math.round(minutes);
     services.recordFocus?.({

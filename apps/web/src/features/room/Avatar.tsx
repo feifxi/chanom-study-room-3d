@@ -26,6 +26,8 @@ interface Props {
 }
 
 const HAPPY = /[!🎉🚀👍✨❤♪]/u;
+/** How far behind the seat spot the chair sits (matches Library's SeatProps). */
+export const CHAIR_BACK = 0.06;
 
 export function Avatar({ id, player, isLocal, local, bubble, board }: Props) {
   const rig = useMemo(() => new CharacterRig(sanitizeLook(safeParse(player.look))), [player.look]);
@@ -58,7 +60,12 @@ export function Avatar({ id, player, isLocal, local, bubble, board }: Props) {
     const speed = pos.current.distanceTo(last.current) / Math.max(dt, 1e-3);
     last.current.copy(pos.current);
     root.current?.position.copy(pos.current);
-    anchor.set(pos.current.x, rig.labelHeight, pos.current.z);
+    // Seated: settle back onto the chair just behind the seat spot
+    if (player.seatId && root.current) {
+      root.current.position.x -= Math.sin(yaw) * CHAIR_BACK;
+      root.current.position.z -= Math.cos(yaw) * CHAIR_BACK;
+    }
+    anchor.set(root.current?.position.x ?? pos.current.x, rig.labelHeight + rig.lift, root.current?.position.z ?? pos.current.z);
 
     const talking = !!bubble && bubble.until > Date.now();
     const dots = board.dots.get(id);

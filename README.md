@@ -65,7 +65,7 @@ WASD / arrow keys to walk · Shift to run · E to sit or stand · Enter to chat 
 
 1. ✅ Monorepo, Colyseus rooms with auto-sharding, 3D library, real-time movement, sitting, text chat
 2. ✅ Anonymous join, typing indicator and speech bubbles above heads
-3. ✅ Pomodoro (personal and room-wide), focus status above heads
-4. ✅ LiveKit proximity voice (with a speaking indicator above heads) and desk screen sharing
+3. ✅ Personal pomodoro; focus status and minutes focused shown above heads
+4. ✅ LiveKit proximity voice (with a speaking indicator above heads) and Zoom-style screen sharing visible only to your table
 5. ✅ Study stats, streaks, leaderboard, to-do list, ambient sound, real-time day/night
 6. Terraform on AWS (EC2 + RDS + S3 in `ap-southeast-7`), CI/CD, Grafana stack and CloudWatch alarms
