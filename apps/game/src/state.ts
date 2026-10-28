@@ -15,6 +15,8 @@ export const Player = schema(
     statusEndsAt: t.number().default(0),
     subject: t.string().default(''),
     timerMode: t.string().default('none'),
+    /** Focus minutes today (Thai time), for the in-room leaderboard. */
+    todayMin: t.number().default(0),
     /** True while the player has unsent text in the chat box. */
     typing: t.boolean().default(false),
   },

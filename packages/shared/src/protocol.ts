@@ -68,7 +68,20 @@ export interface PlayerView {
   statusEndsAt: number;
   subject: string;
   timerMode: TimerMode;
+  todayMin: number;
   typing: boolean;
+}
+
+export interface VisitorStatsView {
+  todayMin: number;
+  weekMin: number;
+  streakDays: number;
+  last7: { date: string; minutes: number }[];
+}
+
+export interface LeaderRowView {
+  name: string;
+  minutes: number;
 }
 
 export interface StudyStateView {

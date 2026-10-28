@@ -4,6 +4,7 @@ import { useLayoutEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { ROOM, SEATS, TABLES } from '@study/shared';
+import type { DayLight } from './dayCycle';
 
 const W = ROOM.width;
 const D = ROOM.depth;
@@ -77,7 +78,7 @@ function Bookshelf({ x0, x1 }: { x0: number; x1: number }) {
   );
 }
 
-function StudyTable({ x, z, width, depth }: { x: number; z: number; width: number; depth: number }) {
+function StudyTable({ x, z, width, depth, lamps }: { x: number; z: number; width: number; depth: number; lamps: number }) {
   return (
     <group position={[x, 0, z]}>
       <Box size={[width, 0.08, depth]} position={[0, 0.75, 0]} color="#b98a5e" />
@@ -99,8 +100,10 @@ function StudyTable({ x, z, width, depth }: { x: number; z: number; width: numbe
       </mesh>
       <mesh position={[0, 1.12, 0]}>
         <boxGeometry args={[0.36, 0.02, 0.1]} />
-        <meshBasicMaterial color="#fff4c9" />
+        <meshBasicMaterial color={lamps > 0.5 ? '#fff1b0' : '#f3ead0'} />
       </mesh>
+      {/* Reading light, on after dark */}
+      {lamps > 0.02 && <pointLight position={[0, 1.05, 0]} color="#ffd89a" intensity={lamps * 4} distance={4.5} decay={1.6} />}
     </group>
   );
 }
@@ -140,13 +143,13 @@ function SeatProps() {
   );
 }
 
-function Window({ x, width }: { x: number; width: number }) {
+function Window({ x, width, color }: { x: number; width: number; color: string }) {
   return (
     <group position={[x, 2.2, -D / 2 + 0.02]}>
       <Box size={[width + 0.2, 2.3, 0.08]} position={[0, 0, 0]} color="#f4efe6" cast={false} />
       <mesh position={[0, 0, 0.05]}>
         <planeGeometry args={[width, 2.1]} />
-        <meshBasicMaterial color="#bfe0ff" />
+        <meshBasicMaterial color={color} />
       </mesh>
       <Box size={[0.06, 2.1, 0.04]} position={[0, 0, 0.08]} color="#f4efe6" cast={false} />
       <Box size={[width, 0.06, 0.04]} position={[0, 0.2, 0.08]} color="#f4efe6" cast={false} />
@@ -212,7 +215,7 @@ function Plant({ x, z, s = 1 }: { x: number; z: number; s?: number }) {
   );
 }
 
-function ReadingNook() {
+function ReadingNook({ lamps }: { lamps: number }) {
   return (
     <group>
       <mesh position={[-8, 0.01, 4.1]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
@@ -239,20 +242,21 @@ function ReadingNook() {
       </mesh>
       <mesh position={[-9.4, 1.65, 6.0]}>
         <coneGeometry args={[0.28, 0.32, 20, 1, true]} />
-        <meshStandardMaterial color="#fff1c9" emissive="#ffd88a" emissiveIntensity={0.5} side={THREE.DoubleSide} />
+        <meshStandardMaterial color="#fff1c9" emissive="#ffd88a" emissiveIntensity={0.5 + lamps * 1.5} side={THREE.DoubleSide} />
       </mesh>
+      {lamps > 0.02 && <pointLight position={[-9.4, 1.5, 6.0]} color="#ffd38a" intensity={lamps * 5} distance={6} decay={1.5} />}
     </group>
   );
 }
 
-export function Library() {
+export function Library({ light }: { light: DayLight }) {
   return (
     <group>
-      <hemisphereLight args={['#ffffff', '#cbb89d', 1.5]} />
+      <hemisphereLight args={[light.hemiSky, '#cbb89d', light.hemiIntensity]} />
       <directionalLight
-        position={[10, 18, 8]}
-        intensity={2.1}
-        color="#fff1dc"
+        position={light.sunPosition}
+        intensity={light.sunIntensity}
+        color={light.sunColor}
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-14}
@@ -276,15 +280,15 @@ export function Library() {
         </mesh>
       ))}
 
-      <Window x={-1.3} width={1.9} />
-      <Window x={1.3} width={1.9} />
+      <Window x={-1.3} width={1.9} color={light.windowColor} />
+      <Window x={1.3} width={1.9} color={light.windowColor} />
       <Bookshelf x0={-9.6} x1={-3.4} />
       <Bookshelf x0={3.4} x1={9.6} />
       <WallClock />
 
-      {TABLES.map((t) => <StudyTable key={t.id} {...t} />)}
+      {TABLES.map((t) => <StudyTable key={t.id} {...t} lamps={light.lamps} />)}
       <SeatProps />
-      <ReadingNook />
+      <ReadingNook lamps={light.lamps} />
 
       <Plant x={9.3} z={6.2} />
       <Plant x={-9.3} z={-5.6} s={0.9} />

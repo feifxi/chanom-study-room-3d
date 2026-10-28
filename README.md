@@ -11,7 +11,9 @@ A 3D online study room: walk around a cosy library as an anime chibi character, 
 | Web | Next.js 16 (App Router), React Three Fiber + drei, Tailwind CSS v4 |
 | Real-time | Colyseus 0.18 (rooms, delta state sync), `@colyseus/sdk` |
 | Shared | `@study/shared`: room layout, avatar looks, protocol types, constants |
-| Coming next | LiveKit (voice + screen share), Drizzle + PostgreSQL (study stats), Terraform on AWS `ap-southeast-7` |
+| Voice | LiveKit (proximity voice, desk screen sharing) |
+| Data | `@study/db`: Drizzle ORM + PostgreSQL for anonymous study stats |
+| Infra | Docker, Terraform on AWS `ap-southeast-7`, Grafana/Prometheus/Loki + CloudWatch alarms |
 
 ```
 apps/
@@ -19,6 +21,7 @@ apps/
   game/    Colyseus server: StudyRoom, lobby endpoint, smoke test and bots
 packages/
   shared/  Code used by both apps
+  db/      Drizzle schema, migrations and stats queries
 ```
 
 ## Run it locally
@@ -33,9 +36,10 @@ pnpm dev                 # web on http://localhost:3000, game server on :2567
 Useful extras:
 
 ```bash
-pnpm --filter @study/game smoke   # end-to-end checks against a running game server
-pnpm --filter @study/game bots 5  # five wandering test students
-docker compose up -d              # Postgres (:5433) and LiveKit (:7880) for later phases
+docker compose up -d                    # Postgres (:5433) and LiveKit (:7880): start these first
+pnpm --filter @study/game smoke         # end-to-end checks against a running game server
+pnpm --filter @study/game stats-check   # study-stats queries against Postgres
+pnpm --filter @study/game bots 5        # five wandering test students
 ```
 
 ## How rooms work
@@ -61,7 +65,7 @@ WASD / arrow keys to walk · Shift to run · E to sit or stand · Enter to chat 
 
 1. ✅ Monorepo, Colyseus rooms with auto-sharding, 3D library, real-time movement, sitting, text chat
 2. ✅ Anonymous join, typing indicator and speech bubbles above heads
-3. Pomodoro (personal and room-wide), focus status above heads
-4. LiveKit proximity voice (with a speaking indicator above heads) and desk screen sharing
-5. Study stats, streaks, leaderboard, to-do list, ambient sound, real-time day/night
+3. ✅ Pomodoro (personal and room-wide), focus status above heads
+4. ✅ LiveKit proximity voice (with a speaking indicator above heads) and desk screen sharing
+5. ✅ Study stats, streaks, leaderboard, to-do list, ambient sound, real-time day/night
 6. Terraform on AWS (EC2 + RDS + S3 in `ap-southeast-7`), CI/CD, Grafana stack and CloudWatch alarms

@@ -8,6 +8,7 @@ import {
 } from '@study/shared';
 import { GAME_URL } from '@/lib/config';
 import { loadProfile, saveProfile, type Profile } from '@/lib/profile';
+import { StatsCard } from '../stats/StatsCard';
 
 const AvatarPreview = dynamic(() => import('../avatar/AvatarPreview').then((m) => m.AvatarPreview), { ssr: false });
 
@@ -145,6 +146,8 @@ export function Lobby() {
             })}
           </ul>
         </section>
+
+        <StatsCard visitorId={profile.visitorId} name={profile.name || 'Guest'} />
       </div>
     </main>
   );

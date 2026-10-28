@@ -6,6 +6,8 @@ import {
   SIT_REACH, SPAWN, SPEED_TOLERANCE, SUBJECT_MAX, TIMER_MODES, TIMER_PHASES, sanitizeLook,
   type ChatMessage, type PlayerStatus, type TimerPhase,
 } from '@study/shared';
+import { getTodayMinutes, upsertVisitor, type Db } from '@study/db';
+import { metrics } from '../metrics';
 import { Player, RoomTimer, StudyState } from '../state';
 
 export interface StudyRoomMetadata {
@@ -24,8 +26,8 @@ export interface FocusRecord {
   minutes: number;
 }
 
-/** Hook for persisting focus time; set by the server entry point. */
-export const focusSink: { record?: (r: FocusRecord) => void } = {};
+/** Services wired up by the server entry point (the database is optional). */
+export const services: { db?: Db; recordFocus?: (r: FocusRecord) => void } = {};
 
 const CHAT_COOLDOWN_MS = 500;
 /** Clients refresh "typing" every few seconds; clear it if they go quiet (closed tab, crash). */
@@ -51,7 +53,7 @@ function claimNumber(): number {
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const finite = z.number().refine(Number.isFinite);
-const minutes = z.number().min(MIN_TIMER_MIN).max(MAX_TIMER_MIN);
+const timerMinutes = z.number().min(MIN_TIMER_MIN).max(MAX_TIMER_MIN);
 
 /** Per-player server-only bookkeeping (not synced). */
 interface Private {
@@ -138,6 +140,7 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
       s.lastChatAt = now;
       const message: ChatMessage = { id: `${client.sessionId}-${now}`, sessionId: client.sessionId, name: p.name, text, at: now };
       this.broadcast('chat', message);
+      metrics.chatMessages.inc();
     }),
 
     typing: validate(z.object({ on: z.boolean() }), (client, msg) => {
@@ -177,7 +180,7 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
       this.refreshStatus(client.sessionId);
     }),
 
-    'timer:start': validate(z.object({ focusMin: minutes, breakMin: minutes }), (client, msg) => {
+    'timer:start': validate(z.object({ focusMin: timerMinutes, breakMin: timerMinutes }), (client, msg) => {
       const timer = this.state.timer;
       Object.assign(timer, { phase: 'focus', focusMin: msg.focusMin, breakMin: msg.breakMin, cycle: 0, endsAt: Date.now() + msg.focusMin * MINUTE });
       const p = this.state.players.get(client.sessionId);
@@ -227,9 +230,20 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
     player.yaw = 0; // face the camera on arrival
     player.moving = false;
     this.state.players.set(client.sessionId, player);
+    metrics.joins.inc();
 
     // Anonymous, client-generated id used only to group study stats. Trusted as-is in this demo.
     const visitorId = typeof options.visitorId === 'string' && /^[\w-]{8,64}$/.test(options.visitorId) ? options.visitorId : client.sessionId;
+    const db = services.db;
+    if (db) {
+      // Best effort: stats are a bonus, never a reason to fail a join
+      upsertVisitor(db, { id: visitorId, name: player.name, look: JSON.parse(player.look) })
+        .then(() => getTodayMinutes(db, visitorId))
+        .then((min) => {
+          player.todayMin = min;
+        })
+        .catch((e) => console.warn('stats: join bookkeeping failed', e));
+    }
     this.priv.set(client.sessionId, {
       visitorId, lastMoveAt: 0, lastChatAt: 0, typingAt: 0,
       away: false, personalPhase: 'idle', personalEndsAt: 0, focusStartedAt: 0,
@@ -312,14 +326,16 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
     const endedAt = new Date();
     const startedAt = new Date(s.focusStartedAt);
     s.focusStartedAt = 0;
-    focusSink.record?.({
+    const minutes = (endedAt.getTime() - startedAt.getTime()) / MINUTE;
+    p.todayMin += Math.round(minutes);
+    services.recordFocus?.({
       visitorId: s.visitorId,
       name: p.name,
       subject: p.subject,
       roomLabel: this.metadata?.label ?? '',
       startedAt,
       endedAt,
-      minutes: (endedAt.getTime() - startedAt.getTime()) / MINUTE,
+      minutes,
     });
   }
 }

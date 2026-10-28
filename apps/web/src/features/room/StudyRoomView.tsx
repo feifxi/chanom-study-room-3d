@@ -8,6 +8,8 @@ import { CHAT_MAX, SPAWN, type RoomListing } from '@study/shared';
 import { GAME_URL } from '@/lib/config';
 import { FocusPanel } from '../focus/FocusPanel';
 import { ScreenShareTextures, VoiceBar } from '../voice/ScreenShares';
+import { RoomSidebar } from './RoomSidebar';
+import { useDayLight } from './dayCycle';
 import { useVoice } from '../voice/useVoice';
 import { loadProfile, type Profile } from '@/lib/profile';
 import { Avatar, type LocalMotion } from './Avatar';
@@ -31,6 +33,7 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
   const label = useRoomLabel(room?.roomId);
   const board = useMemo(() => new LabelBoard(), []);
   const voice = useVoice(room, motion);
+  const light = useDayLight();
 
   // Dev-only handle for automated browser tests (stripped from production builds)
   useEffect(() => {
@@ -41,9 +44,12 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
   const sharingIds = useMemo(() => new Set(voice.shares.map((s) => s.identity)), [voice.shares]);
 
   return (
-    <div className="fixed inset-0">
+    <div
+      className="fixed inset-0 transition-[background] duration-1000"
+      style={{ background: `linear-gradient(180deg, ${light.background[0]}, ${light.background[1]})` }}
+    >
       <Canvas shadows orthographic dpr={[1, 2]} camera={{ position: [SPAWN.x + 20, 18, SPAWN.z + 20], zoom: 62, near: 0.1, far: 200 }}>
-        <Library />
+        <Library light={light} />
         <OrbitControls
           makeDefault
           target={[SPAWN.x, 0.6, SPAWN.z]}
@@ -87,9 +93,7 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
         </div>
       </header>
 
-      <p className="absolute top-20 left-4 hidden rounded-full bg-white/60 px-3 py-1 text-xs text-muted sm:block">
-        WASD / ลูกศร เดิน · Shift วิ่ง · E นั่ง/ลุก · Enter แชท · ลากเมาส์หมุนกล้อง
-      </p>
+      {room && <RoomSidebar room={room} />}
 
       {room && <FocusPanel room={room} clockOffset={clockOffset} />}
       {room && (
