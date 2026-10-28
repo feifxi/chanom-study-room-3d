@@ -7,7 +7,7 @@
 import { Client, Callbacks, type Room } from '@colyseus/sdk';
 import { MAX_PLAYERS, ROOM_NAME, SEATS, type RoomListing } from '@study/shared';
 
-const URL = process.env.GAME_URL ?? 'http://localhost:2570';
+const URL = process.env.GAME_URL ?? 'http://localhost:2567';
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 let failures = 0;
 function check(label: string, ok: boolean, detail = '') {

@@ -6,7 +6,7 @@
 import { Client, type Room } from '@colyseus/sdk';
 import { OBSTACLES, ROOM_NAME, SEATS, randomLook } from '@study/shared';
 
-const URL = process.env.GAME_URL ?? 'http://localhost:2570';
+const URL = process.env.GAME_URL ?? 'http://localhost:2567';
 const COUNT = Number(process.argv[2] ?? 4);
 const NAMES = ['Mint', 'Ploy', 'Bank', 'Fern', 'Nine', 'Beam', 'June', 'Pond'];
 const LINES = ['สวัสดีทุกคน 👋', 'อ่านอะไรกันอยู่~', 'สู้ๆ นะ ✨', 'ขอนั่งด้วยคน!', 'พักแป๊บ ☕'];

@@ -27,7 +27,7 @@ Requirements: Node 22+, pnpm (`corepack enable pnpm`), Docker (for later phases)
 
 ```bash
 pnpm install
-pnpm dev                 # web on http://localhost:3100, game server on :2570
+pnpm dev                 # web on http://localhost:3000, game server on :2567
 ```
 
 Useful extras:

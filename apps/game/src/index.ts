@@ -2,8 +2,8 @@ import { defineRoom, defineServer, listen, matchMaker } from 'colyseus';
 import { ROOM_NAME, type RoomListing } from '@study/shared';
 import { StudyRoom, type StudyRoomMetadata } from './rooms/StudyRoom';
 
-const PORT = Number(process.env.PORT ?? 2570);
-const WEB_ORIGIN = process.env.WEB_ORIGIN ?? 'http://localhost:3100';
+const PORT = Number(process.env.PORT ?? 2567);
+const WEB_ORIGIN = process.env.WEB_ORIGIN ?? 'http://localhost:3000';
 
 const server = defineServer({
   rooms: {
