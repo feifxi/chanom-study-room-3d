@@ -5,7 +5,8 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { GACHA_MACHINE, SPIN_REVEAL_MS, type GachaSpun } from '@study/shared';
 
-const CAPSULE_COLORS = ['#ff8fc0', '#8fd3ff', '#ffd76a', '#a8e6a1', '#c3a6ff', '#ffb38a'];
+// Muted pastels so the machine blends in with the library
+const CAPSULE_COLORS = ['#e9a9c2', '#a9cde3', '#e8d49a', '#b7d6b0', '#c9b8e3', '#e8c0a6'];
 
 function Box({ args, position, color, rotation }: { args: [number, number, number]; position: [number, number, number]; color: string; rotation?: [number, number, number] }) {
   return (
@@ -27,7 +28,6 @@ export function GachaMachine({ lastSpin }: { lastSpin: (GachaSpun & { at: number
   const top = useRef<THREE.Mesh>(null);
   const bottom = useRef<THREE.Mesh>(null);
   const sparkle = useRef<THREE.Group>(null);
-  const star = useRef<THREE.Mesh>(null);
 
   // Capsules resting inside the dome
   const balls = useMemo(
@@ -42,13 +42,7 @@ export function GachaMachine({ lastSpin }: { lastSpin: (GachaSpun & { at: number
 
   const capsuleColor = lastSpin?.rare ? '#ffcf3f' : lastSpin?.kind === 'buddy' ? '#8fd3ff' : '#ff8fc0';
 
-  useFrame((state) => {
-    const t = state.clock.elapsedTime;
-    if (star.current) {
-      // A little star bobs above the machine to say "come play"
-      star.current.position.y = 1.95 + Math.sin(t * 2.2) * 0.05;
-      star.current.rotation.y = t * 1.2;
-    }
+  useFrame(() => {
     const since = lastSpin ? (Date.now() - lastSpin.at) / 1000 : Infinity;
     const reveal = SPIN_REVEAL_MS / 1000;
 
@@ -84,10 +78,10 @@ export function GachaMachine({ lastSpin }: { lastSpin: (GachaSpun & { at: number
   });
 
   return (
-    <group position={[GACHA_MACHINE.x, 0, GACHA_MACHINE.z]} rotation={[0, GACHA_MACHINE.yaw, 0]} scale={1.15}>
+    <group position={[GACHA_MACHINE.x, 0, GACHA_MACHINE.z]} rotation={[0, GACHA_MACHINE.yaw, 0]} scale={0.95}>
       {/* Body */}
-      <Box args={[0.86, 0.82, 0.78]} position={[0, 0.41, 0]} color="#ff9fc6" />
-      <Box args={[0.92, 0.08, 0.84]} position={[0, 0.84, 0]} color="#ff7fb2" />
+      <Box args={[0.86, 0.82, 0.78]} position={[0, 0.41, 0]} color="#e7b9c9" />
+      <Box args={[0.92, 0.08, 0.84]} position={[0, 0.84, 0]} color="#d8a0b4" />
       <Box args={[0.6, 0.12, 0.02]} position={[0, 0.7, 0.4]} color="#fff4fa" />
       {/* Chute */}
       <Box args={[0.3, 0.2, 0.08]} position={[0, 0.2, 0.37]} color="#3a2f45" />
@@ -110,16 +104,11 @@ export function GachaMachine({ lastSpin }: { lastSpin: (GachaSpun & { at: number
       </group>
       <mesh position={[0, 1.18, 0]}>
         <sphereGeometry args={[0.43, 32, 20]} />
-        <meshStandardMaterial color="#ffffff" transparent opacity={0.28} roughness={0.05} metalness={0.1} depthWrite={false} />
+        <meshStandardMaterial color="#ffffff" transparent opacity={0.2} roughness={0.05} metalness={0.1} depthWrite={false} />
       </mesh>
       <mesh position={[0, 1.6, 0]} castShadow>
         <cylinderGeometry args={[0.22, 0.3, 0.1, 24]} />
-        <meshStandardMaterial color="#ff7fb2" roughness={0.5} />
-      </mesh>
-      {/* Bobbing star */}
-      <mesh ref={star} position={[0, 1.95, 0]}>
-        <octahedronGeometry args={[0.09]} />
-        <meshStandardMaterial color="#ffd76a" emissive="#ffd76a" emissiveIntensity={0.6} />
+        <meshStandardMaterial color="#d8a0b4" roughness={0.5} />
       </mesh>
       {/* The capsule that pops out */}
       <group ref={capsule} visible={false}>

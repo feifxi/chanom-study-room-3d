@@ -53,6 +53,12 @@ export const SEATS: Seat[] = TABLES.flatMap((t) =>
 
 export const SEAT_BY_ID: ReadonlyMap<string, Seat> = new Map(SEATS.map((s) => [s.id, s]));
 
+/**
+ * The gachapon "Buddy Machine": against the left wall, facing into the room (+x),
+ * so it's there when you look for it without stealing the show.
+ */
+export const GACHA_MACHINE = { x: -9.45, z: -2.6, yaw: Math.PI / 2, reach: 1.7 } as const;
+
 /** Fixed furniture footprints the player cannot walk through. */
 export const OBSTACLES: Obstacle[] = [
   ...TABLES.map((t) => ({
@@ -68,19 +74,13 @@ export const OBSTACLES: Obstacle[] = [
   // Reading nook: sofa and coffee table, front-left
   { kind: 'box', minX: -9.8, maxX: -8.6, minZ: 2.6, maxZ: 5.6 },
   { kind: 'circle', x: -7.6, z: 4.1, r: 0.5 },
-  // Buddy Machine (gachapon), front-right
-  { kind: 'circle', x: 6.6, z: 4.6, r: 0.55 },
+  // Buddy Machine
+  { kind: 'circle', x: GACHA_MACHINE.x, z: GACHA_MACHINE.z, r: 0.5 },
   // Plants
   { kind: 'circle', x: 9.3, z: 6.2, r: 0.35 },
   { kind: 'circle', x: -9.3, z: -5.6, r: 0.35 },
   { kind: 'circle', x: 9.3, z: -5.6, r: 0.35 },
 ];
-
-/**
- * The gachapon "Buddy Machine": its spot, facing and reach. It faces +z so people
- * using it stand off to one side on screen instead of between the camera and the machine.
- */
-export const GACHA_MACHINE = { x: 6.6, z: 4.6, yaw: 0, reach: 1.7 } as const;
 
 /** Where new NPCs pop out: just in front of the machine. */
 export const NPC_SPAWN = {

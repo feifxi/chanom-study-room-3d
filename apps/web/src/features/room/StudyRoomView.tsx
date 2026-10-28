@@ -57,7 +57,7 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
       className="fixed inset-0 transition-[background] duration-1000"
       style={{ background: `linear-gradient(180deg, ${light.background[0]}, ${light.background[1]})` }}
     >
-      <Canvas shadows orthographic dpr={[1, 2]} camera={{ position: [SPAWN.x + 20, 18, SPAWN.z + 20], zoom: 62, near: 0.1, far: 200 }}>
+      <Canvas shadows="percentage" orthographic dpr={[1, 2]} camera={{ position: [SPAWN.x + 20, 18, SPAWN.z + 20], zoom: 62, near: 0.1, far: 200 }}>
         <Library light={light} />
         <OrbitControls
           makeDefault

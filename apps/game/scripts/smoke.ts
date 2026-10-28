@@ -143,6 +143,7 @@ check('voice token is issued for this room and session', grant?.video?.room === 
   b.onMessage('chat', () => {});
   a.onMessage('chat', (m: any) => m.system && announcements.push(m.text));
 
+
   if (me(a).seatId) a.send('stand', {});
   await sleep(200);
   a.send('gacha:spin', { kind: 'cat' });
@@ -204,13 +205,20 @@ check('voice token is issued for this room and session', grant?.video?.room === 
   check('saying goodbye walks the NPC back into the machine', gone);
 }
 
-// 8. State callbacks fire for joins
+// 8. Joins fire state callbacks and show up in chat, and so do leaves
 let added = 0;
+const roomNews: string[] = [];
 Callbacks.get(b).onAdd('players', () => added++);
+// Room objects keep only the last handler per type, so wrap whatever chat handler is there
+for (const r of rooms) r.onMessage('chat', (m: any) => m.system && roomNews.push(m.text));
 const late = await join('late');
 await sleep(300);
 check('players onAdd fires on join', added > 0);
+check('a join shows up in chat', roomNews.some((t) => t.includes('late joined')), roomNews.at(-1));
+await late.leave();
+await sleep(300);
+check('a leave shows up in chat', roomNews.some((t) => t.includes('late left')), roomNews.at(-1));
 
-await Promise.all([...rooms, late].map((r) => r.leave()));
+await Promise.all(rooms.map((r) => r.leave()));
 console.log(failures ? `\n${failures} check(s) failed` : '\nAll checks passed');
 process.exit(failures ? 1 : 0);

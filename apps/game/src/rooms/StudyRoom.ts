@@ -247,10 +247,10 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
     }, 100);
   }
 
-  /** A system line in everyone's chat. */
+  /** A system line in everyone's chat (arrivals, departures, Buddy Machine news). */
   private announce(text: string) {
     const now = Date.now();
-    const message: ChatMessage = { id: `system-${now}-${Math.random().toString(36).slice(2, 6)}`, sessionId: 'system', name: 'Buddy Machine', text, at: now, system: true };
+    const message: ChatMessage = { id: `system-${now}-${Math.random().toString(36).slice(2, 6)}`, sessionId: 'system', name: 'Room', text, at: now, system: true };
     this.broadcast('chat', message);
   }
 
@@ -265,6 +265,7 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
     player.moving = false;
     this.state.players.set(client.sessionId, player);
     metrics.joins.inc();
+    this.announce(`👋 ${player.name} joined the room`);
     this.npcs.onPlayerJoined(player);
 
     // Anonymous, client-generated id used only to group study stats. Trusted as-is in this demo.
@@ -292,6 +293,8 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
 
   onLeave(client: Client) {
     this.endFocus(client.sessionId);
+    const name = this.state.players.get(client.sessionId)?.name;
+    if (name) this.announce(`🚪 ${name} left the room`);
     this.state.players.delete(client.sessionId);
     this.priv.delete(client.sessionId);
   }
