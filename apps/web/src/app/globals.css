@@ -51,3 +51,47 @@ body {
   border-radius: 16px;
   box-shadow: 0 10px 30px rgb(31 35 51 / 0.1);
 }
+
+/* "• • •" bubble above someone who is typing */
+.typing-dots {
+  align-items: center;
+  gap: 4px;
+  padding: 7px 10px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
+}
+
+.typing-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: typing-bounce 1s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes typing-bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typing-dots span {
+    animation: none;
+    opacity: 0.8;
+  }
+}

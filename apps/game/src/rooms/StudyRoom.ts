@@ -12,6 +12,8 @@ export interface StudyRoomMetadata {
 }
 
 const CHAT_COOLDOWN_MS = 500;
+/** Clients refresh "typing" every few seconds; clear it if they go quiet (closed tab, crash). */
+const TYPING_TIMEOUT_MS = 6000;
 const RECONNECT_SECONDS = 20;
 
 // Public rooms are numbered "Library #1, #2, …"; a number is reused once its room closes.
@@ -33,6 +35,7 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
 
   private lastMoveAt = new Map<string, number>();
   private lastChatAt = new Map<string, number>();
+  private typingAt = new Map<string, number>();
 
   messages = {
     move: validate(
@@ -88,18 +91,40 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
     chat: validate(z.object({ text: z.string() }), (client, msg) => {
       const p = this.state.players.get(client.sessionId);
       const text = msg.text.trim().slice(0, CHAT_MAX);
-      if (!p || !text) return;
+      if (!p) return;
+      // The sender's chat box is empty now, even if the message gets rate-limited below.
+      p.typing = false;
+      this.typingAt.delete(client.sessionId);
+      if (!text) return;
       const now = Date.now();
       if (now - (this.lastChatAt.get(client.sessionId) ?? 0) < CHAT_COOLDOWN_MS) return;
       this.lastChatAt.set(client.sessionId, now);
       const message: ChatMessage = { id: `${client.sessionId}-${now}`, sessionId: client.sessionId, name: p.name, text, at: now };
       this.broadcast('chat', message);
     }),
+
+    typing: validate(z.object({ on: z.boolean() }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (!p) return;
+      p.typing = msg.on;
+      if (msg.on) this.typingAt.set(client.sessionId, Date.now());
+      else this.typingAt.delete(client.sessionId);
+    }),
   };
 
   onCreate() {
     const number = claimNumber();
     this.setMetadata({ number, label: `Library #${number}` });
+
+    this.clock.setInterval(() => {
+      const now = Date.now();
+      for (const [sessionId, at] of this.typingAt) {
+        if (now - at < TYPING_TIMEOUT_MS) continue;
+        this.typingAt.delete(sessionId);
+        const p = this.state.players.get(sessionId);
+        if (p) p.typing = false;
+      }
+    }, 1000);
   }
 
   onJoin(client: Client, options: { name?: unknown; look?: unknown } = {}) {
@@ -123,6 +148,7 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
     this.state.players.delete(client.sessionId);
     this.lastMoveAt.delete(client.sessionId);
     this.lastChatAt.delete(client.sessionId);
+    this.typingAt.delete(client.sessionId);
   }
 
   onDispose() {

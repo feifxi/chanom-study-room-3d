@@ -58,7 +58,11 @@ async function bot(i: number) {
         z = (Math.random() - 0.5) * 10;
       } while (blocked(x, z));
       await walk(room, me, x, z);
-      if (Math.random() < 0.4) room.send('chat', { text: pick(LINES) });
+      if (Math.random() < 0.5) {
+        room.send('typing', { on: true });
+        await sleep(1800 + Math.random() * 1500);
+        room.send('chat', { text: pick(LINES) });
+      }
       await sleep(1500 + Math.random() * 2500);
     }
   }

@@ -12,6 +12,8 @@ export const Player = schema(
     /** Seat id from the shared layout, or '' when standing. */
     seatId: t.string().default(''),
     status: t.string().default('idle'),
+    /** True while the player has unsent text in the chat box. */
+    typing: t.boolean().default(false),
   },
   'Player',
 );

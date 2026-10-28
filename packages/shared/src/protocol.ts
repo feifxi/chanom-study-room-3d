@@ -15,6 +15,8 @@ export interface ClientMessages {
   sit: { seatId: string };
   stand: Record<string, never>;
   chat: { text: string };
+  /** Sent when the chat box gains/loses unsent text, and every few seconds while typing. */
+  typing: { on: boolean };
 }
 
 /** Server → client broadcast messages (not part of synced state). */
@@ -40,6 +42,7 @@ export interface PlayerView {
   moving: boolean;
   seatId: string;
   status: PlayerStatus;
+  typing: boolean;
 }
 
 /** Row returned by the lobby endpoint. */

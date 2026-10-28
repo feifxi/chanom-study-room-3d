@@ -80,7 +80,19 @@ a.send('chat', { text: '  hello study room!  ' });
 const text = await Promise.race([received, sleep(2000).then(() => 'timeout')]);
 check('chat is broadcast and trimmed', text === 'hello study room!', text);
 
-// 5. State callbacks fire for joins
+// 5. Typing indicator: visible to others, cleared by sending, and times out if the client goes quiet
+const playerOf = (viewer: Room, target: Room) => (viewer.state as any).players.get(target.sessionId);
+a.send('typing', { on: true });
+await sleep(300);
+check('others see who is typing', playerOf(b, a).typing === true);
+a.send('chat', { text: 'done typing' });
+await sleep(300);
+check('sending a message clears typing', playerOf(b, a).typing === false);
+a.send('typing', { on: true });
+await sleep(7500);
+check('typing clears itself after going quiet', playerOf(b, a).typing === false);
+
+// 6. State callbacks fire for joins
 let added = 0;
 Callbacks.get(b).onAdd('players', () => added++);
 const late = await join('late');

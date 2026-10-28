@@ -8,6 +8,7 @@ import { CHAT_MAX, SPAWN, type RoomListing } from '@study/shared';
 import { GAME_URL } from '@/lib/config';
 import { loadProfile, type Profile } from '@/lib/profile';
 import { Avatar, type LocalMotion } from './Avatar';
+import { LabelBoard, LabelLayer, LabelProjector } from './labels';
 import { Library } from './Library';
 import { LocalController } from './LocalController';
 import { useStudyRoom, type StudyRoom } from './useStudyRoom';
@@ -22,6 +23,7 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
   const [nearSeat, setNearSeat] = useState<string | null>(null);
   const seated = useSeated(room);
   const label = useRoomLabel(room?.roomId);
+  const board = useMemo(() => new LabelBoard(), []);
 
   return (
     <div className="fixed inset-0">
@@ -37,16 +39,18 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
           minPolarAngle={0.35}
           maxPolarAngle={1.2}
         />
-        {/* Controller first: it moves the camera before name tags are projected each frame */}
         {room && <LocalController room={room} motion={motion} onNearSeat={setNearSeat} />}
         {room &&
           playerIds.map((id) => {
             const player = room.state.players.get(id);
             return player ? (
-              <Avatar key={id} player={player} isLocal={id === room.sessionId} local={motion} bubble={bubbles[id]} />
+              <Avatar key={id} id={id} player={player} isLocal={id === room.sessionId} local={motion} bubble={bubbles[id]} board={board} />
             ) : null;
           })}
+        <LabelProjector board={board} />
       </Canvas>
+
+      {room && <LabelLayer board={board} ids={playerIds} players={room.state.players} localId={room.sessionId} bubbles={bubbles} />}
 
       <header className="panel absolute top-4 left-4 flex items-center gap-3 px-4 py-2.5">
         <Link href="/" className="text-sm font-bold text-muted hover:text-ink">← ออก</Link>
@@ -114,6 +118,16 @@ function useRoomLabel(roomId: string | undefined) {
 function ChatPanel({ room, messages }: { room: StudyRoom; messages: { id: string; name: string; text: string; sessionId: string }[] }) {
   const [text, setText] = useState('');
   const input = useRef<HTMLInputElement>(null);
+  const typingSent = useRef({ on: false, at: 0 });
+
+  // Tell the room we're typing: on change of state, and as a heartbeat while keys keep coming.
+  const signalTyping = (on: boolean) => {
+    const now = Date.now();
+    const last = typingSent.current;
+    if (on === last.on && (!on || now - last.at < 2500)) return;
+    room.send('typing', { on });
+    typingSent.current = { on, at: now };
+  };
   const list = useRef<HTMLOListElement>(null);
 
   useEffect(() => {
@@ -148,6 +162,8 @@ function ChatPanel({ room, messages }: { room: StudyRoom; messages: { id: string
           e.preventDefault();
           const value = text.trim();
           if (value) room.send('chat', { text: value });
+          else signalTyping(false);
+          typingSent.current = { on: false, at: 0 }; // the server clears typing when a message arrives
           setText('');
           input.current?.blur();
         }}
@@ -156,7 +172,11 @@ function ChatPanel({ room, messages }: { room: StudyRoom; messages: { id: string
           ref={input}
           value={text}
           maxLength={CHAT_MAX}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value);
+            signalTyping(e.target.value.trim().length > 0);
+          }}
+          onBlur={() => signalTyping(false)}
           onKeyDown={(e) => e.key === 'Escape' && input.current?.blur()}
           placeholder="พิมพ์ข้อความ… (Enter)"
           className="min-w-0 flex-1 rounded-lg border border-line bg-white px-3 py-1.5 text-sm outline-none focus:border-accent"
