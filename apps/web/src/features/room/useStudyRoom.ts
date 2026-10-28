@@ -21,7 +21,7 @@ export interface Bubble {
  * live Colyseus room plus the React-level bits: who's here and the chat log.
  * Positions are read straight from `room.state` every frame, not via React.
  */
-export function useStudyRoom(roomId: string | null, options: JoinOptions | null) {
+export function useStudyRoom(roomId: string | null, getOptions: () => JoinOptions) {
   const [room, setRoom] = useState<StudyRoom | null>(null);
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
   const [error, setError] = useState<string | null>(null);
@@ -30,12 +30,14 @@ export function useStudyRoom(roomId: string | null, options: JoinOptions | null)
   const [bubbles, setBubbles] = useState<Record<string, Bubble>>({});
   /** serverTime ≈ Date.now() + clockOffset */
   const [clockOffset, setClockOffset] = useState(0);
-  const optionsRef = useRef(options);
-  optionsRef.current = options;
+  const getOptionsRef = useRef(getOptions);
+  getOptionsRef.current = getOptions;
 
   useEffect(() => {
-    if (!optionsRef.current) return;
     let cancelled = false;
+    // Start clean: this effect also re-runs when Next re-shows a preserved (hidden) room page
+    setChat([]);
+    setBubbles({});
     let joined: StudyRoom | null = null;
     const client = new Client(GAME_URL);
     setStatus('connecting');
@@ -43,7 +45,7 @@ export function useStudyRoom(roomId: string | null, options: JoinOptions | null)
 
     (async () => {
       try {
-        const opts = optionsRef.current!;
+        const opts = getOptionsRef.current();
         const r = (roomId ? await client.joinById(roomId, opts) : await client.joinOrCreate(ROOM_NAME, opts)) as StudyRoom;
         if (cancelled) {
           r.leave();
@@ -86,7 +88,7 @@ export function useStudyRoom(roomId: string | null, options: JoinOptions | null)
       setPlayerIds([]);
     };
     // Re-join only when the target room changes.
-  }, [roomId, options !== null]);
+  }, [roomId]);
 
   // Drop expired speech bubbles so they disappear on time
   useEffect(() => {

@@ -11,7 +11,7 @@ import { ScreenShareTextures, TableScreens, VoiceBar } from '../voice/ScreenShar
 import { RoomSidebar } from './RoomSidebar';
 import { useDayLight } from './dayCycle';
 import { useVoice } from '../voice/useVoice';
-import { loadProfile, type Profile } from '@/lib/profile';
+import { loadProfile } from '@/lib/profile';
 import { Avatar, type LocalMotion } from './Avatar';
 import { LabelBoard, LabelLayer, LabelProjector } from './labels';
 import { Library } from './Library';
@@ -19,14 +19,7 @@ import { LocalController } from './LocalController';
 import { useStudyRoom, type StudyRoom } from './useStudyRoom';
 
 export default function StudyRoomView({ roomId }: { roomId: string | null }) {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  useEffect(() => setProfile(loadProfile()), []);
-  const options = useMemo(
-    () => (profile ? { name: profile.name || 'Guest', look: profile.look, visitorId: profile.visitorId } : null),
-    [profile],
-  );
-
-  const { room, status, error, playerIds, chat, bubbles, clockOffset } = useStudyRoom(roomId, options);
+  const { room, status, error, playerIds, chat, bubbles, clockOffset } = useStudyRoom(roomId, joinOptions);
   const motion = useRef<LocalMotion>({ x: SPAWN.x, z: SPAWN.z, yaw: 0, moving: false });
   const [nearSeat, setNearSeat] = useState<string | null>(null);
   const seated = useSeated(room);
@@ -131,6 +124,16 @@ function DevSceneHandle() {
     w.__study = { ...(w.__study ?? {}), scene, camera };
   }, [scene, camera]);
   return null;
+}
+
+/**
+ * Read the profile at the moment we join, not from component state: Next keeps
+ * this page alive (hidden in <Activity>) after you leave, so state could be stale
+ * when you come back with a new outfit.
+ */
+function joinOptions() {
+  const profile = loadProfile();
+  return { name: profile.name || 'Guest', look: profile.look, visitorId: profile.visitorId };
 }
 
 function statusText(status: string, error: string | null) {
