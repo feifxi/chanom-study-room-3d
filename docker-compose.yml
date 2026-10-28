@@ -1,0 +1,31 @@
+# Local development services. App processes (web, game) run on the host via `pnpm dev`.
+#   docker compose up -d
+name: chanom-study-room
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: study
+      POSTGRES_PASSWORD: study
+      POSTGRES_DB: study
+    ports:
+      - "5433:5432" # 5433 on the host to avoid clashing with a local Postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U study"]
+      interval: 5s
+      retries: 10
+
+  # Voice + screen share (phase 4). --dev uses the built-in devkey/secret.
+  livekit:
+    image: livekit/livekit-server:latest
+    command: --dev --bind 0.0.0.0
+    ports:
+      - "7880:7880"           # API / signalling (WebSocket)
+      - "7881:7881"           # WebRTC over TCP
+      - "50000-50100:50000-50100/udp" # WebRTC media (narrow range for dev)
+
+volumes:
+  pgdata:

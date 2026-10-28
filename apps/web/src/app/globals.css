@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/*
+ * Light, cosy palette shared by the lobby and the in-room HUD.
+ */
+:root {
+  --bg-top: #f6efe4;
+  --bg-bottom: #e4ebf5;
+  --panel: rgb(255 255 255 / 0.86);
+  --ink: #1f2333;
+  --muted: #6b7286;
+  --line: rgb(30 34 50 / 0.08);
+  --soft: #f1f2f6;
+  --accent: #ff6fa8;
+  --accent-ink: #d63c78;
+}
+
+/* The cosy room scene is light by design; dark mode keeps the same readable palette. */
+:root {
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-soft: var(--soft);
+  --color-panel: var(--panel);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --font-sans: var(--font-manrope), var(--font-thai), system-ui, sans-serif;
+  --font-mono: var(--font-mono-face), ui-monospace, monospace;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom)) fixed;
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+.panel {
+  background: var(--panel);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgb(31 35 51 / 0.1);
+}

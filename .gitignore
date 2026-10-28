@@ -1,2 +1,15 @@
 node_modules
 dist
+.next
+.turbo
+coverage
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+# terraform
+.terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
