@@ -9,6 +9,7 @@ import { OBSTACLES, ROOM_NAME, SEATS, randomLook } from '@study/shared';
 const URL = process.env.GAME_URL ?? 'http://localhost:2567';
 const COUNT = Number(process.argv[2] ?? 4);
 const NAMES = ['Mint', 'Ploy', 'Bank', 'Fern', 'Nine', 'Beam', 'June', 'Pond'];
+const SUBJECTS = ['Calculus', 'ภาษาอังกฤษ', 'Physics', 'ประวัติศาสตร์', 'Coding', 'Chemistry'];
 const LINES = ['สวัสดีทุกคน 👋', 'อ่านอะไรกันอยู่~', 'สู้ๆ นะ ✨', 'ขอนั่งด้วยคน!', 'พักแป๊บ ☕'];
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const pick = <T>(a: readonly T[]) => a[Math.floor(Math.random() * a.length)]!;
@@ -48,7 +49,12 @@ async function bot(i: number) {
       await walk(room, me, seat.x, seat.z - Math.cos(seat.yaw) * 0.7);
       await walk(room, me, seat.x, seat.z - Math.cos(seat.yaw) * 0.4);
       room.send('sit', { seatId: seat.id });
+      // Study at the desk on a personal pomodoro
+      room.send('subject', { text: pick(SUBJECTS) });
+      room.send('timer:mode', { mode: 'personal' });
+      room.send('timer:personal', { phase: 'focus', endsAt: Date.now() + 25 * 60_000 });
       await sleep(6000 + Math.random() * 8000);
+      room.send('timer:personal', { phase: 'idle', endsAt: 0 });
       room.send('stand', {});
     } else {
       let x = 0;

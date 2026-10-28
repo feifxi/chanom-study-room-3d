@@ -4,6 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { PlayerView } from '@study/shared';
 import type { Bubble } from './useStudyRoom';
+import { STATUS_ICON, useTick } from '../focus/FocusPanel';
 
 /**
  * Name tags, speech bubbles and typing dots live in one plain DOM layer over the
@@ -48,6 +49,7 @@ interface LayerProps {
 }
 
 export function LabelLayer({ board, ids, players, localId, bubbles }: LayerProps) {
+  useTick(1000); // status/subject come from synced state, which React doesn't watch
   const now = Date.now();
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -91,8 +93,10 @@ export function LabelLayer({ board, ids, players, localId, bubbles }: LayerProps
                 isLocal ? 'bg-accent text-white' : 'bg-white/90 text-ink'
               }`}
             >
+              {STATUS_ICON[player.status] && <span className="mr-1">{STATUS_ICON[player.status]}</span>}
               {player.name}
               {isLocal && ' (คุณ)'}
+              {player.status === 'focus' && player.subject && <span className="ml-1 font-semibold opacity-75">· {player.subject}</span>}
             </div>
           </div>
         );

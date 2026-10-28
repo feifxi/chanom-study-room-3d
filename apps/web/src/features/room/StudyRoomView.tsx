@@ -6,6 +6,7 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { CHAT_MAX, SPAWN, type RoomListing } from '@study/shared';
 import { GAME_URL } from '@/lib/config';
+import { FocusPanel } from '../focus/FocusPanel';
 import { loadProfile, type Profile } from '@/lib/profile';
 import { Avatar, type LocalMotion } from './Avatar';
 import { LabelBoard, LabelLayer, LabelProjector } from './labels';
@@ -16,9 +17,12 @@ import { useStudyRoom, type StudyRoom } from './useStudyRoom';
 export default function StudyRoomView({ roomId }: { roomId: string | null }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   useEffect(() => setProfile(loadProfile()), []);
-  const options = useMemo(() => (profile ? { name: profile.name || 'Guest', look: profile.look } : null), [profile]);
+  const options = useMemo(
+    () => (profile ? { name: profile.name || 'Guest', look: profile.look, visitorId: profile.visitorId } : null),
+    [profile],
+  );
 
-  const { room, status, error, playerIds, chat, bubbles } = useStudyRoom(roomId, options);
+  const { room, status, error, playerIds, chat, bubbles, clockOffset } = useStudyRoom(roomId, options);
   const motion = useRef<LocalMotion>({ x: SPAWN.x, z: SPAWN.z, yaw: 0, moving: false });
   const [nearSeat, setNearSeat] = useState<string | null>(null);
   const seated = useSeated(room);
@@ -61,9 +65,11 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
         </div>
       </header>
 
-      <p className="panel absolute top-4 right-4 hidden px-3 py-2 text-xs text-muted sm:block">
+      <p className="absolute top-20 left-4 hidden rounded-full bg-white/60 px-3 py-1 text-xs text-muted sm:block">
         WASD / ลูกศร เดิน · Shift วิ่ง · E นั่ง/ลุก · Enter แชท · ลากเมาส์หมุนกล้อง
       </p>
+
+      {room && <FocusPanel room={room} clockOffset={clockOffset} />}
 
       {(nearSeat || seated) && (
         <div className="panel absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 text-sm font-bold">

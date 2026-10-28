@@ -92,7 +92,40 @@ a.send('typing', { on: true });
 await sleep(7500);
 check('typing clears itself after going quiet', playerOf(b, a).typing === false);
 
-// 6. State callbacks fire for joins
+// 6. Pomodoro: shared room timer, personal timer, away
+const timer = () => (a.state as any).timer;
+const chimes: string[] = [];
+b.onMessage('chime', (m: any) => chimes.push(m.phase));
+a.send('timer:start', { focusMin: 0.05, breakMin: 0.05 }); // 3 s focus, 3 s break
+await sleep(400);
+check('starting the room timer puts the starter in focus', me(a).status === 'focus' && me(a).timerMode === 'room' && timer().phase === 'focus');
+check('people not following stay idle', me(b).status === 'idle');
+b.send('timer:mode', { mode: 'room' });
+await sleep(300);
+check('following the room timer shows focus', me(b).status === 'focus' && me(b).statusEndsAt === timer().endsAt);
+await sleep(3500);
+check('room timer moves on to break for everyone', me(a).status === 'break' && me(b).status === 'break' && chimes.includes('break'));
+a.send('away', { on: true });
+await sleep(300);
+check('away overrides the timer', me(a).status === 'away');
+a.send('away', { on: false });
+a.send('timer:stop', {});
+await sleep(300);
+check('stopping the room timer returns everyone to idle', me(a).status === 'idle' && me(b).status === 'idle' && timer().phase === 'idle');
+b.send('timer:mode', { mode: 'personal' });
+b.send('timer:personal', { phase: 'focus', endsAt: Date.now() + 25 * 60_000 });
+b.send('subject', { text: '  Calculus  ' });
+await sleep(300);
+check('personal timer and subject show up', me(b).status === 'focus' && me(b).subject === 'Calculus' && me(b).statusEndsAt > Date.now());
+
+const t0 = Date.now();
+const clock = await new Promise<number>((resolve) => {
+  a.onMessage('clock', (m: any) => resolve(m.serverNow));
+  a.send('clock', {});
+});
+check('clock sync replies with server time', Math.abs(clock - (t0 + Date.now()) / 2) < 1000);
+
+// 7. State callbacks fire for joins
 let added = 0;
 Callbacks.get(b).onAdd('players', () => added++);
 const late = await join('late');

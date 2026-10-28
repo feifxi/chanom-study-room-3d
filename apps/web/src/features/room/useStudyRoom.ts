@@ -2,14 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Callbacks, Client, type Room } from '@colyseus/sdk';
-import { ROOM_NAME, type ChatMessage, type JoinOptions, type PlayerView } from '@study/shared';
+import { ROOM_NAME, type ChatMessage, type JoinOptions, type StudyStateView, type TimerPhase } from '@study/shared';
 import { GAME_URL } from '@/lib/config';
+import { playChime } from '../focus/chime';
 
-export interface RoomStateView {
-  players: Map<string, PlayerView>;
-}
-
-export type StudyRoom = Room<any, RoomStateView>;
+export type StudyRoom = Room<any, StudyStateView>;
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'error' | 'closed';
 
@@ -32,6 +29,8 @@ export function useStudyRoom(roomId: string | null, options: JoinOptions | null)
   const [playerIds, setPlayerIds] = useState<string[]>([]);
   const [chat, setChat] = useState<ChatMessage[]>([]);
   const [bubbles, setBubbles] = useState<Record<string, Bubble>>({});
+  /** serverTime ≈ Date.now() + clockOffset */
+  const [clockOffset, setClockOffset] = useState(0);
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
@@ -62,6 +61,14 @@ export function useStudyRoom(roomId: string | null, options: JoinOptions | null)
           setChat((log) => [...log.slice(-99), m]);
           setBubbles((b) => ({ ...b, [m.sessionId]: { text: m.text, until: Date.now() + BUBBLE_MS } }));
         });
+        r.onMessage('chime', (m: { phase: TimerPhase }) => {
+          // Only chime for people following the shared timer
+          if (r.state?.players?.get(r.sessionId)?.timerMode === 'room') playChime(m.phase);
+        });
+        // Clock sync: assume the reply was stamped halfway through the round trip
+        const sentAt = Date.now();
+        r.onMessage('clock', (m: { serverNow: number }) => setClockOffset(m.serverNow - (sentAt + Date.now()) / 2));
+        r.send('clock', {});
         r.onLeave(() => setStatus('closed'));
         r.onError((_code: number, message?: string) => {
           setError(message ?? 'Connection error');
@@ -98,5 +105,5 @@ export function useStudyRoom(roomId: string | null, options: JoinOptions | null)
     return () => clearInterval(timer);
   }, []);
 
-  return { room, status, error, playerIds, chat, bubbles };
+  return { room, status, error, playerIds, chat, bubbles, clockOffset };
 }
