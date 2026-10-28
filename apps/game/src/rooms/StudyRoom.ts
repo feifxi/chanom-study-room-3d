@@ -2,14 +2,27 @@ import { Room, validate, type Client } from 'colyseus';
 import { AccessToken } from 'livekit-server-sdk';
 import { z } from 'zod';
 import {
-  BOUNDS, CHAT_MAX, MAX_PLAYERS, MAX_TIMER_MIN, NAME_MAX, PATCH_RATE_MS, RUN_SPEED, SEAT_BY_ID,
-  SIT_REACH, SPAWN, SPEED_TOLERANCE, SUBJECT_MAX, TIMER_PHASES, sanitizeLook,
-  NPC_KINDS, type ChatMessage, type PlayerStatus, type TimerPhase,
+  BOUNDS,
+  CHAT_MAX,
+  MAX_PLAYERS,
+  MAX_TIMER_MIN,
+  NPC_KINDS,
+  PATCH_RATE_MS,
+  SEAT_BY_ID,
+  SIT_REACH,
+  SPAWN,
+  STARTER_CAT,
+  SUBJECT_MAX,
+  TIMER_PHASES,
+  sanitizeLook,
+  type ChatMessage,
+  type TimerPhase,
 } from '@study/shared';
 import { getTodayMinutes, upsertVisitor, type Db } from '@study/db';
 import { metrics } from '../metrics';
 import { NpcDirector } from '../npc/NpcDirector';
 import { Player, StudyState } from '../state';
+import { RoomNumbers, clamp, deriveStatus, limitMove, sanitizeName, sanitizeVisitorId } from './rules';
 
 export interface StudyRoomMetadata {
   label: string;
@@ -43,17 +56,10 @@ const LIVEKIT = {
   apiSecret: process.env.LIVEKIT_API_SECRET ?? 'secret',
 };
 
-// Public rooms are numbered "Library #1, #2, …"; a number is reused once its room closes.
-const usedNumbers = new Set<number>();
-function claimNumber(): number {
-  let n = 1;
-  while (usedNumbers.has(n)) n++;
-  usedNumbers.add(n);
-  return n;
-}
+const roomNumbers = new RoomNumbers();
 
-const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const finite = z.number().refine(Number.isFinite);
+const npcId = z.object({ id: z.string().max(16) });
 
 /** Per-player server-only bookkeeping (not synced). */
 interface Private {
@@ -82,32 +88,21 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
   });
 
   messages = {
-    move: validate(
-      z.object({ x: finite, z: finite, yaw: finite, moving: z.boolean() }),
-      (client, msg) => {
-        const p = this.state.players.get(client.sessionId);
-        const s = this.priv.get(client.sessionId);
-        if (!p || !s) return;
-        if (p.seatId) p.seatId = ''; // moving stands you up
+    move: validate(z.object({ x: finite, z: finite, yaw: finite, moving: z.boolean() }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      const s = this.priv.get(client.sessionId);
+      if (!p || !s) return;
+      if (p.seatId) p.seatId = ''; // moving stands you up
 
-        // Server-authoritative speed limit: never move further than possible since the last update.
-        const now = Date.now();
-        const elapsed = Math.min(1, (now - (s.lastMoveAt || now - 100)) / 1000);
-        s.lastMoveAt = now;
-        const maxStep = RUN_SPEED * SPEED_TOLERANCE * Math.max(elapsed, 0.05);
-        let dx = msg.x - p.x;
-        let dz = msg.z - p.z;
-        const dist = Math.hypot(dx, dz);
-        if (dist > maxStep) {
-          dx = (dx / dist) * maxStep;
-          dz = (dz / dist) * maxStep;
-        }
-        p.x = clamp(p.x + dx, BOUNDS.minX, BOUNDS.maxX);
-        p.z = clamp(p.z + dz, BOUNDS.minZ, BOUNDS.maxZ);
-        p.yaw = msg.yaw;
-        p.moving = msg.moving;
-      },
-    ),
+      const now = Date.now();
+      const elapsed = (now - (s.lastMoveAt || now - 100)) / 1000;
+      s.lastMoveAt = now;
+      const next = limitMove(p, msg, elapsed);
+      p.x = next.x;
+      p.z = next.z;
+      p.yaw = msg.yaw;
+      p.moving = msg.moving;
+    }),
 
     sit: validate(z.object({ seatId: z.string().max(16) }), (client, msg) => {
       const p = this.state.players.get(client.sessionId);
@@ -141,17 +136,17 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
       },
     ),
 
-    'npc:remove': validate(z.object({ id: z.string().max(16) }), (client, msg) => {
+    'npc:remove': validate(npcId, (client, msg) => {
       const p = this.state.players.get(client.sessionId);
       if (p) this.npcs.remove(msg.id, p.name);
     }),
 
-    'npc:pet': validate(z.object({ id: z.string().max(16) }), (client, msg) => {
+    'npc:pet': validate(npcId, (client, msg) => {
       const p = this.state.players.get(client.sessionId);
-      if (p) this.npcs.pet(p, msg.id);
+      if (p) this.npcs.pet(client.sessionId, p, msg.id);
     }),
 
-    'npc:talk': validate(z.object({ id: z.string().max(16) }), (client, msg) => {
+    'npc:talk': validate(npcId, (client, msg) => {
       const p = this.state.players.get(client.sessionId);
       if (p) this.npcs.talk(p, msg.id);
     }),
@@ -228,17 +223,16 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
     clock: (client: Client) => {
       client.send('clock', { serverNow: Date.now() });
     },
-
   };
 
   onCreate() {
-    const number = claimNumber();
+    const number = roomNumbers.claim();
     this.setMetadata({ number, label: `Library #${number}` });
 
     this.clock.setInterval(() => this.tick(), 1000);
 
     // Every new room starts with a resident cat; more friends come from the Buddy Machine
-    this.npcs.spawn('cat', { at: { x: -7.9, z: 3.2 } });
+    this.npcs.spawn('cat', { at: STARTER_CAT });
     let last = Date.now();
     this.clock.setInterval(() => {
       const now = Date.now();
@@ -250,14 +244,20 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
   /** A system line in everyone's chat (arrivals, departures, Buddy Machine news). */
   private announce(text: string) {
     const now = Date.now();
-    const message: ChatMessage = { id: `system-${now}-${Math.random().toString(36).slice(2, 6)}`, sessionId: 'system', name: 'Room', text, at: now, system: true };
+    const message: ChatMessage = {
+      id: `system-${now}-${Math.random().toString(36).slice(2, 6)}`,
+      sessionId: 'system',
+      name: 'Room',
+      text,
+      at: now,
+      system: true,
+    };
     this.broadcast('chat', message);
   }
 
   onJoin(client: Client, options: { name?: unknown; look?: unknown; visitorId?: unknown } = {}) {
-    const name = typeof options.name === 'string' ? options.name.trim().slice(0, NAME_MAX) : '';
     const player = new Player();
-    player.name = name || 'Guest';
+    player.name = sanitizeName(options.name);
     player.look = JSON.stringify(sanitizeLook(options.look));
     player.x = SPAWN.x + (Math.random() - 0.5) * 2;
     player.z = SPAWN.z + (Math.random() - 0.5) * 0.8;
@@ -269,7 +269,7 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
     this.npcs.onPlayerJoined(player);
 
     // Anonymous, client-generated id used only to group study stats. Trusted as-is in this demo.
-    const visitorId = typeof options.visitorId === 'string' && /^[\w-]{8,64}$/.test(options.visitorId) ? options.visitorId : client.sessionId;
+    const visitorId = sanitizeVisitorId(options.visitorId, client.sessionId);
     const db = services.db;
     if (db) {
       // Best effort: stats are a bonus, never a reason to fail a join
@@ -281,8 +281,14 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
         .catch((e) => console.warn('stats: join bookkeeping failed', e));
     }
     this.priv.set(client.sessionId, {
-      visitorId, lastMoveAt: 0, lastChatAt: 0, typingAt: 0,
-      away: false, personalPhase: 'idle', personalEndsAt: 0, focusStartedAt: 0,
+      visitorId,
+      lastMoveAt: 0,
+      lastChatAt: 0,
+      typingAt: 0,
+      away: false,
+      personalPhase: 'idle',
+      personalEndsAt: 0,
+      focusStartedAt: 0,
     });
   }
 
@@ -300,7 +306,7 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
   }
 
   onDispose() {
-    usedNumbers.delete(this.metadata?.number);
+    roomNumbers.release(this.metadata?.number);
   }
 
   private tick() {
@@ -319,14 +325,7 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
     const p = this.state.players.get(id);
     const s = this.priv.get(id);
     if (!p || !s) return;
-    let status: PlayerStatus = 'idle';
-    let endsAt = 0;
-    if (s.away) {
-      status = 'away';
-    } else if (s.personalPhase !== 'idle') {
-      status = s.personalPhase;
-      endsAt = s.personalEndsAt;
-    }
+    const { status, endsAt } = deriveStatus(s.away, s.personalPhase, s.personalEndsAt);
 
     if (p.status !== 'focus' && status === 'focus') {
       s.focusStartedAt = Date.now();

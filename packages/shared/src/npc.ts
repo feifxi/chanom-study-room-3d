@@ -9,6 +9,9 @@ export const SPIN_COOLDOWN_MS = 8000;
 export const SPIN_REVEAL_MS = 1800;
 export const NPC_REACH = 1.4;
 export const NPC_NAME_MAX = 14;
+/** Collision radius by kind; players are PLAYER_RADIUS. */
+export const NPC_RADIUS = { cat: 0.22, buddy: 0.3 } as const;
+export const npcRadius = (kind: string) => (kind === 'cat' ? NPC_RADIUS.cat : NPC_RADIUS.buddy);
 
 export interface CatCoat {
   id: string;
@@ -111,4 +114,14 @@ export function rollCoat(rand: () => number = Math.random): CatCoat {
     if (roll <= 0) return c;
   }
   return CAT_COATS[0]!;
+}
+
+/** Parse a synced JSON field (an NPC's look or settings), falling back instead of throwing on bad data. */
+export function parseJson<T>(json: string, fallback: T): T {
+  try {
+    const value = JSON.parse(json) as T | null;
+    return value ?? fallback;
+  } catch {
+    return fallback;
+  }
 }

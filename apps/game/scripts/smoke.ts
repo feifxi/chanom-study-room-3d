@@ -5,7 +5,22 @@
  * Checks room sharding, the server-side speed limit, seat rules and chat.
  */
 import { Client, Callbacks, type Room } from '@colyseus/sdk';
-import { GACHA_MACHINE, MAX_PLAYERS, ROOM_NAME, SEATS, SEAT_BY_ID, SPIN_COOLDOWN_MS, SPIN_REVEAL_MS, type RoomListing } from '@study/shared';
+import {
+  GACHA_MACHINE,
+  MAX_PLAYERS,
+  ROOM_NAME,
+  SEATS,
+  SEAT_BY_ID,
+  SPIN_COOLDOWN_MS,
+  SPIN_REVEAL_MS,
+  type ChatMessage,
+  type GachaSpun,
+  type NpcView,
+  type RoomListing,
+  type StudyStateView,
+} from '@study/shared';
+
+type StudyRoom = Room<unknown, StudyStateView>;
 
 const URL = process.env.GAME_URL ?? 'http://localhost:2567';
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -18,21 +33,21 @@ function check(label: string, ok: boolean, detail = '') {
 const client = new Client(URL);
 const look = { hair: '#f59ac0', outfit: '#7c5cff', accessory: 'ribbon' };
 async function join(name: string) {
-  const room = await client.joinOrCreate(ROOM_NAME, { name, look });
+  const room = (await client.joinOrCreate(ROOM_NAME, { name, look })) as unknown as StudyRoom;
   room.onMessage('chat', () => {}); // bots ignore chat; avoids "not registered" warnings
   return room;
 }
-const me = (room: Room) => (room.state as any).players.get(room.sessionId);
+const me = (room: StudyRoom) => room.state.players.get(room.sessionId)!;
 
 // 1. Sharding: MAX_PLAYERS + 1 people should open a second room
-const rooms: Room[] = [];
+const rooms: StudyRoom[] = [];
 for (let i = 0; i <= MAX_PLAYERS; i++) rooms.push(await join(`bot${i}`));
 const ids = new Set(rooms.map((r) => r.roomId));
 check('extra visitor opens a second room', ids.size === 2, `${ids.size} rooms`);
 const listing = (await (await fetch(`${URL}/rooms`)).json()) as RoomListing[];
 check('lobby lists both rooms', listing.length === 2, listing.map((l) => `${l.label} ${l.clients}/${l.maxClients}`).join(', '));
 
-const [a, b] = rooms as [Room, Room];
+const [a, b] = rooms as [StudyRoom, StudyRoom];
 await sleep(300);
 
 // 2. Speed limit: a teleport is cut down to a plausible step
@@ -48,7 +63,7 @@ a.send('sit', { seatId: seat.id });
 await sleep(200);
 check('cannot sit from across the room', me(a).seatId === '');
 
-async function walkTo(room: Room, x: number, z: number) {
+async function walkTo(room: StudyRoom, x: number, z: number) {
   for (let i = 0; i < 60; i++) {
     const p = me(room);
     const dx = x - p.x;
@@ -75,13 +90,13 @@ await sleep(200);
 check('stand clears the seat', me(a).seatId === '');
 
 // 4. Chat reaches everyone in the room
-const received = new Promise<string>((resolve) => b.onMessage('chat', (m: any) => resolve(m.text)));
+const received = new Promise<string>((resolve) => b.onMessage('chat', (m: ChatMessage) => resolve(m.text)));
 a.send('chat', { text: '  hello study room!  ' });
 const text = await Promise.race([received, sleep(2000).then(() => 'timeout')]);
 check('chat is broadcast and trimmed', text === 'hello study room!', text);
 
 // 5. Typing indicator: visible to others, cleared by sending, and times out if the client goes quiet
-const playerOf = (viewer: Room, target: Room) => (viewer.state as any).players.get(target.sessionId);
+const playerOf = (viewer: StudyRoom, target: StudyRoom) => viewer.state.players.get(target.sessionId)!;
 a.send('typing', { on: true });
 await sleep(300);
 check('others see who is typing', playerOf(b, a).typing === true);
@@ -96,7 +111,10 @@ check('typing clears itself after going quiet', playerOf(b, a).typing === false)
 a.send('timer:personal', { phase: 'focus', endsAt: Date.now() + 25 * 60_000 });
 a.send('subject', { text: '  Calculus  ' });
 await sleep(400);
-check('focus shows up with its subject and end time', me(a).status === 'focus' && me(a).subject === 'Calculus' && me(a).statusEndsAt > Date.now());
+check(
+  'focus shows up with its subject and end time',
+  me(a).status === 'focus' && me(a).subject === 'Calculus' && me(a).statusEndsAt > Date.now(),
+);
 check('others see when the focus stretch started', Math.abs(playerOf(b, a).focusSince - Date.now()) < 3000);
 check('people without a timer stay idle', me(b).status === 'idle' && me(b).focusSince === 0);
 a.send('away', { on: true });
@@ -114,7 +132,7 @@ check('stopping returns to idle', me(a).status === 'idle');
 
 const t0 = Date.now();
 const clock = await new Promise<number>((resolve) => {
-  a.onMessage('clock', (m: any) => resolve(m.serverNow));
+  a.onMessage('clock', (m: { serverNow: number }) => resolve(m.serverNow));
   a.send('clock', {});
 });
 check('clock sync replies with server time', Math.abs(clock - (t0 + Date.now()) / 2) < 1000);
@@ -129,20 +147,22 @@ check('voice token is issued for this room and session', grant?.video?.room === 
 
 // 7. NPCs and the Buddy Machine
 {
-  const npcs = () => (a.state as any).npcs as Map<string, any>;
+  const npcs = () => a.state.npcs;
   const list = () => [...npcs().entries()];
-  check('a new room starts with a resident cat', list().some(([, n]) => n.kind === 'cat'));
+  check(
+    'a new room starts with a resident cat',
+    list().some(([, n]) => n.kind === 'cat'),
+  );
 
   const errors: string[] = [];
-  const spun: any[] = [];
+  const spun: GachaSpun[] = [];
   const announcements: string[] = [];
-  const reactions: any[] = [];
-  a.onMessage('gacha:error', (m: any) => errors.push(m.message));
-  a.onMessage('gacha:spun', (m: any) => spun.push(m));
-  a.onMessage('npc:react', (m: any) => reactions.push(m));
+  const reactions: { npcId: string; emote: string }[] = [];
+  a.onMessage('gacha:error', (m: { message: string }) => errors.push(m.message));
+  a.onMessage('gacha:spun', (m: GachaSpun) => spun.push(m));
+  a.onMessage('npc:react', (m: { npcId: string; emote: string }) => reactions.push(m));
   b.onMessage('chat', () => {});
-  a.onMessage('chat', (m: any) => m.system && announcements.push(m.text));
-
+  a.onMessage('chat', (m: ChatMessage) => m.system && announcements.push(m.text));
 
   if (me(a).seatId) a.send('stand', {});
   await sleep(200);
@@ -159,32 +179,43 @@ check('voice token is issued for this room and session', grant?.video?.room === 
   await sleep(300);
   check('a second spin right away hits the cooldown', errors.length === 2, errors[1]);
   await sleep(SPIN_REVEAL_MS + 300);
-  const catId = spun[0]?.npcId;
-  check('the NPC appears after the reveal, with a chat announcement', npcs().has(catId) && announcements.some((t) => t.includes('summoned')), announcements.at(-1));
+  const catId = spun[0]?.npcId ?? '';
+  check(
+    'the NPC appears after the reveal, with a chat announcement',
+    npcs().has(catId) && announcements.some((t) => t.includes('summoned')),
+    announcements.at(-1),
+  );
 
   a.send('npc:update', { id: catId, name: '  Captain Fluff  ' });
   await sleep(300);
   check('anyone can rename an NPC', npcs().get(catId)?.name === 'Captain Fluff');
 
   const cat = npcs().get(catId);
-  await walkTo(a, cat.x + 0.5, cat.z + 0.5);
+  if (cat) await walkTo(a, cat.x + 0.5, cat.z + 0.5);
   a.send('npc:pet', { id: catId });
   await sleep(400);
-  check('petting a cat makes hearts', reactions.some((r) => r.npcId === catId && r.emote === '❤️'));
+  check(
+    'petting a cat makes hearts',
+    reactions.some((r) => r.npcId === catId && r.emote === '❤️'),
+  );
 
   // Study buddy: summon, wait for it to find a seat, then take that seat
   await sleep(SPIN_COOLDOWN_MS);
   await walkTo(a, GACHA_MACHINE.x + 1.1, GACHA_MACHINE.z + 0.6);
   a.send('gacha:spin', { kind: 'buddy' });
   await sleep(SPIN_REVEAL_MS + 400);
-  const buddyId = spun.at(-1)?.npcId;
-  let buddy: any;
+  const buddyId = spun.at(-1)?.npcId ?? '';
+  let buddy: NpcView | undefined;
   for (let i = 0; i < 40; i++) {
     buddy = npcs().get(buddyId);
     if (buddy?.seatId) break;
     await sleep(500);
   }
-  check('a study buddy walks to a free seat and starts focusing', !!buddy?.seatId && buddy.status === 'focus' && buddy.focusSince > 0, buddy?.seatId);
+  check(
+    'a study buddy walks to a free seat and starts focusing',
+    !!buddy?.seatId && buddy.status === 'focus' && buddy.focusSince > 0,
+    buddy?.seatId,
+  );
 
   if (buddy?.seatId) {
     const seat = SEAT_BY_ID.get(buddy.seatId)!;
@@ -208,16 +239,27 @@ check('voice token is issued for this room and session', grant?.video?.room === 
 // 8. Joins fire state callbacks and show up in chat, and so do leaves
 let added = 0;
 const roomNews: string[] = [];
-Callbacks.get(b).onAdd('players', () => added++);
+(Callbacks.get(b as unknown as Parameters<typeof Callbacks.get>[0]) as unknown as { onAdd(c: 'players', cb: () => void): void }).onAdd(
+  'players',
+  () => added++,
+);
 // Room objects keep only the last handler per type, so wrap whatever chat handler is there
-for (const r of rooms) r.onMessage('chat', (m: any) => m.system && roomNews.push(m.text));
+for (const r of rooms) r.onMessage('chat', (m: ChatMessage) => m.system && roomNews.push(m.text));
 const late = await join('late');
 await sleep(300);
 check('players onAdd fires on join', added > 0);
-check('a join shows up in chat', roomNews.some((t) => t.includes('late joined')), roomNews.at(-1));
+check(
+  'a join shows up in chat',
+  roomNews.some((t) => t.includes('late joined')),
+  roomNews.at(-1),
+);
 await late.leave();
 await sleep(300);
-check('a leave shows up in chat', roomNews.some((t) => t.includes('late left')), roomNews.at(-1));
+check(
+  'a leave shows up in chat',
+  roomNews.some((t) => t.includes('late left')),
+  roomNews.at(-1),
+);
 
 await Promise.all(rooms.map((r) => r.leave()));
 console.log(failures ? `\n${failures} check(s) failed` : '\nAll checks passed');

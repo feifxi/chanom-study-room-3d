@@ -14,7 +14,8 @@ export interface Profile {
 
 const KEY = 'chanom-study:profile';
 
-const newId = () => (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `v-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+const newId = () =>
+  typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `v-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 export function loadProfile(): Profile {
   try {

@@ -2,11 +2,17 @@
 
 import { useEffect, useRef, useState } from 'react';
 import {
-  Room as LiveKitRoom, RoomEvent, Track, type Participant, type RemoteTrack, type RemoteTrackPublication, type VideoTrack,
+  Room as LiveKitRoom,
+  RoomEvent,
+  Track,
+  type Participant,
+  type RemoteTrack,
+  type RemoteTrackPublication,
+  type VideoTrack,
 } from 'livekit-client';
 import { SEAT_BY_ID, VOICE_FAR, VOICE_NEAR } from '@study/shared';
 import type { LocalMotion } from '../room/Avatar';
-import type { StudyRoom } from '../room/useStudyRoom';
+import type { StudyRoom } from '../room/roomSession';
 
 export type VoiceStatus = 'idle' | 'connecting' | 'connected' | 'error';
 
@@ -44,7 +50,10 @@ const TALK_HANGOVER_MS = 450;
  */
 class TalkDetector {
   private ctx: AudioContext | null = null;
-  private meters = new Map<string, { analyser: AnalyserNode; buf: Float32Array<ArrayBuffer>; lastLoud: number; source: MediaStreamAudioSourceNode }>();
+  private meters = new Map<
+    string,
+    { analyser: AnalyserNode; buf: Float32Array<ArrayBuffer>; lastLoud: number; source: MediaStreamAudioSourceNode }
+  >();
 
   watch(identity: string, track: MediaStreamTrack) {
     this.unwatch(identity);
@@ -124,7 +133,14 @@ export function useVoice(room: StudyRoom | null, motion: React.RefObject<LocalMo
     let serverSpeakers = new Set<string>();
 
     const everyone = (): Participant[] => [lkRoom.localParticipant, ...lkRoom.remoteParticipants.values()];
-    const syncMics = () => setMicEnabled(new Set(everyone().filter((p) => p.isMicrophoneEnabled).map((p) => p.identity)));
+    const syncMics = () =>
+      setMicEnabled(
+        new Set(
+          everyone()
+            .filter((p) => p.isMicrophoneEnabled)
+            .map((p) => p.identity),
+        ),
+      );
     const syncShares = () => {
       const list: ScreenShare[] = [];
       for (const p of everyone()) {
@@ -134,9 +150,7 @@ export function useVoice(room: StudyRoom | null, motion: React.RefObject<LocalMo
         const visible = p === lkRoom.localParticipant || (pub as RemoteTrackPublication).subscriptionStatus === 'subscribed';
         if (visible) list.push({ identity: p.identity, track: pub.track as VideoTrack });
       }
-      setShares((prev) =>
-        prev.length === list.length && prev.every((s, i) => s.track === list[i]!.track) ? prev : list,
-      );
+      setShares((prev) => (prev.length === list.length && prev.every((s, i) => s.track === list[i]!.track) ? prev : list));
       setSharing(lkRoom.localParticipant.isScreenShareEnabled);
     };
 
@@ -187,6 +201,8 @@ export function useVoice(room: StudyRoom | null, motion: React.RefObject<LocalMo
       .on(RoomEvent.Disconnected, () => !cancelled && setStatus('idle'));
 
     const onToken = async ({ url, token }: { url: string; token: string }) => {
+      if (cancelled) return;
+      setStatus('connecting');
       try {
         // Subscriptions are managed below: all voices, but screens only within your table
         await lkRoom.connect(url, token, { autoSubscribe: false });
@@ -202,7 +218,6 @@ export function useVoice(room: StudyRoom | null, motion: React.RefObject<LocalMo
       }
     };
     const offToken = room.onMessage('voice:token', onToken);
-    setStatus('connecting');
     room.send('voice:token', {});
 
     // Proximity volume + who-sees-whose-screen, checked a few times a second
@@ -215,9 +230,7 @@ export function useVoice(room: StudyRoom | null, motion: React.RefObject<LocalMo
         const other = room.state.players?.get(p.identity);
         for (const pub of p.trackPublications.values()) {
           const want =
-            pub.source === Track.Source.ScreenShare
-              ? !!myTable && tableOf(other?.seatId) === myTable
-              : pub.kind === Track.Kind.Audio;
+            pub.source === Track.Source.ScreenShare ? !!myTable && tableOf(other?.seatId) === myTable : pub.kind === Track.Kind.Audio;
           // Compare with what we asked for (isDesired), not isSubscribed: that one is also false
           // while a track is still connecting or paused by adaptive streaming.
           if (pub.isDesired !== want) {

@@ -59,8 +59,8 @@ export function WeekChart({ days }: { days: { date: string; minutes: number }[] 
           className="pointer-events-none absolute -top-2 rounded-lg bg-ink px-2 py-1 text-xs whitespace-nowrap text-white shadow"
           style={{ left: `${((PAD.left + slot * hover + slot / 2) / W) * 100}%`, transform: 'translate(-50%, -100%)' }}
         >
-          {new Date(`${days[hover].date}T12:00:00+07:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} ·{' '}
-          {formatMinutes(days[hover].minutes)}
+          {new Date(`${days[hover].date}T12:00:00+07:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}{' '}
+          · {formatMinutes(days[hover].minutes)}
         </div>
       )}
       {/* Table view for screen readers */}

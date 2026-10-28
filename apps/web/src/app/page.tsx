@@ -1,5 +1,5 @@
-import { Lobby } from '@/features/lobby/Lobby';
+import { LobbyLoader } from './LobbyLoader';
 
 export default function Home() {
-  return <Lobby />;
+  return <LobbyLoader />;
 }

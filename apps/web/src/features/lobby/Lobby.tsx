@@ -4,7 +4,14 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import {
-  ACCESSORIES, HAIR_COLORS, NAME_MAX, OUTFIT_COLORS, randomLook, type Accessory, type AvatarLook, type RoomListing,
+  ACCESSORIES,
+  HAIR_COLORS,
+  NAME_MAX,
+  OUTFIT_COLORS,
+  randomLook,
+  type Accessory,
+  type AvatarLook,
+  type RoomListing,
 } from '@study/shared';
 import { GAME_URL } from '@/lib/config';
 import { loadProfile, saveProfile, type Profile } from '@/lib/profile';
@@ -13,19 +20,22 @@ import { StatsCard } from '../stats/StatsCard';
 const AvatarPreview = dynamic(() => import('../avatar/AvatarPreview').then((m) => m.AvatarPreview), { ssr: false });
 
 const ACCESSORY_LABELS: Record<Accessory, string> = {
-  none: 'None', ribbon: 'Ribbon', catEars: 'Cat ears', glasses: 'Glasses', headphones: 'Headphones', ahoge: 'Ahoge', twintails: 'Twin-tails',
+  none: 'None',
+  ribbon: 'Ribbon',
+  catEars: 'Cat ears',
+  glasses: 'Glasses',
+  headphones: 'Headphones',
+  ahoge: 'Ahoge',
+  twintails: 'Twin-tails',
 };
 
 export function Lobby() {
   const router = useRouter();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<Profile>(loadProfile);
   const [rooms, setRooms] = useState<RoomListing[] | null>(null);
   const [offline, setOffline] = useState(false);
 
-  useEffect(() => setProfile(loadProfile()), []);
-  useEffect(() => {
-    if (profile) saveProfile(profile);
-  }, [profile]);
+  useEffect(() => saveProfile(profile), [profile]);
 
   // Poll the public room list
   useEffect(() => {
@@ -49,8 +59,6 @@ export function Lobby() {
       clearInterval(timer);
     };
   }, []);
-
-  if (!profile) return null;
 
   const setLook = (patch: Partial<AvatarLook>) => setProfile({ ...profile, look: { ...profile.look, ...patch } });
   const enter = (roomId?: string) => router.push(roomId ? `/room?id=${encodeURIComponent(roomId)}` : '/room');
@@ -102,7 +110,10 @@ export function Lobby() {
               ))}
             </div>
           </div>
-          <button onClick={() => setProfile({ ...profile, look: randomLook() })} className="self-start rounded-xl border border-line bg-white px-3 py-1.5 text-sm font-bold hover:border-accent/50">
+          <button
+            onClick={() => setProfile({ ...profile, look: randomLook() })}
+            className="self-start rounded-xl border border-line bg-white px-3 py-1.5 text-sm font-bold hover:border-accent/50"
+          >
             🎲 Randomise
           </button>
         </section>
@@ -118,10 +129,12 @@ export function Lobby() {
             className="rounded-2xl bg-accent px-5 py-4 text-left text-white shadow-lg shadow-accent/30 disabled:opacity-50"
           >
             <span className="block text-lg font-extrabold">Enter the library 📚</span>
-            <span className="block text-sm opacity-90">We'll find you a seat. When a room is full, a new one opens automatically.</span>
+            <span className="block text-sm opacity-90">
+              We&apos;ll find you a seat. When a room is full, a new one opens automatically.
+            </span>
           </button>
           <ul className="flex flex-col gap-2">
-            {rooms?.length === 0 && <li className="py-6 text-center text-sm text-muted">Nobody's here yet. Be the first!</li>}
+            {rooms?.length === 0 && <li className="py-6 text-center text-sm text-muted">Nobody&apos;s here yet. Be the first!</li>}
             {rooms?.map((r) => {
               const full = r.clients >= r.maxClients;
               return (
@@ -133,7 +146,9 @@ export function Lobby() {
                       <div className="h-full rounded-full bg-accent" style={{ width: `${(r.clients / r.maxClients) * 100}%` }} />
                     </div>
                   </div>
-                  <span className="font-mono text-xs text-muted">{r.clients}/{r.maxClients}</span>
+                  <span className="font-mono text-xs text-muted">
+                    {r.clients}/{r.maxClients}
+                  </span>
                   <button
                     onClick={() => enter(r.roomId)}
                     disabled={full}
@@ -153,7 +168,17 @@ export function Lobby() {
   );
 }
 
-function Swatches({ label, colors, value, onPick }: { label: string; colors: readonly string[]; value: string; onPick: (c: string) => void }) {
+function Swatches({
+  label,
+  colors,
+  value,
+  onPick,
+}: {
+  label: string;
+  colors: readonly string[];
+  value: string;
+  onPick: (c: string) => void;
+}) {
   return (
     <div className="flex flex-col gap-1.5">
       <span className="text-xs font-bold text-muted">{label}</span>

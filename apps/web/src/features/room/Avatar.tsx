@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { sanitizeLook, type PlayerView } from '@study/shared';
 import { CharacterRig } from '../avatar/character';
 import type { LabelBoard } from './labels';
-import type { Bubble } from './useStudyRoom';
+import type { Bubble } from './roomSession';
 
 /** Where the local player is, written by LocalController and read by its Avatar. */
 export interface LocalMotion {

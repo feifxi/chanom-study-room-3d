@@ -4,8 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { CHAT_MAX, GACHA_MACHINE, SPAWN, type RoomListing } from '@study/shared';
-import { GAME_URL } from '@/lib/config';
+import { GACHA_MACHINE, SPAWN } from '@study/shared';
 import { FocusPanel } from '../focus/FocusPanel';
 import { ScreenShareTextures, TableScreens, VoiceBar } from '../voice/ScreenShares';
 import { RoomSidebar } from './RoomSidebar';
@@ -19,11 +18,16 @@ import { LocalController, type Hint } from './LocalController';
 import { BuddyMachinePanel } from '../npc/BuddyMachinePanel';
 import { GachaMachine } from '../npc/GachaMachine';
 import { NpcAvatar } from '../npc/NpcAvatar';
-import { npcKey } from './useStudyRoom';
-import { useStudyRoom, type StudyRoom } from './useStudyRoom';
+import { npcKey } from './roomSession';
+import { useStudyRoom } from './useStudyRoom';
+import { useRoomLabel, useSeated } from './roomHooks';
+import { ChatPanel } from '../chat/ChatPanel';
 
 export default function StudyRoomView({ roomId }: { roomId: string | null }) {
-  const { room, status, error, playerIds, npcIds, chat, bubbles, reactions, spins, gachaError, clockOffset } = useStudyRoom(roomId, joinOptions);
+  const { room, status, error, playerIds, npcIds, chat, bubbles, reactions, spins, gachaError, clockOffset } = useStudyRoom(
+    roomId,
+    joinOptions,
+  );
   const motion = useRef<LocalMotion>({ x: SPAWN.x, z: SPAWN.z, yaw: 0, moving: false });
   const [hint, setHint] = useState<Hint | null>(null);
   const [machineOpen, setMachineOpen] = useState(false);
@@ -57,7 +61,12 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
       className="fixed inset-0 transition-[background] duration-1000"
       style={{ background: `linear-gradient(180deg, ${light.background[0]}, ${light.background[1]})` }}
     >
-      <Canvas shadows="percentage" orthographic dpr={[1, 2]} camera={{ position: [SPAWN.x + 20, 18, SPAWN.z + 20], zoom: 62, near: 0.1, far: 200 }}>
+      <Canvas
+        shadows="percentage"
+        orthographic
+        dpr={[1, 2]}
+        camera={{ position: [SPAWN.x + 20, 18, SPAWN.z + 20], zoom: 62, near: 0.1, far: 200 }}
+      >
         <Library light={light} />
         <OrbitControls
           makeDefault
@@ -104,11 +113,17 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
       )}
 
       <header className="panel absolute top-4 left-4 flex items-center gap-3 px-4 py-2.5">
-        <Link href="/" className="text-sm font-bold text-muted hover:text-ink">← Leave</Link>
+        <Link href="/" className="text-sm font-bold text-muted hover:text-ink">
+          ← Leave
+        </Link>
         <span className="h-4 w-px bg-line" />
         <div>
           <p className="text-sm font-extrabold leading-tight">{label ?? 'Chanom Study Room'}</p>
-          <p className="text-xs text-muted">{status === 'connected' ? `${playerIds.length} ${playerIds.length === 1 ? 'person' : 'people'} here` : statusText(status, error)}</p>
+          <p className="text-xs text-muted">
+            {status === 'connected'
+              ? `${playerIds.length} ${playerIds.length === 1 ? 'person' : 'people'} here`
+              : statusText(status, error)}
+          </p>
         </div>
       </header>
 
@@ -133,9 +148,11 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
       {status === 'error' && (
         <div className="absolute inset-0 grid place-items-center bg-black/20">
           <div className="panel max-w-sm p-6 text-center">
-            <p className="font-extrabold">Couldn't join the room</p>
+            <p className="font-extrabold">Couldn&apos;t join the room</p>
             <p className="mt-1 text-sm text-muted">{error}</p>
-            <Link href="/" className="mt-4 inline-block rounded-xl bg-accent px-4 py-2 text-sm font-bold text-white">Back to the lobby</Link>
+            <Link href="/" className="mt-4 inline-block rounded-xl bg-accent px-4 py-2 text-sm font-bold text-white">
+              Back to the lobby
+            </Link>
           </div>
         </div>
       )}
@@ -182,105 +199,4 @@ function statusText(status: string, error: string | null) {
   if (status === 'connecting') return 'Connecting…';
   if (status === 'closed') return 'Disconnected';
   return error ?? '';
-}
-
-/** Re-render when our own seat changes (cheap polling of synced state). */
-function useSeated(room: StudyRoom | null) {
-  const [seated, setSeated] = useState(false);
-  useEffect(() => {
-    if (!room) return;
-    const timer = setInterval(() => setSeated(!!room.state.players.get(room.sessionId)?.seatId), 150);
-    return () => clearInterval(timer);
-  }, [room]);
-  return seated;
-}
-
-function useRoomLabel(roomId: string | undefined) {
-  const [label, setLabel] = useState<string | null>(null);
-  useEffect(() => {
-    if (!roomId) return;
-    fetch(`${GAME_URL}/rooms`)
-      .then((r) => r.json() as Promise<RoomListing[]>)
-      .then((list) => setLabel(list.find((r) => r.roomId === roomId)?.label ?? null))
-      .catch(() => {});
-  }, [roomId]);
-  return label;
-}
-
-function ChatPanel({ room, messages }: { room: StudyRoom; messages: { id: string; name: string; text: string; sessionId: string; system?: boolean }[] }) {
-  const [text, setText] = useState('');
-  const input = useRef<HTMLInputElement>(null);
-  const typingSent = useRef({ on: false, at: 0 });
-
-  // Tell the room we're typing: on change of state, and as a heartbeat while keys keep coming.
-  const signalTyping = (on: boolean) => {
-    const now = Date.now();
-    const last = typingSent.current;
-    if (on === last.on && (!on || now - last.at < 2500)) return;
-    room.send('typing', { on });
-    typingSent.current = { on, at: now };
-  };
-  const list = useRef<HTMLOListElement>(null);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && document.activeElement?.tagName !== 'INPUT') {
-        e.preventDefault();
-        input.current?.focus();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
-
-  useEffect(() => {
-    list.current?.scrollTo({ top: list.current.scrollHeight });
-  }, [messages.length]);
-
-  return (
-    <div className="panel absolute bottom-4 left-4 flex w-[min(340px,calc(100%-32px))] flex-col gap-2 p-3">
-      <ol ref={list} className="flex max-h-40 flex-col gap-1 overflow-y-auto text-sm">
-        {messages.length === 0 && <li className="text-xs text-muted">Say hi to the room 👋</li>}
-        {messages.map((m) =>
-          m.system ? (
-            <li key={m.id} className="rounded-md bg-soft px-2 py-1 text-xs leading-snug text-muted">
-              {m.text}
-            </li>
-          ) : (
-            <li key={m.id} className="leading-snug">
-              <b className={m.sessionId === room.sessionId ? 'text-accent-ink' : ''}>{m.name}</b>{' '}
-              <span className="break-words">{m.text}</span>
-            </li>
-          ),
-        )}
-      </ol>
-      <form
-        className="flex gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const value = text.trim();
-          if (value) room.send('chat', { text: value });
-          else signalTyping(false);
-          typingSent.current = { on: false, at: 0 }; // the server clears typing when a message arrives
-          setText('');
-          input.current?.blur();
-        }}
-      >
-        <input
-          ref={input}
-          value={text}
-          maxLength={CHAT_MAX}
-          onChange={(e) => {
-            setText(e.target.value);
-            signalTyping(e.target.value.trim().length > 0);
-          }}
-          onBlur={() => signalTyping(false)}
-          onKeyDown={(e) => e.key === 'Escape' && input.current?.blur()}
-          placeholder="Type a message… (Enter)"
-          className="min-w-0 flex-1 rounded-lg border border-line bg-white px-3 py-1.5 text-sm outline-none focus:border-accent"
-        />
-        <button className="rounded-lg bg-accent px-3 py-1.5 text-sm font-bold text-white">Send</button>
-      </form>
-    </div>
-  );
 }

@@ -21,8 +21,7 @@ export interface Table {
 }
 
 export type Obstacle =
-  | { kind: 'box'; minX: number; maxX: number; minZ: number; maxZ: number }
-  | { kind: 'circle'; x: number; z: number; r: number };
+  { kind: 'box'; minX: number; maxX: number; minZ: number; maxZ: number } | { kind: 'circle'; x: number; z: number; r: number };
 
 export const ROOM = { width: 20, depth: 14 } as const;
 
@@ -81,6 +80,9 @@ export const OBSTACLES: Obstacle[] = [
   { kind: 'circle', x: -9.3, z: -5.6, r: 0.35 },
   { kind: 'circle', x: 9.3, z: -5.6, r: 0.35 },
 ];
+
+/** Where every new room's resident cat starts: by the reading nook. */
+export const STARTER_CAT = { x: -7.9, z: 3.2 } as const;
 
 /** Where new NPCs pop out: just in front of the machine. */
 export const NPC_SPAWN = {

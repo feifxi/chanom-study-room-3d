@@ -18,7 +18,11 @@ export function StatsCard({ visitorId, name }: { visitorId: string; name: string
         <div className="grid grid-cols-3 content-start gap-2">
           <Tile label="Today" value={stats ? formatMinutes(stats.todayMin) : '–'} />
           <Tile label="Last 7 days" value={stats ? formatMinutes(stats.weekMin) : '–'} />
-          <Tile label="Streak" value={stats ? `${stats.streakDays} ${stats.streakDays === 1 ? 'day' : 'days'}` : '–'} icon={stats && stats.streakDays > 0 ? '🔥' : undefined} />
+          <Tile
+            label="Streak"
+            value={stats ? `${stats.streakDays} ${stats.streakDays === 1 ? 'day' : 'days'}` : '–'}
+            icon={stats && stats.streakDays > 0 ? '🔥' : undefined}
+          />
         </div>
         <div>{stats ? <WeekChart days={stats.last7} /> : <div className="h-28 animate-pulse rounded-xl bg-soft" />}</div>
         <div className="flex flex-col gap-1.5">

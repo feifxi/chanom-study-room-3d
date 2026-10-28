@@ -4,7 +4,9 @@
  * Each bot walks between random spots, sometimes sits at a free seat and says hi.
  */
 import { Client, type Room } from '@colyseus/sdk';
-import { OBSTACLES, ROOM_NAME, SEATS, randomLook } from '@study/shared';
+import { OBSTACLES, ROOM_NAME, SEATS, randomLook, type PlayerView, type StudyStateView } from '@study/shared';
+
+type StudyRoom = Room<unknown, StudyStateView>;
 
 const URL = process.env.GAME_URL ?? 'http://localhost:2567';
 const COUNT = Number(process.argv[2] ?? 4);
@@ -15,9 +17,13 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const pick = <T>(a: readonly T[]) => a[Math.floor(Math.random() * a.length)]!;
 
 const blocked = (x: number, z: number) =>
-  OBSTACLES.some((o) => (o.kind === 'box' ? x > o.minX - 0.4 && x < o.maxX + 0.4 && z > o.minZ - 0.4 && z < o.maxZ + 0.4 : Math.hypot(x - o.x, z - o.z) < o.r + 0.4));
+  OBSTACLES.some((o) =>
+    o.kind === 'box'
+      ? x > o.minX - 0.4 && x < o.maxX + 0.4 && z > o.minZ - 0.4 && z < o.maxZ + 0.4
+      : Math.hypot(x - o.x, z - o.z) < o.r + 0.4,
+  );
 
-async function walk(room: Room, me: () => any, tx: number, tz: number) {
+async function walk(room: StudyRoom, me: () => PlayerView, tx: number, tz: number) {
   for (let i = 0; i < 200; i++) {
     const p = me();
     const dx = tx - p.x;
@@ -36,14 +42,17 @@ async function walk(room: Room, me: () => any, tx: number, tz: number) {
 }
 
 async function bot(i: number) {
-  const room = await new Client(URL).joinOrCreate(ROOM_NAME, { name: NAMES[i % NAMES.length], look: randomLook() });
+  const room = (await new Client(URL).joinOrCreate(ROOM_NAME, {
+    name: NAMES[i % NAMES.length],
+    look: randomLook(),
+  })) as unknown as StudyRoom;
   room.onMessage('chat', () => {});
-  const me = () => (room.state as any).players.get(room.sessionId);
+  const me = () => room.state.players.get(room.sessionId)!;
   await sleep(500);
   for (;;) {
     if (Math.random() < 0.45) {
       const taken = new Set<string>();
-      (room.state as any).players.forEach((p: any) => p.seatId && taken.add(p.seatId));
+      room.state.players.forEach((p) => p.seatId && taken.add(p.seatId));
       const seat = pick(SEATS.filter((s) => !taken.has(s.id)));
       // Approach from the aisle side of the seat
       await walk(room, me, seat.x, seat.z - Math.cos(seat.yaw) * 0.7);

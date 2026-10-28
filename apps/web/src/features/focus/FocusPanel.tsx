@@ -1,39 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { POMODORO_PRESETS, SUBJECT_MAX, type PlayerView, type TimerPhase } from '@study/shared';
-import type { StudyRoom } from '../room/useStudyRoom';
+import { minutesSince, useNow } from '@/lib/time';
+import type { StudyRoom } from '../room/roomSession';
+import { STATUS_ICON } from './status';
 import { formatCountdown, useAutoAway, usePersonalTimer } from './usePersonalTimer';
 
-export const STATUS_ICON: Record<string, string> = { focus: '📖', break: '☕', away: '💤' };
 const PHASE_LABEL: Record<TimerPhase, string> = { idle: 'Idle', focus: 'Focus', break: 'Break' };
 
-/** Re-render on an interval (for countdowns and synced state that React doesn't see). */
-export function useTick(ms: number) {
-  const [, setN] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setN((n) => n + 1), ms);
-    return () => clearInterval(id);
-  }, [ms]);
-}
-
-/** Whole minutes since a server timestamp, e.g. for "focused 12m". */
-export function minutesSince(serverMs: number, clockOffset: number) {
-  return serverMs ? Math.max(0, Math.floor((Date.now() + clockOffset - serverMs) / 60_000)) : 0;
-}
-
 export function FocusPanel({ room, clockOffset }: { room: StudyRoom; clockOffset: number }) {
-  useTick(250);
+  const now = useNow(250) + clockOffset;
   useAutoAway(room);
   const { timer, start, stop } = usePersonalTimer(room, clockOffset);
   const [subject, setSubject] = useState('');
 
   const me: PlayerView | undefined = room.state.players?.get(room.sessionId);
   if (!me) return null;
-  const now = Date.now() + clockOffset;
   const running = timer.phase !== 'idle';
   const countdown = me.status === 'focus' || me.status === 'break' ? formatCountdown(me.statusEndsAt - now) : '--:--';
-  const focusedFor = minutesSince(me.focusSince, clockOffset);
+  const focusedFor = minutesSince(me.focusSince, now);
 
   const headline =
     me.status === 'focus' ? 'Focusing' : me.status === 'break' ? 'On a break' : me.status === 'away' ? 'Away' : 'Not started';

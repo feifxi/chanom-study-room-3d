@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /*
  * Light, cosy palette shared by the lobby and the in-room HUD.
@@ -79,7 +79,9 @@ body {
 }
 
 @keyframes typing-bounce {
-  0%, 60%, 100% {
+  0%,
+  60%,
+  100% {
     transform: translateY(0);
     opacity: 0.5;
   }
@@ -98,16 +100,22 @@ body {
 
 /* Name tag of someone talking on voice: a soft pulsing green ring */
 .speaking {
-  box-shadow: 0 0 0 2px #22c55e, 0 0 12px rgb(34 197 94 / 0.6);
+  box-shadow:
+    0 0 0 2px #22c55e,
+    0 0 12px rgb(34 197 94 / 0.6);
   animation: speaking-pulse 0.9s ease-in-out infinite alternate;
 }
 
 @keyframes speaking-pulse {
   from {
-    box-shadow: 0 0 0 2px #22c55e, 0 0 4px rgb(34 197 94 / 0.4);
+    box-shadow:
+      0 0 0 2px #22c55e,
+      0 0 4px rgb(34 197 94 / 0.4);
   }
   to {
-    box-shadow: 0 0 0 3px #22c55e, 0 0 14px rgb(34 197 94 / 0.7);
+    box-shadow:
+      0 0 0 3px #22c55e,
+      0 0 14px rgb(34 197 94 / 0.7);
   }
 }
 

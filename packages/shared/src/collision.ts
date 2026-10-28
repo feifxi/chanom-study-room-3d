@@ -47,7 +47,10 @@ export function resolveCollisions(p: { x: number; z: number }, others: Iterable<
     } else {
       // Centre inside the box: leave through the nearest side
       const exits: [number, number][] = [
-        [o.minX - R - p.x, 0], [o.maxX + R - p.x, 0], [0, o.minZ - R - p.z], [0, o.maxZ + R - p.z],
+        [o.minX - R - p.x, 0],
+        [o.maxX + R - p.x, 0],
+        [0, o.minZ - R - p.z],
+        [0, o.maxZ + R - p.z],
       ];
       exits.sort((a, b) => Math.abs(a[0] + a[1]) - Math.abs(b[0] + b[1]));
       p.x += exits[0]![0];

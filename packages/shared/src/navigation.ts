@@ -20,9 +20,7 @@ export interface Point {
 function blockedAt(x: number, z: number, margin = 0) {
   const c = CLEARANCE + margin;
   return OBSTACLES.some((o) =>
-    o.kind === 'circle'
-      ? Math.hypot(x - o.x, z - o.z) < o.r + c
-      : x > o.minX - c && x < o.maxX + c && z > o.minZ - c && z < o.maxZ + c,
+    o.kind === 'circle' ? Math.hypot(x - o.x, z - o.z) < o.r + c : x > o.minX - c && x < o.maxX + c && z > o.minZ - c && z < o.maxZ + c,
   );
 }
 

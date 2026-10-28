@@ -12,7 +12,13 @@ const D = ROOM.depth;
 
 const BOOK_COLORS = ['#7c5cff', '#2f80ed', '#e0457b', '#12a37f', '#ef8a3c', '#f2c46d', '#8a5a3a', '#46527f'];
 
-function Box({ size, position, color, rotation, cast = true }: {
+function Box({
+  size,
+  position,
+  color,
+  rotation,
+  cast = true,
+}: {
   size: [number, number, number];
   position: [number, number, number];
   color: string;
@@ -27,6 +33,12 @@ function Box({ size, position, color, rotation, cast = true }: {
   );
 }
 
+/** Small deterministic PRNG (Park–Miller), so the shelves look the same on every visit. */
+function seededRandom(seed: number) {
+  let state = seed;
+  return () => (state = (state * 16807) % 2147483647) / 2147483647;
+}
+
 /** Tall shelf with books drawn as a single InstancedMesh. */
 function Bookshelf({ x0, x1 }: { x0: number; x1: number }) {
   const width = x1 - x0;
@@ -34,14 +46,14 @@ function Bookshelf({ x0, x1 }: { x0: number; x1: number }) {
   const z = -D / 2 + 0.35;
   const books = useMemo(() => {
     const list: { x: number; y: number; w: number; h: number; color: string }[] = [];
-    let seed = Math.floor(x0 * 1000) + 7;
-    const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const rand = seededRandom(Math.floor(x0 * 1000) + 7);
     for (const shelfY of [0.25, 0.85, 1.45, 2.05]) {
       let bx = x0 + 0.12;
       while (bx < x1 - 0.2) {
         const w = 0.07 + rand() * 0.07;
         const h = 0.36 + rand() * 0.16;
-        if (rand() > 0.08) list.push({ x: bx + w / 2, y: shelfY + h / 2, w, h, color: BOOK_COLORS[Math.floor(rand() * BOOK_COLORS.length)]! });
+        if (rand() > 0.08)
+          list.push({ x: bx + w / 2, y: shelfY + h / 2, w, h, color: BOOK_COLORS[Math.floor(rand() * BOOK_COLORS.length)]! });
         bx += w + 0.012;
       }
     }
@@ -83,9 +95,16 @@ function StudyTable({ x, z, width, depth, lamps }: { x: number; z: number; width
   return (
     <group position={[x, 0, z]}>
       <Box size={[width, 0.08, depth]} position={[0, 0.75, 0]} color="#b98a5e" />
-      {[-1, 1].flatMap((sx) => [-1, 1].map((sz) => (
-        <Box key={`${sx}${sz}`} size={[0.08, 0.72, 0.08]} position={[sx * (width / 2 - 0.1), 0.36, sz * (depth / 2 - 0.1)]} color="#6b4a33" />
-      )))}
+      {[-1, 1].flatMap((sx) =>
+        [-1, 1].map((sz) => (
+          <Box
+            key={`${sx}${sz}`}
+            size={[0.08, 0.72, 0.08]}
+            position={[sx * (width / 2 - 0.1), 0.36, sz * (depth / 2 - 0.1)]}
+            color="#6b4a33"
+          />
+        )),
+      )}
       {/* Green banker's lamp in the middle of the table */}
       <mesh position={[0, 0.8, 0]} castShadow>
         <cylinderGeometry args={[0.1, 0.12, 0.04, 16]} />
@@ -122,9 +141,11 @@ function SeatProps() {
             <group position={[s.x - fx * CHAIR_BACK, 0, s.z - fz * CHAIR_BACK]} rotation={[0, s.yaw, 0]}>
               <Box size={[0.46, 0.06, 0.42]} position={[0, 0.44, 0]} color="#8a5a3a" />
               <Box size={[0.46, 0.5, 0.05]} position={[0, 0.72, -0.2]} color="#7a4e32" />
-              {[-1, 1].flatMap((sx) => [-1, 1].map((sz) => (
-                <Box key={`${sx}${sz}`} size={[0.04, 0.44, 0.04]} position={[sx * 0.2, 0.22, sz * 0.18]} color="#5a3a26" />
-              )))}
+              {[-1, 1].flatMap((sx) =>
+                [-1, 1].map((sz) => (
+                  <Box key={`${sx}${sz}`} size={[0.04, 0.44, 0.04]} position={[sx * 0.2, 0.22, sz * 0.18]} color="#5a3a26" />
+                )),
+              )}
             </group>
             <group position={[s.x + fx * 0.42, 0.79, s.z + fz * 0.42]} rotation={[0, s.yaw + Math.PI, 0]}>
               <Box size={[0.36, 0.02, 0.24]} position={[0, 0, 0.02]} color="#c9ccd4" cast={false} />
@@ -287,7 +308,9 @@ export function Library({ light }: { light: DayLight }) {
       <Bookshelf x0={3.4} x1={9.6} />
       <WallClock />
 
-      {TABLES.map((t) => <StudyTable key={t.id} {...t} lamps={light.lamps} />)}
+      {TABLES.map((t) => (
+        <StudyTable key={t.id} {...t} lamps={light.lamps} />
+      ))}
       <SeatProps />
       <ReadingNook lamps={light.lamps} />
 

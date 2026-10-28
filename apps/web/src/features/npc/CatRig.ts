@@ -72,7 +72,10 @@ export class CatRig {
       });
     }
     this.paws = [
-      [-0.08, 0.13], [0.08, 0.13], [-0.08, -0.15], [0.08, -0.15],
+      [-0.08, 0.13],
+      [0.08, 0.13],
+      [-0.08, -0.15],
+      [0.08, -0.15],
     ].map(([x, z]) => mesh(b, sphere(0.05, 10, 8), coat.id === 'tuxedo' ? belly : fur, x, 0.045, z, 0.12));
 
     // Tail: three links that curl and sway

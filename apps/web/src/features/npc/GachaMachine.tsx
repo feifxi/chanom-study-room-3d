@@ -8,7 +8,17 @@ import { GACHA_MACHINE, SPIN_REVEAL_MS, type GachaSpun } from '@study/shared';
 // Muted pastels so the machine blends in with the library
 const CAPSULE_COLORS = ['#e9a9c2', '#a9cde3', '#e8d49a', '#b7d6b0', '#c9b8e3', '#e8c0a6'];
 
-function Box({ args, position, color, rotation }: { args: [number, number, number]; position: [number, number, number]; color: string; rotation?: [number, number, number] }) {
+function Box({
+  args,
+  position,
+  color,
+  rotation,
+}: {
+  args: [number, number, number];
+  position: [number, number, number];
+  color: string;
+  rotation?: [number, number, number];
+}) {
   return (
     <mesh position={position} rotation={rotation} castShadow receiveShadow>
       <boxGeometry args={args} />

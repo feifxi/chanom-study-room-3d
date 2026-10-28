@@ -2,24 +2,26 @@
 
 import { useEffect, useState } from 'react';
 import {
-  COAT_BY_ID, NPC_LIMITS, NPC_NAME_MAX, SPIN_COOLDOWN_MS, SPIN_REVEAL_MS, SUBJECT_MAX,
-  type BuddySettings, type CatSettings, type GachaSpun, type NpcKind, type NpcView,
+  COAT_BY_ID,
+  NPC_LIMITS,
+  parseJson,
+  NPC_NAME_MAX,
+  SPIN_COOLDOWN_MS,
+  SPIN_REVEAL_MS,
+  SUBJECT_MAX,
+  type BuddySettings,
+  type CatSettings,
+  type GachaSpun,
+  type NpcKind,
+  type NpcView,
 } from '@study/shared';
-import { useTick } from '../focus/FocusPanel';
-import type { StudyRoom } from '../room/useStudyRoom';
+import { useNow } from '@/lib/time';
+import type { StudyRoom } from '../room/roomSession';
 
 const KINDS: { kind: NpcKind; icon: string; title: string; blurb: string }[] = [
   { kind: 'cat', icon: '🐈', title: 'Library cat', blurb: 'Wanders, naps on the sofa, loves head pats.' },
   { kind: 'buddy', icon: '🧑‍🎓', title: 'Study buddy', blurb: 'Takes a seat, runs a pomodoro and cheers you on.' },
 ];
-
-const parse = <T,>(json: string): T => {
-  try {
-    return JSON.parse(json) as T;
-  } catch {
-    return {} as T;
-  }
-};
 
 interface Props {
   room: StudyRoom;
@@ -31,9 +33,8 @@ interface Props {
 
 /** The Buddy Machine: summon room NPCs and tune the ones already here. Shared by everyone. */
 export function BuddyMachinePanel({ room, npcIds, spins, error, onClose }: Props) {
-  useTick(500);
+  const now = useNow(250);
   const [tab, setTab] = useState<'summon' | 'residents'>('summon');
-  const [lastSpinAt, setLastSpinAt] = useState(0);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -46,14 +47,14 @@ export function BuddyMachinePanel({ room, npcIds, spins, error, onClose }: Props
   const npcs = room.state.npcs;
   const entries = npcIds.map((id) => [id, npcs?.get(id)] as const).filter((e): e is readonly [string, NpcView] => !!e[1]);
   const count = (kind?: NpcKind) => entries.filter(([, n]) => !kind || n.kind === kind).length;
-  const cooldown = Math.max(0, SPIN_COOLDOWN_MS - (Date.now() - lastSpinAt));
-  const mine = [...spins].reverse().find((s) => s.bySessionId === room.sessionId && Date.now() - s.at < 20_000);
-  const revealed = mine && Date.now() - mine.at > SPIN_REVEAL_MS;
+  // Your latest spin drives both the cooldown and the result card. A refused spin
+  // never arrives here, so it doesn't start a cooldown (the server enforces it anyway).
+  const lastMine = spins.findLast((s) => s.bySessionId === room.sessionId);
+  const cooldown = lastMine ? Math.max(0, SPIN_COOLDOWN_MS - (now - lastMine.at)) : 0;
+  const mine = lastMine && now - lastMine.at < 20_000 ? lastMine : undefined;
+  const revealed = mine && now - mine.at > SPIN_REVEAL_MS;
 
-  const spin = (kind: NpcKind) => {
-    room.send('gacha:spin', { kind });
-    setLastSpinAt(Date.now());
-  };
+  const spin = (kind: NpcKind) => room.send('gacha:spin', { kind });
 
   return (
     // Docked on the right (between the pomodoro and voice panels) so the machine stays visible while it spins
@@ -85,7 +86,10 @@ export function BuddyMachinePanel({ room, npcIds, spins, error, onClose }: Props
                 <span className="text-3xl">{k.icon}</span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-bold">
-                    {k.title} <span className="font-mono text-xs font-normal text-muted">{count(k.kind)}/{NPC_LIMITS[k.kind]}</span>
+                    {k.title}{' '}
+                    <span className="font-mono text-xs font-normal text-muted">
+                      {count(k.kind)}/{NPC_LIMITS[k.kind]}
+                    </span>
                   </p>
                   <p className="text-xs text-muted">{k.blurb}</p>
                 </div>
@@ -107,16 +111,19 @@ export function BuddyMachinePanel({ room, npcIds, spins, error, onClose }: Props
                   <p className="text-sm font-extrabold">
                     {mine.rare ? '🌟 Rare! ' : '✨ '}You got a {mine.label}!
                   </p>
-                  <RenameField key={mine.npcId} room={room} id={mine.npcId} name={npcs?.get(mine.npcId)?.name ?? mine.name} />
+                  <RenameField
+                    key={`${mine.npcId}:${npcs?.get(mine.npcId)?.name ?? mine.name}`}
+                    room={room}
+                    id={mine.npcId}
+                    name={npcs?.get(mine.npcId)?.name ?? mine.name}
+                  />
                 </>
               ) : (
                 <p className="animate-pulse text-sm font-bold">The capsule is rolling out… 🥚</p>
               )}
             </div>
           )}
-          <p className="text-[11px] text-muted">
-            Up to {NPC_LIMITS.total} friends per room. They go home when the room closes.
-          </p>
+          <p className="text-[11px] text-muted">Up to {NPC_LIMITS.total} friends per room. They go home when the room closes.</p>
         </div>
       ) : (
         <ul className="flex flex-col gap-2 overflow-y-auto pr-1">
@@ -130,9 +137,9 @@ export function BuddyMachinePanel({ room, npcIds, spins, error, onClose }: Props
   );
 }
 
+/** Callers key this by id + name, so a rename from anyone else resets the field. */
 function RenameField({ room, id, name }: { room: StudyRoom; id: string; name: string }) {
   const [value, setValue] = useState(name);
-  useEffect(() => setValue(name), [name]);
   const save = () => {
     if (value.trim() && value.trim() !== name) room.send('npc:update', { id, name: value });
   };
@@ -155,7 +162,11 @@ function Toggle({ on, labels, onChange }: { on: boolean; labels: [string, string
   return (
     <div className="grid grid-cols-2 gap-0.5 rounded-lg bg-soft p-0.5 text-xs font-bold">
       {[true, false].map((v) => (
-        <button key={String(v)} onClick={() => onChange(v)} className={`rounded-md px-2 py-0.5 ${on === v ? 'bg-white shadow-sm' : 'text-muted'}`}>
+        <button
+          key={String(v)}
+          onClick={() => onChange(v)}
+          className={`rounded-md px-2 py-0.5 ${on === v ? 'bg-white shadow-sm' : 'text-muted'}`}
+        >
           {labels[v ? 0 : 1]}
         </button>
       ))}
@@ -166,9 +177,9 @@ function Toggle({ on, labels, onChange }: { on: boolean; labels: [string, string
 function Resident({ room, id, npc }: { room: StudyRoom; id: string; npc: NpcView }) {
   const update = (settings: Record<string, unknown>) => room.send('npc:update', { id, settings });
   const isCat = npc.kind === 'cat';
-  const coat = isCat ? COAT_BY_ID.get(String(parse<{ coat?: string }>(npc.look).coat)) : undefined;
-  const cat = parse<CatSettings>(npc.settings);
-  const buddy = parse<BuddySettings>(npc.settings);
+  const coat = isCat ? COAT_BY_ID.get(parseJson<{ coat?: string }>(npc.look, {}).coat ?? '') : undefined;
+  const cat = parseJson<Partial<CatSettings>>(npc.settings, {});
+  const buddy = parseJson<Partial<BuddySettings>>(npc.settings, {});
   const [subject, setSubject] = useState(buddy.subject ?? '');
 
   return (
@@ -176,9 +187,12 @@ function Resident({ room, id, npc }: { room: StudyRoom; id: string; npc: NpcView
       <div className="flex items-center gap-2">
         <span className="text-2xl">{isCat ? '🐈' : '🧑‍🎓'}</span>
         <div className="min-w-0 flex-1">
-          <RenameField room={room} id={id} name={npc.name} />
+          <RenameField key={`${id}:${npc.name}`} room={room} id={id} name={npc.name} />
         </div>
-        <button onClick={() => room.send('npc:remove', { id })} className="rounded-lg border border-line bg-white px-2 py-1 text-xs font-bold whitespace-nowrap">
+        <button
+          onClick={() => room.send('npc:remove', { id })}
+          className="rounded-lg border border-line bg-white px-2 py-1 text-xs font-bold whitespace-nowrap"
+        >
           👋 Goodbye
         </button>
       </div>

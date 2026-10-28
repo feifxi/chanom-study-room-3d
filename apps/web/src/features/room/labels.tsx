@@ -3,8 +3,11 @@
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { NpcView, PlayerView } from '@study/shared';
-import { npcKey, type Bubble, type Reaction } from './useStudyRoom';
-import { STATUS_ICON, minutesSince, useTick } from '../focus/FocusPanel';
+import { npcKey, type Bubble, type Reaction } from './roomSession';
+import { minutesSince, useNow } from '@/lib/time';
+import { STATUS_ICON } from '../focus/status';
+
+const v = new THREE.Vector3();
 
 /**
  * Name tags, speech bubbles and typing dots live in one plain DOM layer over the
@@ -16,26 +19,29 @@ export class LabelBoard {
   readonly anchors = new Map<string, THREE.Vector3>();
   readonly labels = new Map<string, HTMLDivElement>();
   readonly dots = new Map<string, HTMLDivElement>();
-}
 
-const v = new THREE.Vector3();
-
-/** Runs after every other frame callback (priority 1), then renders the scene itself. */
-export function LabelProjector({ board }: { board: LabelBoard }) {
-  useFrame(({ gl, scene, camera, size }) => {
-    gl.render(scene, camera);
-    for (const [id, el] of board.labels) {
-      const anchor = board.anchors.get(id);
+  /** Move every label to its anchor's screen position. Called once per frame. */
+  project(camera: THREE.Camera, width: number, height: number) {
+    for (const [id, el] of this.labels) {
+      const anchor = this.anchors.get(id);
       if (!anchor) {
         el.style.visibility = 'hidden';
         continue;
       }
       v.copy(anchor).project(camera);
-      const x = ((v.x + 1) / 2) * size.width;
-      const y = ((1 - v.y) / 2) * size.height;
+      const x = ((v.x + 1) / 2) * width;
+      const y = ((1 - v.y) / 2) * height;
       el.style.visibility = v.z > 1 ? 'hidden' : 'visible';
       el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -100%)`;
     }
+  }
+}
+
+/** Runs after every other frame callback (priority 1), then renders the scene itself. */
+export function LabelProjector({ board }: { board: LabelBoard }) {
+  useFrame(({ gl, scene, camera, size }) => {
+    gl.render(scene, camera);
+    board.project(camera, size.width, size.height);
   }, 1);
   return null;
 }
@@ -77,8 +83,9 @@ function Emotes({ target, reactions }: { target: string; reactions: Reaction[] }
 }
 
 export function LabelLayer({ board, ids, players, localId, bubbles, voice, clockOffset, npcIds, npcs, reactions }: LayerProps) {
-  useTick(1000); // status/subject come from synced state, which React doesn't watch
-  const now = Date.now();
+  // Re-render every second: status/subject come from synced state, which React doesn't watch
+  const now = useNow(1000);
+  const serverNow = now + clockOffset;
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
       {ids.map((id) => {
@@ -126,7 +133,7 @@ export function LabelLayer({ board, ids, players, localId, bubbles, voice, clock
               {/* How long they've been focusing, so others know not to interrupt */}
               {player.status === 'focus' && (
                 <span className="ml-1 font-semibold opacity-75">
-                  · {minutesSince(player.focusSince, clockOffset)}m{player.subject && ` · ${player.subject}`}
+                  · {minutesSince(player.focusSince, serverNow)}m{player.subject && ` · ${player.subject}`}
                 </span>
               )}
             </div>
@@ -157,7 +164,7 @@ export function LabelLayer({ board, ids, players, localId, bubbles, voice, clock
               {npc.name}
               {npc.kind === 'buddy' && npc.status === 'focus' && (
                 <span className="font-semibold opacity-75">
-                  · {minutesSince(npc.focusSince, clockOffset)}m{npc.subject && ` · ${npc.subject}`}
+                  · {minutesSince(npc.focusSince, serverNow)}m{npc.subject && ` · ${npc.subject}`}
                 </span>
               )}
               <span className="rounded bg-[#ffd0e4] px-1 text-[9px] tracking-wide text-accent-ink">NPC</span>

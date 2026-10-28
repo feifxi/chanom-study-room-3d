@@ -22,7 +22,14 @@ const DAY = 86_400_000;
 const thaiNoon = (daysAgo: number) => new Date(`${dayKey(new Date(Date.now() - daysAgo * DAY))}T12:00:00+07:00`);
 const session = (daysAgo: number, minutes: number) => {
   const startedAt = thaiNoon(daysAgo);
-  return { visitorId: id, roomLabel: 'Library #1', subject: 'Test', startedAt, endedAt: new Date(startedAt.getTime() + minutes * 60_000), minutes };
+  return {
+    visitorId: id,
+    roomLabel: 'Library #1',
+    subject: 'Test',
+    startedAt,
+    endedAt: new Date(startedAt.getTime() + minutes * 60_000),
+    minutes,
+  };
 };
 
 try {
@@ -34,11 +41,17 @@ try {
   check('today sums every session today', stats.todayMin === 50, `${stats.todayMin} min`);
   check('streak counts back over consecutive days', stats.streakDays === 3, `${stats.streakDays} days`);
   check('week total covers the last 7 days', stats.weekMin === 195, `${stats.weekMin} min`);
-  check('7-day series ends today', stats.last7.length === 7 && stats.last7[6]?.date === dayKey(new Date()) && stats.last7[6]?.minutes === 50);
+  check(
+    '7-day series ends today',
+    stats.last7.length === 7 && stats.last7[6]?.date === dayKey(new Date()) && stats.last7[6]?.minutes === 50,
+  );
   check('gap days show zero', stats.last7[3]?.minutes === 0 && stats.last7[1]?.minutes === 90, stats.last7.map((d) => d.minutes).join(','));
 
   const board = (await (await fetch(`${URL}/leaderboard?period=week`)).json()) as { name: string; minutes: number }[];
-  check('leaderboard includes the visitor', board.some((r) => r.name === 'StatsBot' && r.minutes === 195));
+  check(
+    'leaderboard includes the visitor',
+    board.some((r) => r.name === 'StatsBot' && r.minutes === 195),
+  );
 
   const unknown = (await (await fetch(`${URL}/stats/nobody-${Date.now()}`)).json()) as VisitorStatsView;
   check('a new visitor starts at zero', unknown.todayMin === 0 && unknown.streakDays === 0 && unknown.last7.length === 7);

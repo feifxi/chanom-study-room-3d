@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { TimerPhase } from '@study/shared';
-import type { StudyRoom } from '../room/useStudyRoom';
+import type { StudyRoom } from '../room/roomSession';
 import { playChime } from './chime';
 
 const MINUTE = 60_000;
@@ -22,8 +22,11 @@ export interface PersonalTimer {
  */
 export function usePersonalTimer(room: StudyRoom | null, clockOffset: number) {
   const [timer, setTimer] = useState<PersonalTimer>({ phase: 'idle', endsAt: 0, focusMin: 25, breakMin: 5, cycle: 0 });
+  // Latest timer for the interval below, which outlives individual renders
   const ref = useRef(timer);
-  ref.current = timer;
+  useEffect(() => {
+    ref.current = timer;
+  }, [timer]);
   const serverNow = () => Date.now() + clockOffset;
 
   const report = (t: PersonalTimer) => room?.send('timer:personal', { phase: t.phase, endsAt: t.endsAt });

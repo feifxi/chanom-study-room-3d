@@ -3,25 +3,20 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { sanitizeLook, type NpcView } from '@study/shared';
+import { parseJson, sanitizeLook, type NpcView } from '@study/shared';
 import { CharacterRig } from '../avatar/character';
 import { CHAIR_BACK } from '../room/Avatar';
 import type { LabelBoard } from '../room/labels';
-import { npcKey, type Bubble } from '../room/useStudyRoom';
+import { npcKey, type Bubble } from '../room/roomSession';
 import { CatRig } from './CatRig';
-
-const parse = (json: string): Record<string, unknown> => {
-  try {
-    return JSON.parse(json) ?? {};
-  } catch {
-    return {};
-  }
-};
 
 /** A cat or study buddy, eased toward the server's position each frame. */
 export function NpcAvatar({ id, npc, board, bubble }: { id: string; npc: NpcView; board: LabelBoard; bubble?: Bubble }) {
   const rig = useMemo(
-    () => (npc.kind === 'cat' ? new CatRig(String(parse(npc.look).coat ?? 'orange')) : new CharacterRig(sanitizeLook(parse(npc.look)))),
+    () =>
+      npc.kind === 'cat'
+        ? new CatRig(parseJson<{ coat?: string }>(npc.look, {}).coat ?? 'orange')
+        : new CharacterRig(sanitizeLook(parseJson(npc.look, {}))),
     [npc.kind, npc.look],
   );
   useEffect(() => () => rig.dispose(), [rig]);

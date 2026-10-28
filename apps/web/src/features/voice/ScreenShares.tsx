@@ -48,7 +48,13 @@ export function VoiceBar({ voice, seated }: { voice: Voice; seated: boolean }) {
       <div className="flex items-center justify-between">
         <span className="text-xs font-extrabold tracking-wider text-muted uppercase">Voice & screen</span>
         <span className="text-[11px] text-muted">
-          {voice.status === 'connected' ? 'Closer = louder' : voice.status === 'connecting' ? 'Connecting…' : voice.status === 'error' ? 'Voice unavailable' : ''}
+          {voice.status === 'connected'
+            ? 'Closer = louder'
+            : voice.status === 'connecting'
+              ? 'Connecting…'
+              : voice.status === 'error'
+                ? 'Voice unavailable'
+                : ''}
         </span>
       </div>
       <div className="grid grid-cols-2 gap-2">
@@ -85,20 +91,15 @@ export function VoiceBar({ voice, seated }: { voice: Voice; seated: boolean }) {
  */
 export function TableScreens({ voice, localId, names }: { voice: Voice; localId: string; names: (id: string) => string }) {
   const [minimised, setMinimised] = useState(false);
+  // Ids of screens you closed. Track ids are unique per share, so a stale id never matches a new share.
   const [hidden, setHidden] = useState<Set<string>>(new Set());
-  const [enlarged, setEnlarged] = useState<ScreenShare | null>(null);
+  const [enlargedPick, setEnlarged] = useState<ScreenShare | null>(null);
 
   const others = voice.shares.filter((s) => s.identity !== localId);
   const visible = others.filter((s) => !hidden.has(s.track.sid ?? s.identity));
   const hiddenCount = others.length - visible.length;
-
-  // Forget hidden/enlarged screens once their share ends
-  useEffect(() => {
-    const live = new Set(others.map((s) => s.track.sid ?? s.identity));
-    setHidden((h) => (Array.from(h).every((id) => live.has(id)) ? h : new Set(Array.from(h).filter((id) => live.has(id)))));
-    if (enlarged && !others.some((s) => s.track === enlarged.track)) setEnlarged(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [voice.shares]);
+  // The enlarged viewer closes by itself once that share ends
+  const enlarged = enlargedPick && others.some((s) => s.track === enlargedPick.track) ? enlargedPick : null;
 
   if (others.length === 0 && !voice.sharing) return null;
 
@@ -124,11 +125,17 @@ export function TableScreens({ voice, localId, names }: { voice: Voice; localId:
                 <span className="text-xs font-extrabold tracking-wider text-muted uppercase">Screens at your table</span>
                 <div className="flex gap-1.5">
                   {hiddenCount > 0 && (
-                    <button onClick={() => setHidden(new Set())} className="rounded-md border border-line bg-white px-2 py-0.5 text-xs font-bold">
+                    <button
+                      onClick={() => setHidden(new Set())}
+                      className="rounded-md border border-line bg-white px-2 py-0.5 text-xs font-bold"
+                    >
                       Show hidden ({hiddenCount})
                     </button>
                   )}
-                  <button onClick={() => setMinimised(true)} className="rounded-md border border-line bg-white px-2 py-0.5 text-xs font-bold">
+                  <button
+                    onClick={() => setMinimised(true)}
+                    className="rounded-md border border-line bg-white px-2 py-0.5 text-xs font-bold"
+                  >
                     Minimise
                   </button>
                 </div>

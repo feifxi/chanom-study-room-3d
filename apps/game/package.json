@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit",
     "smoke": "tsx scripts/smoke.ts",
     "bots": "tsx scripts/bots.ts",
-    "stats-check": "tsx scripts/stats-check.ts"
+    "stats-check": "tsx scripts/stats-check.ts",
+    "test": "vitest run",
+    "lint": "eslint --max-warnings 0 ."
   },
   "devDependencies": {
     "@colyseus/sdk": "^0.18.8",

@@ -35,7 +35,15 @@ interface MeshOpts {
   outline?: number;
 }
 
-function mesh(parent: THREE.Object3D, geo: THREE.BufferGeometry, mat: THREE.Material, x = 0, y = 0, z = 0, { shadow = true, outline = 0 }: MeshOpts = {}) {
+function mesh(
+  parent: THREE.Object3D,
+  geo: THREE.BufferGeometry,
+  mat: THREE.Material,
+  x = 0,
+  y = 0,
+  z = 0,
+  { shadow = true, outline = 0 }: MeshOpts = {},
+) {
   const m = new THREE.Mesh(geo, mat);
   m.position.set(x, y, z);
   m.castShadow = shadow;
@@ -51,7 +59,19 @@ function mesh(parent: THREE.Object3D, geo: THREE.BufferGeometry, mat: THREE.Mate
 const sphere = (r: number, w = 20, h = 14) => new THREE.SphereGeometry(r, w, h);
 const flat = { shadow: false };
 
-function cone(parent: THREE.Object3D, r: number, h: number, mat: THREE.Material, x: number, y: number, z: number, rx: number, ry: number, rz: number, flatten = 0.55) {
+function cone(
+  parent: THREE.Object3D,
+  r: number,
+  h: number,
+  mat: THREE.Material,
+  x: number,
+  y: number,
+  z: number,
+  rx: number,
+  ry: number,
+  rz: number,
+  flatten = 0.55,
+) {
   const pivot = new THREE.Group();
   pivot.position.set(x, y, z);
   pivot.rotation.set(rx, ry, rz, 'YXZ');
@@ -120,7 +140,8 @@ const ACCESSORIES: Partial<Record<AvatarLook['accessory'], Accessory>> = {
   headphones(head, look) {
     mesh(head, new THREE.TorusGeometry(0.5, 0.038, 10, 32, Math.PI), toon('#3a3f52'), 0, 0.02, 0, { outline: 0.02 });
     for (const s of [-1, 1]) {
-      mesh(head, new THREE.CylinderGeometry(0.12, 0.12, 0.1, 20), toon(look.outfit), s * 0.48, 0, 0, { outline: 0.08 }).rotation.z = Math.PI / 2;
+      mesh(head, new THREE.CylinderGeometry(0.12, 0.12, 0.1, 20), toon(look.outfit), s * 0.48, 0, 0, { outline: 0.08 }).rotation.z =
+        Math.PI / 2;
     }
   },
   ahoge(head, look, sway) {
@@ -221,7 +242,15 @@ export class CharacterRig {
       cone(h, 0.085, len, hair, Math.sin(a) * hr, y, Math.cos(a) * hr, Math.PI - 0.3, a, 0);
     }
     for (const s of [-1, 1]) this.sway.push(cone(h, 0.09, 0.5, hair, s * 0.4, -0.16, 0.14, Math.PI - 0.15, s * 0.5, -s * 0.08, 0.5));
-    const shine = mesh(h, new THREE.TorusGeometry(0.405, 0.016, 6, 40), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.5 }), 0, 0.26, 0, flat);
+    const shine = mesh(
+      h,
+      new THREE.TorusGeometry(0.405, 0.016, 6, 40),
+      new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.5 }),
+      0,
+      0.26,
+      0,
+      flat,
+    );
     shine.rotation.x = Math.PI / 2;
 
     // Face
@@ -240,7 +269,8 @@ export class CharacterRig {
       cheek.rotation.y = s * 0.65;
       h.add(cheek);
       mesh(cheek, sphere(0.065, 12, 8), blush, 0, 0, 0, flat).scale.set(1.25, 0.6, 0.25);
-      for (const dx of [-0.03, 0, 0.03]) mesh(cheek, new THREE.CapsuleGeometry(0.006, 0.035, 2, 4), blushLine, dx, 0, 0.02, flat).rotation.z = 0.5;
+      for (const dx of [-0.03, 0, 0.03])
+        mesh(cheek, new THREE.CapsuleGeometry(0.006, 0.035, 2, 4), blushLine, dx, 0, 0.02, flat).rotation.z = 0.5;
     }
     this.smile = mesh(h, new THREE.TorusGeometry(0.03, 0.009, 6, 12, Math.PI), toon(INK), 0, -0.18, 0.41, flat);
     this.smile.rotation.z = Math.PI;
