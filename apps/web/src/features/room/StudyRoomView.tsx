@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { CHAT_MAX, SPAWN, type RoomListing } from '@study/shared';
+import { CHAT_MAX, GACHA_MACHINE, SPAWN, type RoomListing } from '@study/shared';
 import { GAME_URL } from '@/lib/config';
 import { FocusPanel } from '../focus/FocusPanel';
 import { ScreenShareTextures, TableScreens, VoiceBar } from '../voice/ScreenShares';
@@ -15,13 +15,29 @@ import { loadProfile } from '@/lib/profile';
 import { Avatar, type LocalMotion } from './Avatar';
 import { LabelBoard, LabelLayer, LabelProjector } from './labels';
 import { Library } from './Library';
-import { LocalController } from './LocalController';
+import { LocalController, type Hint } from './LocalController';
+import { BuddyMachinePanel } from '../npc/BuddyMachinePanel';
+import { GachaMachine } from '../npc/GachaMachine';
+import { NpcAvatar } from '../npc/NpcAvatar';
+import { npcKey } from './useStudyRoom';
 import { useStudyRoom, type StudyRoom } from './useStudyRoom';
 
 export default function StudyRoomView({ roomId }: { roomId: string | null }) {
-  const { room, status, error, playerIds, chat, bubbles, clockOffset } = useStudyRoom(roomId, joinOptions);
+  const { room, status, error, playerIds, npcIds, chat, bubbles, reactions, spins, gachaError, clockOffset } = useStudyRoom(roomId, joinOptions);
   const motion = useRef<LocalMotion>({ x: SPAWN.x, z: SPAWN.z, yaw: 0, moving: false });
-  const [nearSeat, setNearSeat] = useState<string | null>(null);
+  const [hint, setHint] = useState<Hint | null>(null);
+  const [machineOpen, setMachineOpen] = useState(false);
+  const openMachine = useCallback(() => setMachineOpen(true), []);
+
+  // Walking away from the Buddy Machine closes its panel
+  useEffect(() => {
+    if (!machineOpen) return;
+    const id = setInterval(() => {
+      const m = motion.current;
+      if (Math.hypot(m.x - GACHA_MACHINE.x, m.z - GACHA_MACHINE.z) > GACHA_MACHINE.reach + 1.2) setMachineOpen(false);
+    }, 300);
+    return () => clearInterval(id);
+  }, [machineOpen]);
   const seated = useSeated(room);
   const label = useRoomLabel(room?.roomId);
   const board = useMemo(() => new LabelBoard(), []);
@@ -53,7 +69,13 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
           minPolarAngle={0.35}
           maxPolarAngle={1.2}
         />
-        {room && <LocalController room={room} motion={motion} onNearSeat={setNearSeat} />}
+        {room && <LocalController room={room} motion={motion} onHint={setHint} onOpenMachine={openMachine} />}
+        <GachaMachine lastSpin={spins.at(-1)} />
+        {room &&
+          npcIds.map((id) => {
+            const npc = room.state.npcs?.get(id);
+            return npc ? <NpcAvatar key={id} id={id} npc={npc} board={board} bubble={bubbles[npcKey(id)]} /> : null;
+          })}
         {room &&
           playerIds.map((id) => {
             const player = room.state.players.get(id);
@@ -75,6 +97,9 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
           bubbles={bubbles}
           voice={{ speaking: voice.speaking, micEnabled: voice.micEnabled, sharing: sharingIds }}
           clockOffset={clockOffset}
+          npcIds={npcIds}
+          npcs={room.state.npcs}
+          reactions={reactions}
         />
       )}
 
@@ -93,10 +118,14 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
       {room && <VoiceBar voice={voice} seated={seated} />}
       {room && <TableScreens voice={voice} localId={room.sessionId} names={(id) => room.state.players?.get(id)?.name ?? 'Someone'} />}
 
-      {(nearSeat || seated) && (
+      {(hint || seated) && !machineOpen && (
         <div className="panel absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 text-sm font-bold">
-          {seated ? '📖 Studying · press E or walk to stand up' : 'Press E to sit'}
+          {seated ? '📖 Studying · press E or walk to stand up' : hintText(hint!)}
         </div>
+      )}
+
+      {room && machineOpen && (
+        <BuddyMachinePanel room={room} npcIds={npcIds} spins={spins} error={gachaError} onClose={() => setMachineOpen(false)} />
       )}
 
       {room && <ChatPanel room={room} messages={chat} />}
@@ -136,6 +165,19 @@ function joinOptions() {
   return { name: profile.name || 'Guest', look: profile.look, visitorId: profile.visitorId };
 }
 
+function hintText(hint: Hint) {
+  switch (hint.kind) {
+    case 'pet':
+      return `Press E to pet ${hint.name} 🐾`;
+    case 'talk':
+      return `Press E to chat with ${hint.name}`;
+    case 'machine':
+      return 'Press E to open the Buddy Machine 🎰';
+    default:
+      return 'Press E to sit';
+  }
+}
+
 function statusText(status: string, error: string | null) {
   if (status === 'connecting') return 'Connecting…';
   if (status === 'closed') return 'Disconnected';
@@ -165,7 +207,7 @@ function useRoomLabel(roomId: string | undefined) {
   return label;
 }
 
-function ChatPanel({ room, messages }: { room: StudyRoom; messages: { id: string; name: string; text: string; sessionId: string }[] }) {
+function ChatPanel({ room, messages }: { room: StudyRoom; messages: { id: string; name: string; text: string; sessionId: string; system?: boolean }[] }) {
   const [text, setText] = useState('');
   const input = useRef<HTMLInputElement>(null);
   const typingSent = useRef({ on: false, at: 0 });
@@ -199,12 +241,18 @@ function ChatPanel({ room, messages }: { room: StudyRoom; messages: { id: string
     <div className="panel absolute bottom-4 left-4 flex w-[min(340px,calc(100%-32px))] flex-col gap-2 p-3">
       <ol ref={list} className="flex max-h-40 flex-col gap-1 overflow-y-auto text-sm">
         {messages.length === 0 && <li className="text-xs text-muted">Say hi to the room 👋</li>}
-        {messages.map((m) => (
-          <li key={m.id} className="leading-snug">
-            <b className={m.sessionId === room.sessionId ? 'text-accent-ink' : ''}>{m.name}</b>{' '}
-            <span className="break-words">{m.text}</span>
-          </li>
-        ))}
+        {messages.map((m) =>
+          m.system ? (
+            <li key={m.id} className="rounded-md bg-soft px-2 py-1 text-xs leading-snug text-muted">
+              {m.text}
+            </li>
+          ) : (
+            <li key={m.id} className="leading-snug">
+              <b className={m.sessionId === room.sessionId ? 'text-accent-ink' : ''}>{m.name}</b>{' '}
+              <span className="break-words">{m.text}</span>
+            </li>
+          ),
+        )}
       </ol>
       <form
         className="flex gap-2"

@@ -3,7 +3,9 @@
 import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { CLIENT_SEND_HZ, RUN_SPEED, SEATS, SEAT_BY_ID, SIT_REACH, WALK_SPEED, type PlayerView } from '@study/shared';
+import {
+  CLIENT_SEND_HZ, GACHA_MACHINE, NPC_REACH, RUN_SPEED, SEATS, SEAT_BY_ID, SIT_REACH, WALK_SPEED, type PlayerView,
+} from '@study/shared';
 import { resolveCollisions } from './collision';
 import type { LocalMotion } from './Avatar';
 import type { StudyRoom } from './useStudyRoom';
@@ -23,16 +25,25 @@ const isTyping = (e: KeyboardEvent) => {
   return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
 };
 
+/** What pressing E would do right now. */
+export type Hint =
+  | { kind: 'seat'; seatId: string }
+  | { kind: 'pet' | 'talk'; npcId: string; name: string }
+  | { kind: 'machine' };
+
 interface Props {
   room: StudyRoom;
   motion: React.RefObject<LocalMotion>;
-  /** Called when the nearest free seat in reach changes (null = none). */
-  onNearSeat: (seatId: string | null) => void;
+  /** Called when the nearest interaction in reach changes (null = none). */
+  onHint: (hint: Hint | null) => void;
+  /** Open the Buddy Machine panel. */
+  onOpenMachine: () => void;
 }
 
-export function LocalController({ room, motion, onNearSeat }: Props) {
+export function LocalController({ room, motion, onHint, onOpenMachine }: Props) {
   const keys = useRef(new Set<string>());
-  const nearSeat = useRef<string | null>(null);
+  const hint = useRef<Hint | null>(null);
+  const hintKey = useRef('');
   const lastSent = useRef({ at: 0, x: 0, z: 0, yaw: 0, moving: false });
   const standSentAt = useRef(0);
   const camera = useThree((s) => s.camera);
@@ -51,8 +62,12 @@ export function LocalController({ room, motion, onNearSeat }: Props) {
       }
       if (e.code === 'KeyE' && !e.repeat) {
         const p = me();
+        const h = hint.current;
         if (p?.seatId) room.send('stand', {});
-        else if (nearSeat.current) room.send('sit', { seatId: nearSeat.current });
+        else if (h?.kind === 'pet') room.send('npc:pet', { id: h.npcId });
+        else if (h?.kind === 'talk') room.send('npc:talk', { id: h.npcId });
+        else if (h?.kind === 'machine') onOpenMachine();
+        else if (h?.kind === 'seat') room.send('sit', { seatId: h.seatId });
       }
     };
     const up = (e: KeyboardEvent) => keys.current.delete(e.code);
@@ -65,7 +80,7 @@ export function LocalController({ room, motion, onNearSeat }: Props) {
       window.removeEventListener('keyup', up);
       window.removeEventListener('blur', blur);
     };
-  }, [room]);
+  }, [room, onOpenMachine]);
 
   useFrame((_state, rawDt) => {
     const dt = Math.min(rawDt, 0.05);
@@ -121,10 +136,11 @@ export function LocalController({ room, motion, onNearSeat }: Props) {
         const running = keys.current.has('ShiftLeft') || keys.current.has('ShiftRight');
         const step = (running ? RUN_SPEED : WALK_SPEED) * dt;
         const next = { x: m.x + move.x * step, z: m.z + move.z * step };
-        const others: { x: number; z: number }[] = [];
+        const others: { x: number; z: number; r?: number }[] = [];
         room.state.players.forEach((o, id) => {
           if (id !== room.sessionId) others.push(o);
         });
+        room.state.npcs?.forEach((n) => others.push({ x: n.x, z: n.z, r: n.kind === 'cat' ? 0.22 : 0.3 }));
         resolveCollisions(next, others);
         m.x = next.x;
         m.z = next.z;
@@ -141,23 +157,36 @@ export function LocalController({ room, motion, onNearSeat }: Props) {
       }
     }
 
-    // Nearest free seat within reach, for the "press E" hint
-    let best: string | null = null;
+    // What would E do? Friends first, then the Buddy Machine, then the nearest free seat.
+    let next: Hint | null = null;
     if (!p.seatId) {
-      let bestD = SIT_REACH * 0.8;
-      const taken = new Set<string>();
-      room.state.players.forEach((o) => o.seatId && taken.add(o.seatId));
-      for (const s of SEATS) {
-        const d = Math.hypot(s.x - m.x, s.z - m.z);
-        if (d < bestD && !taken.has(s.id)) {
-          bestD = d;
-          best = s.id;
+      let bestNpc = NPC_REACH;
+      room.state.npcs?.forEach((n, id) => {
+        const d = Math.hypot(n.x - m.x, n.z - m.z);
+        if (d < bestNpc) {
+          bestNpc = d;
+          next = { kind: n.kind === 'cat' ? 'pet' : 'talk', npcId: id, name: n.name };
+        }
+      });
+      if (!next && Math.hypot(GACHA_MACHINE.x - m.x, GACHA_MACHINE.z - m.z) < GACHA_MACHINE.reach) next = { kind: 'machine' };
+      if (!next) {
+        let bestD = SIT_REACH * 0.8;
+        const taken = new Set<string>();
+        room.state.players.forEach((o) => o.seatId && taken.add(o.seatId));
+        for (const s of SEATS) {
+          const d = Math.hypot(s.x - m.x, s.z - m.z);
+          if (d < bestD && !taken.has(s.id)) {
+            bestD = d;
+            next = { kind: 'seat', seatId: s.id };
+          }
         }
       }
     }
-    if (best !== nearSeat.current) {
-      nearSeat.current = best;
-      onNearSeat(best);
+    const key = next ? JSON.stringify(next) : '';
+    if (key !== hintKey.current) {
+      hintKey.current = key;
+      hint.current = next;
+      onHint(next);
     }
 
     // Camera follows us smoothly

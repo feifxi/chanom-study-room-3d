@@ -5,7 +5,7 @@
  * Checks room sharding, the server-side speed limit, seat rules and chat.
  */
 import { Client, Callbacks, type Room } from '@colyseus/sdk';
-import { MAX_PLAYERS, ROOM_NAME, SEATS, type RoomListing } from '@study/shared';
+import { GACHA_MACHINE, MAX_PLAYERS, ROOM_NAME, SEATS, SEAT_BY_ID, SPIN_COOLDOWN_MS, SPIN_REVEAL_MS, type RoomListing } from '@study/shared';
 
 const URL = process.env.GAME_URL ?? 'http://localhost:2567';
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -127,7 +127,84 @@ const voice = await new Promise<{ url: string; token: string } | null>((resolve)
 const grant = voice ? JSON.parse(Buffer.from(voice.token.split('.')[1]!, 'base64url').toString()) : null;
 check('voice token is issued for this room and session', grant?.video?.room === a.roomId && grant?.sub === a.sessionId, voice?.url);
 
-// 7. State callbacks fire for joins
+// 7. NPCs and the Buddy Machine
+{
+  const npcs = () => (a.state as any).npcs as Map<string, any>;
+  const list = () => [...npcs().entries()];
+  check('a new room starts with a resident cat', list().some(([, n]) => n.kind === 'cat'));
+
+  const errors: string[] = [];
+  const spun: any[] = [];
+  const announcements: string[] = [];
+  const reactions: any[] = [];
+  a.onMessage('gacha:error', (m: any) => errors.push(m.message));
+  a.onMessage('gacha:spun', (m: any) => spun.push(m));
+  a.onMessage('npc:react', (m: any) => reactions.push(m));
+  b.onMessage('chat', () => {});
+  a.onMessage('chat', (m: any) => m.system && announcements.push(m.text));
+
+  if (me(a).seatId) a.send('stand', {});
+  await sleep(200);
+  a.send('gacha:spin', { kind: 'cat' });
+  await sleep(300);
+  check('spinning from across the room is refused', errors.length === 1 && spun.length === 0, errors[0]);
+
+  await walkTo(a, GACHA_MACHINE.x + 1.1, GACHA_MACHINE.z + 0.6);
+  const before = npcs().size;
+  a.send('gacha:spin', { kind: 'cat' });
+  await sleep(300);
+  check('spin announces the capsule to everyone first', spun.length === 1 && npcs().size === before, spun[0]?.label);
+  a.send('gacha:spin', { kind: 'cat' });
+  await sleep(300);
+  check('a second spin right away hits the cooldown', errors.length === 2, errors[1]);
+  await sleep(SPIN_REVEAL_MS + 300);
+  const catId = spun[0]?.npcId;
+  check('the NPC appears after the reveal, with a chat announcement', npcs().has(catId) && announcements.some((t) => t.includes('summoned')), announcements.at(-1));
+
+  a.send('npc:update', { id: catId, name: '  Captain Fluff  ' });
+  await sleep(300);
+  check('anyone can rename an NPC', npcs().get(catId)?.name === 'Captain Fluff');
+
+  const cat = npcs().get(catId);
+  await walkTo(a, cat.x + 0.5, cat.z + 0.5);
+  a.send('npc:pet', { id: catId });
+  await sleep(400);
+  check('petting a cat makes hearts', reactions.some((r) => r.npcId === catId && r.emote === '❤️'));
+
+  // Study buddy: summon, wait for it to find a seat, then take that seat
+  await sleep(SPIN_COOLDOWN_MS);
+  await walkTo(a, GACHA_MACHINE.x + 1.1, GACHA_MACHINE.z + 0.6);
+  a.send('gacha:spin', { kind: 'buddy' });
+  await sleep(SPIN_REVEAL_MS + 400);
+  const buddyId = spun.at(-1)?.npcId;
+  let buddy: any;
+  for (let i = 0; i < 40; i++) {
+    buddy = npcs().get(buddyId);
+    if (buddy?.seatId) break;
+    await sleep(500);
+  }
+  check('a study buddy walks to a free seat and starts focusing', !!buddy?.seatId && buddy.status === 'focus' && buddy.focusSince > 0, buddy?.seatId);
+
+  if (buddy?.seatId) {
+    const seat = SEAT_BY_ID.get(buddy.seatId)!;
+    const taken = buddy.seatId;
+    await walkTo(a, seat.x - Math.sin(seat.yaw) * 0.6, seat.z - Math.cos(seat.yaw) * 0.6);
+    a.send('sit', { seatId: taken });
+    await sleep(600);
+    check('the buddy gives its seat to a person', me(a).seatId === taken && npcs().get(buddyId)?.seatId !== taken);
+    a.send('stand', {});
+  }
+
+  a.send('npc:remove', { id: catId });
+  let gone = false;
+  for (let i = 0; i < 40 && !gone; i++) {
+    await sleep(500);
+    gone = !npcs().has(catId);
+  }
+  check('saying goodbye walks the NPC back into the machine', gone);
+}
+
+// 8. State callbacks fire for joins
 let added = 0;
 Callbacks.get(b).onAdd('players', () => added++);
 const late = await join('late');

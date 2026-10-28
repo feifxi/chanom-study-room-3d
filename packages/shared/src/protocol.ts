@@ -1,5 +1,6 @@
 import type { AvatarLook } from './avatar';
 import type { TimerPhase } from './focus';
+import type { NpcKind, NpcView } from './npc';
 
 export const STATUSES = ['idle', 'focus', 'break', 'away'] as const;
 export type PlayerStatus = (typeof STATUSES)[number];
@@ -29,6 +30,14 @@ export interface ClientMessages {
   clock: Record<string, never>;
   /** Ask for a LiveKit token for this room (answered with `voice:token`). */
   'voice:token': Record<string, never>;
+  /** Buddy Machine: summon a new NPC (must be standing at the machine). */
+  'gacha:spin': { kind: NpcKind };
+  /** Rename an NPC or change its settings (anyone can). */
+  'npc:update': { id: string; name?: string; settings?: Record<string, unknown> };
+  'npc:remove': { id: string };
+  /** Pet a cat / talk to a buddy you're standing next to. */
+  'npc:pet': { id: string };
+  'npc:talk': { id: string };
 }
 
 /** Server → client broadcast messages (not part of synced state). */
@@ -37,6 +46,10 @@ export interface ServerMessages {
   /** Reply to `clock`, used to line client clocks up with the server's. */
   clock: { serverNow: number };
   'voice:token': { url: string; token: string };
+  'npc:say': { npcId: string; text: string };
+  'npc:react': { npcId: string; emote: string };
+  'gacha:spun': import('./npc').GachaSpun;
+  'gacha:error': { message: string };
 }
 
 export interface ChatMessage {
@@ -45,6 +58,8 @@ export interface ChatMessage {
   name: string;
   text: string;
   at: number;
+  /** Room announcements (e.g. a summoned NPC), shown without a speaker. */
+  system?: boolean;
 }
 
 /** Shape of one player in the synced room state, as the client sees it. */
@@ -80,6 +95,7 @@ export interface LeaderRowView {
 
 export interface StudyStateView {
   players: Map<string, PlayerView>;
+  npcs: Map<string, NpcView>;
 }
 
 /** Row returned by the lobby endpoint. */

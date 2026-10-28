@@ -168,3 +168,33 @@ a[href]:focus-visible {
     transform: none;
   }
 }
+
+/* Hearts / sparkles that float up from an NPC (e.g. after a head pat) */
+.emote-float {
+  position: absolute;
+  bottom: 100%;
+  font-size: 18px;
+  text-shadow: 0 0 6px #fff;
+  animation: emote-float 1.6s ease-out forwards;
+}
+
+@keyframes emote-float {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.6);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-34px) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .emote-float {
+    animation-duration: 0.01s;
+  }
+}

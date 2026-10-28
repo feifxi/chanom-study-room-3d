@@ -68,8 +68,34 @@ export const OBSTACLES: Obstacle[] = [
   // Reading nook: sofa and coffee table, front-left
   { kind: 'box', minX: -9.8, maxX: -8.6, minZ: 2.6, maxZ: 5.6 },
   { kind: 'circle', x: -7.6, z: 4.1, r: 0.5 },
+  // Buddy Machine (gachapon), front-right
+  { kind: 'circle', x: 6.6, z: 4.6, r: 0.55 },
   // Plants
   { kind: 'circle', x: 9.3, z: 6.2, r: 0.35 },
   { kind: 'circle', x: -9.3, z: -5.6, r: 0.35 },
   { kind: 'circle', x: 9.3, z: -5.6, r: 0.35 },
 ];
+
+/**
+ * The gachapon "Buddy Machine": its spot, facing and reach. It faces +z so people
+ * using it stand off to one side on screen instead of between the camera and the machine.
+ */
+export const GACHA_MACHINE = { x: 6.6, z: 4.6, yaw: 0, reach: 1.7 } as const;
+
+/** Where new NPCs pop out: just in front of the machine. */
+export const NPC_SPAWN = {
+  x: GACHA_MACHINE.x + Math.sin(GACHA_MACHINE.yaw) * 1.0,
+  z: GACHA_MACHINE.z + Math.cos(GACHA_MACHINE.yaw) * 1.0,
+} as const;
+
+/** Cosy places a cat likes to nap. `y` lifts it onto furniture (the sofa seat). */
+export const NAP_SPOTS: { x: number; z: number; y: number }[] = [
+  { x: -9.15, z: 3.5, y: 0.45 },
+  { x: -9.15, z: 4.8, y: 0.45 },
+  { x: -7.9, z: 5.2, y: 0 },
+  { x: -1.3, z: -6.0, y: 0 },
+  { x: 8.6, z: -5.0, y: 0 },
+];
+
+/** The reading nook, for cats set to stay put. */
+export const NOOK = { minX: -9.6, maxX: -6.2, minZ: 2.4, maxZ: 6.4 } as const;

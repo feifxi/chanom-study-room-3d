@@ -25,9 +25,35 @@ export const Player = schema(
 );
 export type Player = SchemaType<typeof Player>;
 
+/** A room NPC (cat or study buddy), driven by the server's NpcDirector. */
+export const Npc = schema(
+  {
+    kind: t.string(),
+    name: t.string(),
+    /** JSON: { coat } for cats, an AvatarLook for buddies */
+    look: t.string(),
+    /** JSON NpcSettings */
+    settings: t.string(),
+    x: t.float32(),
+    z: t.float32(),
+    y: t.float32().default(0),
+    yaw: t.float32(),
+    moving: t.boolean(),
+    anim: t.string().default('idle'),
+    seatId: t.string().default(''),
+    status: t.string().default('idle'),
+    statusEndsAt: t.number().default(0),
+    focusSince: t.number().default(0),
+    subject: t.string().default(''),
+  },
+  'Npc',
+);
+export type Npc = SchemaType<typeof Npc>;
+
 export const StudyState = schema(
   {
     players: t.map(Player),
+    npcs: t.map(Npc),
   },
   'StudyState',
 );

@@ -2,8 +2,8 @@
 
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import type { PlayerView } from '@study/shared';
-import type { Bubble } from './useStudyRoom';
+import type { NpcView, PlayerView } from '@study/shared';
+import { npcKey, type Bubble, type Reaction } from './useStudyRoom';
 import { STATUS_ICON, minutesSince, useTick } from '../focus/FocusPanel';
 
 /**
@@ -48,9 +48,35 @@ interface LayerProps {
   bubbles: Record<string, Bubble>;
   voice: { speaking: Set<string>; micEnabled: Set<string>; sharing: Set<string> };
   clockOffset: number;
+  npcIds: string[];
+  npcs: Map<string, NpcView> | undefined;
+  reactions: Reaction[];
 }
 
-export function LabelLayer({ board, ids, players, localId, bubbles, voice, clockOffset }: LayerProps) {
+function SpeechBubble({ bubble, now }: { bubble?: Bubble; now: number }) {
+  if (!bubble || bubble.until <= now) return null;
+  return (
+    <div className="w-max max-w-56 rounded-xl bg-white px-2.5 py-1.5 text-center text-xs leading-snug font-semibold text-ink shadow-md">
+      {bubble.text}
+    </div>
+  );
+}
+
+function Emotes({ target, reactions }: { target: string; reactions: Reaction[] }) {
+  return (
+    <>
+      {reactions
+        .filter((r) => r.target === target)
+        .map((r) => (
+          <span key={r.key} className="emote-float">
+            {r.emote}
+          </span>
+        ))}
+    </>
+  );
+}
+
+export function LabelLayer({ board, ids, players, localId, bubbles, voice, clockOffset, npcIds, npcs, reactions }: LayerProps) {
   useTick(1000); // status/subject come from synced state, which React doesn't watch
   const now = Date.now();
   return (
@@ -85,11 +111,7 @@ export function LabelLayer({ board, ids, players, localId, bubbles, voice, clock
               <span />
               <span />
             </div>
-            {talking && (
-              <div className="w-max max-w-56 rounded-xl bg-white px-2.5 py-1.5 text-center text-xs leading-snug font-semibold text-ink shadow-md">
-                {bubble.text}
-              </div>
-            )}
+            {talking && <SpeechBubble bubble={bubble} now={now} />}
             <div
               className={`rounded-full px-2 py-0.5 text-[11px] font-bold whitespace-nowrap shadow-sm ${
                 isLocal ? 'bg-accent text-white' : 'bg-white/90 text-ink'
@@ -107,6 +129,38 @@ export function LabelLayer({ board, ids, players, localId, bubbles, voice, clock
                   · {minutesSince(player.focusSince, clockOffset)}m{player.subject && ` · ${player.subject}`}
                 </span>
               )}
+            </div>
+          </div>
+        );
+      })}
+
+      {/* NPCs: same label board, a soft "NPC" chip so nobody mistakes them for people */}
+      {npcIds.map((id) => {
+        const npc = npcs?.get(id);
+        if (!npc) return null;
+        const key = npcKey(id);
+        const icon = npc.kind === 'cat' ? (npc.anim === 'nap' ? '💤' : '🐈') : (STATUS_ICON[npc.status] ?? '🧑‍🎓');
+        return (
+          <div
+            key={key}
+            ref={(el) => {
+              if (el) board.labels.set(key, el);
+              else board.labels.delete(key);
+            }}
+            className="absolute top-0 left-0 flex flex-col items-center gap-1.5"
+            style={{ visibility: 'hidden' }}
+          >
+            <Emotes target={key} reactions={reactions} />
+            <SpeechBubble bubble={bubbles[key]} now={now} />
+            <div className="flex items-center gap-1 rounded-full border border-[#ffd0e4] bg-[#fff7fb]/95 px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-ink shadow-sm">
+              <span>{icon}</span>
+              {npc.name}
+              {npc.kind === 'buddy' && npc.status === 'focus' && (
+                <span className="font-semibold opacity-75">
+                  · {minutesSince(npc.focusSince, clockOffset)}m{npc.subject && ` · ${npc.subject}`}
+                </span>
+              )}
+              <span className="rounded bg-[#ffd0e4] px-1 text-[9px] tracking-wide text-accent-ink">NPC</span>
             </div>
           </div>
         );

@@ -4,10 +4,11 @@ import { z } from 'zod';
 import {
   BOUNDS, CHAT_MAX, MAX_PLAYERS, MAX_TIMER_MIN, NAME_MAX, PATCH_RATE_MS, RUN_SPEED, SEAT_BY_ID,
   SIT_REACH, SPAWN, SPEED_TOLERANCE, SUBJECT_MAX, TIMER_PHASES, sanitizeLook,
-  type ChatMessage, type PlayerStatus, type TimerPhase,
+  NPC_KINDS, type ChatMessage, type PlayerStatus, type TimerPhase,
 } from '@study/shared';
 import { getTodayMinutes, upsertVisitor, type Db } from '@study/db';
 import { metrics } from '../metrics';
+import { NpcDirector } from '../npc/NpcDirector';
 import { Player, StudyState } from '../state';
 
 export interface StudyRoomMetadata {
@@ -72,6 +73,13 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
   state = new StudyState();
 
   private priv = new Map<string, Private>();
+  private npcs = new NpcDirector({
+    state: this.state,
+    say: (npcId, text) => this.broadcast('npc:say', { npcId, text }),
+    react: (npcId, emote) => this.broadcast('npc:react', { npcId, emote }),
+    announce: (text) => this.announce(text),
+    spun: (event) => this.broadcast('gacha:spun', event),
+  });
 
   messages = {
     move: validate(
@@ -114,6 +122,38 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
       p.z = seat.z;
       p.yaw = seat.yaw;
       p.moving = false;
+      // People come first: a study buddy in this seat politely moves elsewhere
+      this.npcs.yieldSeat(seat.id);
+    }),
+
+    'gacha:spin': validate(z.object({ kind: z.enum(NPC_KINDS) }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (!p) return;
+      const error = this.npcs.spin(client.sessionId, p, msg.kind);
+      if (error) client.send('gacha:error', { message: error });
+    }),
+
+    'npc:update': validate(
+      z.object({ id: z.string().max(16), name: z.string().max(40).optional(), settings: z.record(z.string(), z.unknown()).optional() }),
+      (client, msg) => {
+        const p = this.state.players.get(client.sessionId);
+        if (p) this.npcs.update(msg.id, msg, p.name);
+      },
+    ),
+
+    'npc:remove': validate(z.object({ id: z.string().max(16) }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (p) this.npcs.remove(msg.id, p.name);
+    }),
+
+    'npc:pet': validate(z.object({ id: z.string().max(16) }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (p) this.npcs.pet(p, msg.id);
+    }),
+
+    'npc:talk': validate(z.object({ id: z.string().max(16) }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (p) this.npcs.talk(p, msg.id);
     }),
 
     stand: (client: Client) => {
@@ -196,6 +236,22 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
     this.setMetadata({ number, label: `Library #${number}` });
 
     this.clock.setInterval(() => this.tick(), 1000);
+
+    // Every new room starts with a resident cat; more friends come from the Buddy Machine
+    this.npcs.spawn('cat', { at: { x: -7.9, z: 3.2 } });
+    let last = Date.now();
+    this.clock.setInterval(() => {
+      const now = Date.now();
+      this.npcs.tick(Math.min(0.25, (now - last) / 1000));
+      last = now;
+    }, 100);
+  }
+
+  /** A system line in everyone's chat. */
+  private announce(text: string) {
+    const now = Date.now();
+    const message: ChatMessage = { id: `system-${now}-${Math.random().toString(36).slice(2, 6)}`, sessionId: 'system', name: 'Buddy Machine', text, at: now, system: true };
+    this.broadcast('chat', message);
   }
 
   onJoin(client: Client, options: { name?: unknown; look?: unknown; visitorId?: unknown } = {}) {
@@ -209,6 +265,7 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
     player.moving = false;
     this.state.players.set(client.sessionId, player);
     metrics.joins.inc();
+    this.npcs.onPlayerJoined(player);
 
     // Anonymous, client-generated id used only to group study stats. Trusted as-is in this demo.
     const visitorId = typeof options.visitorId === 'string' && /^[\w-]{8,64}$/.test(options.visitorId) ? options.visitorId : client.sessionId;
@@ -287,6 +344,7 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
     p.focusSince = 0;
     const minutes = (endedAt.getTime() - startedAt.getTime()) / MINUTE;
     p.todayMin += Math.round(minutes);
+    this.npcs.onPlayerFocusEnded(p, minutes);
     services.recordFocus?.({
       visitorId: s.visitorId,
       name: p.name,

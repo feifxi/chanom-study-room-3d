@@ -57,6 +57,16 @@ Everything a person says shows above their head:
 - a speech bubble with their message for a few seconds after they send it
 - a mic indicator while they speak (coming with voice chat)
 
+## Room friends (NPCs)
+
+A pastel gachapon **Buddy Machine** stands near the entrance. Walk up and press **E**:
+
+- **Summon** a 🐈 library cat or a 🧑‍🎓 study buddy. Everyone sees the capsule roll out and pop open; cats roll a random coat (5% chance of a ✨ golden one).
+- **Residents**: anyone can rename a friend, change its habits (cat: roam / stay in the nook; buddy: subject, 25/5 or 50/10, chatty / quiet) or say goodbye.
+- Cats wander, groom and nap on the sofa (more at night). Press **E** next to one to pet it: hearts, a purr, and it follows you for a bit.
+- Study buddies take a free seat, run their own pomodoro (shown on their name tag), cheer you when you finish a focus stretch, and give up their seat if you want it.
+- Up to 6 friends per room; every new room starts with one cat, and friends go home when the room closes. NPC logic runs on the server (grid A* pathfinding in `@study/shared`), so everyone sees the same thing.
+
 ## Controls
 
 WASD / arrow keys to walk · Shift to run · E to sit or stand · Enter to chat · drag to orbit, scroll to zoom.
