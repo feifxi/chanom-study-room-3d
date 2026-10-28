@@ -2,11 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { CHAT_MAX, SPAWN, type RoomListing } from '@study/shared';
 import { GAME_URL } from '@/lib/config';
 import { FocusPanel } from '../focus/FocusPanel';
+import { ScreenShareTextures, VoiceBar } from '../voice/ScreenShares';
+import { useVoice } from '../voice/useVoice';
 import { loadProfile, type Profile } from '@/lib/profile';
 import { Avatar, type LocalMotion } from './Avatar';
 import { LabelBoard, LabelLayer, LabelProjector } from './labels';
@@ -28,6 +30,15 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
   const seated = useSeated(room);
   const label = useRoomLabel(room?.roomId);
   const board = useMemo(() => new LabelBoard(), []);
+  const voice = useVoice(room, motion);
+
+  // Dev-only handle for automated browser tests (stripped from production builds)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production' || !room) return;
+    const w = window as unknown as { __study?: Record<string, unknown> };
+    w.__study = { ...(w.__study ?? {}), room, motion };
+  }, [room]);
+  const sharingIds = useMemo(() => new Set(voice.shares.map((s) => s.identity)), [voice.shares]);
 
   return (
     <div className="fixed inset-0">
@@ -51,10 +62,21 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
               <Avatar key={id} id={id} player={player} isLocal={id === room.sessionId} local={motion} bubble={bubbles[id]} board={board} />
             ) : null;
           })}
+        <ScreenShareTextures shares={voice.shares} players={room?.state.players} />
         <LabelProjector board={board} />
+        <DevSceneHandle />
       </Canvas>
 
-      {room && <LabelLayer board={board} ids={playerIds} players={room.state.players} localId={room.sessionId} bubbles={bubbles} />}
+      {room && (
+        <LabelLayer
+          board={board}
+          ids={playerIds}
+          players={room.state.players}
+          localId={room.sessionId}
+          bubbles={bubbles}
+          voice={{ speaking: voice.speaking, micEnabled: voice.micEnabled, sharing: sharingIds }}
+        />
+      )}
 
       <header className="panel absolute top-4 left-4 flex items-center gap-3 px-4 py-2.5">
         <Link href="/" className="text-sm font-bold text-muted hover:text-ink">← ออก</Link>
@@ -70,6 +92,14 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
       </p>
 
       {room && <FocusPanel room={room} clockOffset={clockOffset} />}
+      {room && (
+        <VoiceBar
+          voice={voice}
+          seated={seated}
+          localId={room.sessionId}
+          names={(id) => room.state.players?.get(id)?.name ?? 'ใครบางคน'}
+        />
+      )}
 
       {(nearSeat || seated) && (
         <div className="panel absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 text-sm font-bold">
@@ -90,6 +120,17 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
       )}
     </div>
   );
+}
+
+/** Dev-only: expose the scene to automated browser tests. */
+function DevSceneHandle() {
+  const scene = useThree((s) => s.scene);
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') return;
+    const w = window as unknown as { __study?: Record<string, unknown> };
+    w.__study = { ...(w.__study ?? {}), scene };
+  }, [scene]);
+  return null;
 }
 
 function statusText(status: string, error: string | null) {

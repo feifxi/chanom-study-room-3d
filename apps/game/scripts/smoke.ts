@@ -125,6 +125,14 @@ const clock = await new Promise<number>((resolve) => {
 });
 check('clock sync replies with server time', Math.abs(clock - (t0 + Date.now()) / 2) < 1000);
 
+const voice = await new Promise<{ url: string; token: string } | null>((resolve) => {
+  a.onMessage('voice:token', resolve);
+  a.send('voice:token', {});
+  setTimeout(() => resolve(null), 2000);
+});
+const grant = voice ? JSON.parse(Buffer.from(voice.token.split('.')[1]!, 'base64url').toString()) : null;
+check('voice token is issued for this room and session', grant?.video?.room === a.roomId && grant?.sub === a.sessionId, voice?.url);
+
 // 7. State callbacks fire for joins
 let added = 0;
 Callbacks.get(b).onAdd('players', () => added++);

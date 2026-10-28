@@ -21,3 +21,7 @@ export const SIT_REACH = 1.6;
 export const NAME_MAX = 16;
 export const CHAT_MAX = 200;
 export const SUBJECT_MAX = 24;
+
+/** Proximity voice: full volume within VOICE_NEAR metres, silent beyond VOICE_FAR. */
+export const VOICE_NEAR = 2.5;
+export const VOICE_FAR = 9;

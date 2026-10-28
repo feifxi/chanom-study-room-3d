@@ -32,6 +32,8 @@ export interface ClientMessages {
   'timer:stop': Record<string, never>;
   /** Ask for the server time (answered with a `clock` message). */
   clock: Record<string, never>;
+  /** Ask for a LiveKit token for this room (answered with `voice:token`). */
+  'voice:token': Record<string, never>;
 }
 
 /** Server → client broadcast messages (not part of synced state). */
@@ -39,6 +41,7 @@ export interface ServerMessages {
   chat: ChatMessage;
   /** Reply to `clock`, used to line client clocks up with the server's. */
   clock: { serverNow: number };
+  'voice:token': { url: string; token: string };
   /** The shared room timer moved to a new phase. */
   chime: { phase: TimerPhase };
 }

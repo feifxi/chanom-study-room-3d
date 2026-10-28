@@ -18,14 +18,16 @@ services:
       interval: 5s
       retries: 10
 
-  # Voice + screen share (phase 4). --dev uses the built-in devkey/secret.
+  # Voice + screen share. Single UDP port, advertised on localhost for local dev.
   livekit:
     image: livekit/livekit-server:latest
-    command: --dev --bind 0.0.0.0
+    command: --dev --bind 0.0.0.0 --node-ip 127.0.0.1 --udp-port 7882
+    environment:
+      LIVEKIT_KEYS: "devkey: secret"
     ports:
-      - "7880:7880"           # API / signalling (WebSocket)
-      - "7881:7881"           # WebRTC over TCP
-      - "50000-50100:50000-50100/udp" # WebRTC media (narrow range for dev)
+      - "7880:7880"     # API / signalling (WebSocket)
+      - "7881:7881"     # WebRTC over TCP (fallback)
+      - "7882:7882/udp" # WebRTC media
 
 volumes:
   pgdata:

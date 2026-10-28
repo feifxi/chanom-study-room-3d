@@ -39,7 +39,8 @@ export function LocalController({ room, motion, onNearSeat }: Props) {
   const controls = useThree((s) => s.controls) as unknown as { target: THREE.Vector3; update: () => void } | null;
   const scratch = useRef({ fwd: new THREE.Vector3(), right: new THREE.Vector3(), move: new THREE.Vector3(), follow: new THREE.Vector3() });
 
-  const me = (): PlayerView | undefined => room.state.players.get(room.sessionId);
+  const me = (): PlayerView | undefined => room.state.players?.get(room.sessionId);
+  const synced = useRef(false);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -72,6 +73,14 @@ export function LocalController({ room, motion, onNearSeat }: Props) {
     const m = motion.current;
     if (!p || !m) return;
     const { fwd, right, move, follow } = scratch.current;
+
+    // Start from wherever the server spawned us
+    if (!synced.current) {
+      synced.current = true;
+      m.x = p.x;
+      m.z = p.z;
+      m.yaw = p.yaw;
+    }
 
     let ix = 0;
     let iz = 0;

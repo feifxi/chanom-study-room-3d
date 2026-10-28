@@ -1,4 +1,5 @@
 import { Room, validate, type Client } from 'colyseus';
+import { AccessToken } from 'livekit-server-sdk';
 import { z } from 'zod';
 import {
   BOUNDS, CHAT_MAX, MAX_PLAYERS, MAX_TIMER_MIN, MIN_TIMER_MIN, NAME_MAX, PATCH_RATE_MS, RUN_SPEED, SEAT_BY_ID,
@@ -31,6 +32,13 @@ const CHAT_COOLDOWN_MS = 500;
 const TYPING_TIMEOUT_MS = 6000;
 const RECONNECT_SECONDS = 20;
 const MINUTE = 60_000;
+
+const LIVEKIT = {
+  /** URL browsers connect to (ws:// locally, wss:// behind TLS in production). */
+  publicUrl: process.env.LIVEKIT_PUBLIC_URL ?? 'ws://localhost:7880',
+  apiKey: process.env.LIVEKIT_API_KEY ?? 'devkey',
+  apiSecret: process.env.LIVEKIT_API_SECRET ?? 'secret',
+};
 
 // Public rooms are numbered "Library #1, #2, …"; a number is reused once its room closes.
 const usedNumbers = new Set<number>();
@@ -177,6 +185,18 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
       this.broadcast('chime', { phase: 'focus' });
       this.refreshAll();
     }),
+
+    /**
+     * Voice + screen share token. The LiveKit room is this Colyseus room and the
+     * identity is the session id, so audio can be matched to avatars for proximity.
+     */
+    'voice:token': async (client: Client) => {
+      const p = this.state.players.get(client.sessionId);
+      if (!p) return;
+      const at = new AccessToken(LIVEKIT.apiKey, LIVEKIT.apiSecret, { identity: client.sessionId, name: p.name, ttl: '6h' });
+      at.addGrant({ roomJoin: true, room: this.roomId, canPublish: true, canSubscribe: true });
+      client.send('voice:token', { url: LIVEKIT.publicUrl, token: await at.toJwt() });
+    },
 
     /** Clock sync: the client measures round-trip time and lines its clock up with ours. */
     clock: (client: Client) => {

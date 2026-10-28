@@ -46,9 +46,10 @@ interface LayerProps {
   players: Map<string, PlayerView>;
   localId: string;
   bubbles: Record<string, Bubble>;
+  voice: { speaking: Set<string>; micEnabled: Set<string>; sharing: Set<string> };
 }
 
-export function LabelLayer({ board, ids, players, localId, bubbles }: LayerProps) {
+export function LabelLayer({ board, ids, players, localId, bubbles, voice }: LayerProps) {
   useTick(1000); // status/subject come from synced state, which React doesn't watch
   const now = Date.now();
   return (
@@ -91,8 +92,11 @@ export function LabelLayer({ board, ids, players, localId, bubbles }: LayerProps
             <div
               className={`rounded-full px-2 py-0.5 text-[11px] font-bold whitespace-nowrap shadow-sm ${
                 isLocal ? 'bg-accent text-white' : 'bg-white/90 text-ink'
-              }`}
+              } ${voice.speaking.has(id) ? 'speaking' : ''}`}
             >
+              {/* Mic: bright while speaking, faded when on but quiet */}
+              {voice.micEnabled.has(id) && <span className={`mr-1 ${voice.speaking.has(id) ? '' : 'opacity-50'}`}>🎙️</span>}
+              {voice.sharing.has(id) && <span className="mr-1">🖥️</span>}
               {STATUS_ICON[player.status] && <span className="mr-1">{STATUS_ICON[player.status]}</span>}
               {player.name}
               {isLocal && ' (คุณ)'}

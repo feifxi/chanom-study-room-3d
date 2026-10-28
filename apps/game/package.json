@@ -24,6 +24,7 @@
     "@study/shared": "workspace:^",
     "colyseus": "^0.18.10",
     "express": "^5",
+    "livekit-server-sdk": "^2.19.2",
     "zod": "^4.6.7"
   }
 }
