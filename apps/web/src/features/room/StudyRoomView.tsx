@@ -134,13 +134,7 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
           <FocusPanel room={room} clockOffset={clockOffset} />
           <TableScreens voice={voice} localId={room.sessionId} names={(id) => room.state.players?.get(id)?.name ?? 'Someone'} />
           <ChatPanel room={room} messages={chat} open={chatOpen} onOpen={openChat} />
-          <Dock
-            voice={voice}
-            place={mySeat.place}
-            placeCount={mySeat.placeCount}
-            chatOpen={chatOpen}
-            onChat={() => setChatOpen((o) => !o)}
-          />
+          <Dock voice={voice} seated={!!mySeat.seatId} chatOpen={chatOpen} onChat={() => setChatOpen((o) => !o)} />
         </>
       )}
 

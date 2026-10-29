@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Same mark as components/Logo.tsx (colours: --accent, --tea) -->
+  <path d="M 25.85 17.74 A 10 10 0 1 1 16 6" fill="none" stroke="#df6392" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="23.66" cy="9.57" r="3.6" fill="#e9955a"/>
+</svg>

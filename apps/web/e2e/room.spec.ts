@@ -62,7 +62,6 @@ test('you can sit on the sofa and get up in front of it', async ({ page }) => {
   await expect(page.getByText('Press E to sit on the sofa')).toBeVisible();
   await page.keyboard.press('e');
   await expect(page.getByText(/Lounging on the sofa/)).toBeVisible();
-  await expect(page.getByText(/Sofa · \d+ (person|people) here/)).toBeVisible();
   expect((await me(page)).seatId).toMatch(/^sofa-/);
 
   await page.keyboard.press('e');
