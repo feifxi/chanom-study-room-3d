@@ -65,7 +65,10 @@ export function LeaveFeedback({ context, onLeave, onStay }: Props) {
           <h2 id="feedback-title" className="text-lg font-extrabold">
             Before you go, how was it?
           </h2>
-          <p className="text-sm text-muted">Totally anonymous. It helps make the room cosier ✨</p>
+          <p className="text-sm text-muted">
+            It helps make the room cosier ✨ No account needed: we keep your rating, comment and nickname, plus how long you stayed and your
+            browser.
+          </p>
         </div>
 
         <div role="radiogroup" aria-label="Rating" className="flex justify-between gap-1">

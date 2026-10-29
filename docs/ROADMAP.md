@@ -109,8 +109,8 @@ month at this size). A 3-day playtest costs about $6.
       set to the domain, `TRUST_PROXY=1` behind Caddy.
 - [ ] Voice and screen share tested on mobile data and a strict Wi-Fi (TURN works).
 - [ ] Load check: 20 bots in one room plus the HTTP load script; SLOs stay green.
-- [ ] Fresh database (no test visits or feedback).
-- [ ] A one-line privacy note near the feedback card (anonymous, what is stored).
+- [x] Fresh database (no test visits or feedback): RDS starts empty.
+- [x] The feedback card says what is stored (rating, comment, nickname, visit length, browser).
 
 ## Then: playtest with friends (1–2 weeks)
 
