@@ -74,7 +74,7 @@ down it finishes without doing anything, so CI stays green between playtests.
   `/chanom/deploy/config` and run commands on instances tagged `Project=chanom-study-room`.
 - Only jobs in the repository's `playtest` environment can assume the role. Add required
   reviewers to that environment (Settings → Environments) if you want to approve each deploy.
-- Redeploy on demand: Actions → CI → **Run workflow** on `main`.
+- Redeploy on demand: Actions → CI/CD → **Run workflow** on `main`.
 
 One-time setup:
 

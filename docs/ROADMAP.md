@@ -91,7 +91,7 @@ month at this size). A 3-day playtest costs about $6.
 - [x] CD: after `check` and `e2e` pass on `main`, GitHub Actions deploys on a native arm64 runner
       using OIDC (no stored AWS keys), skips when the stack is down, and fails if the site isn't
       healthy afterwards. Setup in [infra/README.md](../infra/README.md#continuous-deployment).
-- [ ] Rollback is "deploy the previous commit" (Actions → Run workflow, or `TAG=<old> pnpm infra:deploy`
+- [ ] Rollback is "deploy the previous commit" (Actions → CI/CD → Run workflow, or `TAG=<old> pnpm infra:deploy`
       when that image is still in ECR).
 
 ### 11.5 Observability in production
