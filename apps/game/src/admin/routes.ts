@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { FEEDBACK_COMMENT_MAX, FEEDBACK_TAGS, NAME_MAX, ROOM_NAME, type AdminOverview, type FeedbackRow } from '@study/shared';
 import { deleteFeedback, getAdminSummary, listFeedback, recordFeedback } from '@study/db';
 import { services, type StudyRoomMetadata } from '../rooms/StudyRoom';
+import { metrics } from '../metrics';
 import { presence } from '../presence';
 import { ADMIN_COOKIE, AdminAuth, SESSION_DAYS, readCookie } from './auth';
 
@@ -46,6 +47,7 @@ export function registerFeedbackRoute(app: Application) {
     if (!allow(ip(req))) return void res.status(429).json({ error: 'slow down' });
     const parsed = feedbackSchema.safeParse(req.body);
     if (!parsed.success) return void res.status(400).json({ error: 'invalid feedback' });
+    metrics.feedback.inc({ rating: String(parsed.data.rating) });
     await recordFeedback(db, {
       ...parsed.data,
       name: parsed.data.name || 'Guest',

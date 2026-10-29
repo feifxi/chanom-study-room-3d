@@ -4,11 +4,23 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": ["NEXT_PUBLIC_*"]
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "passThroughEnv": [
+        "PORT",
+        "WEB_ORIGIN",
+        "DATABASE_URL",
+        "ADMIN_PASSWORD",
+        "TRUST_PROXY",
+        "LIVEKIT_*",
+        "LOG_*",
+        "CHAOS_*",
+        "NEXT_PUBLIC_*"
+      ]
     },
     "typecheck": {
       "dependsOn": ["^typecheck"]

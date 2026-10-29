@@ -7,3 +7,6 @@ apps/web/next-env.d.ts
 *.tsbuildinfo
 apps/web/test-results
 apps/web/playwright-report
+# Generated (see ops/prometheus/gen_slo_rules.py, ops/grafana/gen_dashboard.py)
+ops/prometheus/rules/slo.yml
+ops/grafana/dashboards/*.json

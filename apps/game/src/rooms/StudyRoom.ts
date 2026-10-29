@@ -1,4 +1,4 @@
-import { Room, validate, type Client } from 'colyseus';
+import { CloseCode, Room, validate, type Client } from 'colyseus';
 import { AccessToken } from 'livekit-server-sdk';
 import { z } from 'zod';
 import {
@@ -20,6 +20,7 @@ import {
 } from '@study/shared';
 import { endVisit, getTodayMinutes, startVisit, upsertVisitor, type Db } from '@study/db';
 import { metrics } from '../metrics';
+import { log } from '../log';
 import { presence } from '../presence';
 import { NpcDirector } from '../npc/NpcDirector';
 import { Player, StudyState } from '../state';
@@ -223,6 +224,7 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
   onCreate() {
     const number = roomNumbers.claim();
     this.setMetadata({ number, label: `Library #${number}` });
+    log.info({ roomId: this.roomId, label: `Library #${number}` }, 'room opened');
 
     this.clock.setInterval(() => this.tick(), 1000);
 
@@ -231,7 +233,9 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
     let last = Date.now();
     this.clock.setInterval(() => {
       const now = Date.now();
+      const end = metrics.npcTick.startTimer();
       this.npcs.tick(Math.min(0.25, (now - last) / 1000));
+      end();
       last = now;
     }, 100);
   }
@@ -277,12 +281,12 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
         .then((min) => {
           player.todayMin = min;
         })
-        .catch((e) => console.warn('stats: join bookkeeping failed', e));
+        .catch((err) => log.warn({ err, roomId: this.roomId }, 'stats: join bookkeeping failed'));
     }
     presence.join();
     const visitId = db
       ? startVisit(db, { visitorId, roomLabel: this.metadata?.label ?? '' }).catch((e) => {
-          console.warn('stats: could not record visit', e);
+          log.warn({ err: e, roomId: this.roomId }, 'stats: could not record visit');
           return undefined;
         })
       : undefined;
@@ -299,18 +303,34 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
     });
   }
 
-  async onDrop(client: Client) {
+  async onDrop(client: Client, code?: number) {
+    metrics.disconnects.inc({ kind: 'dropped' });
+    log.info({ roomId: this.roomId, sessionId: client.sessionId, code }, 'connection dropped; holding the seat');
     // Keep the avatar in place briefly so a flaky connection can resume.
-    await this.allowReconnection(client, RECONNECT_SECONDS);
+    try {
+      await this.allowReconnection(client, RECONNECT_SECONDS);
+    } catch {
+      metrics.disconnects.inc({ kind: 'timed_out' });
+      log.info({ roomId: this.roomId, sessionId: client.sessionId }, 'dropped connection never came back');
+    }
   }
 
-  onLeave(client: Client) {
+  onReconnect(client: Client) {
+    metrics.disconnects.inc({ kind: 'reconnected' });
+    log.info({ roomId: this.roomId, sessionId: client.sessionId }, 'reconnected');
+  }
+
+  onLeave(client: Client, code?: number) {
+    // Timed-out drops are counted in onDrop
+    if (code === CloseCode.CONSENTED) metrics.disconnects.inc({ kind: 'left' });
     this.endFocus(client.sessionId);
     presence.leave();
     const db = services.db;
     const visit = this.priv.get(client.sessionId)?.visitId;
     if (db && visit)
-      void visit.then((id) => (id ? endVisit(db, id) : undefined)).catch((e) => console.warn('stats: could not close visit', e));
+      void visit
+        .then((id) => (id ? endVisit(db, id) : undefined))
+        .catch((err) => log.warn({ err, roomId: this.roomId }, 'stats: could not close visit'));
     const name = this.state.players.get(client.sessionId)?.name;
     if (name && this.announced.delete(client.sessionId)) this.announce(`🚪 ${name} left the room`);
     this.state.players.delete(client.sessionId);
@@ -318,6 +338,7 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
   }
 
   onDispose() {
+    log.info({ roomId: this.roomId, label: this.metadata?.label }, 'room closed');
     roomNumbers.release(this.metadata?.number);
   }
 

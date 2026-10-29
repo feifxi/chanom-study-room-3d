@@ -1,0 +1,23 @@
+# Local Alertmanager: alerts are routed and grouped, but not sent anywhere yet.
+# Open http://localhost:9093 to see them, and practise silences and inhibitions.
+# To get notified, add a receiver (email, Discord/Slack webhook, LINE via a webhook relay)
+# and point the matching route at it.
+route:
+  receiver: nowhere
+  group_by: [alertname, slo]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - matchers: [severity="page"]
+      receiver: nowhere
+      repeat_interval: 1h
+
+# A paging alert already says the SLO is burning; don't also ticket for the same SLO.
+inhibit_rules:
+  - source_matchers: [severity="page"]
+    target_matchers: [severity="ticket"]
+    equal: [slo]
+
+receivers:
+  - name: nowhere

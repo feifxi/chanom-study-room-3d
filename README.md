@@ -6,14 +6,14 @@ A 3D online study room: walk around a cosy library as an anime chibi character, 
 
 ## Stack
 
-| Part      | Tech                                                                                   |
-| --------- | -------------------------------------------------------------------------------------- |
-| Web       | Next.js 16 (App Router), React Three Fiber + drei, Tailwind CSS v4                     |
-| Real-time | Colyseus 0.18 (rooms, delta state sync), `@colyseus/sdk`                               |
-| Shared    | `@study/shared`: room layout, avatar looks, protocol types, constants                  |
-| Voice     | LiveKit (proximity voice, desk screen sharing)                                         |
-| Data      | `@study/db`: Drizzle ORM + PostgreSQL for anonymous study stats                        |
-| Infra     | Docker, Terraform on AWS `ap-southeast-7`, Grafana/Prometheus/Loki + CloudWatch alarms |
+| Part      | Tech                                                                                                                                  |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Web       | Next.js 16 (App Router), React Three Fiber + drei, Tailwind CSS v4                                                                    |
+| Real-time | Colyseus 0.18 (rooms, delta state sync), `@colyseus/sdk`                                                                              |
+| Shared    | `@study/shared`: room layout, avatar looks, protocol types, constants                                                                 |
+| Voice     | LiveKit (proximity voice, desk screen sharing)                                                                                        |
+| Data      | `@study/db`: Drizzle ORM + PostgreSQL for anonymous study stats                                                                       |
+| Ops       | Prometheus, Loki, Grafana Alloy, Alertmanager, Grafana (SLOs + burn-rate alerts, see `ops/`); later Terraform on AWS `ap-southeast-7` |
 
 ```
 apps/
@@ -120,6 +120,8 @@ A small **Buddy Machine** stands against the left wall. Walk up and press **E** 
 | Data     | Feedback, ratings, visitors, visits (Postgres) | Metrics from `/metrics`, container logs, alerts       |
 | Audience | Product (you, deciding what to build next)     | SRE practice: SLIs/SLOs, alerting, incident debugging |
 
+Run the monitoring stack with `pnpm obs:up` (Grafana on http://localhost:3001). **[ops/README.md](ops/README.md)** has the SLOs, chaos drills and runbooks.
+
 ## Controls
 
 WASD / arrow keys to walk · Shift to run · E to interact with whatever is closest (sit at a desk or on the sofa, pet a cat, open the Buddy Machine) · Enter to chat · drag to orbit, scroll or − / + to zoom. The sun / moon switch at the top right pins the room to day or night; the clock icon follows real time.
@@ -134,4 +136,5 @@ WASD / arrow keys to walk · Shift to run · E to interact with whatever is clos
 6. ✅ Room NPCs from the Buddy Machine; join/leave lines in chat
 7. ✅ Maintainability pass: unit tests, lint everywhere, Prettier, CI workflow (`.github/workflows/ci.yml`)
 8. ✅ Connecta-style UI refresh, day / night switch, sofa seating, simpler Buddy Machine, Playwright tests
-9. Terraform on AWS (EC2 + RDS + S3 in `ap-southeast-7`), deploys, Grafana stack and CloudWatch alarms
+9. ✅ Local observability: metrics, logs, SLOs, burn-rate alerts, chaos drills, runbooks (`ops/`)
+10. Terraform on AWS (EC2 + RDS + S3 in `ap-southeast-7`), deploys, Grafana stack and CloudWatch alarms

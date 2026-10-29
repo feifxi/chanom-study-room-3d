@@ -1,0 +1,66 @@
+// Grafana Alloy ships logs to Loki:
+//  1. the game server's JSON log file (pnpm dev writes apps/game/logs/game.log), and
+//  2. every container in this compose project (Postgres, LiveKit, the monitoring stack itself).
+// UI: http://localhost:12345
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
+
+// --- 1. Game server (pino JSON lines) ---
+local.file_match "game" {
+  path_targets = [{"__path__" = "/logs/*.log", "service" = "game", "env" = "local"}]
+}
+
+loki.source.file "game" {
+  targets    = local.file_match.game.targets
+  forward_to = [loki.process.game.receiver]
+}
+
+loki.process "game" {
+  stage.json {
+    expressions = { level = "level", time = "time", room = "roomId" }
+  }
+  // pino writes numeric levels; turn them into names for the `level` label
+  stage.template {
+    source   = "level"
+    template = `{{ if eq .Value "10" }}trace{{ else if eq .Value "20" }}debug{{ else if eq .Value "30" }}info{{ else if eq .Value "40" }}warn{{ else if eq .Value "50" }}error{{ else if eq .Value "60" }}fatal{{ else }}{{ .Value }}{{ end }}`
+  }
+  stage.timestamp {
+    source = "time"
+    format = "UnixMs"
+  }
+  // Low-cardinality labels only; the room id stays searchable as structured metadata
+  stage.labels {
+    values = { level = "" }
+  }
+  stage.structured_metadata {
+    values = { room = "" }
+  }
+  forward_to = [loki.write.local.receiver]
+}
+
+// --- 2. Docker containers ---
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "containers" {
+  targets = discovery.docker.containers.targets
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+  rule {
+    target_label = "env"
+    replacement  = "local"
+  }
+}
+
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.containers.output
+  forward_to = [loki.write.local.receiver]
+}

@@ -29,5 +29,73 @@ services:
       - '7881:7881' # WebRTC over TCP (fallback)
       - '7882:7882/udp' # WebRTC media
 
+  # ---------- Observability (SRE practice) ----------
+  #   pnpm obs:up   ->  Grafana http://localhost:3001 · Prometheus :9090 · Alertmanager :9093 · Alloy :12345
+  # Opt-in via the "observability" profile so `docker compose up -d` stays light. Ports are bound to
+  # localhost only. See ops/README.md for the SLOs, the exercises and the runbooks.
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    profiles: [observability]
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=30d
+      - --web.enable-lifecycle # POST /-/reload after editing rules
+    volumes:
+      - ./ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./ops/prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus-data:/prometheus
+    extra_hosts:
+      - 'host.docker.internal:host-gateway' # the game server runs on the host
+    ports:
+      - '127.0.0.1:9090:9090'
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    profiles: [observability]
+    volumes:
+      - ./ops/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports:
+      - '127.0.0.1:9093:9093'
+
+  loki:
+    image: grafana/loki:3.5.0
+    profiles: [observability]
+    command: -config.file=/etc/loki/loki.yml
+    volumes:
+      - ./ops/loki/loki.yml:/etc/loki/loki.yml:ro
+      - loki-data:/loki
+
+  alloy:
+    image: grafana/alloy:v1.10.0
+    profiles: [observability]
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    volumes:
+      - ./ops/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - ./apps/game/logs:/logs:ro # pnpm dev writes the game server's JSON logs here
+      - /var/run/docker.sock:/var/run/docker.sock:ro # container logs
+    depends_on: [loki]
+    ports:
+      - '127.0.0.1:12345:12345'
+
+  grafana:
+    image: grafana/grafana:12.1.0
+    profiles: [observability]
+    environment:
+      # Local only: no login, you're an admin. Production needs real auth.
+      GF_AUTH_ANONYMOUS_ENABLED: 'true'
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: 'true'
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/service-overview.json
+    volumes:
+      - ./ops/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./ops/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on: [prometheus, loki]
+    ports:
+      - '127.0.0.1:3001:3000'
+
 volumes:
   pgdata:
+  prometheus-data:
+  loki-data:
+  grafana-data:

@@ -2,7 +2,8 @@ import { defineRoom, defineServer, listen, matchMaker } from 'colyseus';
 import { MIN_COUNTED_FOCUS_MIN, ROOM_NAME, type RoomListing } from '@study/shared';
 import { createDb, getLeaderboard, getVisitorStats, migrateDb, recordFocus } from '@study/db';
 import { StudyRoom, services, type StudyRoomMetadata } from './rooms/StudyRoom';
-import { metrics, metricsHandler } from './metrics';
+import { chaos, httpMetrics, metrics, metricsHandler } from './metrics';
+import { log } from './log';
 import { registerAdminRoutes, registerFeedbackRoute } from './admin/routes';
 
 const PORT = Number(process.env.PORT ?? 2567);
@@ -17,15 +18,15 @@ if (process.env.DATABASE_URL) {
     services.recordFocus = (r) => {
       if (r.minutes < MIN_COUNTED_FOCUS_MIN) return;
       metrics.focusMinutes.inc(r.minutes);
-      recordFocus(db, r).catch((e) => console.warn('stats: could not record focus', e));
+      recordFocus(db, r).catch((err) => log.warn({ err }, 'stats: could not record focus'));
     };
-    console.log('stats: connected to Postgres');
+    log.info('stats: connected to Postgres');
   } catch (e) {
     await close().catch(() => {});
-    console.warn(`stats: Postgres unavailable (${(e as Error).message}); study stats disabled`);
+    log.warn({ err: e }, 'stats: Postgres unavailable; study stats disabled');
   }
 } else {
-  console.log('stats: DATABASE_URL not set, study stats disabled');
+  log.info('stats: DATABASE_URL not set, study stats disabled');
 }
 
 const server = defineServer({
@@ -37,6 +38,9 @@ const server = defineServer({
   express: (app) => {
     // Behind a reverse proxy (Caddy in production) the client address comes from X-Forwarded-For
     if (process.env.TRUST_PROXY) app.set('trust proxy', process.env.TRUST_PROXY);
+    app.use(httpMetrics);
+    const chaosMiddleware = chaos();
+    if (chaosMiddleware) app.use(chaosMiddleware);
     app.use((req, res, next) => {
       res.setHeader('Access-Control-Allow-Origin', WEB_ORIGIN);
       // The admin page sends its session cookie; feedback posts JSON
@@ -87,3 +91,4 @@ const server = defineServer({
 });
 
 await listen(server, PORT);
+log.info({ port: PORT }, 'game server listening');
