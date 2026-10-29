@@ -3,7 +3,7 @@ providers:
   - name: chanom
     folder: Chanom Study Room
     type: file
-    # Edits made in the UI are kept until restart; export JSON into ops/grafana/dashboards to keep them
+    # Edits made in the UI are kept until restart; export JSON into infra/observability/grafana/dashboards to keep them
     allowUiUpdates: true
     options:
       path: /var/lib/grafana/dashboards

@@ -26,7 +26,7 @@ groups:
         annotations:
           summary: "API availability SLO is burning its error budget fast"
           description: "SLO: 99.5% of API requests (rooms list, stats, leaderboard, feedback, admin) don't fail with a 5xx. Current 1h error ratio: {{ $value | humanizePercentage }}."
-          runbook_url: "ops/README.md#api-availability"
+          runbook_url: "infra/observability/README.md#api-availability"
       - alert: ApiAvailabilitySlowBurn
         expr: "(slo:api_availability:error_ratio_rate1d > (3 * 0.005) and slo:api_availability:error_ratio_rate2h > (3 * 0.005)) or (slo:api_availability:error_ratio_rate3d > (1 * 0.005) and slo:api_availability:error_ratio_rate6h > (1 * 0.005))"
         labels:
@@ -35,7 +35,7 @@ groups:
         annotations:
           summary: "API availability SLO is burning its error budget slowly"
           description: "SLO: 99.5% of API requests (rooms list, stats, leaderboard, feedback, admin) don't fail with a 5xx. Current 1h error ratio: {{ $value | humanizePercentage }}."
-          runbook_url: "ops/README.md#api-availability"
+          runbook_url: "infra/observability/README.md#api-availability"
   - name: slo-api_latency
     rules:
       - record: slo:api_latency:error_ratio_rate5m
@@ -62,7 +62,7 @@ groups:
         annotations:
           summary: "API latency SLO is burning its error budget fast"
           description: "SLO: 99% of API requests finish within 300 ms. Current 1h error ratio: {{ $value | humanizePercentage }}."
-          runbook_url: "ops/README.md#api-latency"
+          runbook_url: "infra/observability/README.md#api-latency"
       - alert: ApiLatencySlowBurn
         expr: "(slo:api_latency:error_ratio_rate1d > (3 * 0.01) and slo:api_latency:error_ratio_rate2h > (3 * 0.01)) or (slo:api_latency:error_ratio_rate3d > (1 * 0.01) and slo:api_latency:error_ratio_rate6h > (1 * 0.01))"
         labels:
@@ -71,7 +71,7 @@ groups:
         annotations:
           summary: "API latency SLO is burning its error budget slowly"
           description: "SLO: 99% of API requests finish within 300 ms. Current 1h error ratio: {{ $value | humanizePercentage }}."
-          runbook_url: "ops/README.md#api-latency"
+          runbook_url: "infra/observability/README.md#api-latency"
   - name: slo-session_stability
     rules:
       - record: slo:session_stability:error_ratio_rate5m
@@ -98,7 +98,7 @@ groups:
         annotations:
           summary: "Session stability SLO is burning its error budget fast"
           description: "SLO: 99% of room sessions don't end because the connection was lost for good. Current 1h error ratio: {{ $value | humanizePercentage }}."
-          runbook_url: "ops/README.md#session-stability"
+          runbook_url: "infra/observability/README.md#session-stability"
       - alert: SessionStabilitySlowBurn
         expr: "(slo:session_stability:error_ratio_rate1d > (3 * 0.01) and slo:session_stability:error_ratio_rate2h > (3 * 0.01)) or (slo:session_stability:error_ratio_rate3d > (1 * 0.01) and slo:session_stability:error_ratio_rate6h > (1 * 0.01))"
         labels:
@@ -107,7 +107,7 @@ groups:
         annotations:
           summary: "Session stability SLO is burning its error budget slowly"
           description: "SLO: 99% of room sessions don't end because the connection was lost for good. Current 1h error ratio: {{ $value | humanizePercentage }}."
-          runbook_url: "ops/README.md#session-stability"
+          runbook_url: "infra/observability/README.md#session-stability"
   - name: service-health
     rules:
       - alert: GameServerDown
@@ -117,7 +117,7 @@ groups:
           severity: page
         annotations:
           summary: "The game server is not answering /metrics"
-          runbook_url: "ops/README.md#game-server-down"
+          runbook_url: "infra/observability/README.md#game-server-down"
       - alert: EventLoopLagHigh
         expr: "study_game_nodejs_eventloop_lag_p99_seconds > 0.1"
         for: 5m
@@ -125,4 +125,4 @@ groups:
           severity: ticket
         annotations:
           summary: "Game server event loop p99 lag is above 100 ms (players feel this as rubber-banding)"
-          runbook_url: "ops/README.md#event-loop-lag"
+          runbook_url: "infra/observability/README.md#event-loop-lag"

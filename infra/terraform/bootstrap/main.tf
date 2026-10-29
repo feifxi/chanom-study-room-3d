@@ -2,7 +2,7 @@
 # Route 53 name servers, so the NS records entered at Namecheap stay valid while the app stack
 # (and its hosted zone) is destroyed and recreated for every playtest.
 #
-#   cd infra/bootstrap && terraform init && terraform apply
+#   cd infra/terraform/bootstrap && terraform init && terraform apply
 #   -> put the four name servers into Namecheap as NS records for host "studyroom"
 terraform {
   required_version = ">= 1.10"

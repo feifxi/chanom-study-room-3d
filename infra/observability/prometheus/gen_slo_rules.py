@@ -2,7 +2,7 @@
 """
 Generates rules/slo.yml: error-ratio recording rules for each SLO over every window, plus
 multi-window, multi-burn-rate alerts (Google SRE Workbook, "Alerting on SLOs").
-Edit the SLOS table, then run:  python3 ops/prometheus/gen_slo_rules.py
+Edit the SLOS table, then run:  python3 infra/observability/prometheus/gen_slo_rules.py
 """
 from pathlib import Path
 
@@ -69,7 +69,7 @@ for slo in SLOS:
             "        annotations:",
             f"          summary: {q(slo['title'] + ' SLO is burning its error budget ' + ('fast' if severity == 'page' else 'slowly'))}",
             f"          description: {q('SLO: ' + slo['desc'] + '. Current 1h error ratio: {{ $value | humanizePercentage }}.')}",
-            f"          runbook_url: {q('ops/README.md#' + n.replace('_', '-'))}",
+            f"          runbook_url: {q('infra/observability/README.md#' + n.replace('_', '-'))}",
         ]
 
 out += [
@@ -82,7 +82,7 @@ out += [
     "          severity: page",
     "        annotations:",
     '          summary: "The game server is not answering /metrics"',
-    '          runbook_url: "ops/README.md#game-server-down"',
+    '          runbook_url: "infra/observability/README.md#game-server-down"',
     "      - alert: EventLoopLagHigh",
     '        expr: "study_game_nodejs_eventloop_lag_p99_seconds > 0.1"',
     "        for: 5m",
@@ -90,7 +90,7 @@ out += [
     "          severity: ticket",
     "        annotations:",
     '          summary: "Game server event loop p99 lag is above 100 ms (players feel this as rubber-banding)"',
-    '          runbook_url: "ops/README.md#event-loop-lag"',
+    '          runbook_url: "infra/observability/README.md#event-loop-lag"',
 ]
 Path(__file__).with_name("rules").joinpath("slo.yml").write_text("\n".join(out) + "\n")
 print("wrote rules/slo.yml")

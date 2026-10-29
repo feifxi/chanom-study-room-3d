@@ -64,7 +64,11 @@ apps/game/           Colyseus server
   scripts/           smoke (WebSocket e2e), bots, load, stats-check
 packages/shared/     protocol types, layout, navigation (A*), collisions, NPC and feedback types
 packages/db/         Drizzle schema, migrations, stats and admin queries
-ops/                 Prometheus, Alertmanager, Loki, Alloy, Grafana config; SRE guide
+infra/terraform/     AWS: bootstrap (delegation set, once) and app (the playtest stack)
+infra/compose/       production compose stack, Caddyfile, LiveKit config
+infra/observability/ Prometheus, Alertmanager, Loki, Alloy, Grafana config; SRE guide
+infra/scripts/       infra:up / infra:down
+compose.yaml         local dev dependencies (Postgres, LiveKit) and the monitoring stack
 docs/                this file, the roadmap, the decision log
 ```
 

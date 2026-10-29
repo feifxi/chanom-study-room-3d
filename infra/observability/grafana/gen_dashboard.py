@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds dashboards/service-overview.json. Edit the panels here, then: python3 ops/grafana/gen_dashboard.py"""
+"""Builds dashboards/service-overview.json. Edit the panels here, then: python3 infra/observability/grafana/gen_dashboard.py"""
 import json
 from pathlib import Path
 

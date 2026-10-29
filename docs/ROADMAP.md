@@ -16,7 +16,7 @@ Last updated: 2026-10-29 (decisions for the AWS playtest settled).
 | 7   | Maintainability        | Unit tests (Vitest), ESLint everywhere, Prettier, CI workflow, code split into small modules                                                                                                                       |
 | 8   | UI and play            | Cosy palette (cream, strawberry-milk pink, cocoa) and Nunito; Connecta-style HUD (icon rail, dock, zoom); Auto/Day/Night switch; sofa seating; simpler Buddy Machine (summon + goodbye only); Playwright e2e tests |
 | 9   | Feedback and analytics | "Before you go" rating card when leaving; `/admin` analytics (feedback, visitors) behind `ADMIN_PASSWORD`                                                                                                          |
-| 10  | Observability (local)  | Prometheus, Loki + Alloy, Alertmanager, Grafana; three SLOs with multi-window burn-rate alerts; chaos switches; drills and runbooks in [ops/README.md](../ops/README.md)                                           |
+| 10  | Observability (local)  | Prometheus, Loki + Alloy, Alertmanager, Grafana; three SLOs with multi-window burn-rate alerts; chaos switches; drills and runbooks in [infra/observability/README.md](../infra/observability/README.md)           |
 
 ## Next: put it online and let friends play
 
@@ -61,11 +61,11 @@ Cost (on-demand, ap-southeast-7, checked with the AWS Pricing API):
 **After `terraform destroy`: ≈ $0.** The only leftover is the final RDS snapshot (a few cents a
 month at this size). A 3-day playtest costs about $6.
 
-### 11.2 Containers ✅ (2026-10-29, see [deploy/README.md](../deploy/README.md))
+### 11.2 Containers ✅ (2026-10-29, see [infra/compose/README.md](../infra/compose/README.md))
 
 - [x] Dockerfiles for `web` (Next standalone, ~435 MB) and `game` (everything bundled by tsup, no
       `node_modules`, ~370 MB), arm64.
-- [x] `deploy/docker-compose.prod.yml`: Caddy, web, game, LiveKit 1.13, Prometheus, Alertmanager,
+- [x] `infra/compose/compose.prod.yaml`: Caddy, web, game, LiveKit 1.13, Prometheus, Alertmanager,
       Loki, Alloy, Grafana (login required). Public ports: 80/443 and LiveKit 7881/tcp + 7882/udp.
 - [x] Caddyfile: `$DOMAIN` → web, `game.` → game (`/metrics` not public), `rtc.` → LiveKit,
       `grafana.` → Grafana.
@@ -74,8 +74,8 @@ month at this size). A 3-day playtest costs about $6.
 
 ### 11.3 Terraform ✅ written and planned (2026-10-29, see [infra/README.md](../infra/README.md)), not applied yet
 
-- [x] `infra/bootstrap`: the reusable delegation set (plan: 1 resource).
-- [x] `infra/app` (plan: 50 resources): VPC with a public and two private subnets, security
+- [x] `infra/terraform/bootstrap`: the reusable delegation set (plan: 1 resource).
+- [x] `infra/terraform/app` (plan: 50 resources): VPC with a public and two private subnets, security
       groups, EC2 `t4g.medium` (AL2023 arm64, IMDSv2, SSM, no SSH) + Elastic IP, RDS PostgreSQL 17
       `db.t4g.micro` (encrypted, private, final snapshot on destroy, `restore_snapshot_id`), ECR
       (immutable tags, scan on push, keep 5), S3 config bundle, Route 53 zone + records, SSM
@@ -118,7 +118,7 @@ month at this size). A 3-day playtest costs about $6.
 - Once a week: read `/admin` (scores, comments, tags, visits) and the Grafana SLO panels; write
   down what to fix or build next.
 - Practise SRE for real: any page-worthy incident gets a short postmortem
-  ([template](../ops/README.md#postmortem-template)).
+  ([template](../infra/observability/README.md#postmortem-template)).
 
 ## Backlog (decide after the feedback)
 

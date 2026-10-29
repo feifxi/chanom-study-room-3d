@@ -3,10 +3,10 @@
 #   pnpm infra:up            (Terraform shows the plan and asks before changing anything)
 set -euo pipefail
 cd "$(dirname "$0")/../.."
-TF="terraform -chdir=infra/app"
+TF="terraform -chdir=infra/terraform/app"
 export AWS_DEFAULT_REGION=ap-southeast-7
 
-[ -f infra/app/terraform.tfvars ] || { echo "Create infra/app/terraform.tfvars first (see terraform.tfvars.example)"; exit 1; }
+[ -f infra/terraform/app/terraform.tfvars ] || { echo "Create infra/terraform/app/terraform.tfvars first (see terraform.tfvars.example)"; exit 1; }
 
 $TF init -input=false >/dev/null
 $TF apply
@@ -28,8 +28,10 @@ docker push --quiet "$REGISTRY_HOST/chanom/game:$TAG"
 docker push --quiet "$REGISTRY_HOST/chanom/web:$TAG"
 
 echo "==> Uploading configs"
-aws s3 sync deploy "s3://$BUCKET/bundle/deploy" --delete --only-show-errors --exclude ".env.prod" --exclude "README.md"
-aws s3 sync ops "s3://$BUCKET/bundle/ops" --delete --only-show-errors \
+# The bundle mirrors the repo layout, so relative paths in the compose file work the same on the host
+aws s3 sync infra/compose "s3://$BUCKET/bundle/infra/compose" --delete --only-show-errors \
+  --exclude ".env.prod" --exclude "README.md"
+aws s3 sync infra/observability "s3://$BUCKET/bundle/infra/observability" --delete --only-show-errors \
   --exclude "alertmanager/secrets/*" --exclude "*.py" --exclude "README.md"
 
 echo "==> Waiting for the host to finish its first boot"
@@ -59,7 +61,7 @@ aws ssm get-command-invocation --command-id "$CMD" --instance-id "$INSTANCE" \
 
 echo
 echo "==> Done. App: https://$DOMAIN · Admin: https://$DOMAIN/admin · Grafana: https://grafana.$DOMAIN"
-echo "    Passwords: terraform -chdir=infra/app output -json passwords"
-echo "    Name servers the internet sees for $DOMAIN (must match: terraform -chdir=infra/app output name_servers):"
+echo "    Passwords: terraform -chdir=infra/terraform/app output -json passwords"
+echo "    Name servers the internet sees for $DOMAIN (must match: terraform -chdir=infra/terraform/app output name_servers):"
 dig +short NS "$DOMAIN" | sed 's/^/      /'
 echo "    First apply? Click the confirmation link in the SNS email from AWS to get alarm emails."

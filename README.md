@@ -4,18 +4,18 @@ A 3D online study room: walk around a cosy library as an anime chibi character, 
 
 > The earlier **Agent HQ** prototype (Three.js + Vite AI-agent office) lives on the `agent-hq` branch.
 
-**Docs:** [Roadmap and next steps](docs/ROADMAP.md) · [Architecture](docs/ARCHITECTURE.md) · [Decision log](docs/DECISIONS.md) · [Observability and SRE guide](ops/README.md)
+**Docs:** [Roadmap and next steps](docs/ROADMAP.md) · [Architecture](docs/ARCHITECTURE.md) · [Decision log](docs/DECISIONS.md) · [Observability and SRE guide](infra/observability/README.md)
 
 ## Stack
 
-| Part      | Tech                                                                                                                                  |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Web       | Next.js 16 (App Router), React Three Fiber + drei, Tailwind CSS v4                                                                    |
-| Real-time | Colyseus 0.18 (rooms, delta state sync), `@colyseus/sdk`                                                                              |
-| Shared    | `@study/shared`: room layout, avatar looks, protocol types, constants                                                                 |
-| Voice     | LiveKit (proximity voice, desk screen sharing)                                                                                        |
-| Data      | `@study/db`: Drizzle ORM + PostgreSQL for study stats, visits and feedback                                                            |
-| Ops       | Prometheus, Loki, Grafana Alloy, Alertmanager, Grafana (SLOs + burn-rate alerts, see `ops/`); later Terraform on AWS `ap-southeast-7` |
+| Part      | Tech                                                                                                                                                                 |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Web       | Next.js 16 (App Router), React Three Fiber + drei, Tailwind CSS v4                                                                                                   |
+| Real-time | Colyseus 0.18 (rooms, delta state sync), `@colyseus/sdk`                                                                                                             |
+| Shared    | `@study/shared`: room layout, avatar looks, protocol types, constants                                                                                                |
+| Voice     | LiveKit (proximity voice, desk screen sharing)                                                                                                                       |
+| Data      | `@study/db`: Drizzle ORM + PostgreSQL for study stats, visits and feedback                                                                                           |
+| Ops       | Prometheus, Loki, Grafana Alloy, Alertmanager, Grafana (SLOs + burn-rate alerts, see `infra/observability/`); Terraform on AWS `ap-southeast-7` (`infra/terraform/`) |
 
 ```
 apps/
@@ -24,10 +24,13 @@ apps/
 packages/
   shared/  Code used by both apps
   db/      Drizzle schema, migrations, stats and admin queries
-ops/       Prometheus, Alertmanager, Loki, Alloy, Grafana config and the SRE guide
-deploy/    Production Docker Compose stack, Caddyfile, LiveKit config (see deploy/README.md)
-infra/     Terraform for AWS: bootstrap (DNS delegation set) and the playtest stack (see infra/README.md)
 docs/      Roadmap, architecture, decision log
+infra/     Everything that runs the app (see infra/README.md)
+  terraform/      AWS: bootstrap (DNS delegation set) and the playtest stack
+  compose/        Production Docker Compose stack, Caddyfile, LiveKit config
+  observability/  Prometheus, Alertmanager, Loki, Alloy, Grafana config and the SRE guide
+  scripts/        infra:up / infra:down
+compose.yaml      Local dev dependencies: Postgres, LiveKit, and the monitoring stack (profile)
 ```
 
 ## Run it locally
@@ -133,7 +136,7 @@ A small **Buddy Machine** stands against the left wall. Walk up and press **E** 
 | Data     | Feedback, ratings, visitors, visits (Postgres) | Metrics from `/metrics`, container logs, alerts       |
 | Audience | Product (you, deciding what to build next)     | SRE practice: SLIs/SLOs, alerting, incident debugging |
 
-Run the monitoring stack with `pnpm obs:up` (Grafana on http://localhost:3001). **[ops/README.md](ops/README.md)** has the SLOs, chaos drills and runbooks.
+Run the monitoring stack with `pnpm obs:up` (Grafana on http://localhost:3001). **[infra/observability/README.md](infra/observability/README.md)** has the SLOs, chaos drills and runbooks.
 
 ## Controls
 

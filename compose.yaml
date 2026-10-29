@@ -32,7 +32,7 @@ services:
   # ---------- Observability (SRE practice) ----------
   #   pnpm obs:up   ->  Grafana http://localhost:3001 · Prometheus :9090 · Alertmanager :9093 · Alloy :12345
   # Opt-in via the "observability" profile so `docker compose up -d` stays light. Ports are bound to
-  # localhost only. See ops/README.md for the SLOs, the exercises and the runbooks.
+  # localhost only. See infra/observability/README.md for the SLOs, the exercises and the runbooks.
   prometheus:
     image: prom/prometheus:v3.5.0
     profiles: [observability]
@@ -41,8 +41,8 @@ services:
       - --storage.tsdb.retention.time=30d
       - --web.enable-lifecycle # POST /-/reload after editing rules
     volumes:
-      - ./ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./ops/prometheus/rules:/etc/prometheus/rules:ro
+      - ./infra/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infra/observability/prometheus/rules:/etc/prometheus/rules:ro
       - prometheus-data:/prometheus
     extra_hosts:
       - 'host.docker.internal:host-gateway' # the game server runs on the host
@@ -53,8 +53,8 @@ services:
     image: prom/alertmanager:v0.28.1
     profiles: [observability]
     volumes:
-      - ./ops/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
-      - ./ops/alertmanager/secrets:/etc/alertmanager/secrets:ro # discord_webhook_url (not in git)
+      - ./infra/observability/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./infra/observability/alertmanager/secrets:/etc/alertmanager/secrets:ro # discord_webhook_url (not in git)
     ports:
       - '127.0.0.1:9093:9093'
 
@@ -63,7 +63,7 @@ services:
     profiles: [observability]
     command: -config.file=/etc/loki/loki.yml
     volumes:
-      - ./ops/loki/loki.yml:/etc/loki/loki.yml:ro
+      - ./infra/observability/loki/loki.yml:/etc/loki/loki.yml:ro
       - loki-data:/loki
 
   alloy:
@@ -71,7 +71,7 @@ services:
     profiles: [observability]
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     volumes:
-      - ./ops/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - ./infra/observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
       - ./apps/game/logs:/logs:ro # pnpm dev writes the game server's JSON logs here
       - /var/run/docker.sock:/var/run/docker.sock:ro # container logs
     depends_on: [loki]
@@ -88,8 +88,8 @@ services:
       GF_AUTH_DISABLE_LOGIN_FORM: 'true'
       GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/service-overview.json
     volumes:
-      - ./ops/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./ops/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ./infra/observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infra/observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
       - grafana-data:/var/lib/grafana
     depends_on: [prometheus, loki]
     ports:

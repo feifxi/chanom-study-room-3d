@@ -10,7 +10,7 @@ variable "domain" {
 }
 
 variable "delegation_set_id" {
-  description = "From infra/bootstrap (keeps the Route 53 name servers stable)"
+  description = "From infra/terraform/bootstrap (keeps the Route 53 name servers stable)"
   type        = string
 }
 

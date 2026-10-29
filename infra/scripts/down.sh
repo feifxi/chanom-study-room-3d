@@ -3,7 +3,7 @@
 #   pnpm infra:down
 set -euo pipefail
 cd "$(dirname "$0")/../.."
-TF="terraform -chdir=infra/app"
+TF="terraform -chdir=infra/terraform/app"
 export AWS_DEFAULT_REGION=ap-southeast-7
 
 DOMAIN=$($TF output -json urls | python3 -c "import json,sys; print(json.load(sys.stdin)['app'].removeprefix('https://'))")
@@ -25,5 +25,5 @@ rm -f "$JAR"
 $TF destroy
 
 echo
-echo "==> Gone. To bring this data back next time, set in infra/app/terraform.tfvars:"
+echo "==> Gone. To bring this data back next time, set in infra/terraform/app/terraform.tfvars:"
 echo "    restore_snapshot_id = \"$SNAPSHOT\""

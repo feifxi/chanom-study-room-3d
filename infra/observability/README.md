@@ -71,7 +71,7 @@ express, so it isn't in the HTTP metrics; whether joins work shows up in session
 The rules are generated: edit the table in `prometheus/gen_slo_rules.py`, then
 
 ```bash
-python3 ops/prometheus/gen_slo_rules.py && curl -X POST localhost:9090/-/reload
+python3 infra/observability/prometheus/gen_slo_rules.py && curl -X POST localhost:9090/-/reload
 ```
 
 Each SLO gets recording rules `slo:<name>:error_ratio_rate{5m,30m,1h,2h,6h,1d,3d}` and two
@@ -174,7 +174,7 @@ Alertmanager posts firing and resolved alerts to a Discord channel. One-time set
    "Alertmanager" → **Copy Webhook URL**.
 3. Save it where git won't see it (the folder is ignored):
    ```bash
-   pbpaste > ops/alertmanager/secrets/discord_webhook_url
+   pbpaste > infra/observability/alertmanager/secrets/discord_webhook_url
    ```
 4. Send yourself a test alert:
    ```bash

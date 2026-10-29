@@ -25,7 +25,7 @@ resource "aws_ecr_lifecycle_policy" "app" {
   })
 }
 
-# The compose file and configs (deploy/ and ops/) that the host syncs at deploy time
+# The compose file and configs (infra/compose and infra/observability) that the host syncs at deploy time
 resource "aws_s3_bucket" "bundle" {
   bucket_prefix = "chanom-deploy-"
   force_destroy = true

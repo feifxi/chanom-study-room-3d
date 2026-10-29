@@ -1,11 +1,24 @@
-# Infrastructure (AWS, Terraform)
+# Infrastructure
 
-Two Terraform roots:
+Everything that runs the app lives here; the app code is in `apps/` and `packages/`.
 
-| Root              | Lifetime                           | What                                                                           |
-| ----------------- | ---------------------------------- | ------------------------------------------------------------------------------ |
-| `infra/bootstrap` | once, forever (free)               | Route 53 reusable delegation set: four name servers that never change          |
-| `infra/app`       | per playtest: `up` → play → `down` | VPC, EC2 host, RDS, ECR, S3 bundle, Route 53 zone, SSM secrets, alarms, budget |
+| Folder           | What                                                                                                         |
+| ---------------- | ------------------------------------------------------------------------------------------------------------ |
+| `terraform/`     | AWS resources (below)                                                                                        |
+| `compose/`       | The production Docker Compose stack, Caddyfile, LiveKit config ([README](compose/README.md))                 |
+| `observability/` | Prometheus, Alertmanager, Loki, Alloy, Grafana config, SLOs and runbooks ([README](observability/README.md)) |
+| `scripts/`       | `pnpm infra:up` / `pnpm infra:down`                                                                          |
+
+Local development dependencies are in [`compose.yaml`](../compose.yaml) at the repo root.
+
+## Terraform
+
+Two roots:
+
+| Root                        | Lifetime                           | What                                                                           |
+| --------------------------- | ---------------------------------- | ------------------------------------------------------------------------------ |
+| `infra/terraform/bootstrap` | once, forever (free)               | Route 53 reusable delegation set: four name servers that never change          |
+| `infra/terraform/app`       | per playtest: `up` → play → `down` | VPC, EC2 host, RDS, ECR, S3 bundle, Route 53 zone, SSM secrets, alarms, budget |
 
 State is local and git-ignored (it contains the generated passwords). Region `ap-southeast-7`,
 AWS credentials from the `default` profile. Costs and reasoning: [docs/ROADMAP.md](../docs/ROADMAP.md).
@@ -14,13 +27,13 @@ AWS credentials from the `default` profile. Costs and reasoning: [docs/ROADMAP.m
 
 1. Create the delegation set and note its name servers:
    ```bash
-   cd infra/bootstrap && terraform init && terraform apply
+   cd infra/terraform/bootstrap && terraform init && terraform apply
    terraform output name_servers
    ```
 2. At **Namecheap** → Domain List → `chanombude.me` → **Advanced DNS** → add four **NS Record**
    rows: Host `studyroom`, Value = each name server, TTL automatic. Nothing else changes: the main
    domain and its email forwarding stay at Namecheap.
-3. `cp infra/app/terraform.tfvars.example infra/app/terraform.tfvars` and fill in the delegation
+3. `cp infra/terraform/app/terraform.tfvars.example infra/terraform/app/terraform.tfvars` and fill in the delegation
    set id and your email (optionally the Discord webhook).
 
 ## A playtest
@@ -34,10 +47,10 @@ pnpm infra:down   # saves feedback to infra/backups/*.csv, then terraform destro
 After `up`:
 
 - App `https://studyroom.chanombude.me`, admin `/admin`, Grafana `https://grafana.studyroom.chanombude.me`.
-- Passwords: `terraform -chdir=infra/app output -json passwords`.
+- Passwords: `terraform -chdir=infra/terraform/app output -json passwords`.
 - HTTPS certificates appear a minute or two after DNS resolves (Caddy keeps retrying).
 - Click the confirmation link in the SNS email from AWS to get alarm emails.
-- Shell on the host (no SSH): `aws ssm start-session --target $(terraform -chdir=infra/app output -raw instance_id)`.
+- Shell on the host (no SSH): `aws ssm start-session --target $(terraform -chdir=infra/terraform/app output -raw instance_id)`.
 - Redeploy after a code change: run `pnpm infra:up` again (apply is a no-op, new images are pushed).
 
 To start the next playtest from the last one's data, put the snapshot name that `down` printed into
@@ -48,8 +61,8 @@ longer need them.
 
 ```bash
 terraform fmt -recursive -check infra
-terraform -chdir=infra/app validate
-terraform -chdir=infra/app plan        # read-only: lists what would be created
+terraform -chdir=infra/terraform/app validate
+terraform -chdir=infra/terraform/app plan        # read-only: lists what would be created
 ```
 
 ## Security notes

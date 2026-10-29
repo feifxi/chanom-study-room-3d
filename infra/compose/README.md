@@ -27,13 +27,13 @@ docker build -f apps/web/Dockerfile --build-arg NEXT_PUBLIC_GAME_URL=https://gam
 by itself.
 
 ```bash
-cp deploy/.env.prod.example deploy/.env.prod   # then set DOMAIN=localhost and the values below
+cp infra/compose/.env.prod.example infra/compose/.env.prod   # then set DOMAIN=localhost and the values below
 #   DATABASE_URL=postgres://study:study@host.docker.internal:5433/study  (the dev Postgres)
 #   LIVEKIT_ARGS=--node-ip 127.0.0.1
 docker compose stop livekit                     # the dev LiveKit uses the same ports
-docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.prod up -d --build
+docker compose -f infra/compose/compose.prod.yaml --env-file infra/compose/.env.prod up -d --build
 open https://localhost                          # accept the local certificate once
-docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.prod down -v
+docker compose -f infra/compose/compose.prod.yaml --env-file infra/compose/.env.prod down -v
 docker compose up -d livekit
 ```
 

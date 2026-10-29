@@ -1,5 +1,6 @@
 # The whole production stack on one host. Run from the repo root:
-#   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.prod up -d
+#   docker compose -f infra/compose/compose.prod.yaml --env-file infra/compose/.env.prod up -d
+# (relative paths below are from this folder: ../observability is infra/observability)
 # Public ports: 80/443 (Caddy), 7881/tcp + 7882/udp (LiveKit media). Everything else stays internal.
 name: chanom-prod
 
@@ -27,7 +28,7 @@ services:
   web:
     image: ${REGISTRY:-chanom}/web:${TAG:-local}
     build:
-      context: ..
+      context: ../..
       dockerfile: apps/web/Dockerfile
       args:
         NEXT_PUBLIC_GAME_URL: https://game.${DOMAIN}
@@ -37,7 +38,7 @@ services:
   game:
     image: ${REGISTRY:-chanom}/game:${TAG:-local}
     build:
-      context: ..
+      context: ../..
       dockerfile: apps/game/Dockerfile
     restart: unless-stopped
     environment:
@@ -71,8 +72,8 @@ services:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.retention.time=15d
     volumes:
-      - ../ops/prometheus/prometheus.prod.yml:/etc/prometheus/prometheus.yml:ro
-      - ../ops/prometheus/rules:/etc/prometheus/rules:ro
+      - ../observability/prometheus/prometheus.prod.yml:/etc/prometheus/prometheus.yml:ro
+      - ../observability/prometheus/rules:/etc/prometheus/rules:ro
       - prometheus-data:/prometheus
     logging: *logging
 
@@ -80,8 +81,8 @@ services:
     image: prom/alertmanager:v0.28.1
     restart: unless-stopped
     volumes:
-      - ../ops/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
-      - ../ops/alertmanager/secrets:/etc/alertmanager/secrets:ro # discord_webhook_url
+      - ../observability/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ../observability/alertmanager/secrets:/etc/alertmanager/secrets:ro # discord_webhook_url
     logging: *logging
 
   loki:
@@ -89,7 +90,7 @@ services:
     restart: unless-stopped
     command: -config.file=/etc/loki/loki.yml
     volumes:
-      - ../ops/loki/loki.yml:/etc/loki/loki.yml:ro
+      - ../observability/loki/loki.yml:/etc/loki/loki.yml:ro
       - loki-data:/loki
     logging: *logging
 
@@ -98,7 +99,7 @@ services:
     restart: unless-stopped
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     volumes:
-      - ../ops/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - ../observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro # container logs (the game logs JSON to stdout)
     depends_on: [loki]
     logging: *logging
@@ -113,8 +114,8 @@ services:
       GF_USERS_ALLOW_SIGN_UP: 'false'
       GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/service-overview.json
     volumes:
-      - ../ops/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ../ops/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ../observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
       - grafana-data:/var/lib/grafana
     depends_on: [prometheus, loki]
     logging: *logging

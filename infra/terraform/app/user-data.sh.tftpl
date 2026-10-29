@@ -24,17 +24,17 @@ umask 077
   aws ssm get-parameters-by-path --path /chanom/env/ --with-decryption \
     --query 'Parameters[].[Name,Value]' --output text | sed -e 's#^/chanom/env/##' -e 's#\t#=#'
   echo "TAG=$TAG"
-} > bundle/deploy/.env.prod
+} > bundle/infra/compose/.env.prod
 
-mkdir -p bundle/ops/alertmanager/secrets
+mkdir -p bundle/infra/observability/alertmanager/secrets
 if aws ssm get-parameter --name /chanom/discord_webhook_url --with-decryption --query Parameter.Value --output text \
-  > bundle/ops/alertmanager/secrets/discord_webhook_url 2>/dev/null; then :; else rm -f bundle/ops/alertmanager/secrets/discord_webhook_url; fi
-chmod 644 bundle/ops/alertmanager/secrets/* 2>/dev/null || true
+  > bundle/infra/observability/alertmanager/secrets/discord_webhook_url 2>/dev/null; then :; else rm -f bundle/infra/observability/alertmanager/secrets/discord_webhook_url; fi
+chmod 644 bundle/infra/observability/alertmanager/secrets/* 2>/dev/null || true
 
 aws ecr get-login-password | docker login --username AWS --password-stdin ${registry}
 cd bundle
-docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.prod pull --quiet
-docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.prod up -d --no-build --remove-orphans
+docker compose -f infra/compose/compose.prod.yaml --env-file infra/compose/.env.prod pull --quiet
+docker compose -f infra/compose/compose.prod.yaml --env-file infra/compose/.env.prod up -d --no-build --remove-orphans
 docker image prune -f
 DEPLOY
 chmod 700 /opt/chanom/deploy.sh

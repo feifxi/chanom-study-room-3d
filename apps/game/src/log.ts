@@ -3,7 +3,7 @@ import pino, { type TransportTargetOptions } from 'pino';
 /**
  * Structured logs. Production writes JSON to stdout (collected from the container).
  * In dev the terminal gets readable lines, and with LOG_FILE set the same events are
- * also written as JSON for Grafana Alloy to ship to Loki (see ops/).
+ * also written as JSON for Grafana Alloy to ship to Loki (see infra/observability/).
  */
 const level = process.env.LOG_LEVEL ?? 'info';
 

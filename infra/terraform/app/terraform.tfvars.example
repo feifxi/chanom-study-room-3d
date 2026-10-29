@@ -1,5 +1,5 @@
 # Copy to terraform.tfvars (git-ignored)
-delegation_set_id = "N0123456789ABCDEFGHIJ" # terraform -chdir=infra/bootstrap output delegation_set_id
+delegation_set_id = "N0123456789ABCDEFGHIJ" # terraform -chdir=infra/terraform/bootstrap output delegation_set_id
 alert_email       = "you@example.com"
 # restore_snapshot_id = "chanom-final-a1b2c3"  # start from the last playtest's data
 # discord_webhook_url = "https://discord.com/api/webhooks/..."

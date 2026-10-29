@@ -1,5 +1,5 @@
 # Alerts go to a Discord channel. The webhook URL is a secret, so it's read from a file that is not
-# in git: ops/alertmanager/secrets/discord_webhook_url (see ops/README.md, "Alerts to Discord").
+# in git: infra/observability/alertmanager/secrets/discord_webhook_url (see infra/observability/README.md, "Alerts to Discord").
 # Until that file exists, alerts still show at http://localhost:9093 and sending logs an error.
 route:
   receiver: discord
