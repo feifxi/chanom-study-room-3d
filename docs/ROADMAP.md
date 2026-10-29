@@ -143,6 +143,9 @@ Fixed after the playtest (2026-10-29):
   acknowledged move instead of snapping on drift; the server's speed limit is a refilling budget,
   so late bursts aren't dropped. Simulated 500–700 ms lag: 5 pull-backs (up to 1.5 m) before, 0 after.
 
+- Music: a personal lo-fi player (4 royalty-free Pixabay tracks by Alex Morgan), quieter while
+  people talk.
+
 Takeaway: the product is a cosy hangout space as much as a study room. Activities are the next
 big theme, after the two problems above are fixed.
 

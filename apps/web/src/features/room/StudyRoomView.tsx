@@ -8,6 +8,7 @@ import { OrbitControls } from '@react-three/drei';
 import { GACHA_MACHINE, SEAT_BY_ID, SPAWN } from '@study/shared';
 import { loadProfile } from '@/lib/profile';
 import { ChatPanel } from '../chat/ChatPanel';
+import { useMusic } from '../music/useMusic';
 import { shouldAskFeedback } from '../feedback/askPolicy';
 import { LeaveFeedback } from '../feedback/LeaveFeedback';
 import { FocusPanel } from '../focus/FocusPanel';
@@ -88,6 +89,8 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
     });
   };
 
+  // Personal lo-fi; dips while anyone in voice is talking
+  const music = useMusic(voice.speaking.size > 0);
   const sharingIds = useMemo(() => new Set(voice.shares.map((s) => s.identity)), [voice.shares]);
 
   // Walking away from the Buddy Machine closes its panel
@@ -192,7 +195,7 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
 
       {room && (
         <>
-          <RoomSidebar room={room} />
+          <RoomSidebar room={room} music={music} />
           <FocusPanel room={room} clockOffset={clockOffset} />
           <TableScreens voice={voice} localId={room.sessionId} names={(id) => room.state.players?.get(id)?.name ?? 'Someone'} />
           <ChatPanel room={room} messages={chat} open={chatOpen} onOpen={openChat} />

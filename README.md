@@ -138,6 +138,15 @@ A small **Buddy Machine** stands against the left wall. Walk up and press **E** 
 
 Run the monitoring stack with `pnpm obs:up` (Grafana on http://localhost:3001). **[infra/observability/README.md](infra/observability/README.md)** has the SLOs, chaos drills and runbooks.
 
+## Music
+
+A personal lo-fi player in the left rail (🎵): play/pause, previous/next, volume and the track list.
+Only you hear it, it dips while anyone is talking on voice, it never starts on its own, and it
+remembers your track and volume. Media keys work too. The tracks are royalty-free from Pixabay
+(Alex Morgan) in `apps/web/public/music`; add more in `apps/web/src/features/music/tracks.ts`.
+Only use tracks you have the rights to (Pixabay, other royalty-free libraries), never rips from
+YouTube or Spotify.
+
 ## Controls
 
 WASD / arrow keys to walk · Shift to run · E to interact with whatever is closest (sit at a desk or on the sofa, pet a cat, open the Buddy Machine) · Enter to chat · drag to orbit, scroll or − / + to zoom. The sun / moon switch at the top right pins the room to day or night; the clock icon follows real time.

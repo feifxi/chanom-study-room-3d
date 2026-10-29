@@ -5,15 +5,19 @@ import { useNow } from '@/lib/time';
 import { STATUS_ICON } from '../focus/status';
 import { TodoPanel } from '../todo/TodoPanel';
 import { formatMinutes } from '../stats/useStats';
+import { Music2 } from 'lucide-react';
+import { MusicPanel } from '../music/MusicPanel';
+import type { Music } from '../music/useMusic';
 import { IconRail, RAIL_ICONS } from './hud/IconRail';
 import type { StudyRoom } from './roomSession';
 
-/** The left rail: your to-do list, today's ranking in this room, and help. */
-export function RoomSidebar({ room }: { room: StudyRoom }) {
+/** The left rail: your to-do list, music, today's ranking in this room, and help. */
+export function RoomSidebar({ room, music }: { room: StudyRoom; music: Music }) {
   return (
     <IconRail
       items={[
         { id: 'todo', icon: RAIL_ICONS.todo, label: 'To-do', keepMounted: true, render: () => <TodoPanel /> },
+        { id: 'music', icon: Music2, label: 'Music', render: () => <MusicPanel music={music} /> },
         { id: 'ranks', icon: RAIL_ICONS.ranks, label: 'Focus today', render: () => <RanksPanel room={room} /> },
         { id: 'help', icon: RAIL_ICONS.help, label: 'How to play', render: () => <HelpPanel /> },
       ]}
