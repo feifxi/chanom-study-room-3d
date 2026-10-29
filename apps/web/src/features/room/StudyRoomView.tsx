@@ -201,7 +201,8 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
           }
         }}
       />
-      {!(compact && touch) && <ZoomControl percent={zoomPercent} onZoom={(z) => (zoomRequest.current = z)} />}
+      {/* Phones and tablets pinch to zoom; small windows have the scroll wheel */}
+      {!compact && !touch && <ZoomControl percent={zoomPercent} onZoom={(z) => (zoomRequest.current = z)} />}
 
       {room && (
         <>
