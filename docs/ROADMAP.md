@@ -32,32 +32,34 @@ service watched by Grafana. Work in this order; each step ends with something yo
 - [x] **AWS access:** the `default` profile, IAM user `terraform-admin` (account 137219822132).
       Terraform v1.14 is installed. Region `ap-southeast-7`.
 - [x] **Budget:** $20/month (about $50 of credits left). The app runs only during playtests
-      (2–3 days to a week) and is stopped or destroyed in between.
+      (2–3 days to a week), then everything is removed with `terraform destroy`. Nothing is
+      kept running or stopped in between.
 - [x] **Alerts:** Alertmanager → Discord webhook. AWS-side alerts (Budgets, CloudWatch) go by
       email, because SNS can't post to Discord without extra glue.
 - [x] **Database: RDS PostgreSQL 17 `db.t4g.micro`** (private subnet, automated backups).
-      Managed backups, CloudWatch/Performance Insights metrics and a production-like setup to
-      practise on. Between playtests it is stopped (storage only) or deleted with a final
-      snapshot and restored on the next `up`.
+      Managed backups and metrics, production-like to practise on. `terraform destroy` takes a
+      **final snapshot** first, so the feedback and stats survive between playtests (and the next
+      `up` can restore it); delete old snapshots when you no longer need them.
+- [x] **Lifecycle: one stack, `up` → playtest → `destroy`.** No stop/start. Images are built on
+      this Mac (it's arm64, like the server) and pushed to ECR during `up`, so no GitHub
+      setup is needed for a playtest.
 
 Cost (on-demand, ap-southeast-7, checked with the AWS Pricing API):
 
-| Item                                      | Price                                  | 1 week running | While stopped |
-| ----------------------------------------- | -------------------------------------- | -------------- | ------------- |
-| EC2 `t4g.medium` (4 GB, app + monitoring) | $0.0382/hour                           | $6.42          | $0            |
-| RDS `db.t4g.micro` PostgreSQL, Single-AZ  | $0.023/hour                            | $3.86          | $0            |
-| RDS storage gp3, 20 GB                    | $0.124/GB-month                        | $0.58          | $0.58         |
-| EBS gp3 root, 30 GB                       | $0.0864/GB-month                       | $0.60          | $0.60         |
-| Public IPv4 (Elastic IP)                  | $0.005/hour                            | $0.84          | $0.84         |
-| Route 53 hosted zone                      | $0.50/month                            | $0.12          | $0.12         |
-| S3 (state), ECR images, RDS backups       | cents (backups free up to the DB size) | ~$0.10         | ~$0.10        |
-| Data transfer out                         | first 100 GB/month free                | ~$0            | $0            |
-| **Total**                                 |                                        | **≈ $12.5**    | **≈ $2.2**    |
+| Item                                      | Price                                    | 1 week running |
+| ----------------------------------------- | ---------------------------------------- | -------------- |
+| EC2 `t4g.medium` (4 GB, app + monitoring) | $0.0382/hour                             | $6.42          |
+| RDS `db.t4g.micro` PostgreSQL, Single-AZ  | $0.023/hour                              | $3.86          |
+| RDS storage gp3, 20 GB                    | $0.124/GB-month                          | $0.58          |
+| EBS gp3 root, 30 GB                       | $0.0864/GB-month                         | $0.60          |
+| Public IPv4 (Elastic IP)                  | $0.005/hour                              | $0.84          |
+| Route 53 hosted zone                      | $0.50 per month it exists (not prorated) | $0.50          |
+| ECR images, CloudWatch, Budgets           | cents                                    | ~$0.10         |
+| Data transfer out                         | first 100 GB/month free                  | ~$0            |
+| **Total**                                 |                                          | **≈ $12.9**    |
 
-Notes: AWS starts a stopped RDS instance again **after 7 days**, so for longer breaks use
-`infra:down` (final snapshot, then delete; `infra:up` restores it, ~10–15 minutes). `t4g.small`
-would halve the EC2 cost, but 2 GB is tight with the monitoring stack. Set the AWS Budget on cost **without** credits so the
-alert reflects real usage.
+**After `terraform destroy`: ≈ $0.** The only leftover is the final RDS snapshot (a few cents a
+month at this size). A 3-day playtest costs about $6.
 
 ### 11.2 Containers
 
@@ -68,33 +70,32 @@ alert reflects real usage.
       `rtc.studyroom…` → LiveKit, `grafana.studyroom…` → Grafana (behind auth).
 - [ ] Check: the whole production stack runs locally with `docker compose -f docker-compose.prod.yml up`.
 
-### 11.3 Terraform (`infra/`), two stacks
+### 11.3 Terraform (`infra/`), one stack
 
-**`infra/foundation`**: long-lived, costs ~$1/month, rarely changes
-
-- [ ] S3 bucket for Terraform state (native locking).
-- [ ] Route 53 zone `studyroom.chanombude.me` (its NS go into Namecheap once).
-- [ ] ECR repositories for `web` and `game`.
-- [ ] AWS Budget ($20, without credits) and an SNS topic that emails you.
-
-**`infra/app`**: created for a playtest, stopped or destroyed afterwards
-
+- [ ] **One-time, outside the stack:** a Route 53 _reusable delegation set_ (free). It fixes the four
+      name servers, so the NS records you add in Namecheap once stay valid even though the hosted
+      zone is destroyed and recreated every playtest.
+- [ ] State: a local `terraform.tfstate` (git-ignored; one person runs it, and `destroy` leaves
+      nothing behind to track). Don't lose it while the stack is up.
 - [ ] VPC: a public subnet (EC2) and two private subnets (RDS needs two AZs); security groups
       (80/443 and LiveKit 7881/tcp + UDP from anywhere; Postgres only from the EC2 host).
 - [ ] EC2 `t4g.medium` + Elastic IP, IAM role (SSM, ECR pull, CloudWatch agent); no SSH, shell
       through SSM.
-- [ ] RDS PostgreSQL 17 `db.t4g.micro`, 20 GB gp3, 7-day automated backups, final snapshot on
-      delete; restored from the latest snapshot when the stack comes back.
-- [ ] DNS records in the zone; SSM Parameter Store secrets (`ADMIN_PASSWORD`, LiveKit keys,
-      Discord webhook, database password).
-- [ ] CloudWatch alarms (instance status, CPU, disk; RDS CPU, free storage, connections) → SNS email.
-- [ ] Scripts: `infra:up`, `infra:stop` / `infra:start` (EC2 and RDS stopped, ~$2.2/week; RDS wakes
-      itself after 7 days), `infra:down` (final snapshot, destroy the app stack, keep DNS).
-- [ ] Check: `up` → play → `down` → `up` again keeps the feedback and stats.
+- [ ] RDS PostgreSQL 17 `db.t4g.micro`, 20 GB gp3, automated backups, **final snapshot on destroy**;
+      `restore_snapshot` variable to start the next playtest from it.
+- [ ] ECR repositories (`force_delete`, so destroy also removes the images).
+- [ ] Route 53 zone `studyroom.chanombude.me` using the delegation set, and its records.
+- [ ] SSM Parameter Store secrets: `ADMIN_PASSWORD`, LiveKit keys, Discord webhook, database password.
+- [ ] CloudWatch alarms (instance status, CPU, disk; RDS CPU, free storage, connections) and an AWS
+      Budget ($20, without credits) → SNS email.
+- [ ] Scripts: `infra:up` (apply, build and push images, start the app over SSM) and `infra:down`
+      (export feedback CSV, then `terraform destroy`).
+- [ ] Check: `up` → play → `down` leaves no billable resources (Cost Explorer next day); the
+      next `up` restores the snapshot with the feedback intact.
 
-### 11.4 Deploys
+### 11.4 Deploys (optional for playtests)
 
-- [ ] GitHub Actions: on `main`, run `pnpm check` + e2e, build arm64 images, push to ECR using
+- [ ] Later, once the repo is on GitHub: on `main`, run `pnpm check` + e2e, build arm64 images, push to ECR using
       **OIDC** (no stored AWS keys), then deploy with SSM Run Command
       (`docker compose pull && docker compose up -d`). Migrations already run when the game boots.
 - [ ] Check: a commit to `main` reaches production in minutes; a bad deploy can be rolled back to
