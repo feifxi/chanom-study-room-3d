@@ -1,0 +1,5 @@
+{
+  // Use the repo's TypeScript (same version as `pnpm typecheck`) instead of the one bundled with VS Code
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
+}
