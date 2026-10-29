@@ -7,7 +7,8 @@ export const NPC_KINDS = ['cat', 'buddy'] as const;
 export type NpcKind = (typeof NPC_KINDS)[number];
 
 export const NPC_LIMITS = { total: 9, cat: 4, buddy: 5 } as const;
-export const SUMMON_COOLDOWN_MS = 8000;
+/** Just long enough for one capsule to roll out before the next. */
+export const SUMMON_COOLDOWN_MS = 2000;
 /** Delay between summoning and the NPC appearing, so the capsule animation plays first. */
 export const SUMMON_REVEAL_MS = 1800;
 /** How close you need to be to pet a cat. */
