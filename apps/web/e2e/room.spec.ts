@@ -3,6 +3,8 @@ import { SOFA } from '@study/shared';
 import { enterRoom, me, uniqueName, useProfile, walkTo } from './helpers';
 
 test('chat: messages reach other people, and joins and leaves are announced', async ({ browser }) => {
+  // Two browsers rendering the room at once: on CI's GPU-less runners that's slow, so allow 3x the time
+  test.slow();
   const alice = await browser.newPage();
   const bob = await browser.newPage();
   const [aliceName, bobName] = [uniqueName('Alice'), uniqueName('Bob')];

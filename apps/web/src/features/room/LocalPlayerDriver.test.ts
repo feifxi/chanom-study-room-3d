@@ -91,3 +91,22 @@ describe('LocalPlayerDriver speed', () => {
     expect(walkFor((d) => d.setStick(1, 0))).toBeCloseTo(RUN_SPEED, 0);
   });
 });
+
+describe('LocalPlayerDriver on a slow device', () => {
+  it('walks the full distance at 5 fps, not a quarter of it', () => {
+    const room = {
+      sessionId: 'me',
+      state: { players: new Map([['me', { x: 0, z: 5, yaw: 0, seatId: '', moveSeq: 0 }]]), npcs: new Map() },
+      send: () => {},
+    } as unknown as StudyRoom;
+    const motion = { current: { x: 0, z: 5, yaw: 0, moving: false } };
+    const camera = new THREE.OrthographicCamera();
+    camera.position.set(20, 18, 25);
+    camera.lookAt(0, 0, 5);
+    const d = new LocalPlayerDriver(room, motion);
+    d.frame(0.2, camera, null);
+    d.press('KeyD');
+    for (let i = 0; i < 5; i++) d.frame(0.2, camera, null); // one second at 5 fps
+    expect(Math.hypot(motion.current.x, motion.current.z - 5)).toBeCloseTo(WALK_SPEED, 0);
+  });
+});

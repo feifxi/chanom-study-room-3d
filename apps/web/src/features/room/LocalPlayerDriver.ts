@@ -45,6 +45,13 @@ const IDLE_SNAP_DISTANCE = 1;
 const CORRECTION_RATE = 12;
 /** Don't spam "stand" while a movement key is held on a seat. */
 const STAND_RETRY_MS = 400;
+/**
+ * Frame time handling: a slow device's long frames still move the full distance (otherwise a
+ * 5 fps phone walks at a quarter speed), split into short steps so nobody slips through furniture.
+ * Past a quarter second (a hidden tab, a hitch) the extra time is dropped.
+ */
+const MAX_FRAME_DT = 0.25;
+const MAX_STEP = 0.05;
 /** Pushing the on-screen joystick further than this runs instead of walking. */
 const STICK_RUN = 0.85;
 /** Tap-to-walk runs when the trip is longer than this (metres), so crossing the room isn't slow. */
@@ -178,7 +185,7 @@ export class LocalPlayerDriver {
 
   /** Advance one frame. Returns the new hint when it changed, otherwise undefined. */
   frame(rawDt: number, camera: THREE.Camera, controls: OrbitTarget | null): Hint | null | undefined {
-    const dt = Math.min(rawDt, 0.05);
+    const dt = Math.min(rawDt, MAX_FRAME_DT);
     const p = localPlayer(this.room);
     const m = this.motion.current;
     if (!p) return undefined;
@@ -248,6 +255,16 @@ export class LocalPlayerDriver {
   private walk(p: PlayerView, ix: number, iz: number, dt: number, camera: THREE.Camera) {
     const m = this.motion.current;
     this.followServer(p, dt);
+    const steps = Math.max(1, Math.ceil(dt / MAX_STEP));
+    let moving = false;
+    for (let i = 0; i < steps; i++) moving = this.step(ix, iz, dt / steps, camera);
+    m.moving = moving;
+    this.sendMove(false);
+  }
+
+  /** One short movement step (keys / joystick, else the tap route). Returns whether we moved. */
+  private step(ix: number, iz: number, dt: number, camera: THREE.Camera) {
+    const m = this.motion.current;
     const { move } = this;
     let speed = 0;
     if (ix || iz) {
@@ -266,20 +283,16 @@ export class LocalPlayerDriver {
     } else if (this.route) {
       speed = this.steerAlongRoute(this.route, dt);
     }
-    m.moving = speed > 0;
-    if (m.moving) {
-      const before = { x: m.x, z: m.z };
-      const step = speed * dt;
-      const next = { x: m.x + move.x * step, z: m.z + move.z * step };
-      // Right at a tap route's end we may brush furniture (a chair), so only dodge people there
-      const nearEnd =
-        this.route && this.route.path.length <= 1 && Math.hypot(this.route.path[0]!.x - m.x, this.route.path[0]!.z - m.z) < 0.6;
-      resolveCollisions(next, nearEnd ? [] : this.obstaclesAround());
-      Object.assign(m, { x: next.x, z: next.z, yaw: Math.atan2(move.x, move.z) });
-      if (this.route) this.checkStuck(this.route, before, step, dt);
-    }
-
-    this.sendMove(false);
+    if (speed <= 0) return false;
+    const before = { x: m.x, z: m.z };
+    const step = speed * dt;
+    const next = { x: m.x + move.x * step, z: m.z + move.z * step };
+    // Right at a tap route's end we may brush furniture (a chair), so only dodge people there
+    const nearEnd = this.route && this.route.path.length <= 1 && Math.hypot(this.route.path[0]!.x - m.x, this.route.path[0]!.z - m.z) < 0.6;
+    resolveCollisions(next, nearEnd ? [] : this.obstaclesAround());
+    Object.assign(m, { x: next.x, z: next.z, yaw: Math.atan2(move.x, move.z) });
+    if (this.route) this.checkStuck(this.route, before, step, dt);
+    return true;
   }
 
   /** Send our position at a fixed rate while moving, plus once when we stop; `now` skips the rate limit. */
