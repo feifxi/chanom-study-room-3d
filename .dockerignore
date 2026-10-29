@@ -1,0 +1,15 @@
+# Keep the build context small and free of secrets
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+.git
+**/*.tsbuildinfo
+**/test-results
+**/playwright-report
+apps/game/logs
+ops/alertmanager/secrets
+**/.env
+**/.env.*
+!.env.example
+infra

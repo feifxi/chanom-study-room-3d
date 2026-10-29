@@ -1,0 +1,22 @@
+# TLS and routing for the whole app. DOMAIN is e.g. studyroom.chanombude.me (or "localhost" to try
+# it on this machine, where Caddy uses its own local certificates). Certificates are automatic.
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy web:3000
+}
+
+game.{$DOMAIN} {
+	# Prometheus scrapes /metrics inside the compose network; it isn't public
+	handle /metrics {
+		respond 404
+	}
+	reverse_proxy game:2567
+}
+
+rtc.{$DOMAIN} {
+	reverse_proxy livekit:7880
+}
+
+grafana.{$DOMAIN} {
+	reverse_proxy grafana:3000
+}

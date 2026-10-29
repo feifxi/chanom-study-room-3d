@@ -20,7 +20,7 @@ services:
 
   # Voice + screen share. Single UDP port, advertised on localhost for local dev.
   livekit:
-    image: livekit/livekit-server:latest
+    image: livekit/livekit-server:v1.13.11
     command: --dev --bind 0.0.0.0 --node-ip 127.0.0.1 --udp-port 7882
     environment:
       LIVEKIT_KEYS: 'devkey: secret'

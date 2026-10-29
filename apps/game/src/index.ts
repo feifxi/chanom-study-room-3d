@@ -1,4 +1,4 @@
-import { defineRoom, defineServer, listen, matchMaker } from 'colyseus';
+import { WebSocketTransport, defineRoom, defineServer, listen, matchMaker } from 'colyseus';
 import { MIN_COUNTED_FOCUS_MIN, ROOM_NAME, type RoomListing } from '@study/shared';
 import { createDb, getLeaderboard, getVisitorStats, migrateDb, recordFocus } from '@study/db';
 import { StudyRoom, services, type StudyRoomMetadata } from './rooms/StudyRoom';
@@ -30,6 +30,8 @@ if (process.env.DATABASE_URL) {
 }
 
 const server = defineServer({
+  // Explicit, so the production bundle includes it (Colyseus would otherwise load it with a dynamic import)
+  transport: new WebSocketTransport(),
   rooms: {
     // joinOrCreate fills the first open room; once it hits maxClients it locks
     // and the matchmaker opens a new one automatically.

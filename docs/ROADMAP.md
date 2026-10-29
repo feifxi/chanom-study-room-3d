@@ -61,14 +61,16 @@ Cost (on-demand, ap-southeast-7, checked with the AWS Pricing API):
 **After `terraform destroy`: ≈ $0.** The only leftover is the final RDS snapshot (a few cents a
 month at this size). A 3-day playtest costs about $6.
 
-### 11.2 Containers
+### 11.2 Containers ✅ (2026-10-29, see [deploy/README.md](../deploy/README.md))
 
-- [ ] Dockerfiles: `apps/web` (Next standalone) and `apps/game` (tsup bundle), both for arm64.
-- [ ] `docker-compose.prod.yml`: Caddy (TLS + reverse proxy), web, game, LiveKit (with
-      TURN on 443 for strict networks), and the observability stack.
-- [ ] Caddyfile: `studyroom.chanombude.me` → web, `game.studyroom…` → game (WebSocket),
-      `rtc.studyroom…` → LiveKit, `grafana.studyroom…` → Grafana (behind auth).
-- [ ] Check: the whole production stack runs locally with `docker compose -f docker-compose.prod.yml up`.
+- [x] Dockerfiles for `web` (Next standalone, ~435 MB) and `game` (everything bundled by tsup, no
+      `node_modules`, ~370 MB), arm64.
+- [x] `deploy/docker-compose.prod.yml`: Caddy, web, game, LiveKit 1.13, Prometheus, Alertmanager,
+      Loki, Alloy, Grafana (login required). Public ports: 80/443 and LiveKit 7881/tcp + 7882/udp.
+- [x] Caddyfile: `$DOMAIN` → web, `game.` → game (`/metrics` not public), `rtc.` → LiveKit,
+      `grafana.` → Grafana.
+- [x] Checked locally with `DOMAIN=localhost`: all routes, joining over WSS, voice, metrics, logs.
+- [ ] Not done: TURN. Voice needs UDP 7882 or TCP 7881; test on mobile data before the playtest.
 
 ### 11.3 Terraform (`infra/`), one stack
 

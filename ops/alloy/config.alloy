@@ -26,7 +26,7 @@ loki.process "game" {
   // pino writes numeric levels; turn them into names for the `level` label
   stage.template {
     source   = "level"
-    template = `{{ if eq .Value "10" }}trace{{ else if eq .Value "20" }}debug{{ else if eq .Value "30" }}info{{ else if eq .Value "40" }}warn{{ else if eq .Value "50" }}error{{ else if eq .Value "60" }}fatal{{ else }}{{ .Value }}{{ end }}`
+    template = `{{ if not .Value }}{{ else if eq .Value "10" }}trace{{ else if eq .Value "20" }}debug{{ else if eq .Value "30" }}info{{ else if eq .Value "40" }}warn{{ else if eq .Value "50" }}error{{ else if eq .Value "60" }}fatal{{ else }}{{ .Value }}{{ end }}`
   }
   stage.timestamp {
     source = "time"
@@ -62,5 +62,27 @@ discovery.relabel "containers" {
 loki.source.docker "containers" {
   host       = "unix:///var/run/docker.sock"
   targets    = discovery.relabel.containers.output
+  forward_to = [loki.process.containers.receiver]
+}
+
+// In production the game logs pino JSON to stdout: give it the same `level` label as the dev file.
+// Lines that aren't JSON (other containers) pass through unchanged.
+loki.process "containers" {
+  stage.match {
+    selector = "{service=\"game\"}"
+    stage.json {
+      expressions = { level = "level", room = "roomId" }
+    }
+    stage.template {
+      source   = "level"
+      template = `{{ if not .Value }}{{ else if eq .Value "10" }}trace{{ else if eq .Value "20" }}debug{{ else if eq .Value "30" }}info{{ else if eq .Value "40" }}warn{{ else if eq .Value "50" }}error{{ else if eq .Value "60" }}fatal{{ else }}{{ .Value }}{{ end }}`
+    }
+    stage.labels {
+      values = { level = "" }
+    }
+    stage.structured_metadata {
+      values = { room = "" }
+    }
+  }
   forward_to = [loki.write.local.receiver]
 }

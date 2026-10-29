@@ -1,0 +1,9 @@
+# LiveKit (voice + screen share). API keys come from the LIVEKIT_KEYS env var ("key: secret").
+port: 7880
+rtc:
+  tcp_port: 7881 # fallback for networks that block UDP
+  udp_port: 7882 # all media on one UDP port
+  use_external_ip: true # discover the public IP (EC2); overridden with --node-ip for local runs
+logging:
+  json: true
+  level: info

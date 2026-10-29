@@ -25,6 +25,7 @@ packages/
   shared/  Code used by both apps
   db/      Drizzle schema, migrations, stats and admin queries
 ops/       Prometheus, Alertmanager, Loki, Alloy, Grafana config and the SRE guide
+deploy/    Production Docker Compose stack, Caddyfile, LiveKit config (see deploy/README.md)
 docs/      Roadmap, architecture, decision log
 ```
 
