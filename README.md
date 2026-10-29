@@ -109,8 +109,16 @@ A small **Buddy Machine** stands against the left wall. Walk up and press **E** 
 ## Feedback and the admin page
 
 - When someone leaves a room the first time, a small card asks how it was: five faces (1–5), optional tags (bug / idea / love it) and an optional comment. **Skip** leaves right away and the card comes back at most once a day; after sending it never asks again. The visit's context is attached automatically (time in the room, whether they used voice, screen size, browser).
-- **`/admin`** shows app health (game server, database, LiveKit, memory), who is online per room, unique visitors per day, visits, focus minutes, and all feedback (average, breakdown, tags, comments, CSV export, delete).
+- **`/admin`** is the product analytics page: feedback first (average score, 1–5 breakdown, tags, every comment with its context, CSV export, delete), then visitors (unique per day, visits, average visit, focus minutes) and who is online per room. Service health and performance are deliberately left to Grafana (see below).
 - The admin password lives in **`ADMIN_PASSWORD`** on the game server, never in code. `pnpm dev` uses `chanom-dev` unless you set it. Signing in sets a signed, HttpOnly cookie for 7 days; 5 wrong passwords lock that address out for 10 minutes. Without `ADMIN_PASSWORD` the admin API is off.
+
+### Two dashboards, two jobs
+
+|          | `/admin` (in the app)                          | Grafana (Prometheus + Loki)                           |
+| -------- | ---------------------------------------------- | ----------------------------------------------------- |
+| Question | Do people like it? How do they use it?         | Is the service healthy? Why did it break?             |
+| Data     | Feedback, ratings, visitors, visits (Postgres) | Metrics from `/metrics`, container logs, alerts       |
+| Audience | Product (you, deciding what to build next)     | SRE practice: SLIs/SLOs, alerting, incident debugging |
 
 ## Controls
 

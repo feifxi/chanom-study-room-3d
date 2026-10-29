@@ -35,14 +35,11 @@ export interface AdminSummary {
   daily: { date: string; visitors: number }[];
 }
 
-/** GET /admin/overview */
+/**
+ * GET /admin/overview: product analytics (feedback first, then usage).
+ * Service health and performance live in Grafana, not here.
+ */
 export interface AdminOverview {
-  status: {
-    uptimeSec: number;
-    memoryMb: number;
-    database: boolean;
-    livekit: boolean;
-  };
   live: {
     online: number;
     /** Highest number of people online at once since the server started. */

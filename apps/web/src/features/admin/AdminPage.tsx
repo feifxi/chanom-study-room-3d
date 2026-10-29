@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
-import { Activity, Database, Download, LogOut, Mic, Server, Trash2 } from 'lucide-react';
+import { Download, LogOut, Trash2 } from 'lucide-react';
 import { FEEDBACK_TAGS, type AdminOverview, type FeedbackRow } from '@study/shared';
 import { LogoMark } from '@/components/Logo';
 import { FACES, TAG_LABELS } from '../feedback/faces';
@@ -11,7 +11,10 @@ import { FEEDBACK_CSV_URL, deleteFeedback, fetchOverview, login, logout, type Ov
 
 const REFRESH_MS = 5000;
 
-/** /admin: app health, who's online, visitor numbers and feedback. Password-protected by the game server. */
+/**
+ * /admin: product analytics. Feedback and scores first, then visitors and who's online.
+ * Service health and performance belong in Grafana. Password-protected by the game server.
+ */
 export function AdminPage() {
   const [result, setResult] = useState<OverviewResult | null>(null);
 
@@ -93,14 +96,14 @@ function Login({ onSignedIn }: { onSignedIn: () => void }) {
 }
 
 function Dashboard({ data, onDelete, onSignOut }: { data: AdminOverview; onDelete: (id: number) => void; onSignOut: () => void }) {
-  const { status, live, summary, feedback } = data;
+  const { live, summary, feedback } = data;
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8">
       <header className="flex items-center gap-3">
         <LogoMark size={40} />
         <div className="flex-1">
-          <h1 className="text-2xl font-extrabold tracking-[-0.03em]">Admin</h1>
-          <p className="text-xs text-muted">Refreshes every {REFRESH_MS / 1000} s</p>
+          <h1 className="text-2xl font-extrabold tracking-[-0.03em]">Analytics</h1>
+          <p className="text-xs text-muted">What people think and how they use the room · refreshes every {REFRESH_MS / 1000} s</p>
         </div>
         <Link href="/" className="rounded-xl border border-line bg-white px-3 py-2 text-sm font-bold">
           Lobby
@@ -113,21 +116,47 @@ function Dashboard({ data, onDelete, onSignOut }: { data: AdminOverview; onDelet
         </button>
       </header>
 
-      {/* Health */}
-      <section aria-label="App status" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Health icon={Server} label="Game server" ok detail={`Up ${formatUptime(status.uptimeSec)}`} />
-        <Health
-          icon={Database}
-          label="Database"
-          ok={status.database}
-          detail={status.database ? 'Connected' : 'Unavailable: stats & feedback off'}
-        />
-        <Health icon={Mic} label="Voice (LiveKit)" ok={status.livekit} detail={status.livekit ? 'Reachable' : 'Unreachable'} />
-        <Health icon={Activity} label="Memory" ok={status.memoryMb < 800} detail={`${status.memoryMb} MB`} />
-      </section>
+      {!summary && (
+        <p className="rounded-2xl bg-rose px-4 py-3 text-sm font-bold text-rose-ink">
+          The database is off, so feedback and visitor numbers aren&apos;t being saved.
+        </p>
+      )}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        {/* Live */}
+      {/* Feedback is what this page is for */}
+      <Card
+        title="Feedback"
+        action={
+          <a
+            href={FEEDBACK_CSV_URL}
+            className="flex items-center gap-1.5 rounded-xl border border-line bg-white px-3 py-1.5 text-xs font-bold"
+          >
+            <Download className="size-3.5" /> CSV
+          </a>
+        }
+      >
+        {summary && <FeedbackSummary summary={summary.feedback} rows={feedback} />}
+        <FeedbackList rows={feedback} onDelete={onDelete} />
+      </Card>
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <Card title="Visitors">
+          {summary ? (
+            <>
+              <div className="grid grid-cols-3 gap-3">
+                <Stat label="Today" value={summary.visitors.today} hint="unique visitors" />
+                <Stat label="Last 7 days" value={summary.visitors.last7Days} hint="unique visitors" />
+                <Stat label="All time" value={summary.visitors.allTime} hint="unique visitors" />
+                <Stat label="Visits (7 days)" value={summary.visits.last7Days} />
+                <Stat label="Avg. visit" value={formatMinutes(summary.visits.avgMinutes)} />
+                <Stat label="Focus (7 days)" value={formatMinutes(summary.focusMinutes.last7Days)} />
+              </div>
+              <DailyVisitors days={summary.daily} />
+            </>
+          ) : (
+            <p className="text-sm text-muted">Needs the database.</p>
+          )}
+        </Card>
+
         <Card title="Right now">
           <div className="grid grid-cols-2 gap-3">
             <Stat label="Online" value={live.online} />
@@ -146,46 +175,7 @@ function Dashboard({ data, onDelete, onSignOut }: { data: AdminOverview; onDelet
             ))}
           </ul>
         </Card>
-
-        {/* Players */}
-        <Card title="Players">
-          {summary ? (
-            <>
-              <div className="grid grid-cols-3 gap-3">
-                <Stat label="Today" value={summary.visitors.today} hint="unique visitors" />
-                <Stat label="Last 7 days" value={summary.visitors.last7Days} hint="unique visitors" />
-                <Stat label="All time" value={summary.visitors.allTime} hint="unique visitors" />
-                <Stat label="Visits (7 days)" value={summary.visits.last7Days} />
-                <Stat label="Avg. visit" value={formatMinutes(summary.visits.avgMinutes)} />
-                <Stat label="Focus (7 days)" value={formatMinutes(summary.focusMinutes.last7Days)} />
-              </div>
-              <DailyVisitors days={summary.daily} />
-            </>
-          ) : (
-            <p className="text-sm text-muted">Needs the database.</p>
-          )}
-        </Card>
       </div>
-
-      {/* Feedback */}
-      <Card
-        title="Feedback"
-        action={
-          <a
-            href={FEEDBACK_CSV_URL}
-            className="flex items-center gap-1.5 rounded-xl border border-line bg-white px-3 py-1.5 text-xs font-bold"
-          >
-            <Download className="size-3.5" /> CSV
-          </a>
-        }
-      >
-        {summary ? (
-          <FeedbackSummary summary={summary.feedback} rows={feedback} />
-        ) : (
-          <p className="text-sm text-muted">Needs the database.</p>
-        )}
-        <FeedbackList rows={feedback} onDelete={onDelete} />
-      </Card>
     </main>
   );
 }
@@ -199,22 +189,6 @@ function Card({ title, action, children }: { title: string; action?: ReactNode; 
       </div>
       {children}
     </section>
-  );
-}
-
-function Health({ icon: Icon, label, ok, detail }: { icon: typeof Server; label: string; ok: boolean; detail: string }) {
-  return (
-    <div className="panel flex items-center gap-3 p-4">
-      <span className={`grid size-10 flex-none place-items-center rounded-xl ${ok ? 'bg-mint text-mint-ink' : 'bg-rose text-rose-ink'}`}>
-        <Icon className="size-5" />
-      </span>
-      <div className="min-w-0">
-        <p className="flex items-center gap-1.5 text-sm font-bold">
-          {label} <span className="text-xs">{ok ? '✓' : '✕'}</span>
-        </p>
-        <p className="truncate text-xs text-muted">{detail}</p>
-      </div>
-    </div>
   );
 }
 
@@ -351,13 +325,6 @@ function FeedbackList({ rows, onDelete }: { rows: FeedbackRow[]; onDelete: (id: 
       ))}
     </ul>
   );
-}
-
-function formatUptime(sec: number) {
-  const d = Math.floor(sec / 86_400);
-  const h = Math.floor((sec % 86_400) / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m`;
 }
 
 /** Rough browser + OS from a user agent, enough to spot "only broken on Safari". */

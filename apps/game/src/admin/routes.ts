@@ -1,7 +1,6 @@
 import express, { type Application, type Request, type Response } from 'express';
 import { matchMaker } from 'colyseus';
 import { z } from 'zod';
-import { sql } from 'drizzle-orm';
 import { FEEDBACK_COMMENT_MAX, FEEDBACK_TAGS, NAME_MAX, ROOM_NAME, type AdminOverview, type FeedbackRow } from '@study/shared';
 import { deleteFeedback, getAdminSummary, listFeedback, recordFeedback } from '@study/db';
 import { services, type StudyRoomMetadata } from '../rooms/StudyRoom';
@@ -9,10 +8,6 @@ import { presence } from '../presence';
 import { ADMIN_COOKIE, AdminAuth, SESSION_DAYS, readCookie } from './auth';
 
 const FEEDBACK_PER_MINUTE = 5;
-/** LiveKit's HTTP port answers 200 when it's up. */
-const LIVEKIT_HEALTH_URL =
-  process.env.LIVEKIT_HEALTH_URL ?? (process.env.LIVEKIT_PUBLIC_URL ?? 'ws://localhost:7880').replace(/^ws/, 'http');
-
 const feedbackSchema = z.object({
   visitorId: z.string().regex(/^[\w-]{8,64}$/),
   name: z.string().trim().max(NAME_MAX).catch('Guest'),
@@ -94,23 +89,12 @@ export function registerAdminRoutes(app: Application, auth = new AdminAuth()) {
   app.get('/admin/overview', async (req, res) => {
     if (!requireAdmin(req, res)) return;
     const db = services.db;
-    const [rooms, database, livekit, summary, feedback] = await Promise.all([
+    const [rooms, summary, feedback] = await Promise.all([
       liveRooms(),
-      db
-        ? db.execute(sql`select 1`).then(
-            () => true,
-            () => false,
-          )
-        : Promise.resolve(false),
-      fetch(LIVEKIT_HEALTH_URL, { signal: AbortSignal.timeout(1500) }).then(
-        (r) => r.ok,
-        () => false,
-      ),
       db ? getAdminSummary(db).catch(() => null) : Promise.resolve(null),
       db ? listFeedback(db, 100).catch(() => [] as FeedbackRow[]) : Promise.resolve([] as FeedbackRow[]),
     ]);
     const body: AdminOverview = {
-      status: { uptimeSec: Math.round(process.uptime()), memoryMb: Math.round(process.memoryUsage().rss / 1048576), database, livekit },
       live: { online: presence.online, peakOnline: presence.peak, rooms },
       summary,
       feedback,

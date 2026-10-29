@@ -39,8 +39,7 @@ test('leaving asks for feedback once, and it shows up on the admin page', async 
   await page.getByLabel('Password').fill(ADMIN_PASSWORD);
   await page.getByRole('button', { name: 'Sign in' }).click();
 
-  await expect(page.getByRole('heading', { name: 'Admin' })).toBeVisible();
-  await expect(page.getByText('Database ✓')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Analytics' })).toBeVisible();
   const entry = page.getByRole('listitem').filter({ hasText: comment });
   await expect(entry).toBeVisible();
   await expect(entry.getByText('💡 Have an idea')).toBeVisible();
