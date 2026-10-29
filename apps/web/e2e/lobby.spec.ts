@@ -1,9 +1,10 @@
 import { expect, test } from '@playwright/test';
 import { uniqueName } from './helpers';
 
-test('lobby shows the hero and remembers your character', async ({ page }) => {
+test('lobby shows your character and the rooms, and remembers your outfit', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: /Study together/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your character' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Public rooms' })).toBeVisible();
 
   const name = uniqueName('Mint');
   await page.getByLabel('Nickname').fill(name);
@@ -15,7 +16,7 @@ test('lobby shows the hero and remembers your character', async ({ page }) => {
 
 test('"Enter the library" takes you into a room', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Enter the library' }).first().click();
+  await page.getByRole('button', { name: /Enter the library/ }).click();
   await expect(page).toHaveURL(/\/room/);
   await expect(page.getByText('Connected')).toBeVisible();
 });

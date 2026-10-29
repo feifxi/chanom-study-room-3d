@@ -9,9 +9,9 @@ export function StatsCard({ visitorId, name }: { visitorId: string; name: string
   if (!enabled) return null;
 
   return (
-    <section className="panel flex flex-col gap-5 p-6">
+    <section className="panel flex flex-col gap-4 p-5">
       <div className="flex items-baseline justify-between">
-        <h2 className="display text-3xl">Your study stats</h2>
+        <h2 className="text-sm font-extrabold">My study stats</h2>
         <span className="text-xs text-muted">Counted in Thai time · no sign-up, tied to this browser</span>
       </div>
       <div className="grid gap-5 md:grid-cols-[minmax(0,5fr)_minmax(0,4fr)_minmax(0,4fr)]">
