@@ -6,3 +6,4 @@ export * from './focus';
 export * from './collision';
 export * from './navigation';
 export * from './npc';
+export * from './feedback';

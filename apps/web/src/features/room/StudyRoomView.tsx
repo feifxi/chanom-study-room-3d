@@ -2,11 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { GACHA_MACHINE, SEAT_BY_ID, SPAWN } from '@study/shared';
 import { loadProfile } from '@/lib/profile';
 import { ChatPanel } from '../chat/ChatPanel';
+import { shouldAskFeedback } from '../feedback/askPolicy';
+import { LeaveFeedback } from '../feedback/LeaveFeedback';
 import { FocusPanel } from '../focus/FocusPanel';
 import { BuddyMachinePanel } from '../npc/BuddyMachinePanel';
 import { GachaMachine } from '../npc/GachaMachine';
@@ -44,6 +47,31 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
   const label = useRoomLabel(room?.roomId);
   const board = useMemo(() => new LabelBoard(), []);
   const voice = useVoice(room, motion);
+  const router = useRouter();
+  const [leaveContext, setLeaveContext] = useState<LeaveContext | null>(null);
+  const joinedAt = useRef(0);
+  const usedVoice = useRef(false);
+  useEffect(() => {
+    if (room) joinedAt.current = Date.now();
+  }, [room]);
+  useEffect(() => {
+    if (voice.micOn) usedVoice.current = true;
+  }, [voice.micOn]);
+
+  /** Leave goes through a short feedback card the first time; after that it's instant. */
+  const leave = () => {
+    if (!room || !shouldAskFeedback()) return router.push('/');
+    const profile = loadProfile();
+    setLeaveContext({
+      visitorId: profile.visitorId,
+      name: room.state.players.get(room.sessionId)?.name ?? profile.name,
+      roomLabel: label ?? '',
+      minutesInRoom: Math.round(((Date.now() - joinedAt.current) / 60_000) * 10) / 10,
+      usedVoice: usedVoice.current,
+      viewport: `${window.innerWidth}x${window.innerHeight}`,
+    });
+  };
+
   const sharingIds = useMemo(() => new Set(voice.shares.map((s) => s.identity)), [voice.shares]);
 
   // Walking away from the Buddy Machine closes its panel
@@ -121,6 +149,7 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
       )}
 
       <RoomHeader
+        onLeave={leave}
         label={label ?? 'Chanom Study Room'}
         people={playerIds.length}
         statusText={status === 'connected' ? null : statusText(status, error)}
@@ -147,6 +176,8 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
       {room && machineOpen && (
         <BuddyMachinePanel room={room} npcIds={npcIds} summons={summons} error={summonError} onClose={() => setMachineOpen(false)} />
       )}
+
+      {leaveContext && <LeaveFeedback context={leaveContext} onLeave={() => router.push('/')} onStay={() => setLeaveContext(null)} />}
 
       {status === 'error' && (
         <div className="absolute inset-0 grid place-items-center bg-cocoa/30">
@@ -184,6 +215,8 @@ function joinOptions() {
   const profile = loadProfile();
   return { name: profile.name || 'Guest', look: profile.look, visitorId: profile.visitorId };
 }
+
+type LeaveContext = React.ComponentProps<typeof LeaveFeedback>['context'];
 
 function hintText(hint: Hint) {
   switch (hint.kind) {

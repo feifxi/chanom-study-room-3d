@@ -20,7 +20,8 @@ test('chat: messages reach other people, and joins and leaves are announced', as
 
   // Leaving with the button is announced right away. (Closing the tab counts as a dropped
   // connection: the server keeps the seat for 20 s in case they come back.)
-  await bob.getByRole('link', { name: 'Leave' }).click();
+  await bob.getByRole('button', { name: 'Leave' }).click();
+  await bob.getByRole('dialog').getByRole('button', { name: 'Skip' }).click();
   await expect(bob).toHaveURL('/');
   await expect(aliceChat.getByText(`${bobName} left the room`)).toBeVisible();
   await bob.close();

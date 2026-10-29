@@ -3,6 +3,7 @@ import { MIN_COUNTED_FOCUS_MIN, ROOM_NAME, type RoomListing } from '@study/share
 import { createDb, getLeaderboard, getVisitorStats, migrateDb, recordFocus } from '@study/db';
 import { StudyRoom, services, type StudyRoomMetadata } from './rooms/StudyRoom';
 import { metrics, metricsHandler } from './metrics';
+import { registerAdminRoutes, registerFeedbackRoute } from './admin/routes';
 
 const PORT = Number(process.env.PORT ?? 2567);
 const WEB_ORIGIN = process.env.WEB_ORIGIN ?? 'http://localhost:3000';
@@ -34,8 +35,15 @@ const server = defineServer({
     [ROOM_NAME]: defineRoom(StudyRoom),
   },
   express: (app) => {
+    // Behind a reverse proxy (Caddy in production) the client address comes from X-Forwarded-For
+    if (process.env.TRUST_PROXY) app.set('trust proxy', process.env.TRUST_PROXY);
     app.use((req, res, next) => {
       res.setHeader('Access-Control-Allow-Origin', WEB_ORIGIN);
+      // The admin page sends its session cookie; feedback posts JSON
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+      if (req.method === 'OPTIONS') return void res.sendStatus(204);
       next();
     });
 
@@ -65,6 +73,9 @@ const server = defineServer({
       if (!/^[\w-]{8,64}$/.test(req.params.visitorId)) return void res.status(400).json({ error: 'bad id' });
       res.json(await getVisitorStats(db, req.params.visitorId));
     });
+
+    registerFeedbackRoute(app);
+    registerAdminRoutes(app);
 
     app.get('/leaderboard', async (req, res) => {
       const db = services.db;

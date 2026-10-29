@@ -106,6 +106,12 @@ A small **Buddy Machine** stands against the left wall. Walk up and press **E** 
 - Study buddies pick a random free desk, run a 25/5 pomodoro (shown on their name tag), cheer you when you finish a focus stretch, and give up their seat if you want it.
 - Up to 5 study buddies and 4 cats per room; every new room starts with one cat, and friends go home when the room closes. NPC logic runs on the server (grid A* pathfinding in `@study/shared`), so everyone sees the same thing.
 
+## Feedback and the admin page
+
+- When someone leaves a room the first time, a small card asks how it was: five faces (1–5), optional tags (bug / idea / love it) and an optional comment. **Skip** leaves right away and the card comes back at most once a day; after sending it never asks again. The visit's context is attached automatically (time in the room, whether they used voice, screen size, browser).
+- **`/admin`** shows app health (game server, database, LiveKit, memory), who is online per room, unique visitors per day, visits, focus minutes, and all feedback (average, breakdown, tags, comments, CSV export, delete).
+- The admin password lives in **`ADMIN_PASSWORD`** on the game server, never in code. `pnpm dev` uses `chanom-dev` unless you set it. Signing in sets a signed, HttpOnly cookie for 7 days; 5 wrong passwords lock that address out for 10 minutes. Without `ADMIN_PASSWORD` the admin API is off.
+
 ## Controls
 
 WASD / arrow keys to walk · Shift to run · E to interact with whatever is closest (sit at a desk or on the sofa, pet a cat, open the Buddy Machine) · Enter to chat · drag to orbit, scroll or − / + to zoom. The sun / moon switch at the top right pins the room to day or night; the clock icon follows real time.

@@ -18,8 +18,9 @@ import {
   type ChatMessage,
   type TimerPhase,
 } from '@study/shared';
-import { getTodayMinutes, upsertVisitor, type Db } from '@study/db';
+import { endVisit, getTodayMinutes, startVisit, upsertVisitor, type Db } from '@study/db';
 import { metrics } from '../metrics';
+import { presence } from '../presence';
 import { NpcDirector } from '../npc/NpcDirector';
 import { Player, StudyState } from '../state';
 import { RoomNumbers, clamp, deriveStatus, limitMove, sanitizeName, sanitizeVisitorId } from './rules';
@@ -73,6 +74,8 @@ interface Private {
   personalPhase: TimerPhase;
   personalEndsAt: number;
   focusStartedAt: number;
+  /** Row in the visits table, once it's been written. */
+  visitId?: Promise<number | undefined>;
 }
 
 export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMetadata }> {
@@ -276,7 +279,15 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
         })
         .catch((e) => console.warn('stats: join bookkeeping failed', e));
     }
+    presence.join();
+    const visitId = db
+      ? startVisit(db, { visitorId, roomLabel: this.metadata?.label ?? '' }).catch((e) => {
+          console.warn('stats: could not record visit', e);
+          return undefined;
+        })
+      : undefined;
     this.priv.set(client.sessionId, {
+      visitId,
       visitorId,
       lastMoveAt: 0,
       lastChatAt: 0,
@@ -295,6 +306,11 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
 
   onLeave(client: Client) {
     this.endFocus(client.sessionId);
+    presence.leave();
+    const db = services.db;
+    const visit = this.priv.get(client.sessionId)?.visitId;
+    if (db && visit)
+      void visit.then((id) => (id ? endVisit(db, id) : undefined)).catch((e) => console.warn('stats: could not close visit', e));
     const name = this.state.players.get(client.sessionId)?.name;
     if (name && this.announced.delete(client.sessionId)) this.announce(`🚪 ${name} left the room`);
     this.state.players.delete(client.sessionId);

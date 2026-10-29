@@ -19,7 +19,8 @@ export async function useProfile(page: Page, name: string) {
 /** Open the room and wait until we're connected and the dev test handle is ready. */
 export async function enterRoom(page: Page) {
   await page.goto('/room');
-  await expect(page.getByText('Connected')).toBeVisible();
+  // The first visit after a dev-server restart compiles the 3D room, which can take a while
+  await expect(page.getByText('Connected')).toBeVisible({ timeout: 45_000 });
   await page.waitForFunction(() => {
     const w = window as unknown as { __study?: { room?: { state?: { players?: Map<string, unknown> } } } };
     return !!w.__study?.room?.state?.players?.size;
