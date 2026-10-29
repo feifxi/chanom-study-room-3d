@@ -104,7 +104,7 @@ A small **Buddy Machine** stands against the left wall. Walk up and press **E** 
 - **Goodbye**: anyone can send a friend home; it walks back into the machine.
 - Cats wander, groom and nap on the sofa arms (more at night). Press **E** next to one to pet it: hearts, a purr, and it follows you for a while. A cat that's following you never blocks a seat, and it stops following when you sit down.
 - Study buddies pick a random free desk, run a 25/5 pomodoro (shown on their name tag), cheer you when you finish a focus stretch, and give up their seat if you want it.
-- Up to 6 friends per room; every new room starts with one cat, and friends go home when the room closes. NPC logic runs on the server (grid A* pathfinding in `@study/shared`), so everyone sees the same thing.
+- Up to 5 study buddies and 4 cats per room; every new room starts with one cat, and friends go home when the room closes. NPC logic runs on the server (grid A* pathfinding in `@study/shared`), so everyone sees the same thing.
 
 ## Controls
 
