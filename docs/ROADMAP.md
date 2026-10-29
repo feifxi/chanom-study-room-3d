@@ -163,12 +163,12 @@ Product
 - Music, later: a shared "room radio" (everyone hears the same track in sync, via the server);
   more tracks would move to S3 + CloudFront instead of the web image.
 - **Mobile support** (built 2026-10-30, both orientations; not yet tried on real phones):
-  - [x] Tap-to-walk on the shared A* grid (tap a chair / cat / the machine to use it; clicks work
-        on desktop too), a joystick (push fully to run), an action button instead of E.
+  - [x] A joystick to walk and an action button instead of E. (Tap-to-walk was built and then
+        removed to keep things simple; the joystick covers it.)
   - [x] Small-screen HUD: header and top-right compacted, the rail along the top with the Pomodoro
         in it, chat as a sheet (closed at first), icon-only dock, zoom by pinch.
   - [x] Phones start in battery saver; screen share is hidden where the browser can't share.
-  - [x] e2e on a phone profile: tap to walk, tap to sit + stand button, joystick.
+  - [x] e2e on a phone profile: joystick, sit and stand with the action button, no zoom buttons.
   - [ ] Try on a real iPhone and Android: heat, iOS Safari mic permission and the "Hear room"
         audio unlock, notch safe areas, TURN on mobile data (see 11.2).
   - [ ] A badge on the chat button for new messages while the sheet is closed.

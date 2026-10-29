@@ -1,6 +1,6 @@
 import { devices, expect, test } from '@playwright/test';
-import { SEATS, isWalkable } from '@study/shared';
-import { enterRoom, firstTappable, me } from './helpers';
+import { SEATS, nearestWalkable } from '@study/shared';
+import { enterRoom, me, walkTo } from './helpers';
 
 // A phone: touch and a phone-sized screen (the device's browser type is left to the config)
 const { defaultBrowserType: _browser, ...PHONE } = devices['Pixel 7'];
@@ -9,42 +9,15 @@ void _browser;
 test.describe('on a phone', () => {
   test.use({ ...PHONE, isMobile: false });
 
-  test('tap the floor to walk there', async ({ page }) => {
+  test('the action button sits you down and stands you up', async ({ page }) => {
     await enterRoom(page);
-    const start = await me(page);
-    const around = [
-      [0, 2.5],
-      [-1.5, 2],
-      [1.5, 2],
-      [-2, 0],
-      [2, 0],
-    ].map(([dx, dz]) => ({ x: start.x + dx!, z: start.z + dz! }));
-    const { point, screen } = await firstTappable(page, around.filter(isWalkable));
-    await page.touchscreen.tap(screen.x, screen.y);
-    await expect
-      .poll(
-        async () => {
-          const m = await me(page);
-          return Math.hypot(m.x - point.x, m.z - point.z);
-        },
-        { timeout: 10_000 },
-      )
-      .toBeLessThan(0.5);
-  });
-
-  test('tap a chair to walk over and sit, then tap the button to stand', async ({ page }) => {
-    await enterRoom(page);
-    const start = await me(page);
-    const nearby = [...SEATS].sort((a, b) => Math.hypot(a.x - start.x, a.z - start.z) - Math.hypot(b.x - start.x, b.z - start.z));
-    const { point: seat, screen } = await firstTappable(
-      page,
-      nearby.map((s) => ({ ...s, y: 0.45 })),
-    );
-    await page.touchscreen.tap(screen.x, screen.y);
-    await expect.poll(async () => (await me(page)).seatId, { timeout: 15_000 }).toBe(seat.id);
-    const button = page.getByRole('button', { name: /tap to (stand|get) up/ });
-    await expect(button).toBeVisible();
-    await button.tap();
+    // Stand next to a chair (the nearest floor spot to it)
+    const seat = SEATS[0]!;
+    const spot = nearestWalkable(seat);
+    await walkTo(page, spot.x, spot.z);
+    await page.getByRole('button', { name: '🪑 Sit' }).tap();
+    await expect.poll(async () => (await me(page)).seatId).toBe(seat.id);
+    await page.getByRole('button', { name: /tap to stand up/ }).tap();
     await expect.poll(async () => (await me(page)).seatId).toBe('');
   });
 });

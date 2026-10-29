@@ -65,15 +65,13 @@ function RanksPanel({ room }: { room: StudyRoom }) {
 
 const KEYS: [string, string][] = [
   ['WASD / arrows', 'Walk (Shift to run)'],
-  ['Click', 'Walk there; click a chair, a cat or the Buddy Machine to use it'],
   ['E', 'Sit or stand, pet a cat, use the Buddy Machine'],
   ['Enter', 'Chat'],
   ['Drag / scroll', 'Turn the camera / zoom'],
 ];
 
 const TOUCH: [string, string][] = [
-  ['Tap', 'Walk there; tap a chair, a cat or the Buddy Machine to use it'],
-  ['Joystick', 'Walk (push all the way to run)'],
+  ['Joystick', 'Walk'],
   ['Button', 'Sit, stand up, pet, open the machine'],
   ['Drag / pinch', 'Turn the camera / zoom'],
 ];

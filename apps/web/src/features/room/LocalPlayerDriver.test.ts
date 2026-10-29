@@ -86,9 +86,9 @@ describe('LocalPlayerDriver speed', () => {
     expect(walkFor((d) => (d.press('KeyD'), d.press('ShiftLeft')))).toBeCloseTo(RUN_SPEED, 0);
   });
 
-  it('walks with the joystick part way, runs with it pushed all the way', () => {
+  it('the joystick always walks, even pushed all the way', () => {
     expect(walkFor((d) => d.setStick(0.6, 0))).toBeCloseTo(WALK_SPEED, 0);
-    expect(walkFor((d) => d.setStick(1, 0))).toBeCloseTo(RUN_SPEED, 0);
+    expect(walkFor((d) => d.setStick(1, 0))).toBeCloseTo(WALK_SPEED, 0);
   });
 });
 

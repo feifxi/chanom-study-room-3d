@@ -150,9 +150,9 @@ YouTube or Spotify.
 
 ## Controls
 
-WASD / arrow keys to walk, or click the floor to walk there · Shift to run · click a chair, a cat or the Buddy Machine to walk over and use it · E (or the hint button) to interact with whatever is closest (sit at a desk or on the sofa, pet a cat, open the Buddy Machine) · Enter to chat · drag to orbit, scroll or − / + to zoom. The sun / moon switch at the top right pins the room to day or night; the clock icon follows real time. The 🍃 leaf turns on battery saver (30 fps, no shadows, lower resolution); it also turns on by itself when a device can't keep up.
+WASD / arrow keys to walk · Shift to run · E (or the hint button) to interact with whatever is closest (sit at a desk or on the sofa, pet a cat, open the Buddy Machine) · Enter to chat · drag to orbit, scroll or − / + to zoom. The sun / moon switch at the top right pins the room to day or night; the clock icon follows real time. The 🍃 leaf turns on battery saver (30 fps, no shadows, lower resolution); it also turns on by itself when a device can't keep up.
 
-**Phones and tablets** (either way up): tap the floor to walk there, tap a chair / cat / the Buddy Machine to use it, or use the joystick (push all the way to run). The button at the bottom right sits, stands, pets or opens the machine. Drag to turn the camera, pinch to zoom. On small screens the tools rail runs along the top (Pomodoro lives there), chat opens as a sheet, and phones start in battery saver. Screen sharing is hidden where the browser can't do it.
+**Phones and tablets** (either way up): walk with the joystick at the bottom left. The button at the bottom right sits, stands, pets or opens the machine. Drag to turn the camera, pinch to zoom. On small screens the tools rail runs along the top (Pomodoro lives there), chat opens as a sheet, and phones start in battery saver. Screen sharing is hidden where the browser can't do it.
 
 ## Roadmap
 

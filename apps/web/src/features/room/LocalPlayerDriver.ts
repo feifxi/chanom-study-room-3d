@@ -11,12 +11,10 @@ import {
   npcRadius,
   resolveCollisions,
   type PlayerView,
-  type Point,
 } from '@study/shared';
 import type { LocalMotion } from './Avatar';
 import type { StudyRoom } from './roomSession';
 import { reconcile, recordMove, type SentMove } from './reconcile';
-import { goalReached, planRoute, routeLength, type TapGoal, type TapTarget } from './tapToWalk';
 
 /** What pressing E would do right now. */
 export type Hint = { kind: 'seat'; seatId: string } | { kind: 'pet'; npcId: string; name: string } | { kind: 'machine' };
@@ -52,22 +50,6 @@ const STAND_RETRY_MS = 400;
  */
 const MAX_FRAME_DT = 0.25;
 const MAX_STEP = 0.05;
-/** Pushing the on-screen joystick further than this runs instead of walking. */
-const STICK_RUN = 0.85;
-/** Tap-to-walk runs when the trip is longer than this (metres), so crossing the room isn't slow. */
-const RUN_ROUTE_OVER = 6;
-/** When a tap route ends short, still act if the server would accept it (a bit inside its reach). */
-const LOOSE_REACH = 0.95;
-/** Seconds of barely moving (someone in the way) before a route is re-planned, then dropped. */
-const STUCK_AFTER = 0.8;
-
-interface Route {
-  path: Point[];
-  goal: TapGoal;
-  target: Point;
-  stuckFor: number;
-  replanned: boolean;
-}
 
 const localPlayer = (room: StudyRoom): PlayerView | undefined => room.state.players?.get(room.sessionId);
 
@@ -119,10 +101,6 @@ export class LocalPlayerDriver {
   private seq = 0;
   private history: SentMove[] = [];
   private correction = { x: 0, z: 0 };
-  /** Tap-to-walk: the route being followed, a tap waiting for us to stand up, an action for the UI */
-  private route: Route | null = null;
-  private queuedTap: TapTarget | null = null;
-  private pendingAction: 'openMachine' | null = null;
   private fwd = new THREE.Vector3();
   private right = new THREE.Vector3();
   private move = new THREE.Vector3();
@@ -144,30 +122,6 @@ export class LocalPlayerDriver {
     if (h?.kind === 'pet') this.room.send('npc:pet', { id: h.npcId });
     else if (h?.kind === 'machine') return 'openMachine';
     else if (h?.kind === 'seat') this.room.send('sit', { seatId: h.seatId });
-  }
-
-  /** Walk to a tapped spot (or thing) and use it on arrival. Standing up first if seated. */
-  tap(target: TapTarget) {
-    const p = localPlayer(this.room);
-    if (p?.seatId) {
-      if (target.goal.kind === 'seat' && target.goal.seatId === p.seatId) return;
-      this.room.send('stand', {});
-      this.queuedTap = target;
-      return;
-    }
-    this.startRoute(target);
-  }
-
-  /** Where tap-to-walk is heading (for the marker), or null. */
-  get destination(): Point | null {
-    return this.route?.target ?? null;
-  }
-
-  /** An action the UI should take (e.g. open the Buddy Machine after walking to it), once. */
-  takeAction() {
-    const a = this.pendingAction;
-    this.pendingAction = null;
-    return a;
   }
 
   /** The on-screen joystick moved (or was released, 0,0). Screen-relative, like the arrow keys. */
@@ -198,11 +152,7 @@ export class LocalPlayerDriver {
 
     const [ix, iz] = this.input();
     // Just stood up: the server moved us to the seat's stand-up spot, so start from there
-    if (this.wasSeated && !p.seatId) {
-      this.jumpTo(p);
-      if (this.queuedTap) this.startRoute(this.queuedTap);
-      this.queuedTap = null;
-    }
+    if (this.wasSeated && !p.seatId) this.jumpTo(p);
     this.wasSeated = !!p.seatId;
     if (p.seatId) this.staySeated(p, ix || iz);
     else this.walk(p, ix, iz, dt, camera);
@@ -262,36 +212,22 @@ export class LocalPlayerDriver {
     this.sendMove(false);
   }
 
-  /** One short movement step (keys / joystick, else the tap route). Returns whether we moved. */
+  /** One short movement step from the keys or the joystick. Returns whether we moved. */
   private step(ix: number, iz: number, dt: number, camera: THREE.Camera) {
+    if (!ix && !iz) return false;
     const m = this.motion.current;
-    const { move } = this;
-    let speed = 0;
-    if (ix || iz) {
-      // Keys win over a tap route. They move relative to the camera, so "up" is always up the screen
-      this.route = null;
-      const { fwd, right } = this;
-      camera.getWorldDirection(fwd);
-      fwd.y = 0;
-      fwd.normalize();
-      right.crossVectors(fwd, UP);
-      move.set(0, 0, 0).addScaledVector(fwd, -iz).addScaledVector(right, ix).normalize();
-      // Shift runs; so does the joystick pushed all the way (keys always read as a full push, so only the stick counts)
-      const stickPush = Math.hypot(this.stick.x, this.stick.z);
-      const running = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') || stickPush > STICK_RUN;
-      speed = running ? RUN_SPEED : WALK_SPEED;
-    } else if (this.route) {
-      speed = this.steerAlongRoute(this.route, dt);
-    }
-    if (speed <= 0) return false;
-    const before = { x: m.x, z: m.z };
-    const step = speed * dt;
-    const next = { x: m.x + move.x * step, z: m.z + move.z * step };
-    // Right at a tap route's end we may brush furniture (a chair), so only dodge people there
-    const nearEnd = this.route && this.route.path.length <= 1 && Math.hypot(this.route.path[0]!.x - m.x, this.route.path[0]!.z - m.z) < 0.6;
-    resolveCollisions(next, nearEnd ? [] : this.obstaclesAround());
+    // Relative to the camera, so "up" is always up the screen
+    const { fwd, right, move } = this;
+    camera.getWorldDirection(fwd);
+    fwd.y = 0;
+    fwd.normalize();
+    right.crossVectors(fwd, UP);
+    move.set(0, 0, 0).addScaledVector(fwd, -iz).addScaledVector(right, ix).normalize();
+    // Shift runs; the joystick always walks (a thumb nearly always pushes it to the edge)
+    const speed = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') ? RUN_SPEED : WALK_SPEED;
+    const next = { x: m.x + move.x * speed * dt, z: m.z + move.z * speed * dt };
+    resolveCollisions(next, this.obstaclesAround());
     Object.assign(m, { x: next.x, z: next.z, yaw: Math.atan2(move.x, move.z) });
-    if (this.route) this.checkStuck(this.route, before, step, dt);
     return true;
   }
 
@@ -306,80 +242,6 @@ export class LocalPlayerDriver {
     recordMove(this.history, { seq, x: m.x, z: m.z });
     this.room.send('move', { x: m.x, z: m.z, yaw: m.yaw, moving: m.moving, seq });
     Object.assign(ls, { at, x: m.x, z: m.z, yaw: m.yaw, moving: m.moving });
-  }
-
-  /** Point `move` at the next waypoint and return the speed, finishing the route when we're there. */
-  private steerAlongRoute(route: Route, dt: number): number {
-    const m = this.motion.current;
-    if (goalReached(this.room, route.goal, m)) {
-      this.finishRoute(route);
-      return 0;
-    }
-    let wp = route.path[0];
-    // Close enough to a waypoint: aim for the next one
-    while (wp && Math.hypot(wp.x - m.x, wp.z - m.z) < 0.08) {
-      route.path.shift();
-      wp = route.path[0];
-    }
-    if (!wp) {
-      this.finishRoute(route);
-      return 0;
-    }
-    const dx = wp.x - m.x;
-    const dz = wp.z - m.z;
-    const d = Math.hypot(dx, dz);
-    this.move.set(dx / d, 0, dz / d);
-    const speed = routeLength(m, route.path) > RUN_ROUTE_OVER ? RUN_SPEED : WALK_SPEED;
-    // Don't overshoot the waypoint in one frame
-    return dt > 0 ? Math.min(speed, d / dt) : speed;
-  }
-
-  private startRoute(target: TapTarget) {
-    const m = this.motion.current;
-    const route: Route = {
-      path: planRoute(m, target),
-      goal: target.goal,
-      target: { x: target.x, z: target.z },
-      stuckFor: 0,
-      replanned: false,
-    };
-    if (goalReached(this.room, route.goal, m) || !route.path.length) {
-      this.route = null;
-      this.act(route.goal);
-      return;
-    }
-    this.route = route;
-  }
-
-  /** The route is over (arrived, or gave up): do what the tap asked if it's in reach at all. */
-  private finishRoute(route: Route) {
-    this.route = null;
-    this.act(route.goal);
-  }
-
-  /** Do what the tap asked for, if we're close enough for the server to allow it. */
-  private act(goal: TapGoal) {
-    if (!goalReached(this.room, goal, this.motion.current, LOOSE_REACH)) return;
-    // The server checks reach against where it thinks we are, so make sure it has our last step first
-    this.sendMove(true);
-    if (goal.kind === 'seat') this.room.send('sit', { seatId: goal.seatId });
-    else if (goal.kind === 'pet') this.room.send('npc:pet', { id: goal.npcId });
-    else if (goal.kind === 'machine') this.pendingAction = 'openMachine';
-  }
-
-  /** Someone standing in the way: try one fresh route, then give up rather than walk into them forever. */
-  private checkStuck(route: Route, before: Point, step: number, dt: number) {
-    const m = this.motion.current;
-    const moved = Math.hypot(m.x - before.x, m.z - before.z);
-    route.stuckFor = moved < step * 0.3 ? route.stuckFor + dt : 0;
-    if (route.stuckFor < STUCK_AFTER) return;
-    if (route.replanned) {
-      this.finishRoute(route);
-      return;
-    }
-    route.path = planRoute(m, route.target);
-    route.stuckFor = 0;
-    route.replanned = true;
   }
 
   /** Reconcile with the server's acknowledged position, blending in any correction. */
@@ -406,7 +268,6 @@ export class LocalPlayerDriver {
   /** Take the server's position as-is (spawn, standing up, recovering) and forget pending moves. */
   private jumpTo(p: { x: number; z: number }) {
     Object.assign(this.motion.current, { x: p.x, z: p.z });
-    this.route = null;
     this.history = [];
     this.correction = { x: 0, z: 0 };
   }
