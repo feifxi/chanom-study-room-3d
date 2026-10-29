@@ -20,14 +20,21 @@ Observability (pnpm obs:up, localhost only)
   Grafana :3001 ── Prometheus, Loki, Alertmanager datasources; "Service overview" dashboard
 ```
 
-- **The game server is the authority.** It validates movement (speed limit, bounds), seats, timers
-  and runs the NPCs. Clients predict their own movement at 15 Hz and render everyone else from
-  20 Hz state patches.
+- **The game server is the authority.** It validates movement (a refilling speed budget, bounds),
+  seats, timers and runs the NPCs. Clients predict their own movement and send it at 15 Hz with a
+  sequence number; the server echoes the last one it applied (`moveSeq`) and the client reconciles
+  against its prediction for that move (`features/room/reconcile.ts`). Everyone else is rendered
+  from 20 Hz state patches.
+- **Rendering is kept cheap.** Static furniture is merged into a few meshes (`StaticBatch`), the
+  shadow map is drawn only when the light changes, characters use blob shadows, frames are capped
+  at 60 fps and the pixel ratio at 1.5×; battery saver (`quality.ts`) drops to 30 fps, 1× and no
+  shadows, and turns on by itself on slow devices.
+- **Music is client-only**: static MP3s in `apps/web/public/music`, played per person.
 - **Postgres is optional.** Without `DATABASE_URL` rooms still work; stats, visits and feedback are
   off (and `/admin` says so).
 - **The web app talks to the game server directly** (CORS with credentials for `/admin`).
 
-## Target on AWS (`ap-southeast-7`)
+## On AWS (`ap-southeast-7`, up during playtests)
 
 ```
 Namecheap (registrar) ─ nameservers ─▶ Route 53
@@ -40,12 +47,12 @@ Namecheap (registrar) ─ nameservers ─▶ Route 53
 │ private subnets (2 AZs)                             │
 │   RDS PostgreSQL 17 · db.t4g.micro · backups        │
 └─────────────────────────────────────────────────────┘
-ECR (images, built by GitHub Actions via OIDC) · S3 (Terraform state)
-SSM (deploys, shell, secrets) · CloudWatch alarms + Budgets → SNS email
-External uptime check on /health
+ECR (images: built on the Mac by infra:deploy, or by GitHub Actions via OIDC)
+S3 (config bundle) · SSM (deploys, shell, secrets) · CloudWatch alarms + Budgets → SNS email
+Terraform state stays local. Planned: an external uptime check on /health
 ```
 
-See [ROADMAP.md](ROADMAP.md#next-put-it-online-and-let-friends-play) for the steps.
+See [ROADMAP.md](ROADMAP.md#online-the-aws-playtest-stack) for the steps.
 
 ## Code layout
 
@@ -53,7 +60,8 @@ See [ROADMAP.md](ROADMAP.md#next-put-it-online-and-let-friends-play) for the ste
 apps/web/            Next.js 16 client
   src/app/           routes; lobby, room and admin render client-side only
   src/features/      room (3D scene, HUD, LocalPlayerDriver, session reducer), npc, chat, focus,
-                     voice, feedback, admin, stats, todo, avatar, lobby
+                     music, voice, feedback, admin, stats, todo, avatar, lobby
+  public/music/      lo-fi tracks (Pixabay)
   e2e/               Playwright tests
 apps/game/           Colyseus server
   src/rooms/         StudyRoom (handlers, join/leave) and pure rules
@@ -67,7 +75,8 @@ packages/db/         Drizzle schema, migrations, stats and admin queries
 infra/terraform/     AWS: bootstrap (delegation set, once) and app (the playtest stack)
 infra/compose/       production compose stack, Caddyfile, LiveKit config
 infra/observability/ Prometheus, Alertmanager, Loki, Alloy, Grafana config; SRE guide
-infra/scripts/       infra:up / infra:down
+infra/scripts/       infra:up / infra:deploy / infra:down
+.github/workflows/   ci-cd.yml: check, e2e, then deploy on main
 compose.yaml         local dev dependencies (Postgres, LiveKit) and the monitoring stack
 docs/                this file, the roadmap, the decision log
 ```

@@ -19,7 +19,8 @@ docker build -f apps/web/Dockerfile --build-arg NEXT_PUBLIC_GAME_URL=https://gam
 
 - **game** (~370 MB): tsup bundles the server and all its dependencies into `dist/`, so the image
   has no `node_modules`. Migrations run at boot.
-- **web** (~435 MB): Next.js standalone output. The game server URL is baked in at build time.
+- **web** (~467 MB): Next.js standalone output plus `public/` (the 16 MB of music, in its own
+  early layer so it stays cached). The game server URL is baked in at build time.
 
 ## Try it on this machine
 

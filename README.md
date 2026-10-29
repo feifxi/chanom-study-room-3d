@@ -81,7 +81,7 @@ apps/game/src/
 apps/web/src/
   app/                  Next routes; the lobby and room render client-side only
   features/room/        3D scene, avatars, labels, local player (LocalPlayerDriver), connection (useStudyRoom + roomSession reducer)
-  features/<feature>/   chat, focus, npc, voice, feedback, admin, stats, todo, avatar, lobby
+  features/<feature>/   chat, focus, music, npc, voice, feedback, admin, stats, todo, avatar, lobby
   e2e/ (in apps/web)    Playwright tests
   lib/                  profile (localStorage), config, time helpers
 packages/shared/src/    Protocol types, room layout, navigation (A*), collisions, NPC data: used by both apps
@@ -102,7 +102,8 @@ packages/db/            Drizzle schema, migrations, stats queries
 - Joining is anonymous: pick a nickname and an outfit (kept in localStorage) and walk in. There are no accounts in this demo.
 - Every room is public. `joinOrCreate` puts you in the first room with space; when a room reaches 20 people it locks and the next visitor gets a fresh one ("Library #2", …).
 - The server is authoritative: it caps movement speed, keeps everyone inside the room, and checks seats (in reach, not taken) before letting anyone sit.
-- Clients predict their own movement and send it at 15 Hz; other people are smoothed between 20 Hz state patches.
+- Clients predict their own movement and send it at 15 Hz, each move numbered. The server echoes the last move it applied, and the client corrects only where the server disagreed with its prediction for that move, blending the fix in, so a slow connection doesn't pull you back. The speed limit is a budget that refills over time, so moves that arrive late in a burst still count.
+- Other people are smoothed between 20 Hz state patches.
 
 ## Who's talking?
 
@@ -149,10 +150,11 @@ YouTube or Spotify.
 
 ## Controls
 
-WASD / arrow keys to walk · Shift to run · E to interact with whatever is closest (sit at a desk or on the sofa, pet a cat, open the Buddy Machine) · Enter to chat · drag to orbit, scroll or − / + to zoom. The sun / moon switch at the top right pins the room to day or night; the clock icon follows real time.
+WASD / arrow keys to walk · Shift to run · E to interact with whatever is closest (sit at a desk or on the sofa, pet a cat, open the Buddy Machine) · Enter to chat · drag to orbit, scroll or − / + to zoom. The sun / moon switch at the top right pins the room to day or night; the clock icon follows real time. The 🍃 leaf turns on battery saver (30 fps, no shadows, lower resolution); it also turns on by itself when a device can't keep up.
 
 ## Roadmap
 
 Done so far: the multiplayer library, presence, focus, voice and screen share, stats, room NPCs,
-a maintainability pass, the cosy UI, feedback and analytics, and local observability.
-**Next: deploy to AWS and let friends play.** Details and checklists in [docs/ROADMAP.md](docs/ROADMAP.md).
+a maintainability pass, the cosy UI, feedback and analytics, observability, the AWS playtest stack
+with CI/CD, and the fixes from the first playtest (performance, rubber-banding, lo-fi music).
+**Next: activities to do together**, the top request from friends. Details in [docs/ROADMAP.md](docs/ROADMAP.md).
