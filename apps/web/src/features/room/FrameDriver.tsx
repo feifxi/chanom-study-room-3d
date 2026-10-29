@@ -26,7 +26,7 @@ export function FrameDriver({ fps, onSlow }: { fps: number; onSlow?: () => void 
         onSlow?.();
       }
       last = t;
-      advance(t);
+      advance(t / 1000); // R3F wants seconds; rAF gives milliseconds (ms made everything run 1000x fast)
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);

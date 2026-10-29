@@ -235,11 +235,12 @@ function DevSceneHandle() {
   const scene = useThree((s) => s.scene);
   const camera = useThree((s) => s.camera);
   const gl = useThree((s) => s.gl);
+  const clock = useThree((s) => s.clock);
   useEffect(() => {
     if (process.env.NODE_ENV === 'production') return;
     const w = window as unknown as { __study?: Record<string, unknown> };
-    w.__study = { ...(w.__study ?? {}), scene, camera, gl };
-  }, [scene, camera, gl]);
+    w.__study = { ...(w.__study ?? {}), scene, camera, gl, clock };
+  }, [scene, camera, gl, clock]);
   return null;
 }
 

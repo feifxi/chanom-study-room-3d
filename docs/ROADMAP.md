@@ -147,7 +147,7 @@ Fixed after the playtest (2026-10-29):
 - Rubber-banding: moves carry a sequence number and the client reconciles against the server's
   acknowledged move instead of snapping on drift; the server's speed limit is a refilling budget,
   so late bursts aren't dropped. Simulated 500–700 ms lag: 5 pull-backs (up to 1.5 m) before, 0 after.
-- Music: a personal lo-fi player (4 royalty-free Pixabay tracks by Alex Morgan), quieter while
+- Music: a personal lo-fi player (4 royalty-free Pixabay tracks by Alex Morgan, ‹ › to switch), quieter while
   people talk.
 
 Takeaway: the product is a cosy hangout space as much as a study room. With both problems fixed,

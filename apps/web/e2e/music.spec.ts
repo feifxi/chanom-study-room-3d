@@ -4,7 +4,7 @@ import { enterRoom } from './helpers';
 test('the music player plays, skips and remembers the volume', async ({ page, request }) => {
   await enterRoom(page);
   await page.getByRole('button', { name: 'Music', exact: true }).click();
-  await expect(page.getByText('Lofi Coffee Shop').first()).toBeVisible();
+  await expect(page.getByText('Lofi Coffee Shop')).toBeVisible();
 
   // Nothing plays until you press play (browsers block autoplay anyway)
   await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
@@ -12,7 +12,12 @@ test('the music player plays, skips and remembers the volume', async ({ page, re
   await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible(); // the audio element reported 'play'
 
   await page.getByRole('button', { name: 'Next track' }).click();
-  await expect(page.locator('[aria-current="true"]')).toContainText('Lofi Sunny Cafe');
+  await expect(page.getByText('Lofi Sunny Cafe')).toBeVisible();
+  await page.getByRole('button', { name: 'Previous track' }).click();
+  await page.getByRole('button', { name: 'Previous track' }).click(); // wraps around to the last one
+  await expect(page.getByText('Lofi Midnight Club')).toBeVisible();
+  await page.getByRole('button', { name: 'Next track' }).click();
+  await page.getByRole('button', { name: 'Next track' }).click();
 
   await page.getByLabel('Music volume').fill('0.2');
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
@@ -21,7 +26,7 @@ test('the music player plays, skips and remembers the volume', async ({ page, re
   await page.reload();
   await expect(page.getByText('Connected')).toBeVisible({ timeout: 45_000 });
   await page.getByRole('button', { name: 'Music', exact: true }).click();
-  await expect(page.locator('[aria-current="true"]')).toContainText('Lofi Sunny Cafe');
+  await expect(page.getByText('Lofi Sunny Cafe')).toBeVisible();
   await expect(page.getByLabel('Music volume')).toHaveValue('0.2');
 
   // The files are really served

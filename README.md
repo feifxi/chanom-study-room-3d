@@ -141,7 +141,7 @@ Run the monitoring stack with `pnpm obs:up` (Grafana on http://localhost:3001). 
 
 ## Music
 
-A personal lo-fi player in the left rail (🎵): play/pause, previous/next, volume and the track list.
+A personal lo-fi player in the left rail (🎵): one track at a time with ‹ › to switch, play/pause and volume.
 Only you hear it, it dips while anyone is talking on voice, it never starts on its own, and it
 remembers your track and volume. Media keys work too. The tracks are royalty-free from Pixabay
 (Alex Morgan) in `apps/web/public/music`; add more in `apps/web/src/features/music/tracks.ts`.
