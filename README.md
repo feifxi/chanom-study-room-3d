@@ -4,6 +4,8 @@ A 3D online study room: walk around a cosy library as an anime chibi character, 
 
 > The earlier **Agent HQ** prototype (Three.js + Vite AI-agent office) lives on the `agent-hq` branch.
 
+**Docs:** [Roadmap and next steps](docs/ROADMAP.md) · [Architecture](docs/ARCHITECTURE.md) · [Decision log](docs/DECISIONS.md) · [Observability and SRE guide](ops/README.md)
+
 ## Stack
 
 | Part      | Tech                                                                                                                                  |
@@ -12,16 +14,18 @@ A 3D online study room: walk around a cosy library as an anime chibi character, 
 | Real-time | Colyseus 0.18 (rooms, delta state sync), `@colyseus/sdk`                                                                              |
 | Shared    | `@study/shared`: room layout, avatar looks, protocol types, constants                                                                 |
 | Voice     | LiveKit (proximity voice, desk screen sharing)                                                                                        |
-| Data      | `@study/db`: Drizzle ORM + PostgreSQL for anonymous study stats                                                                       |
+| Data      | `@study/db`: Drizzle ORM + PostgreSQL for study stats, visits and feedback                                                            |
 | Ops       | Prometheus, Loki, Grafana Alloy, Alertmanager, Grafana (SLOs + burn-rate alerts, see `ops/`); later Terraform on AWS `ap-southeast-7` |
 
 ```
 apps/
   web/     Next.js client: lobby (/) and the 3D room (/room?id=…)
-  game/    Colyseus server: StudyRoom, lobby endpoint, smoke test and bots
+  game/    Colyseus server: StudyRoom, NPCs, HTTP API (rooms, stats, feedback, admin, metrics)
 packages/
   shared/  Code used by both apps
-  db/      Drizzle schema, migrations and stats queries
+  db/      Drizzle schema, migrations, stats and admin queries
+ops/       Prometheus, Alertmanager, Loki, Alloy, Grafana config and the SRE guide
+docs/      Roadmap, architecture, decision log
 ```
 
 ## Run it locally
@@ -40,7 +44,11 @@ docker compose up -d                    # Postgres (:5433) and LiveKit (:7880): 
 pnpm --filter @study/game smoke         # end-to-end checks against a running game server
 pnpm --filter @study/game stats-check   # study-stats queries against Postgres
 pnpm --filter @study/game bots 5        # five wandering test students
+pnpm --filter @study/game load 8 10     # ~8 API requests/s for 10 minutes (for the SLO panels)
+pnpm obs:up                             # Grafana :3001, Prometheus :9090, Alertmanager :9093
 ```
+
+Open http://localhost:3000 to play and http://localhost:3000/admin for analytics (dev password `chanom-dev`).
 
 ## Development
 
@@ -58,15 +66,18 @@ pnpm build        # production builds (Next standalone + tsup)
 
 ```
 apps/game/src/
-  index.ts              HTTP routes (/rooms, /stats, /leaderboard, /metrics) and server boot
+  index.ts              Server boot and HTTP routes (/rooms, /stats, /leaderboard, /health, /metrics)
   rooms/StudyRoom.ts    Colyseus room: message handlers, join/leave, focus tracking
   rooms/rules.ts        Pure game rules (speed limit, status, input sanitising), unit tested
   npc/NpcDirector.ts    Buddy Machine and NPC API used by the room
   npc/cat.ts, buddy.ts  NPC behaviour; npc/motion.ts walks them along A* paths
+  admin/                Admin auth (signed cookie, lockout) and the /feedback + /admin/* routes
+  metrics.ts, log.ts    Prometheus metrics (HTTP RED, sessions, NPC ticks), chaos switches, pino logger
 apps/web/src/
   app/                  Next routes; the lobby and room render client-side only
   features/room/        3D scene, avatars, labels, local player (LocalPlayerDriver), connection (useStudyRoom + roomSession reducer)
-  features/<feature>/   chat, focus, npc, voice, stats, todo, avatar, lobby
+  features/<feature>/   chat, focus, npc, voice, feedback, admin, stats, todo, avatar, lobby
+  e2e/ (in apps/web)    Playwright tests
   lib/                  profile (localStorage), config, time helpers
 packages/shared/src/    Protocol types, room layout, navigation (A*), collisions, NPC data: used by both apps
 packages/db/            Drizzle schema, migrations, stats queries
@@ -128,13 +139,6 @@ WASD / arrow keys to walk · Shift to run · E to interact with whatever is clos
 
 ## Roadmap
 
-1. ✅ Monorepo, Colyseus rooms with auto-sharding, 3D library, real-time movement, sitting, text chat
-2. ✅ Anonymous join, typing indicator and speech bubbles above heads
-3. ✅ Personal pomodoro; focus status and minutes focused shown above heads
-4. ✅ LiveKit proximity voice (with a speaking indicator above heads) and Zoom-style screen sharing visible only to your table
-5. ✅ Study stats, streaks, leaderboard, to-do list, real-time day/night
-6. ✅ Room NPCs from the Buddy Machine; join/leave lines in chat
-7. ✅ Maintainability pass: unit tests, lint everywhere, Prettier, CI workflow (`.github/workflows/ci.yml`)
-8. ✅ Connecta-style UI refresh, day / night switch, sofa seating, simpler Buddy Machine, Playwright tests
-9. ✅ Local observability: metrics, logs, SLOs, burn-rate alerts, chaos drills, runbooks (`ops/`)
-10. Terraform on AWS (EC2 + RDS + S3 in `ap-southeast-7`), deploys, Grafana stack and CloudWatch alarms
+Done so far: the multiplayer library, presence, focus, voice and screen share, stats, room NPCs,
+a maintainability pass, the cosy UI, feedback and analytics, and local observability.
+**Next: deploy to AWS and let friends play.** Details and checklists in [docs/ROADMAP.md](docs/ROADMAP.md).
