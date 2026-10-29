@@ -7,11 +7,26 @@ variable "github_repo" {
   default     = "feifxi/chanom-study-room-3d"
 }
 
+# GitHub now signs tokens with an "immutable" subject that also carries the owner and repo IDs
+# (repo:owner@ownerId/name@repoId:...), so a deleted-and-recreated repo with the same name can't
+# deploy. Look them up with: curl -s https://api.github.com/repos/<owner>/<name>/actions/oidc/customization/sub
+variable "github_repo_ids" {
+  description = "The repository's owner ID and repo ID, as in its OIDC subject"
+  type        = object({ owner = number, repo = number })
+  default     = { owner = 137422903, repo = 1438191155 }
+}
+
 data "aws_caller_identity" "current" {}
 
 locals {
   region  = "ap-southeast-7"
   account = data.aws_caller_identity.current.account_id
+  repo    = split("/", var.github_repo)
+  # Both subject formats, exact match, playtest environment only
+  github_subjects = [
+    "repo:${var.github_repo}:environment:playtest",
+    "repo:${local.repo[0]}@${var.github_repo_ids.owner}/${local.repo[1]}@${var.github_repo_ids.repo}:environment:playtest",
+  ]
 }
 
 resource "aws_iam_openid_connect_provider" "github" {
@@ -34,7 +49,7 @@ data "aws_iam_policy_document" "github_trust" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repo}:environment:playtest"]
+      values   = local.github_subjects
     }
   }
 }

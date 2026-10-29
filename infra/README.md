@@ -84,6 +84,12 @@ One-time setup:
    `AWS_DEPLOY_ROLE_ARN` = that ARN. (A variable, not a secret: the ARN isn't sensitive.)
 3. `pnpm infra:up` once more so the app stack writes `/chanom/deploy/config`.
 
+If the deploy job fails with `Not authorized to perform sts:AssumeRoleWithWebIdentity`, compare the
+token's subject with the role's trust policy. GitHub signs newer repos with an immutable subject
+(`repo:owner@ownerId/name@repoId:environment:playtest`); the role accepts both formats, with the IDs
+in `github_repo_ids` (bootstrap). Check yours with
+`curl -s https://api.github.com/repos/feifxi/chanom-study-room-3d/actions/oidc/customization/sub`.
+
 ## Checks
 
 ```bash
