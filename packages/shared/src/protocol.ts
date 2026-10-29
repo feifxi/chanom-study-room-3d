@@ -15,7 +15,8 @@ export interface JoinOptions {
 
 /** Client → server messages. */
 export interface ClientMessages {
-  move: { x: number; z: number; yaw: number; moving: boolean };
+  /** seq numbers each move so the client can match the server's answer to its own prediction */
+  move: { x: number; z: number; yaw: number; moving: boolean; seq?: number };
   sit: { seatId: string };
   stand: Record<string, never>;
   chat: { text: string };
@@ -78,6 +79,8 @@ export interface PlayerView {
   focusSince: number;
   todayMin: number;
   typing: boolean;
+  /** seq of the last move the server applied */
+  moveSeq: number;
 }
 
 export interface VisitorStatsView {

@@ -20,7 +20,8 @@ const INK = '#2b2140';
 const toon = (color: THREE.ColorRepresentation, opts: THREE.MeshToonMaterialParameters = {}) =>
   new THREE.MeshToonMaterial({ color, gradientMap: getGradientMap(), ...opts });
 
-function mesh(parent: THREE.Object3D, geo: THREE.BufferGeometry, mat: THREE.Material, x = 0, y = 0, z = 0, outline = 0, shadow = true) {
+function mesh(parent: THREE.Object3D, geo: THREE.BufferGeometry, mat: THREE.Material, x = 0, y = 0, z = 0, outline = 0, shadow = false) {
+  // cats move; the room's shadow map is static
   const m = new THREE.Mesh(geo, mat);
   m.position.set(x, y, z);
   m.castShadow = shadow;

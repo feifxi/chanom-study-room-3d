@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { COFFEE_TABLE, DESK_SEATS, ROOM, TABLES } from '@study/shared';
 import type { DayLight } from './dayCycle';
 import { CHAIR_BACK } from './Avatar';
+import { StaticBatch } from './StaticBatch';
 
 const W = ROOM.width;
 const D = ROOM.depth;
@@ -123,7 +124,8 @@ function StudyTable({ x, z, width, depth, lamps }: { x: number; z: number; width
         <meshBasicMaterial color={lamps > 0.5 ? '#fff1b0' : '#f3ead0'} />
       </mesh>
       {/* Reading light, on after dark */}
-      {lamps > 0.02 && <pointLight position={[0, 1.05, 0]} color="#ffd89a" intensity={lamps * 4} distance={4.5} decay={1.6} />}
+      {/* Always mounted so day/night only changes brightness: adding or removing lights recompiles every shader */}
+      <pointLight position={[0, 1.05, 0]} color="#ffd89a" intensity={lamps * 4} distance={4.5} decay={1.6} />
     </group>
   );
 }
@@ -267,12 +269,12 @@ function ReadingNook({ lamps }: { lamps: number }) {
         <coneGeometry args={[0.28, 0.32, 20, 1, true]} />
         <meshStandardMaterial color="#fff1c9" emissive="#ffd88a" emissiveIntensity={0.5 + lamps * 1.5} side={THREE.DoubleSide} />
       </mesh>
-      {lamps > 0.02 && <pointLight position={[-9.4, 1.5, 6.0]} color="#ffd38a" intensity={lamps * 5} distance={6} decay={1.5} />}
+      <pointLight position={[-9.4, 1.5, 6.0]} color="#ffd38a" intensity={lamps * 5} distance={6} decay={1.5} />
     </group>
   );
 }
 
-export function Library({ light }: { light: DayLight }) {
+export function Library({ light, shadows = true }: { light: DayLight; shadows?: boolean }) {
   return (
     <group>
       <hemisphereLight args={[light.hemiSky, '#cbb89d', light.hemiIntensity]} />
@@ -280,7 +282,7 @@ export function Library({ light }: { light: DayLight }) {
         position={light.sunPosition}
         intensity={light.sunIntensity}
         color={light.sunColor}
-        castShadow
+        castShadow={shadows}
         shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-14}
         shadow-camera-right={14}
@@ -291,33 +293,36 @@ export function Library({ light }: { light: DayLight }) {
         shadow-radius={3}
       />
 
-      {/* Floor slab, walls and a runner rug under each table row */}
-      <Box size={[W, 0.4, D]} position={[0, -0.2, 0]} color="#e3cfae" cast={false} />
-      <Box size={[W + 0.4, 4, 0.2]} position={[0, 2, -D / 2 - 0.1]} color="#f3ede4" />
-      <Box size={[0.2, 4, D]} position={[-W / 2 - 0.1, 2, 0]} color="#efe7db" />
-      <Box size={[W, 0.16, 0.05]} position={[0, 0.08, -D / 2 + 0.03]} color="#c9b79c" cast={false} />
-      {[-2.2, 1.6].map((z) => (
-        <mesh key={z} position={[0, 0.005, z]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-          <planeGeometry args={[16, 3]} />
-          <meshStandardMaterial color="#c7a17a" />
-        </mesh>
-      ))}
+      {/* Furniture never moves: merge it into a few meshes (see StaticBatch) */}
+      <StaticBatch>
+        {/* Floor slab, walls and a runner rug under each table row */}
+        <Box size={[W, 0.4, D]} position={[0, -0.2, 0]} color="#e3cfae" cast={false} />
+        <Box size={[W + 0.4, 4, 0.2]} position={[0, 2, -D / 2 - 0.1]} color="#f3ede4" />
+        <Box size={[0.2, 4, D]} position={[-W / 2 - 0.1, 2, 0]} color="#efe7db" />
+        <Box size={[W, 0.16, 0.05]} position={[0, 0.08, -D / 2 + 0.03]} color="#c9b79c" cast={false} />
+        {[-2.2, 1.6].map((z) => (
+          <mesh key={z} position={[0, 0.005, z]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+            <planeGeometry args={[16, 3]} />
+            <meshStandardMaterial color="#c7a17a" />
+          </mesh>
+        ))}
 
-      <Window x={-1.3} width={1.9} color={light.windowColor} />
-      <Window x={1.3} width={1.9} color={light.windowColor} />
-      <Bookshelf x0={-9.6} x1={-3.4} />
-      <Bookshelf x0={3.4} x1={9.6} />
-      <WallClock />
+        <Window x={-1.3} width={1.9} color={light.windowColor} />
+        <Window x={1.3} width={1.9} color={light.windowColor} />
+        <Bookshelf x0={-9.6} x1={-3.4} />
+        <Bookshelf x0={3.4} x1={9.6} />
+        <WallClock />
 
-      {TABLES.map((t) => (
-        <StudyTable key={t.id} {...t} lamps={light.lamps} />
-      ))}
-      <SeatProps />
-      <ReadingNook lamps={light.lamps} />
+        {TABLES.map((t) => (
+          <StudyTable key={t.id} {...t} lamps={light.lamps} />
+        ))}
+        <SeatProps />
+        <ReadingNook lamps={light.lamps} />
 
-      <Plant x={9.3} z={6.2} />
-      <Plant x={-9.3} z={-5.6} s={0.9} />
-      <Plant x={9.3} z={-5.6} s={0.9} />
+        <Plant x={9.3} z={6.2} />
+        <Plant x={-9.3} z={-5.6} s={0.9} />
+        <Plant x={9.3} z={-5.6} s={0.9} />
+      </StaticBatch>
     </group>
   );
 }

@@ -9,6 +9,7 @@ import { CHAIR_BACK } from '../room/Avatar';
 import type { LabelBoard } from '../room/labels';
 import { npcKey, type Bubble } from '../room/roomSession';
 import { CatRig } from './CatRig';
+import { BlobShadow } from '../room/BlobShadow';
 
 /** A cat or study buddy, eased toward the server's position each frame. */
 export function NpcAvatar({ id, npc, board, bubble }: { id: string; npc: NpcView; board: LabelBoard; bubble?: Bubble }) {
@@ -62,6 +63,7 @@ export function NpcAvatar({ id, npc, board, bubble }: { id: string; npc: NpcView
 
   return (
     <group ref={root}>
+      <BlobShadow radius={npc.kind === 'cat' ? 0.24 : 0.34} />
       <primitive object={rig.group} />
     </group>
   );

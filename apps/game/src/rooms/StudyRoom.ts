@@ -24,7 +24,7 @@ import { log } from '../log';
 import { presence } from '../presence';
 import { NpcDirector } from '../npc/NpcDirector';
 import { Player, StudyState } from '../state';
-import { RoomNumbers, clamp, deriveStatus, limitMove, sanitizeName, sanitizeVisitorId } from './rules';
+import { RoomNumbers, clamp, deriveStatus, refillMoveBudget, sanitizeName, sanitizeVisitorId, spendMove } from './rules';
 
 export interface StudyRoomMetadata {
   label: string;
@@ -69,6 +69,8 @@ const npcId = z.object({ id: z.string().max(16) });
 interface Private {
   visitorId: string;
   lastMoveAt: number;
+  /** Metres of movement allowed right now (see refillMoveBudget) */
+  moveBudget: number;
   lastChatAt: number;
   typingAt: number;
   away: boolean;
@@ -96,21 +98,26 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
   });
 
   messages = {
-    move: validate(z.object({ x: finite, z: finite, yaw: finite, moving: z.boolean() }), (client, msg) => {
-      const p = this.state.players.get(client.sessionId);
-      const s = this.priv.get(client.sessionId);
-      if (!p || !s) return;
-      if (p.seatId) p.seatId = ''; // moving stands you up
+    move: validate(
+      z.object({ x: finite, z: finite, yaw: finite, moving: z.boolean(), seq: z.number().int().nonnegative().optional() }),
+      (client, msg) => {
+        const p = this.state.players.get(client.sessionId);
+        const s = this.priv.get(client.sessionId);
+        if (!p || !s) return;
+        if (p.seatId) p.seatId = ''; // moving stands you up
 
-      const now = Date.now();
-      const elapsed = (now - (s.lastMoveAt || now - 100)) / 1000;
-      s.lastMoveAt = now;
-      const next = limitMove(p, msg, elapsed);
-      p.x = next.x;
-      p.z = next.z;
-      p.yaw = msg.yaw;
-      p.moving = msg.moving;
-    }),
+        const now = Date.now();
+        s.moveBudget = refillMoveBudget(s.moveBudget, (now - s.lastMoveAt) / 1000);
+        s.lastMoveAt = now;
+        const next = spendMove(p, msg, s.moveBudget);
+        s.moveBudget = next.budget;
+        p.x = next.x;
+        p.z = next.z;
+        if (msg.seq !== undefined) p.moveSeq = msg.seq;
+        p.yaw = msg.yaw;
+        p.moving = msg.moving;
+      },
+    ),
 
     sit: validate(z.object({ seatId: z.string().max(16) }), (client, msg) => {
       const p = this.state.players.get(client.sessionId);
@@ -293,7 +300,8 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
     this.priv.set(client.sessionId, {
       visitId,
       visitorId,
-      lastMoveAt: 0,
+      lastMoveAt: Date.now(),
+      moveBudget: 0,
       lastChatAt: 0,
       typingAt: 0,
       away: false,

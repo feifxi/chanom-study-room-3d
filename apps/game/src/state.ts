@@ -20,6 +20,8 @@ export const Player = schema(
     todayMin: t.number().default(0),
     /** True while the player has unsent text in the chat box. */
     typing: t.boolean().default(false),
+    /** Last move message applied (its client sequence number), so the client can reconcile its prediction */
+    moveSeq: t.number().default(0),
   },
   'Player',
 );

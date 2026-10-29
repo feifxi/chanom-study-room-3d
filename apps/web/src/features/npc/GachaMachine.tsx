@@ -123,11 +123,11 @@ export function GachaMachine({ lastSummon }: { lastSummon: Summon | undefined })
       </mesh>
       {/* The capsule that pops out */}
       <group ref={capsule} visible={false}>
-        <mesh ref={top} castShadow>
+        <mesh ref={top}>
           <sphereGeometry args={[0.1, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2]} />
           <meshStandardMaterial color={capsuleColor} roughness={0.3} side={THREE.DoubleSide} />
         </mesh>
-        <mesh ref={bottom} castShadow>
+        <mesh ref={bottom}>
           <sphereGeometry args={[0.1, 18, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2]} />
           <meshStandardMaterial color="#ffffff" roughness={0.3} side={THREE.DoubleSide} />
         </mesh>

@@ -121,9 +121,37 @@ month at this size). A 3-day playtest costs about $6.
 - Practise SRE for real: any page-worthy incident gets a short postmortem
   ([template](../infra/observability/README.md#postmortem-template)).
 
+## Playtest 1 results (2026-10-29)
+
+Played with a group of friends on the AWS stack; every feature worked.
+
+- **What they loved:** talking and hanging out together. "Like Discord, but you can walk around."
+  The 3D cosy room makes meeting up cuter and more fun than a voice channel. They already use
+  Discord daily, so this is the comparison that matters.
+- **What they want next:** more things to do together (activities), beyond studying.
+- **Problems:**
+  1. Performance: it sometimes lags, and some devices got hot with high CPU use.
+  2. On a bad connection, walking gets pulled back to where you were (rubber-banding).
+- **Asked for:** lo-fi music in the room.
+
+Fixed after the playtest (2026-10-29):
+
+- Performance: static furniture merged (651 → ~156 draw calls a frame), shadow map drawn once
+  instead of every frame, characters use blob shadows, 60 fps cap, 1.5× max pixel ratio, and a
+  🍃 battery saver (30 fps, 1×, no shadows) that turns on by itself on struggling devices.
+- Rubber-banding: moves carry a sequence number and the client reconciles against the server's
+  acknowledged move instead of snapping on drift; the server's speed limit is a refilling budget,
+  so late bursts aren't dropped. Simulated 500–700 ms lag: 5 pull-backs (up to 1.5 m) before, 0 after.
+
+Takeaway: the product is a cosy hangout space as much as a study room. Activities are the next
+big theme, after the two problems above are fixed.
+
 ## Backlog (decide after the feedback)
 
 Product
+
+- **Activities to do together** (top request from playtest 1): ideas to explore include mini-games
+  at a table, a shared whiteboard, watch-together on the room screen, a quiz, emotes and dances.
 
 - Music: Spotify playlist embed (easy, full songs only for logged-in Spotify users) or
   self-hosted royalty-free lo-fi (works for everyone, can play in sync for the room).

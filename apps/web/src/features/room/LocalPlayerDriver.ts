@@ -14,6 +14,7 @@ import {
 } from '@study/shared';
 import type { LocalMotion } from './Avatar';
 import type { StudyRoom } from './roomSession';
+import { reconcile, recordMove, type SentMove } from './reconcile';
 
 /** What pressing E would do right now. */
 export type Hint = { kind: 'seat'; seatId: string } | { kind: 'pet'; npcId: string; name: string } | { kind: 'machine' };
@@ -33,8 +34,13 @@ const KEYS: Record<string, [number, number]> = {
   ArrowRight: [1, 0],
 };
 const UP = new THREE.Vector3(0, 1, 0);
-/** If our prediction drifts this far from the server, snap to the server. */
-const SNAP_DISTANCE = 1.2;
+/**
+ * Last resort: with no moves in flight we should match the server; if we're this far apart anyway
+ * (we reconnected, or the server moved us), jump to it. Normal lag is handled by reconcile().
+ */
+const IDLE_SNAP_DISTANCE = 1;
+/** How fast server corrections are blended in (per second); ~0.1 s instead of a visible jump. */
+const CORRECTION_RATE = 12;
 /** Don't spam "stand" while a movement key is held on a seat. */
 const STAND_RETRY_MS = 400;
 
@@ -82,6 +88,10 @@ export class LocalPlayerDriver {
   private wasSeated = false;
   private standSentAt = 0;
   private lastSent = { at: 0, x: 0, z: 0, yaw: 0, moving: false };
+  /** Moves sent but not yet acknowledged by the server, with where we predicted we'd be */
+  private seq = 0;
+  private history: SentMove[] = [];
+  private correction = { x: 0, z: 0 };
   private fwd = new THREE.Vector3();
   private right = new THREE.Vector3();
   private move = new THREE.Vector3();
@@ -126,7 +136,7 @@ export class LocalPlayerDriver {
 
     const [ix, iz] = this.input();
     // Just stood up: the server moved us to the seat's stand-up spot, so start from there
-    if (this.wasSeated && !p.seatId) Object.assign(m, { x: p.x, z: p.z });
+    if (this.wasSeated && !p.seatId) this.jumpTo(p);
     this.wasSeated = !!p.seatId;
     if (p.seatId) this.staySeated(p, ix || iz);
     else this.walk(p, ix, iz, dt, camera);
@@ -177,7 +187,7 @@ export class LocalPlayerDriver {
 
   private walk(p: PlayerView, ix: number, iz: number, dt: number, camera: THREE.Camera) {
     const m = this.motion.current;
-    if (Math.hypot(p.x - m.x, p.z - m.z) > SNAP_DISTANCE) Object.assign(m, { x: p.x, z: p.z });
+    this.followServer(p, dt);
     m.moving = !!(ix || iz);
     if (m.moving) {
       // Keys move relative to the camera, so "up" is always up the screen
@@ -199,9 +209,39 @@ export class LocalPlayerDriver {
     const ls = this.lastSent;
     const changed = Math.abs(ls.x - m.x) > 0.01 || Math.abs(ls.z - m.z) > 0.01 || ls.moving !== m.moving;
     if (changed && now - ls.at > 1000 / CLIENT_SEND_HZ) {
-      this.room.send('move', { x: m.x, z: m.z, yaw: m.yaw, moving: m.moving });
+      const seq = ++this.seq;
+      recordMove(this.history, { seq, x: m.x, z: m.z });
+      this.room.send('move', { x: m.x, z: m.z, yaw: m.yaw, moving: m.moving, seq });
       Object.assign(ls, { at: now, x: m.x, z: m.z, yaw: m.yaw, moving: m.moving });
     }
+  }
+
+  /** Reconcile with the server's acknowledged position, blending in any correction. */
+  private followServer(p: PlayerView, dt: number) {
+    const m = this.motion.current;
+    const fix = reconcile(this.history, p.moveSeq ?? 0, p);
+    if (fix) {
+      this.correction.x += fix.dx;
+      this.correction.z += fix.dz;
+    }
+    if (this.correction.x || this.correction.z) {
+      const k = Math.min(1, dt * CORRECTION_RATE);
+      const ax = this.correction.x * k;
+      const az = this.correction.z * k;
+      m.x += ax;
+      m.z += az;
+      this.correction.x -= ax;
+      this.correction.z -= az;
+      if (Math.hypot(this.correction.x, this.correction.z) < 0.005) this.correction = { x: 0, z: 0 };
+    }
+    if (this.history.length === 0 && Math.hypot(p.x - m.x, p.z - m.z) > IDLE_SNAP_DISTANCE) this.jumpTo(p);
+  }
+
+  /** Take the server's position as-is (spawn, standing up, recovering) and forget pending moves. */
+  private jumpTo(p: { x: number; z: number }) {
+    Object.assign(this.motion.current, { x: p.x, z: p.z });
+    this.history = [];
+    this.correction = { x: 0, z: 0 };
   }
 
   /** Other people and NPCs we bump into. */

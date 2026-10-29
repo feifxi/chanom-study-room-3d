@@ -1,4 +1,4 @@
-import { Clock3, Moon, Sun, type LucideIcon } from 'lucide-react';
+import { Clock3, Leaf, Moon, Sun, type LucideIcon } from 'lucide-react';
 import type { ConnectionStatus } from '../roomSession';
 import type { ThemeMode } from '../dayCycle';
 
@@ -15,11 +15,35 @@ const STATUS: Record<ConnectionStatus, { text: string; dot: string; ink: string 
   closed: { text: 'Disconnected', dot: 'bg-rose-ink', ink: 'text-rose-ink' },
 };
 
-/** Top-right: connection pill and the day / night switch. */
-export function TopRight({ status, mode, onMode }: { status: ConnectionStatus; mode: ThemeMode; onMode: (m: ThemeMode) => void }) {
+interface Props {
+  status: ConnectionStatus;
+  mode: ThemeMode;
+  onMode: (m: ThemeMode) => void;
+  /** Battery saver is on (chosen, or switched on automatically on a slow device) */
+  saver: boolean;
+  saverIsAuto: boolean;
+  onSaver: () => void;
+}
+
+/** Top-right: battery saver, the day / night switch and the connection pill. */
+export function TopRight({ status, mode, onMode, saver, saverIsAuto, onSaver }: Props) {
   const s = STATUS[status];
+  const saverLabel = saver
+    ? saverIsAuto
+      ? 'Battery saver (switched on because this device was struggling); click to choose it yourself'
+      : 'Battery saver is on; click for smooth graphics'
+    : 'Battery saver: lower resolution, 30 fps, no shadows';
   return (
     <div className="absolute top-4 right-4 flex items-center gap-2">
+      <button
+        onClick={onSaver}
+        aria-pressed={saver}
+        aria-label="Battery saver"
+        title={saverLabel}
+        className={`panel grid size-10 place-items-center rounded-full ${saver ? '!bg-mint text-mint-ink' : 'text-muted hover:text-ink'}`}
+      >
+        <Leaf className="size-4" />
+      </button>
       <div role="radiogroup" aria-label="Lighting" className="panel flex gap-0.5 rounded-full p-1">
         {MODES.map(({ mode: m, icon: Icon, label }) => (
           <button

@@ -18,6 +18,9 @@ import { ScreenShareTextures, TableScreens } from '../voice/ScreenShares';
 import { useVoice } from '../voice/useVoice';
 import { Avatar, type LocalMotion } from './Avatar';
 import { useDayLight, useThemeMode } from './dayCycle';
+import { FrameDriver } from './FrameDriver';
+import { QUALITY, useQualityMode } from './quality';
+import { StaticShadows } from './StaticShadows';
 import { Dock } from './hud/Dock';
 import { RoomHeader } from './hud/RoomHeader';
 import { TopRight } from './hud/TopRight';
@@ -43,6 +46,11 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
   const zoomRequest = useRef<number | null>(null);
   const [themeMode, setThemeMode] = useThemeMode();
   const light = useDayLight(themeMode);
+  // Quality: smooth by default; battery saver when chosen, or when this device can't keep up
+  const [qualityMode, setQualityMode] = useQualityMode();
+  const [struggling, setStruggling] = useState(false);
+  const onSlowFrames = useCallback(() => setStruggling(true), []);
+  const quality = QUALITY[qualityMode === 'saver' || struggling ? 'saver' : 'smooth'];
   const mySeat = useMySeat(room);
   const label = useRoomLabel(room?.roomId);
   const board = useMemo(() => new LabelBoard(), []);
@@ -107,10 +115,13 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
       <Canvas
         shadows="percentage"
         orthographic
-        dpr={[1, 2]}
+        dpr={[1, quality.dpr]}
+        frameloop="never"
         camera={{ position: [SPAWN.x + 20, 18, SPAWN.z + 20], zoom: ZOOM.base, near: 0.1, far: 200 }}
       >
-        <Library light={light} />
+        <FrameDriver fps={quality.fps} onSlow={qualityMode === 'auto' && !struggling ? onSlowFrames : undefined} />
+        <StaticShadows lightKey={`${light.sunPosition.join(',')}|${light.sunIntensity.toFixed(2)}|${quality.shadows}`} />
+        <Library light={light} shadows={quality.shadows} />
         <OrbitControls
           makeDefault
           target={[SPAWN.x, 0.6, SPAWN.z]}
@@ -162,7 +173,21 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
         people={playerIds.length}
         statusText={status === 'connected' ? null : statusText(status, error)}
       />
-      <TopRight status={status} mode={themeMode} onMode={setThemeMode} />
+      <TopRight
+        status={status}
+        mode={themeMode}
+        onMode={setThemeMode}
+        saver={qualityMode === 'saver' || struggling}
+        saverIsAuto={qualityMode === 'auto' && struggling}
+        onSaver={() => {
+          // From auto-saver, a click makes it the viewer's own choice; otherwise it toggles
+          if (qualityMode === 'auto' && struggling) setQualityMode('saver');
+          else {
+            setStruggling(false);
+            setQualityMode(qualityMode === 'saver' ? 'auto' : 'saver');
+          }
+        }}
+      />
       <ZoomControl percent={zoomPercent} onZoom={(z) => (zoomRequest.current = z)} />
 
       {room && (
@@ -206,11 +231,12 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
 function DevSceneHandle() {
   const scene = useThree((s) => s.scene);
   const camera = useThree((s) => s.camera);
+  const gl = useThree((s) => s.gl);
   useEffect(() => {
     if (process.env.NODE_ENV === 'production') return;
     const w = window as unknown as { __study?: Record<string, unknown> };
-    w.__study = { ...(w.__study ?? {}), scene, camera };
-  }, [scene, camera]);
+    w.__study = { ...(w.__study ?? {}), scene, camera, gl };
+  }, [scene, camera, gl]);
   return null;
 }
 

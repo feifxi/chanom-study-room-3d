@@ -7,6 +7,7 @@ import { sanitizeLook, type PlayerView } from '@study/shared';
 import { CharacterRig } from '../avatar/character';
 import type { LabelBoard } from './labels';
 import type { Bubble } from './roomSession';
+import { BlobShadow } from './BlobShadow';
 
 /** Where the local player is, written by LocalController and read by its Avatar. */
 export interface LocalMotion {
@@ -84,6 +85,7 @@ export function Avatar({ id, player, isLocal, local, bubble, board }: Props) {
 
   return (
     <group ref={root}>
+      <BlobShadow />
       <primitive object={rig.group} />
       {isLocal && (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>

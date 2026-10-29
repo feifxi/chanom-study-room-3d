@@ -42,7 +42,7 @@ function mesh(
   x = 0,
   y = 0,
   z = 0,
-  { shadow = true, outline = 0 }: MeshOpts = {},
+  { shadow = false, outline = 0 }: MeshOpts = {}, // characters move; the room's shadow map is static
 ) {
   const m = new THREE.Mesh(geo, mat);
   m.position.set(x, y, z);

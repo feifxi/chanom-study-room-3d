@@ -1,27 +1,54 @@
 import { describe, expect, it } from 'vitest';
 import { BOUNDS, RUN_SPEED, SPEED_TOLERANCE } from '@study/shared';
-import { RoomNumbers, deriveStatus, limitMove, sanitizeName, sanitizeVisitorId } from './rules';
+import { MOVE_BUDGET_MAX, RoomNumbers, deriveStatus, refillMoveBudget, sanitizeName, sanitizeVisitorId, spendMove } from './rules';
 
-describe('limitMove', () => {
+describe('movement budget', () => {
   const from = { x: 0, z: 0 };
+  const speed = RUN_SPEED * SPEED_TOLERANCE;
 
-  it('allows a normal step', () => {
-    expect(limitMove(from, { x: 0.1, z: 0 }, 0.1)).toEqual({ x: 0.1, z: 0 });
+  it('allows a normal step and charges it', () => {
+    const r = spendMove(from, { x: 0.1, z: 0 }, refillMoveBudget(0, 0.1));
+    expect(r.x).toBeCloseTo(0.1);
+    expect(r.budget).toBeCloseTo(speed * 0.1 - 0.1);
   });
 
-  it('caps teleports at running speed for the time that passed', () => {
-    const next = limitMove(from, { x: 50, z: 0 }, 0.5);
-    expect(next.x).toBeCloseTo(RUN_SPEED * SPEED_TOLERANCE * 0.5);
+  it('cuts a teleport down to what the budget allows', () => {
+    const r = spendMove(from, { x: 50, z: 0 }, refillMoveBudget(0, 0.5));
+    expect(r.x).toBeCloseTo(speed * 0.5);
+    expect(r.budget).toBeCloseTo(0);
   });
 
-  it('never lets a long pause bank more than one second of movement', () => {
-    const next = limitMove(from, { x: 50, z: 0 }, 30);
-    expect(next.x).toBeCloseTo(RUN_SPEED * SPEED_TOLERANCE);
+  it('saves up at most one second of movement, so a long pause is no head start', () => {
+    expect(refillMoveBudget(0, 30)).toBeCloseTo(MOVE_BUDGET_MAX);
+  });
+
+  it('accepts a burst of late moves whole when it fits the time that passed (bad connections)', () => {
+    // 600 ms of real time, then six 0.8 m moves arrive together
+    let budget = refillMoveBudget(0, 0.6);
+    let pos = { ...from };
+    for (let i = 0; i < 6; i++) {
+      const r = spendMove(pos, { x: pos.x + 0.8, z: 0 }, refillMoveBudget(budget, 0));
+      pos = r;
+      budget = r.budget;
+    }
+    expect(pos.x).toBeCloseTo(4.8);
+  });
+
+  it('keeps the average speed capped however the moves are split', () => {
+    let budget = 0;
+    let pos = { ...from };
+    for (let i = 0; i < 100; i++) {
+      budget = refillMoveBudget(budget, 0.01); // 1 s in total
+      const r = spendMove(pos, { x: pos.x + 1, z: 0 }, budget);
+      pos = r;
+      budget = r.budget;
+    }
+    expect(pos.x).toBeLessThanOrEqual(speed + 1e-9);
   });
 
   it('clamps to the room', () => {
     const edge = { x: BOUNDS.maxX - 0.01, z: 0 };
-    expect(limitMove(edge, { x: BOUNDS.maxX + 1, z: 0 }, 1).x).toBe(BOUNDS.maxX);
+    expect(spendMove(edge, { x: BOUNDS.maxX + 1, z: 0 }, 10).x).toBe(BOUNDS.maxX);
   });
 });
 

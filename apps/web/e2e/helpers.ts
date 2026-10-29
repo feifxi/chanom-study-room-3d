@@ -28,36 +28,35 @@ export async function enterRoom(page: Page) {
 }
 
 /**
- * Walk the local player to (x, z) the way the client does: small server-validated
- * steps, then line the local prediction up with where the server put us.
+ * Walk the local player to (x, z) through the client, like real input: move its predicted position
+ * in small steps and let it send the (sequence-numbered) moves itself, then wait until the server
+ * agrees. Sending moves behind the client's back would fight its reconciliation.
  */
 export async function walkTo(page: Page, x: number, z: number) {
   await page.evaluate(
     async ([tx, tz]) => {
       type P = { x: number; z: number };
       const s = (
-        window as unknown as {
-          __study: {
-            room: { sessionId: string; state: { players: Map<string, P> }; send: (t: string, m: unknown) => void };
-            motion: { current: P };
-          };
-        }
+        window as unknown as { __study: { room: { sessionId: string; state: { players: Map<string, P> } }; motion: { current: P } } }
       ).__study;
-      const me = () => s.room.state.players.get(s.room.sessionId)!;
-      for (let i = 0; i < 200; i++) {
-        const p = me();
-        const dx = tx - p.x;
-        const dz = tz - p.z;
+      const m = s.motion.current;
+      for (let i = 0; i < 400; i++) {
+        const dx = tx - m.x;
+        const dz = tz - m.z;
         const d = Math.hypot(dx, dz);
-        if (d < 0.05) break;
-        const step = Math.min(d, 0.25);
-        s.room.send('move', { x: p.x + (dx / d) * step, z: p.z + (dz / d) * step, yaw: 0, moving: true });
-        await new Promise((r) => setTimeout(r, 70));
+        if (d < 0.02) break;
+        const step = Math.min(d, 0.2); // ~3 m/s at this pace, a walk
+        m.x += (dx / d) * step;
+        m.z += (dz / d) * step;
+        await new Promise((r) => setTimeout(r, 66));
       }
-      s.room.send('move', { x: me().x, z: me().z, yaw: 0, moving: false });
-      Object.assign(s.motion.current, { x: me().x, z: me().z });
-      // Let the client's own position update reach the server before we act on it
-      await new Promise((r) => setTimeout(r, 200));
+      Object.assign(m, { x: tx, z: tz });
+      // Wait for the server to catch up with the last move
+      for (let i = 0; i < 60; i++) {
+        const p = s.room.state.players.get(s.room.sessionId)!;
+        if (Math.hypot(p.x - tx, p.z - tz) < 0.05) break;
+        await new Promise((r) => setTimeout(r, 50));
+      }
     },
     [x, z] as const,
   );

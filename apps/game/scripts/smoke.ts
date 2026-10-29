@@ -8,6 +8,8 @@ import { Client, Callbacks, type Room } from '@colyseus/sdk';
 import {
   GACHA_MACHINE,
   MAX_PLAYERS,
+  RUN_SPEED,
+  SPEED_TOLERANCE,
   ROOM_NAME,
   SEATS,
   SEAT_BY_ID,
@@ -50,12 +52,25 @@ check('lobby lists both rooms', listing.length === 2, listing.map((l) => `${l.la
 const [a, b] = rooms as [StudyRoom, StudyRoom];
 await sleep(300);
 
-// 2. Speed limit: a teleport is cut down to a plausible step
+// 2. Speed limit: movement is a budget that refills with time (at most 1 s of running saved up)
+const MAX_SAVED = RUN_SPEED * SPEED_TOLERANCE; // metres
+await sleep(1200); // let the budget fill up
 const start = { x: me(a).x, z: me(a).z };
-a.send('move', { x: start.x + 50, z: start.z, yaw: 0, moving: true });
+a.send('move', { x: start.x + 50, z: start.z, yaw: 0, moving: true, seq: 1 });
+a.send('move', { x: start.x + 100, z: start.z, yaw: 0, moving: true, seq: 2 });
 await sleep(300);
 const moved = Math.hypot(me(a).x - start.x, me(a).z - start.z);
-check('teleport is rejected by the speed limit', moved < 2, `moved ${moved.toFixed(2)}m`);
+check('a teleport only gets as far as the saved-up budget', moved <= MAX_SAVED + 0.6, `moved ${moved.toFixed(2)}m`);
+check('the server echoes the last move it applied', me(a).moveSeq === 2, `moveSeq ${me(a).moveSeq}`);
+
+// A slow connection: half a second of walking arrives all at once and still counts
+a.send('move', { x: start.x, z: start.z, yaw: 0, moving: false, seq: 3 }); // walk back first
+await sleep(1200);
+const burstStart = { x: me(a).x, z: me(a).z };
+for (let i = 1; i <= 6; i++) a.send('move', { x: burstStart.x - i * 0.5, z: burstStart.z, yaw: 0, moving: true, seq: 3 + i });
+await sleep(300);
+const burst = Math.hypot(me(a).x - burstStart.x, me(a).z - burstStart.z);
+check('a burst of late moves is applied in full (no pull-back)', Math.abs(burst - 3) < 0.05, `moved ${burst.toFixed(2)}m of 3m`);
 
 // 3. Seats: too far fails; walking over and sitting works; a taken seat is refused
 const seat = SEATS.find((s) => s.id === 't10-f0')!;

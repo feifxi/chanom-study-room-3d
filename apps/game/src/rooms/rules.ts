@@ -5,23 +5,33 @@ import { BOUNDS, NAME_MAX, RUN_SPEED, SPEED_TOLERANCE, type PlayerStatus, type T
 
 export const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
-/** Smallest elapsed time we assume between moves, so a burst of packets can't stall movement. */
-const MIN_STEP_SECONDS = 0.05;
+/** Fastest anyone may move, metres per second (running, plus slack for timing noise). */
+const MAX_SPEED = RUN_SPEED * SPEED_TOLERANCE;
+/** How much unused movement can be saved up: one second's worth at full speed. */
+export const MOVE_BUDGET_SECONDS = 1;
+export const MOVE_BUDGET_MAX = MAX_SPEED * MOVE_BUDGET_SECONDS;
 
 /**
- * Server-authoritative speed limit: move from `from` toward `to`, but never further than
- * someone running could have in `elapsedSec`, and never outside the room.
+ * Server-authoritative speed limit as a token bucket: movement allowance refills with real time
+ * and each move spends it. On a bad connection moves arrive late and in bursts; a per-message cap
+ * threw part of that burst away, so the server fell behind and the player got pulled back. With a
+ * budget, a burst that fits in the time that passed is accepted whole, and the average speed is
+ * still capped. Returns the new position and what's left of the budget.
  */
-export function limitMove(from: { x: number; z: number }, to: { x: number; z: number }, elapsedSec: number) {
-  const maxStep = RUN_SPEED * SPEED_TOLERANCE * Math.max(Math.min(elapsedSec, 1), MIN_STEP_SECONDS);
+export function refillMoveBudget(budget: number, elapsedSec: number) {
+  return Math.min(MOVE_BUDGET_MAX, budget + Math.max(0, elapsedSec) * MAX_SPEED);
+}
+
+export function spendMove(from: { x: number; z: number }, to: { x: number; z: number }, budget: number) {
   let dx = to.x - from.x;
   let dz = to.z - from.z;
   const dist = Math.hypot(dx, dz);
-  if (dist > maxStep) {
-    dx = (dx / dist) * maxStep;
-    dz = (dz / dist) * maxStep;
+  const step = Math.min(dist, budget);
+  if (dist > step) {
+    dx = (dx / dist) * step;
+    dz = (dz / dist) * step;
   }
-  return { x: clamp(from.x + dx, BOUNDS.minX, BOUNDS.maxX), z: clamp(from.z + dz, BOUNDS.minZ, BOUNDS.maxZ) };
+  return { x: clamp(from.x + dx, BOUNDS.minX, BOUNDS.maxX), z: clamp(from.z + dz, BOUNDS.minZ, BOUNDS.maxZ), budget: budget - step };
 }
 
 /** What others see above your head: away wins, then your pomodoro phase. */
