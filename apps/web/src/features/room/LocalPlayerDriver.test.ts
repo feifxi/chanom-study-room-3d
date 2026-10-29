@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { GACHA_MACHINE, SEATS, type NpcView, type PlayerView } from '@study/shared';
-import { findHint } from './LocalPlayerDriver';
+import * as THREE from 'three';
+import { GACHA_MACHINE, RUN_SPEED, SEATS, WALK_SPEED, type NpcView, type PlayerView } from '@study/shared';
+import { LocalPlayerDriver, findHint } from './LocalPlayerDriver';
 import type { StudyRoom } from './roomSession';
 
 /** Just enough of a Colyseus room for findHint. */
@@ -55,5 +56,38 @@ describe('findHint (what E does)', () => {
 
   it('offers nothing in an empty aisle', () => {
     expect(findHint(fakeRoom(), 0, 6.5)).toBeNull();
+  });
+});
+
+describe('LocalPlayerDriver speed', () => {
+  /** Hold some input for one second of 60 fps frames and return the metres walked. */
+  function walkFor(input: (d: LocalPlayerDriver) => void) {
+    const room = {
+      sessionId: 'me',
+      state: { players: new Map([['me', { x: 0, z: 5, yaw: 0, seatId: '', moveSeq: 0 }]]), npcs: new Map() },
+      send: () => {},
+    } as unknown as StudyRoom;
+    const motion = { current: { x: 0, z: 5, yaw: 0, moving: false } };
+    const camera = new THREE.OrthographicCamera();
+    camera.position.set(20, 18, 25);
+    camera.lookAt(0, 0, 5);
+    const d = new LocalPlayerDriver(room, motion);
+    d.frame(1 / 60, camera, null); // sync to the spawn
+    input(d);
+    for (let i = 0; i < 60; i++) d.frame(1 / 60, camera, null);
+    return Math.hypot(motion.current.x, motion.current.z - 5);
+  }
+
+  it('walks at WALK_SPEED with a key held (not running)', () => {
+    expect(walkFor((d) => d.press('KeyD'))).toBeCloseTo(WALK_SPEED, 0);
+  });
+
+  it('runs with Shift', () => {
+    expect(walkFor((d) => (d.press('KeyD'), d.press('ShiftLeft')))).toBeCloseTo(RUN_SPEED, 0);
+  });
+
+  it('walks with the joystick part way, runs with it pushed all the way', () => {
+    expect(walkFor((d) => d.setStick(0.6, 0))).toBeCloseTo(WALK_SPEED, 0);
+    expect(walkFor((d) => d.setStick(1, 0))).toBeCloseTo(RUN_SPEED, 0);
   });
 });

@@ -259,7 +259,9 @@ export class LocalPlayerDriver {
       fwd.normalize();
       right.crossVectors(fwd, UP);
       move.set(0, 0, 0).addScaledVector(fwd, -iz).addScaledVector(right, ix).normalize();
-      const running = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') || Math.hypot(ix, iz) > STICK_RUN;
+      // Shift runs; so does the joystick pushed all the way (keys always read as a full push, so only the stick counts)
+      const stickPush = Math.hypot(this.stick.x, this.stick.z);
+      const running = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') || stickPush > STICK_RUN;
       speed = running ? RUN_SPEED : WALK_SPEED;
     } else if (this.route) {
       speed = this.steerAlongRoute(this.route, dt);
