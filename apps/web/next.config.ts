@@ -9,14 +9,6 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   // Workspace packages ship TypeScript source.
   transpilePackages: ['@study/shared'],
-  turbopack: {
-    rules: {
-      '*.css': {
-        loaders: ['@tailwindcss/turbopack'],
-        as: '*.css',
-      },
-    },
-  },
 };
 
 export default nextConfig;

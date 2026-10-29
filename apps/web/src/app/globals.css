@@ -1,32 +1,32 @@
 @import 'tailwindcss';
 
 /*
- * Design tokens. Structure borrowed from Connecta (white cards, navy ink, a dark
- * control dock, pill tags) with a cosier palette: periwinkle primary, pastel
- * lavender / peach / mint / rose surfaces, and a Thai-tea orange for the brand dot.
+ * Cosy, cute palette: warm cream, strawberry-milk pink, milk-tea orange and
+ * pastel lavender / peach / mint, with soft cocoa instead of black.
  */
 :root {
   color-scheme: light;
-  --bg: #f5f4fa;
+  --bg-top: #fdf6ee;
+  --bg-bottom: #f8ecf2;
   --surface: #ffffff;
-  --panel: rgb(255 255 255 / 0.97);
-  --ink: #1d2048;
-  --muted: #6a6e8e;
-  --line: #e7e5f1;
-  --soft: #f2f1f8;
-  --accent: #5561e8;
-  --accent-ink: #3e49c9;
-  --accent-soft: #e9ebff;
-  --lavender: #ece7fc;
-  --lavender-ink: #5b48c2;
-  --peach: #fdebe0;
-  --peach-ink: #b5592c;
-  --mint: #e1f4ea;
-  --mint-ink: #1d7a4c;
-  --rose: #ffe3ee;
+  --panel: rgb(255 255 255 / 0.96);
+  --ink: #45323d;
+  --muted: #8c7782;
+  --line: #f1e3e7;
+  --soft: #fcf2f4;
+  --accent: #df6392;
+  --accent-ink: #bd4373;
+  --accent-soft: #ffe7f0;
+  --lavender: #f0e9fc;
+  --lavender-ink: #7758c4;
+  --peach: #ffeadc;
+  --peach-ink: #b3612f;
+  --mint: #e3f5ea;
+  --mint-ink: #2f7d55;
+  --rose: #ffe3ec;
   --rose-ink: #c03a72;
-  --tea: #ee8a45;
-  --navy: #1d2048;
+  --tea: #e9955a;
+  --cocoa: #4a3443;
 }
 
 @theme inline {
@@ -48,8 +48,8 @@
   --color-rose: var(--rose);
   --color-rose-ink: var(--rose-ink);
   --color-tea: var(--tea);
-  --color-navy: var(--navy);
-  --font-sans: var(--font-jakarta), var(--font-thai), system-ui, sans-serif;
+  --color-cocoa: var(--cocoa);
+  --font-sans: var(--font-nunito), var(--font-thai), system-ui, sans-serif;
   --font-mono: var(--font-mono-face), ui-monospace, monospace;
 }
 
@@ -59,7 +59,7 @@ body {
 }
 
 body {
-  background: var(--bg);
+  background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom)) fixed;
   color: var(--ink);
   font-family: var(--font-sans);
 }
@@ -68,15 +68,15 @@ body {
 .panel {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgb(29 32 72 / 0.08);
+  border-radius: 22px;
+  box-shadow: 0 10px 30px rgb(110 60 85 / 0.09);
 }
 
-/* The dark control dock at the bottom of the room */
+/* The cocoa control dock at the bottom of the room */
 .dock {
-  background: var(--navy);
-  border-radius: 22px;
-  box-shadow: 0 14px 36px rgb(29 32 72 / 0.35);
+  background: var(--cocoa);
+  border-radius: 24px;
+  box-shadow: 0 14px 36px rgb(74 52 67 / 0.35);
 }
 
 .dock-btn {
@@ -199,14 +199,14 @@ button:disabled {
 button.bg-accent:not(:disabled):hover,
 a.bg-accent:hover {
   background-color: var(--accent-ink);
-  box-shadow: 0 8px 18px rgb(85 97 232 / 0.3);
+  box-shadow: 0 8px 18px rgb(223 99 146 / 0.32);
 }
 
 /* White / outlined buttons get a soft tint and a primary border */
 button.bg-white:not(:disabled):hover,
 a.bg-white:hover {
   background-color: var(--soft);
-  border-color: rgb(85 97 232 / 0.45);
+  border-color: rgb(223 99 146 / 0.45);
 }
 
 button:not(:disabled):active,

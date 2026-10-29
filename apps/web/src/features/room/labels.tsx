@@ -121,7 +121,7 @@ export function LabelLayer({ board, ids, players, localId, bubbles, voice, clock
             {talking && <SpeechBubble bubble={bubble} now={now} />}
             <div
               className={`rounded-lg px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-white shadow-sm ${
-                isLocal ? 'bg-accent' : 'bg-navy/85'
+                isLocal ? 'bg-accent' : 'bg-cocoa/85'
               } ${voice.speaking.has(id) ? 'speaking' : ''}`}
             >
               {/* Mic: bright while speaking, faded when on but quiet */}

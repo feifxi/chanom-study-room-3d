@@ -29,7 +29,7 @@ export function TopRight({ status, mode, onMode }: { status: ConnectionStatus; m
             aria-label={label}
             title={label}
             onClick={() => onMode(m)}
-            className={`grid size-8 place-items-center rounded-full ${mode === m ? 'bg-navy text-white' : 'text-muted hover:bg-soft hover:text-ink'}`}
+            className={`grid size-8 place-items-center rounded-full ${mode === m ? 'bg-cocoa text-white' : 'text-muted hover:bg-soft hover:text-ink'}`}
           >
             <Icon className="size-4" />
           </button>

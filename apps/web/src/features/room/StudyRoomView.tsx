@@ -155,7 +155,7 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
       )}
 
       {status === 'error' && (
-        <div className="absolute inset-0 grid place-items-center bg-navy/30">
+        <div className="absolute inset-0 grid place-items-center bg-cocoa/30">
           <div className="panel max-w-sm p-6 text-center">
             <p className="font-extrabold">Couldn&apos;t join the room</p>
             <p className="mt-1 text-sm text-muted">{error}</p>
