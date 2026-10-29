@@ -151,7 +151,7 @@ Fixed after the playtest (2026-10-29):
   people talk.
 
 Takeaway: the product is a cosy hangout space as much as a study room. With both problems fixed,
-**activities are the next big theme.**
+**activities are the next big theme**, and **mobile support** is planned after that.
 
 ## Backlog (decide after the feedback)
 
@@ -162,7 +162,17 @@ Product
 
 - Music, later: a shared "room radio" (everyone hears the same track in sync, via the server);
   more tracks would move to S3 + CloudFront instead of the web image.
-- Mobile / touch controls and a smaller HUD for phones.
+- **Mobile support** (planned): today the room is built for a desktop browser with a keyboard.
+  What phones and tablets need:
+  - Touch controls: a virtual joystick to walk, tap to sit / pet / use the machine, pinch to zoom
+    and drag to orbit.
+  - A HUD for small screens: the rail, chat and pomodoro as sheets or tabs instead of floating
+    panels; safe areas and portrait layout.
+  - Performance on phones: start in battery saver, and check heat on a mid-range Android.
+  - Voice on mobile: mic permission and audio unlock on iOS Safari, voice ducking with music, and
+    TURN for mobile networks (see 11.2).
+  - Screen share isn't available on most mobile browsers; hide it there.
+  - e2e: Playwright mobile device profiles (iPhone, Pixel).
 - Quick reactions (emoji over your head), sit-together invites.
 - Private rooms with an invite link; later, accounts (Better Auth) if people want history across
   devices.

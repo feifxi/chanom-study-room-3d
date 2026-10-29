@@ -157,4 +157,4 @@ WASD / arrow keys to walk · Shift to run · E to interact with whatever is clos
 Done so far: the multiplayer library, presence, focus, voice and screen share, stats, room NPCs,
 a maintainability pass, the cosy UI, feedback and analytics, observability, the AWS playtest stack
 with CI/CD, and the fixes from the first playtest (performance, rubber-banding, lo-fi music).
-**Next: activities to do together**, the top request from friends. Details in [docs/ROADMAP.md](docs/ROADMAP.md).
+**Next: activities to do together**, the top request from friends, then **mobile support**. Details in [docs/ROADMAP.md](docs/ROADMAP.md).
