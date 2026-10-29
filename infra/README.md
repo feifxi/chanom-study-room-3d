@@ -7,7 +7,7 @@ Everything that runs the app lives here; the app code is in `apps/` and `package
 | `terraform/`     | AWS resources (below)                                                                                        |
 | `compose/`       | The production Docker Compose stack, Caddyfile, LiveKit config ([README](compose/README.md))                 |
 | `observability/` | Prometheus, Alertmanager, Loki, Alloy, Grafana config, SLOs and runbooks ([README](observability/README.md)) |
-| `scripts/`       | `pnpm infra:up` / `pnpm infra:down`                                                                          |
+| `scripts/`       | `pnpm infra:up` / `infra:deploy` / `infra:down`                                                              |
 
 Local development dependencies are in [`compose.yaml`](../compose.yaml) at the repo root.
 
@@ -44,7 +44,8 @@ AWS credentials from the `default` profile. Costs and reasoning: [docs/ROADMAP.m
 ## A playtest
 
 ```bash
-pnpm infra:up     # terraform apply (shows the plan, asks), build + push images, deploy over SSM
+pnpm infra:up     # terraform apply (shows the plan, asks), then the same steps as infra:deploy
+pnpm infra:deploy # code changes only: build + push images, sync configs, restart over SSM (no Terraform)
                   # ~10-15 min the first time: RDS takes a while to create
 pnpm infra:down   # saves feedback to infra/backups/*.csv, then terraform destroy (RDS keeps a final snapshot)
 ```
@@ -56,7 +57,7 @@ After `up`:
 - HTTPS certificates appear a minute or two after DNS resolves (Caddy keeps retrying).
 - Click the confirmation link in the SNS email from AWS to get alarm emails.
 - Shell on the host (no SSH): `aws ssm start-session --target $(terraform -chdir=infra/terraform/app output -raw instance_id)`.
-- Redeploy after a code change: run `pnpm infra:up` again (apply is a no-op, new images are pushed).
+- Redeploy after a code change: `pnpm infra:deploy` (a few minutes; rooms reconnect once).
 
 To start the next playtest from the last one's data, put the snapshot name that `down` printed into
 `terraform.tfvars` as `restore_snapshot_id`. Delete old snapshots in the RDS console when you no
