@@ -1,7 +1,7 @@
 # Roadmap
 
 Where the project is, what comes next, and what's waiting in the backlog.
-Last updated: 2026-10-29.
+Last updated: 2026-10-29 (decisions for the AWS playtest settled).
 
 ## Done
 
@@ -23,36 +23,68 @@ Last updated: 2026-10-29.
 The goal is a link you can send to your friends, with feedback flowing into `/admin` and the
 service watched by Grafana. Work in this order; each step ends with something you can check.
 
-### 11.1 Before starting (decisions and access needed from you)
+### 11.1 Decisions (settled 2026-10-29)
 
-- [ ] The domain name (registered at Namecheap).
-- [ ] DNS: **move the nameservers to Route 53** (recommended, so Terraform manages records; about
-      $0.50/month) or keep DNS at Namecheap and add A records by hand.
-- [ ] AWS access for Terraform on this machine (an IAM user or SSO profile), region `ap-southeast-7`.
-- [ ] A monthly budget to alert on (e.g. $80).
-- [ ] Where alerts should go: email, Discord or a LINE relay.
+- [x] **Domain:** `studyroom.chanombude.me` (app), with `game.`, `rtc.` and `grafana.` under it.
+- [x] **DNS:** keep `chanombude.me` at Namecheap and **delegate only `studyroom.chanombude.me` to
+      Route 53** (4 NS records at Namecheap, once). The main domain's Namecheap email forwarding
+      keeps working, and Terraform manages everything under the subdomain. $0.50/month.
+- [x] **AWS access:** the `default` profile, IAM user `terraform-admin` (account 137219822132).
+      Terraform v1.14 is installed. Region `ap-southeast-7`.
+- [x] **Budget:** $20/month (about $50 of credits left). The app runs only during playtests
+      (2–3 days to a week) and is stopped or destroyed in between.
+- [x] **Alerts:** Alertmanager → Discord webhook. AWS-side alerts (Budgets, CloudWatch) go by
+      email, because SNS can't post to Discord without extra glue.
+- [x] **Database:** Postgres in a container on the EC2 host for the playtest, its data on a
+      separate EBS volume that survives `terraform destroy`, plus a nightly `pg_dump` to S3.
+      RDS (+~$4/week) can come later if it's ever needed.
+
+Cost (on-demand, ap-southeast-7, checked with the AWS Pricing API):
+
+| Item                                      | Price                   | 1 week running | While stopped |
+| ----------------------------------------- | ----------------------- | -------------- | ------------- |
+| EC2 `t4g.medium` (4 GB, app + monitoring) | $0.0382/hour            | $6.42          | $0            |
+| EBS gp3, 30 GB root + 10 GB data          | $0.0864/GB-month        | $0.80          | $0.80         |
+| Public IPv4 (Elastic IP)                  | $0.005/hour             | $0.84          | $0.84         |
+| Route 53 hosted zone                      | $0.50/month             | $0.12          | $0.12         |
+| S3 (state, backups), ECR images           | cents                   | ~$0.10         | ~$0.10        |
+| Data transfer out                         | first 100 GB/month free | ~$0            | $0            |
+| **Total**                                 |                         | **≈ $8.3**     | **≈ $1.9**    |
+
+(RDS `db.t4g.micro` would add $0.023/hour ≈ $3.9/week; `t4g.small` would halve the EC2 cost but
+2 GB is tight with the monitoring stack.) Set the AWS Budget on cost **without** credits so the
+alert reflects real usage.
 
 ### 11.2 Containers
 
 - [ ] Dockerfiles: `apps/web` (Next standalone) and `apps/game` (tsup bundle), both for arm64.
-- [ ] `docker-compose.prod.yml`: Caddy (TLS + reverse proxy), web, game, LiveKit (with TURN on
-      443 for strict networks), and the observability stack.
-- [ ] Caddyfile: `<domain>` → web, `game.<domain>` → game (WebSocket), `rtc.<domain>` → LiveKit,
-      `grafana.<domain>` → Grafana (behind auth).
+- [ ] `docker-compose.prod.yml`: Caddy (TLS + reverse proxy), web, game, Postgres, LiveKit (with
+      TURN on 443 for strict networks), and the observability stack.
+- [ ] Caddyfile: `studyroom.chanombude.me` → web, `game.studyroom…` → game (WebSocket),
+      `rtc.studyroom…` → LiveKit, `grafana.studyroom…` → Grafana (behind auth).
 - [ ] Check: the whole production stack runs locally with `docker compose -f docker-compose.prod.yml up`.
 
-### 11.3 Terraform (`infra/`)
+### 11.3 Terraform (`infra/`), two stacks
 
-- [ ] Remote state in S3 (with native state locking).
-- [ ] Network: VPC, public subnet (EC2), two private subnets (RDS), security groups (80/443,
-      LiveKit TCP 7881 + UDP; RDS only from EC2).
-- [ ] EC2 `t4g.medium` + Elastic IP, IAM role (SSM, ECR pull, CloudWatch agent), no SSH (SSM only).
-- [ ] RDS PostgreSQL 17 `db.t4g.micro`, private, 7-day automated backups.
+**`infra/foundation`**: long-lived, costs ~$1.5/month, rarely changes
+
+- [ ] S3 bucket for Terraform state (native locking) and database backups.
+- [ ] Route 53 zone `studyroom.chanombude.me` (its NS go into Namecheap once).
 - [ ] ECR repositories for `web` and `game`.
-- [ ] Route 53 hosted zone and records.
-- [ ] SSM Parameter Store for secrets: `ADMIN_PASSWORD`, `LIVEKIT_API_KEY/SECRET`, `DATABASE_URL`.
-- [ ] CloudWatch alarms (instance status, CPU, disk, RDS storage/CPU) → SNS email; AWS Budgets alert.
-- [ ] Check: `terraform plan` is clean; `terraform apply` builds the stack; tearing it down works too.
+- [ ] The Postgres data EBS volume (pinned to one availability zone).
+- [ ] AWS Budget ($20, without credits) and an SNS topic that emails you.
+
+**`infra/app`**: created for a playtest, stopped or destroyed afterwards
+
+- [ ] VPC + public subnet in the data volume's AZ, security group (80/443, LiveKit 7881/tcp + UDP).
+- [ ] EC2 `t4g.medium` + Elastic IP, IAM role (SSM, ECR pull, S3 backups, CloudWatch agent);
+      no SSH, shell through SSM.
+- [ ] DNS records in the zone; SSM Parameter Store secrets (`ADMIN_PASSWORD`, LiveKit keys,
+      Discord webhook).
+- [ ] CloudWatch alarms (instance status, CPU, disk) → SNS email.
+- [ ] Scripts: `infra:up`, `infra:stop` / `infra:start` (keep everything, pay ~$1.9/week),
+      `infra:down` (destroy the app stack, keep data and DNS).
+- [ ] Check: `up` → play → `down` → `up` again keeps the feedback and stats.
 
 ### 11.4 Deploys
 
@@ -66,9 +98,9 @@ service watched by Grafana. Work in this order; each step ends with something yo
 
 - [ ] Grafana with real auth at `grafana.<domain>`; Prometheus scrapes `game:2567` on the compose
       network; Alloy reads container logs (pino JSON on stdout).
-- [ ] Alertmanager receiver (email or chat webhook) for `page` and `ticket` alerts.
-- [ ] External uptime check (free UptimeRobot or Better Stack) on `/health`, so you hear about it
-      even when the whole host is down.
+- [x] Alertmanager → Discord (wired locally; the webhook URL comes from a secret file / SSM).
+- [ ] External uptime check (free UptimeRobot or Better Stack, both post to Discord) on `/health`,
+      so you hear about it even when the whole host is down.
 - [ ] Synthetic join probe: a small job that joins a room every minute, so matchmaking gets its own
       SLI (it isn't in the HTTP metrics today).
 

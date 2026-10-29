@@ -50,6 +50,19 @@ test('leaving asks for feedback once, and it shows up on the admin page', async 
   await expect(entry).toHaveCount(0);
 });
 
+test('the feedback card is gone when you come back into a room', async ({ page }) => {
+  await enterRoom(page);
+  await page.getByRole('button', { name: 'Leave' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Skip' }).click();
+  await expect(page).toHaveURL('/');
+
+  // Back in through the lobby (client-side navigation, like a real visit), not a fresh page load
+  await page.getByRole('button', { name: /Enter the library/ }).click();
+  await expect(page.getByText('Connected', { exact: true }).filter({ visible: true })).toBeVisible();
+  await expect(page.getByText('Disconnected')).toHaveCount(0);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+});
+
 test('the admin data needs a session', async ({ request }) => {
   expect((await request.get(`${GAME_URL}/admin/overview`)).status()).toBe(401);
   expect((await request.get(`${GAME_URL}/admin/feedback.csv`)).status()).toBe(401);

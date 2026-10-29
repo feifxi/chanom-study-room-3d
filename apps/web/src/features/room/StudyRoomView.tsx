@@ -59,8 +59,16 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
   }, [voice.micOn]);
 
   /** Leave goes through a short feedback card the first time; after that it's instant. */
+  // Next keeps this page alive (hidden) after you leave, so close anything that was open on the way out;
+  // otherwise it would still be there when you come back in
+  const exitToLobby = () => {
+    setLeaveContext(null);
+    setMachineOpen(false);
+    router.push('/');
+  };
+
   const leave = () => {
-    if (!room || !shouldAskFeedback()) return router.push('/');
+    if (!room || !shouldAskFeedback()) return exitToLobby();
     const profile = loadProfile();
     setLeaveContext({
       visitorId: profile.visitorId,
@@ -177,7 +185,7 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
         <BuddyMachinePanel room={room} npcIds={npcIds} summons={summons} error={summonError} onClose={() => setMachineOpen(false)} />
       )}
 
-      {leaveContext && <LeaveFeedback context={leaveContext} onLeave={() => router.push('/')} onStay={() => setLeaveContext(null)} />}
+      {leaveContext && <LeaveFeedback context={leaveContext} onLeave={exitToLobby} onStay={() => setLeaveContext(null)} />}
 
       {status === 'error' && (
         <div className="absolute inset-0 grid place-items-center bg-cocoa/30">

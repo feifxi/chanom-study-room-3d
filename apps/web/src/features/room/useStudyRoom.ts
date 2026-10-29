@@ -4,7 +4,7 @@ import { useEffect, useReducer } from 'react';
 import { Callbacks, Client } from '@colyseus/sdk';
 import { ROOM_NAME, type ChatMessage, type NpcSummoned, type JoinOptions } from '@study/shared';
 import { GAME_URL } from '@/lib/config';
-import { REACTION_MS, initialSession, sessionReducer, type StudyRoom } from './roomSession';
+import { REACTION_MS, initialSession, sessionReducer, type SessionAction, type StudyRoom } from './roomSession';
 
 const SUMMON_ERROR_MS = 3500;
 const BUBBLE_SWEEP_MS = 500;
@@ -54,9 +54,13 @@ export function useStudyRoom(roomId: string | null, getOptions: () => JoinOption
     })();
 
     function listen(r: StudyRoom) {
+      // Events from a connection we've already closed (e.g. its leave event) must not touch the next visit's state
+      const send = (action: SessionAction) => {
+        if (!cancelled) dispatch(action);
+      };
       // State arrives just after the join resolves, so guard until the first patch lands.
-      const syncPlayers = () => dispatch({ type: 'players', ids: r.state?.players ? [...r.state.players.keys()] : [] });
-      const syncNpcs = () => dispatch({ type: 'npcs', ids: r.state?.npcs ? [...r.state.npcs.keys()] : [] });
+      const syncPlayers = () => send({ type: 'players', ids: r.state?.players ? [...r.state.players.keys()] : [] });
+      const syncNpcs = () => send({ type: 'npcs', ids: r.state?.npcs ? [...r.state.npcs.keys()] : [] });
       r.onStateChange.once(() => {
         syncPlayers();
         syncNpcs();
@@ -67,26 +71,26 @@ export function useStudyRoom(roomId: string | null, getOptions: () => JoinOption
       callbacks.onAdd('npcs', syncNpcs);
       callbacks.onRemove('npcs', syncNpcs);
 
-      r.onMessage('chat', (message: ChatMessage) => dispatch({ type: 'chat', message, now: Date.now() }));
-      r.onMessage('npc:say', (m: { npcId: string; text: string }) => dispatch({ type: 'npcSay', ...m, now: Date.now() }));
+      r.onMessage('chat', (message: ChatMessage) => send({ type: 'chat', message, now: Date.now() }));
+      r.onMessage('npc:say', (m: { npcId: string; text: string }) => send({ type: 'npcSay', ...m, now: Date.now() }));
       r.onMessage('npc:react', (m: { npcId: string; emote: string }) => {
         const key = `${m.npcId}-${Date.now()}-${Math.random()}`;
-        dispatch({ type: 'react', key, ...m });
-        later(REACTION_MS, () => dispatch({ type: 'reactionDone', key }));
+        send({ type: 'react', key, ...m });
+        later(REACTION_MS, () => send({ type: 'reactionDone', key }));
       });
-      r.onMessage('npc:summoned', (summon: NpcSummoned) => dispatch({ type: 'summoned', summon, now: Date.now() }));
+      r.onMessage('npc:summoned', (summon: NpcSummoned) => send({ type: 'summoned', summon, now: Date.now() }));
       r.onMessage('npc:error', (m: { message: string }) => {
-        dispatch({ type: 'summonError', message: m.message });
-        later(SUMMON_ERROR_MS, () => dispatch({ type: 'summonError', message: null }));
+        send({ type: 'summonError', message: m.message });
+        later(SUMMON_ERROR_MS, () => send({ type: 'summonError', message: null }));
       });
 
       // Clock sync: assume the reply was stamped halfway through the round trip
       const sentAt = Date.now();
-      r.onMessage('clock', (m: { serverNow: number }) => dispatch({ type: 'clock', offset: m.serverNow - (sentAt + Date.now()) / 2 }));
+      r.onMessage('clock', (m: { serverNow: number }) => send({ type: 'clock', offset: m.serverNow - (sentAt + Date.now()) / 2 }));
       r.send('clock', {});
 
-      r.onLeave(() => dispatch({ type: 'closed' }));
-      r.onError((_code: number, message?: string) => dispatch({ type: 'failed', error: message ?? 'Connection error' }));
+      r.onLeave(() => send({ type: 'closed' }));
+      r.onError((_code: number, message?: string) => send({ type: 'failed', error: message ?? 'Connection error' }));
       syncPlayers();
     }
 

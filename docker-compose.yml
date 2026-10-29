@@ -54,6 +54,7 @@ services:
     profiles: [observability]
     volumes:
       - ./ops/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./ops/alertmanager/secrets:/etc/alertmanager/secrets:ro # discord_webhook_url (not in git)
     ports:
       - '127.0.0.1:9093:9093'
 

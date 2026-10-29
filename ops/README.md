@@ -165,6 +165,27 @@ saw at each step; that's the raw material for a postmortem.
 **Action items:** owner and due date for each; prefer fixes that prevent a whole class of problem
 ```
 
+## Alerts to Discord
+
+Alertmanager posts firing and resolved alerts to a Discord channel. One-time setup:
+
+1. In Discord, create a server for yourself (or use one you own) and a channel such as `#alerts`.
+2. Channel settings (⚙️) → **Integrations** → **Webhooks** → **New Webhook** → name it
+   "Alertmanager" → **Copy Webhook URL**.
+3. Save it where git won't see it (the folder is ignored):
+   ```bash
+   pbpaste > ops/alertmanager/secrets/discord_webhook_url
+   ```
+4. Send yourself a test alert:
+   ```bash
+   docker compose exec alertmanager amtool alert add DiscordTest severity=ticket \
+     --annotation=summary="Test alert from the study room" --alertmanager.url=http://localhost:9093
+   ```
+   It appears in the channel after the 30 s group wait. Then run drill 1 for a real one.
+
+Treat the webhook URL like a password: anyone with it can post to the channel. If it leaks,
+delete the webhook in Discord and create a new one.
+
 ## Moving to AWS
 
 The same pieces run on the EC2 host next to the app containers. Differences:
@@ -173,5 +194,6 @@ The same pieces run on the EC2 host next to the app containers. Differences:
 - Alloy collects the app containers' stdout (pino JSON in production) via the Docker socket
   instead of the dev log file.
 - Prometheus scrapes `game:2567` on the compose network instead of `host.docker.internal`.
-- Alertmanager gets a real receiver (email or a chat webhook), plus CloudWatch alarms and an
-  external uptime check so you still hear about it if the whole host is down.
+- The Discord webhook URL comes from SSM Parameter Store instead of a local file. CloudWatch
+  alarms and the AWS Budget email you, and an external uptime check (which can also post to
+  Discord) covers the case where the whole host is down.
