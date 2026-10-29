@@ -13,10 +13,12 @@ interface Props {
   /** Toggled from the dock; stays mounted while closed so a draft survives. */
   open: boolean;
   onOpen: () => void;
+  /** Phone layout: full width above the dock. */
+  compact?: boolean;
 }
 
 /** Room chat: a short log plus the input. Enter opens and focuses it from anywhere; typing shows dots over your head. */
-export function ChatPanel({ room, messages, open, onOpen }: Props) {
+export function ChatPanel({ room, messages, open, onOpen, compact = false }: Props) {
   const [text, setText] = useState('');
   const input = useRef<HTMLInputElement>(null);
   const typingSent = useRef({ on: false, at: 0 });
@@ -51,7 +53,7 @@ export function ChatPanel({ room, messages, open, onOpen }: Props) {
   return (
     <section
       aria-label="Chat"
-      className={`panel absolute bottom-4 left-4 w-[min(340px,calc(100%-32px))] flex-col gap-2 p-3 ${open ? 'flex' : 'hidden'}`}
+      className={`panel absolute z-10 flex-col gap-2 p-3 ${compact ? 'right-2 bottom-[84px] left-2 landscape:left-auto landscape:w-[min(400px,calc(100%-16px))]' : 'bottom-4 left-4 w-[min(340px,calc(100%-32px))]'} ${open ? 'flex' : 'hidden'}`}
     >
       <ol ref={list} className="flex max-h-40 flex-col gap-1 overflow-y-auto text-sm">
         {messages.length === 0 && <li className="text-xs text-muted">Say hi to the room 👋</li>}

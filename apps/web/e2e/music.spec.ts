@@ -24,7 +24,7 @@ test('the music player plays, skips and remembers the volume', async ({ page, re
   await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
 
   await page.reload();
-  await expect(page.getByText('Connected')).toBeVisible({ timeout: 45_000 });
+  await expect(page.getByRole('status', { name: 'Connected' })).toBeVisible({ timeout: 45_000 });
   await page.getByRole('button', { name: 'Music', exact: true }).click();
   await expect(page.getByText('Lofi Sunny Cafe')).toBeVisible();
   await expect(page.getByLabel('Music volume')).toHaveValue('0.2');

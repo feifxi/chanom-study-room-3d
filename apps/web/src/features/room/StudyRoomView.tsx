@@ -7,6 +7,7 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { GACHA_MACHINE, SEAT_BY_ID, SPAWN } from '@study/shared';
 import { loadProfile } from '@/lib/profile';
+import { isCompactScreen, isTouchScreen, useCompactScreen, useTouchScreen } from '@/lib/screen';
 import { ChatPanel } from '../chat/ChatPanel';
 import { useMusic } from '../music/useMusic';
 import { shouldAskFeedback } from '../feedback/askPolicy';
@@ -23,12 +24,14 @@ import { FrameDriver } from './FrameDriver';
 import { QUALITY, useQualityMode } from './quality';
 import { StaticShadows } from './StaticShadows';
 import { Dock } from './hud/Dock';
+import { Joystick } from './hud/Joystick';
 import { RoomHeader } from './hud/RoomHeader';
 import { TopRight } from './hud/TopRight';
 import { ZOOM, ZoomBridge, ZoomControl } from './hud/ZoomControl';
 import { LabelBoard, LabelLayer, LabelProjector } from './labels';
 import { Library } from './Library';
 import { LocalController, type Hint } from './LocalController';
+import type { LocalPlayerDriver } from './LocalPlayerDriver';
 import { useMySeat, useRoomLabel } from './roomHooks';
 import { RoomSidebar } from './RoomSidebar';
 import { npcKey } from './roomSession';
@@ -41,7 +44,8 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
   const [hint, setHint] = useState<Hint | null>(null);
   const [machineOpen, setMachineOpen] = useState(false);
   const openMachine = useCallback(() => setMachineOpen(true), []);
-  const [chatOpen, setChatOpen] = useState(true);
+  // Phones start with chat closed: it would cover half the room
+  const [chatOpen, setChatOpen] = useState(() => !isCompactScreen());
   const openChat = useCallback(() => setChatOpen(true), []);
   const [zoomPercent, setZoomPercent] = useState(100);
   const zoomRequest = useRef<number | null>(null);
@@ -49,7 +53,11 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
   const light = useDayLight(themeMode);
   // Quality: smooth by default; battery saver when chosen, or when this device can't keep up
   const [qualityMode, setQualityMode] = useQualityMode();
-  const [struggling, setStruggling] = useState(false);
+  // Phones start in battery saver (they heat up fastest); the 🍃 button still turns it off
+  const [struggling, setStruggling] = useState(isTouchScreen);
+  const touch = useTouchScreen();
+  const compact = useCompactScreen();
+  const driverRef = useRef<LocalPlayerDriver | null>(null);
   const onSlowFrames = useCallback(() => setStruggling(true), []);
   const quality = QUALITY[qualityMode === 'saver' || struggling ? 'saver' : 'smooth'];
   const mySeat = useMySeat(room);
@@ -135,7 +143,7 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
           minPolarAngle={0.35}
           maxPolarAngle={1.2}
         />
-        {room && <LocalController room={room} motion={motion} onHint={setHint} onOpenMachine={openMachine} />}
+        {room && <LocalController room={room} motion={motion} onHint={setHint} onOpenMachine={openMachine} driverRef={driverRef} />}
         <GachaMachine lastSummon={summons.at(-1)} />
         {room &&
           npcIds.map((id) => {
@@ -175,8 +183,10 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
         label={label ?? 'Chanom Study Room'}
         people={playerIds.length}
         statusText={status === 'connected' ? null : statusText(status, error)}
+        compact={compact}
       />
       <TopRight
+        compact={compact}
         status={status}
         mode={themeMode}
         onMode={setThemeMode}
@@ -191,22 +201,46 @@ export default function StudyRoomView({ roomId }: { roomId: string | null }) {
           }
         }}
       />
-      <ZoomControl percent={zoomPercent} onZoom={(z) => (zoomRequest.current = z)} />
+      {!(compact && touch) && <ZoomControl percent={zoomPercent} onZoom={(z) => (zoomRequest.current = z)} />}
 
       {room && (
         <>
-          <RoomSidebar room={room} music={music} />
-          <FocusPanel room={room} clockOffset={clockOffset} />
+          <RoomSidebar
+            room={room}
+            music={music}
+            compact={compact}
+            touch={touch}
+            pomodoro={compact ? <FocusPanel room={room} clockOffset={clockOffset} docked /> : undefined}
+          />
+          {!compact && <FocusPanel room={room} clockOffset={clockOffset} />}
           <TableScreens voice={voice} localId={room.sessionId} names={(id) => room.state.players?.get(id)?.name ?? 'Someone'} />
-          <ChatPanel room={room} messages={chat} open={chatOpen} onOpen={openChat} />
-          <Dock voice={voice} seated={!!mySeat.seatId} chatOpen={chatOpen} onChat={() => setChatOpen((o) => !o)} />
+          <ChatPanel room={room} messages={chat} open={chatOpen} onOpen={openChat} compact={compact} />
+          <Dock voice={voice} seated={!!mySeat.seatId} chatOpen={chatOpen} onChat={() => setChatOpen((o) => !o)} compact={compact} />
+          {touch && !machineOpen && (
+            <Joystick
+              onMove={(x, z) => driverRef.current?.setStick(x, z)}
+              className={`absolute left-4 ${compact ? 'bottom-[84px] landscape:bottom-4' : 'bottom-28'}`}
+            />
+          )}
         </>
       )}
 
       {(hint || mySeat.seatId) && !machineOpen && (
-        <div className="panel absolute bottom-[104px] left-1/2 -translate-x-1/2 rounded-full px-4 py-2 text-sm font-bold whitespace-nowrap">
-          {mySeat.seatId ? seatedText(mySeat.seatId) : hintText(hint!)}
-        </div>
+        // The E hint doubles as a button (the only way to act on a phone, a shortcut with a mouse)
+        <button
+          onClick={() => {
+            const d = driverRef.current;
+            if (d?.press('KeyE') === 'openMachine') openMachine();
+            d?.release('KeyE');
+          }}
+          className={`panel absolute rounded-full font-bold whitespace-nowrap ${
+            touch
+              ? `right-4 px-6 py-3 text-base ${compact ? 'bottom-[116px] landscape:bottom-12' : 'bottom-36'}`
+              : 'bottom-[104px] left-1/2 -translate-x-1/2 px-4 py-2 text-sm'
+          }`}
+        >
+          {mySeat.seatId ? seatedText(mySeat.seatId, touch) : hintText(hint!, touch)}
+        </button>
       )}
 
       {room && machineOpen && (
@@ -256,21 +290,25 @@ function joinOptions() {
 
 type LeaveContext = React.ComponentProps<typeof LeaveFeedback>['context'];
 
-function hintText(hint: Hint) {
+/** What the action button says: a keyboard hint on desktop, a plain tap target on touch screens. */
+function hintText(hint: Hint, touch: boolean) {
   switch (hint.kind) {
     case 'pet':
-      return `Press E to pet ${hint.name} 🐾`;
+      return touch ? `🐾 Pet ${hint.name}` : `Press E to pet ${hint.name} 🐾`;
     case 'machine':
-      return 'Press E to open the Buddy Machine';
-    case 'seat':
-      return SEAT_BY_ID.get(hint.seatId)?.kind === 'sofa' ? 'Press E to sit on the sofa' : 'Press E to sit';
+      return touch ? '🎰 Buddy Machine' : 'Press E to open the Buddy Machine';
+    case 'seat': {
+      const sofa = SEAT_BY_ID.get(hint.seatId)?.kind === 'sofa';
+      if (touch) return sofa ? '🛋️ Sit on the sofa' : '🪑 Sit';
+      return sofa ? 'Press E to sit on the sofa' : 'Press E to sit';
+    }
   }
 }
 
-function seatedText(seatId: string) {
-  return SEAT_BY_ID.get(seatId)?.kind === 'sofa'
-    ? '🛋️ Lounging on the sofa · press E or walk to get up'
-    : '📖 Studying · press E or walk to stand up';
+function seatedText(seatId: string, touch: boolean) {
+  const sofa = SEAT_BY_ID.get(seatId)?.kind === 'sofa';
+  if (touch) return sofa ? '🛋️ Lounging · tap to get up' : '📖 Studying · tap to stand up';
+  return sofa ? '🛋️ Lounging on the sofa · press E or walk to get up' : '📖 Studying · press E or walk to stand up';
 }
 
 function statusText(status: string, error: string | null) {

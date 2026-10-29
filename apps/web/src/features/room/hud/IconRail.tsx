@@ -13,11 +13,11 @@ export interface RailItem {
 }
 
 /** Left icon rail (Connecta-style). One panel opens beside it at a time. */
-export function IconRail({ items }: { items: RailItem[] }) {
+export function IconRail({ items, compact = false }: { items: RailItem[]; compact?: boolean }) {
   const [open, setOpen] = useState<string | null>(null);
   return (
-    <div className="absolute top-[88px] left-4 flex items-start gap-3">
-      <nav aria-label="Room tools" className="panel flex flex-col gap-1 p-1.5">
+    <div className={`absolute flex items-start ${compact ? 'top-[64px] right-2 left-2 flex-col gap-2' : 'top-[88px] left-4 gap-3'}`}>
+      <nav aria-label="Room tools" className={`panel flex gap-1 p-1.5 ${compact ? 'flex-row' : 'flex-col'}`}>
         {items.map((it) => (
           <button
             key={it.id}
@@ -25,7 +25,7 @@ export function IconRail({ items }: { items: RailItem[] }) {
             aria-pressed={open === it.id}
             aria-label={it.label}
             title={it.label}
-            className={`grid size-11 place-items-center rounded-xl ${open === it.id ? 'bg-accent-soft text-accent-ink' : 'text-muted hover:bg-soft hover:text-ink'}`}
+            className={`grid place-items-center rounded-xl ${compact ? 'size-10' : 'size-11'} ${open === it.id ? 'bg-accent-soft text-accent-ink' : 'text-muted hover:bg-soft hover:text-ink'}`}
           >
             <it.icon className="size-5" />
           </button>
@@ -33,7 +33,10 @@ export function IconRail({ items }: { items: RailItem[] }) {
       </nav>
       {items.map((it) =>
         it.keepMounted || open === it.id ? (
-          <div key={it.id} className={`w-72 ${open === it.id ? '' : 'hidden'}`}>
+          <div
+            key={it.id}
+            className={`${compact ? 'max-h-[calc(100dvh-200px)] w-[min(18rem,100%)] overflow-y-auto rounded-[22px]' : 'w-72'} ${open === it.id ? '' : 'hidden'}`}
+          >
             {it.render()}
           </div>
         ) : null,

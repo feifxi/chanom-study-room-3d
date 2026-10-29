@@ -43,7 +43,7 @@ test('day / night choice is remembered', async ({ page }) => {
   await enterRoom(page);
   await page.getByRole('radio', { name: 'Always night' }).click();
   await page.reload();
-  await expect(page.getByText('Connected')).toBeVisible();
+  await expect(page.getByRole('status', { name: 'Connected' })).toBeVisible();
   await expect(page.getByRole('radio', { name: 'Always night' })).toHaveAttribute('aria-checked', 'true');
   await page.getByRole('radio', { name: 'Follow the clock' }).click();
 });

@@ -18,5 +18,5 @@ test('"Enter the library" takes you into a room', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Enter the library/ }).click();
   await expect(page).toHaveURL(/\/room/);
-  await expect(page.getByText('Connected')).toBeVisible();
+  await expect(page.getByRole('status', { name: 'Connected' })).toBeVisible();
 });

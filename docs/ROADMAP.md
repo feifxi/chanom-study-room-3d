@@ -151,7 +151,7 @@ Fixed after the playtest (2026-10-29):
   people talk.
 
 Takeaway: the product is a cosy hangout space as much as a study room. With both problems fixed,
-**activities are the next big theme**, and **mobile support** is planned after that.
+**activities are the next big theme**; mobile support is built (see the backlog item for what is left).
 
 ## Backlog (decide after the feedback)
 
@@ -162,17 +162,16 @@ Product
 
 - Music, later: a shared "room radio" (everyone hears the same track in sync, via the server);
   more tracks would move to S3 + CloudFront instead of the web image.
-- **Mobile support** (planned): today the room is built for a desktop browser with a keyboard.
-  What phones and tablets need:
-  - Touch controls: a virtual joystick to walk, tap to sit / pet / use the machine, pinch to zoom
-    and drag to orbit.
-  - A HUD for small screens: the rail, chat and pomodoro as sheets or tabs instead of floating
-    panels; safe areas and portrait layout.
-  - Performance on phones: start in battery saver, and check heat on a mid-range Android.
-  - Voice on mobile: mic permission and audio unlock on iOS Safari, voice ducking with music, and
-    TURN for mobile networks (see 11.2).
-  - Screen share isn't available on most mobile browsers; hide it there.
-  - e2e: Playwright mobile device profiles (iPhone, Pixel).
+- **Mobile support** (built 2026-10-30, both orientations; not yet tried on real phones):
+  - [x] Tap-to-walk on the shared A* grid (tap a chair / cat / the machine to use it; clicks work
+        on desktop too), a joystick (push fully to run), an action button instead of E.
+  - [x] Small-screen HUD: header and top-right compacted, the rail along the top with the Pomodoro
+        in it, chat as a sheet (closed at first), icon-only dock, zoom by pinch.
+  - [x] Phones start in battery saver; screen share is hidden where the browser can't share.
+  - [x] e2e on a phone profile: tap to walk, tap to sit + stand button, joystick.
+  - [ ] Try on a real iPhone and Android: heat, iOS Safari mic permission and the "Hear room"
+        audio unlock, notch safe areas, TURN on mobile data (see 11.2).
+  - [ ] A badge on the chat button for new messages while the sheet is closed.
 - Quick reactions (emoji over your head), sit-together invites.
 - Private rooms with an invite link; later, accounts (Better Auth) if people want history across
   devices.

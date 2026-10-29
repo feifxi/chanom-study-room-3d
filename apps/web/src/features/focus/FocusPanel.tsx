@@ -9,7 +9,8 @@ import { formatCountdown, useAutoAway, usePersonalTimer } from './usePersonalTim
 
 const PHASE_LABEL: Record<TimerPhase, string> = { idle: 'Idle', focus: 'Focus', break: 'Break' };
 
-export function FocusPanel({ room, clockOffset }: { room: StudyRoom; clockOffset: number }) {
+/** `docked`: inside the rail on phones instead of floating at the top right. */
+export function FocusPanel({ room, clockOffset, docked = false }: { room: StudyRoom; clockOffset: number; docked?: boolean }) {
   const now = useNow(250) + clockOffset;
   useAutoAway(room);
   const { timer, start, stop } = usePersonalTimer(room, clockOffset);
@@ -33,7 +34,7 @@ export function FocusPanel({ room, clockOffset }: { room: StudyRoom; clockOffset
           : 'Pick a timer to start';
 
   return (
-    <section className="panel absolute top-[76px] right-4 flex w-72 flex-col gap-3 p-4">
+    <section className={`panel flex flex-col gap-3 p-4 ${docked ? 'w-full' : 'absolute top-[76px] right-4 w-72'}`}>
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-extrabold">Pomodoro</h2>
         <button
