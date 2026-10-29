@@ -33,6 +33,11 @@ AWS credentials from the `default` profile. Costs and reasoning: [docs/ROADMAP.m
 2. At **Namecheap** → Domain List → `chanombude.me` → **Advanced DNS** → add four **NS Record**
    rows: Host `studyroom`, Value = each name server, TTL automatic. Nothing else changes: the main
    domain and its email forwarding stay at Namecheap.
+   Check the delegation by asking Namecheap's own name server (a plain `dig NS studyroom.chanombude.me`
+   stays empty until `infra:up` creates the zone; AWS answers REFUSED before that):
+   ```bash
+   dig +norecurse NS studyroom.chanombude.me @dns1.registrar-servers.com   # lists the four awsdns servers
+   ```
 3. `cp infra/terraform/app/terraform.tfvars.example infra/terraform/app/terraform.tfvars` and fill in the delegation
    set id and your email (optionally the Discord webhook).
 
