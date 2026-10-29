@@ -26,6 +26,7 @@ packages/
   db/      Drizzle schema, migrations, stats and admin queries
 ops/       Prometheus, Alertmanager, Loki, Alloy, Grafana config and the SRE guide
 deploy/    Production Docker Compose stack, Caddyfile, LiveKit config (see deploy/README.md)
+infra/     Terraform for AWS: bootstrap (DNS delegation set) and the playtest stack (see infra/README.md)
 docs/      Roadmap, architecture, decision log
 ```
 

@@ -15,7 +15,9 @@
     "check": "pnpm format:check && turbo run typecheck lint test",
     "e2e": "pnpm --filter @study/web e2e",
     "obs:up": "docker compose --profile observability up -d",
-    "obs:down": "docker compose --profile observability stop prometheus alertmanager loki alloy grafana"
+    "obs:down": "docker compose --profile observability stop prometheus alertmanager loki alloy grafana",
+    "infra:up": "bash infra/scripts/up.sh",
+    "infra:down": "bash infra/scripts/down.sh"
   },
   "devDependencies": {
     "@eslint/js": "^9",

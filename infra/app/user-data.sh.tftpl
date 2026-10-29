@@ -1,0 +1,41 @@
+#!/bin/bash
+# First boot: Docker + Compose, and a deploy script that infra/scripts/up.sh runs over SSM.
+set -euxo pipefail
+
+dnf install -y docker
+systemctl enable --now docker
+mkdir -p /usr/local/lib/docker/cli-plugins
+curl -fsSL -o /usr/local/lib/docker/cli-plugins/docker-compose \
+  https://github.com/docker/compose/releases/download/v5.6.1/docker-compose-linux-aarch64
+chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+mkdir -p /opt/chanom
+cat > /opt/chanom/deploy.sh <<'DEPLOY'
+#!/bin/bash
+# Usage: deploy.sh <image-tag>   Syncs the configs, writes .env.prod from SSM and (re)starts the stack.
+set -euo pipefail
+TAG="$1"
+export AWS_DEFAULT_REGION=${region}
+cd /opt/chanom
+aws s3 sync s3://${bucket}/bundle/ ./bundle/ --delete --only-show-errors
+
+umask 077
+{
+  aws ssm get-parameters-by-path --path /chanom/env/ --with-decryption \
+    --query 'Parameters[].[Name,Value]' --output text | sed -e 's#^/chanom/env/##' -e 's#\t#=#'
+  echo "TAG=$TAG"
+} > bundle/deploy/.env.prod
+
+mkdir -p bundle/ops/alertmanager/secrets
+if aws ssm get-parameter --name /chanom/discord_webhook_url --with-decryption --query Parameter.Value --output text \
+  > bundle/ops/alertmanager/secrets/discord_webhook_url 2>/dev/null; then :; else rm -f bundle/ops/alertmanager/secrets/discord_webhook_url; fi
+chmod 644 bundle/ops/alertmanager/secrets/* 2>/dev/null || true
+
+aws ecr get-login-password | docker login --username AWS --password-stdin ${registry}
+cd bundle
+docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.prod pull --quiet
+docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.prod up -d --no-build --remove-orphans
+docker image prune -f
+DEPLOY
+chmod 700 /opt/chanom/deploy.sh
+touch /opt/chanom/ready

@@ -72,28 +72,18 @@ month at this size). A 3-day playtest costs about $6.
 - [x] Checked locally with `DOMAIN=localhost`: all routes, joining over WSS, voice, metrics, logs.
 - [ ] Not done: TURN. Voice needs UDP 7882 or TCP 7881; test on mobile data before the playtest.
 
-### 11.3 Terraform (`infra/`), one stack
+### 11.3 Terraform ✅ written and planned (2026-10-29, see [infra/README.md](../infra/README.md)), not applied yet
 
-- [ ] **One-time, outside the stack:** a Route 53 _reusable delegation set_ (free). It fixes the four
-      name servers, so the NS records you add in Namecheap once stay valid even though the hosted
-      zone is destroyed and recreated every playtest.
-- [ ] State: a local `terraform.tfstate` (git-ignored; one person runs it, and `destroy` leaves
-      nothing behind to track). Don't lose it while the stack is up.
-- [ ] VPC: a public subnet (EC2) and two private subnets (RDS needs two AZs); security groups
-      (80/443 and LiveKit 7881/tcp + UDP from anywhere; Postgres only from the EC2 host).
-- [ ] EC2 `t4g.medium` + Elastic IP, IAM role (SSM, ECR pull, CloudWatch agent); no SSH, shell
-      through SSM.
-- [ ] RDS PostgreSQL 17 `db.t4g.micro`, 20 GB gp3, automated backups, **final snapshot on destroy**;
-      `restore_snapshot` variable to start the next playtest from it.
-- [ ] ECR repositories (`force_delete`, so destroy also removes the images).
-- [ ] Route 53 zone `studyroom.chanombude.me` using the delegation set, and its records.
-- [ ] SSM Parameter Store secrets: `ADMIN_PASSWORD`, LiveKit keys, Discord webhook, database password.
-- [ ] CloudWatch alarms (instance status, CPU, disk; RDS CPU, free storage, connections) and an AWS
-      Budget ($20, without credits) → SNS email.
-- [ ] Scripts: `infra:up` (apply, build and push images, start the app over SSM) and `infra:down`
-      (export feedback CSV, then `terraform destroy`).
-- [ ] Check: `up` → play → `down` leaves no billable resources (Cost Explorer next day); the
-      next `up` restores the snapshot with the feedback intact.
+- [x] `infra/bootstrap`: the reusable delegation set (plan: 1 resource).
+- [x] `infra/app` (plan: 50 resources): VPC with a public and two private subnets, security
+      groups, EC2 `t4g.medium` (AL2023 arm64, IMDSv2, SSM, no SSH) + Elastic IP, RDS PostgreSQL 17
+      `db.t4g.micro` (encrypted, private, final snapshot on destroy, `restore_snapshot_id`), ECR
+      (immutable tags, scan on push, keep 5), S3 config bundle, Route 53 zone + records, SSM
+      SecureString secrets (all generated), CloudWatch alarms + SNS email, AWS Budget ($20,
+      credits excluded).
+- [x] `pnpm infra:up` / `pnpm infra:down` scripts.
+- [ ] First real run: bootstrap apply → NS records at Namecheap → `infra:up` → playtest checks →
+      `infra:down` → confirm nothing billable is left.
 
 ### 11.4 Deploys (optional for playtests)
 

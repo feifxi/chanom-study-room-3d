@@ -1,0 +1,9 @@
+# Terraform working files and state (state holds generated secrets: keep it private)
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+terraform.tfvars
+.deploy-bundle/
+backups/
