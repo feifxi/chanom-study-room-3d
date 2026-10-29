@@ -5,7 +5,8 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   // Self-hosted in Docker: emit a minimal standalone server.
   output: 'standalone',
-  devIndicators: { position: 'bottom-right' },
+  // The dev badge would sit on top of the room's zoom control
+  devIndicators: false,
   // Workspace packages ship TypeScript source.
   transpilePackages: ['@study/shared'],
   turbopack: {

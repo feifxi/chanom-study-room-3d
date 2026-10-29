@@ -41,50 +41,6 @@ function LaptopScreen({ share, seatId }: { share: ScreenShare; seatId: string })
   return null;
 }
 
-/** Mic and screen-share controls, bottom right. */
-export function VoiceBar({ voice, seated }: { voice: Voice; seated: boolean }) {
-  return (
-    <div className="panel absolute right-4 bottom-4 flex w-72 flex-col gap-2 p-3">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-extrabold tracking-wider text-muted uppercase">Voice & screen</span>
-        <span className="text-[11px] text-muted">
-          {voice.status === 'connected'
-            ? 'Closer = louder'
-            : voice.status === 'connecting'
-              ? 'Connecting…'
-              : voice.status === 'error'
-                ? 'Voice unavailable'
-                : ''}
-        </span>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          onClick={voice.toggleMic}
-          disabled={voice.status !== 'connected'}
-          className={`rounded-lg px-2 py-2 text-sm font-bold whitespace-nowrap disabled:opacity-40 ${voice.micOn ? 'bg-accent text-white' : 'border border-line bg-white'}`}
-        >
-          🎙️ {voice.micOn ? 'Mic on' : 'Mic off'}
-        </button>
-        <button
-          onClick={voice.toggleShare}
-          disabled={voice.status !== 'connected' || (!seated && !voice.sharing)}
-          title={seated ? 'Share with the people at your table' : 'Sit at a table to share'}
-          className={`rounded-lg px-2 py-2 text-sm font-bold whitespace-nowrap disabled:opacity-40 ${voice.sharing ? 'bg-accent text-white' : 'border border-line bg-white'}`}
-        >
-          🖥️ {voice.sharing ? 'Stop' : 'Share'}
-        </button>
-      </div>
-      {!seated && !voice.sharing && <p className="text-[11px] text-muted">Sit at a table to share your screen with that table.</p>}
-      {voice.needsAudioUnlock && (
-        <button onClick={voice.unlockAudio} className="rounded-lg bg-ink px-3 py-1.5 text-sm font-bold text-white">
-          🔈 Click to hear everyone
-        </button>
-      )}
-      {voice.error && <p className="text-xs text-accent-ink">{voice.error}</p>}
-    </div>
-  );
-}
-
 /**
  * Zoom-style tiles for the screens shared at your table. Only table-mates are
  * subscribed to these tracks, so nobody else in the room can see them.
@@ -105,7 +61,7 @@ export function TableScreens({ voice, localId, names }: { voice: Voice; localId:
 
   return (
     <>
-      <div className="absolute top-4 left-1/2 flex w-[min(440px,calc(100vw-680px))] min-w-80 -translate-x-1/2 flex-col gap-2">
+      <div className="absolute top-4 left-1/2 flex w-[min(440px,calc(100vw-760px))] min-w-80 -translate-x-1/2 flex-col gap-2">
         {voice.sharing && (
           <div className="panel flex items-center justify-between gap-2 px-3 py-2 text-sm">
             <span className="font-bold">🟢 You&apos;re sharing your screen with your table</span>

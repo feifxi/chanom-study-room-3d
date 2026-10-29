@@ -19,3 +19,24 @@ jobs:
       # Formatting, types, lint and unit tests for every package
       - run: pnpm check
       - run: pnpm build
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @study/web exec playwright install --with-deps chromium
+      # Playwright starts the game server and the web app itself (no database or LiveKit needed)
+      - run: pnpm e2e
+        env:
+          CI: true
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report

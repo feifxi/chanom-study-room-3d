@@ -77,8 +77,9 @@ function nearestOpenCell(p: Point, visible = false): Point {
   return p;
 }
 
-/** Nearest walkable cell centre to a point (for targets that sit inside furniture). */
+/** The point itself when it's walkable, else the nearest walkable cell centre (for targets inside furniture). */
 export function nearestWalkable(p: Point): Point {
+  if (isWalkable(p)) return { x: p.x, z: p.z };
   const g = getGrid();
   const [c0, r0] = toCell(p);
   for (let ring = 0; ring < 12; ring++) {

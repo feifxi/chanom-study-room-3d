@@ -33,12 +33,12 @@ export function FocusPanel({ room, clockOffset }: { room: StudyRoom; clockOffset
           : 'Pick a timer to start';
 
   return (
-    <section className="panel absolute top-4 right-4 flex w-72 flex-col gap-3 p-4">
+    <section className="panel absolute top-[76px] right-4 flex w-72 flex-col gap-3 p-4">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-extrabold tracking-wider text-muted uppercase">Pomodoro</span>
+        <h2 className="text-sm font-extrabold">Pomodoro</h2>
         <button
           onClick={() => room.send('away', { on: me.status !== 'away' })}
-          className={`rounded-full border px-2.5 py-0.5 text-xs font-bold ${me.status === 'away' ? 'border-accent bg-accent text-white' : 'border-line bg-white'}`}
+          className={`rounded-full border px-2.5 py-0.5 text-xs font-bold ${me.status === 'away' ? 'border-lavender-ink bg-lavender text-lavender-ink' : 'border-line bg-white'}`}
         >
           💤 Away
         </button>
@@ -69,7 +69,7 @@ export function FocusPanel({ room, clockOffset }: { room: StudyRoom; clockOffset
             <button
               key={p.focus}
               onClick={() => start(p.focus, p.break)}
-              className="rounded-lg bg-accent px-3 py-2 text-sm font-bold text-white shadow-sm shadow-accent/30"
+              className="rounded-xl bg-accent px-3 py-2 text-sm font-bold text-white"
             >
               ▶ {p.focus} / {p.break} min
             </button>

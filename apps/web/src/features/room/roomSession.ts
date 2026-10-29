@@ -1,5 +1,5 @@
 import type { Room } from '@colyseus/sdk';
-import type { ChatMessage, GachaSpun, StudyStateView } from '@study/shared';
+import type { ChatMessage, NpcSummoned, StudyStateView } from '@study/shared';
 
 export type StudyRoom = Room<unknown, StudyStateView>;
 export type ConnectionStatus = 'connecting' | 'connected' | 'error' | 'closed';
@@ -7,7 +7,7 @@ export type ConnectionStatus = 'connecting' | 'connected' | 'error' | 'closed';
 export const BUBBLE_MS = 4500;
 export const REACTION_MS = 1700;
 const CHAT_HISTORY = 100;
-const SPIN_HISTORY = 10;
+const SUMMON_HISTORY = 10;
 const REACTION_LIMIT = 20;
 
 export interface Bubble {
@@ -23,7 +23,8 @@ export interface Reaction {
   emote: string;
 }
 
-export type Spin = GachaSpun & { at: number };
+/** A summon as this client saw it: `at` is when the capsule animation started (local time). */
+export type Summon = NpcSummoned & { at: number };
 
 /** NPC labels and bubbles share the player label board, keyed like this. */
 export const npcKey = (id: string) => `npc:${id}`;
@@ -38,9 +39,9 @@ export interface SessionState {
   chat: ChatMessage[];
   bubbles: Record<string, Bubble>;
   reactions: Reaction[];
-  /** Every Buddy Machine spin seen in this session (the latest drives the machine animation). */
-  spins: Spin[];
-  gachaError: string | null;
+  /** Recent Buddy Machine summons (the latest drives the machine animation). */
+  summons: Summon[];
+  summonError: string | null;
   /** serverTime ≈ Date.now() + clockOffset */
   clockOffset: number;
 }
@@ -54,8 +55,8 @@ export const initialSession: SessionState = {
   chat: [],
   bubbles: {},
   reactions: [],
-  spins: [],
-  gachaError: null,
+  summons: [],
+  summonError: null,
   clockOffset: 0,
 };
 
@@ -70,8 +71,8 @@ export type SessionAction =
   | { type: 'npcSay'; npcId: string; text: string; now: number }
   | { type: 'react'; key: string; npcId: string; emote: string }
   | { type: 'reactionDone'; key: string }
-  | { type: 'spun'; spin: GachaSpun; now: number }
-  | { type: 'gachaError'; message: string | null }
+  | { type: 'summoned'; summon: NpcSummoned; now: number }
+  | { type: 'summonError'; message: string | null }
   | { type: 'clock'; offset: number }
   | { type: 'expireBubbles'; now: number };
 
@@ -108,10 +109,10 @@ export function sessionReducer(s: SessionState, a: SessionAction): SessionState 
       return { ...s, reactions: [...s.reactions.slice(-(REACTION_LIMIT - 1)), { key: a.key, target: npcKey(a.npcId), emote: a.emote }] };
     case 'reactionDone':
       return { ...s, reactions: s.reactions.filter((r) => r.key !== a.key) };
-    case 'spun':
-      return { ...s, spins: [...s.spins.slice(-(SPIN_HISTORY - 1)), { ...a.spin, at: a.now }] };
-    case 'gachaError':
-      return { ...s, gachaError: a.message };
+    case 'summoned':
+      return { ...s, summons: [...s.summons.slice(-(SUMMON_HISTORY - 1)), { ...a.summon, at: a.now }] };
+    case 'summonError':
+      return { ...s, summonError: a.message };
     case 'clock':
       return { ...s, clockOffset: a.offset };
     case 'expireBubbles': {

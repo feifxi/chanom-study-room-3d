@@ -47,6 +47,8 @@ const CHAT_COOLDOWN_MS = 500;
 /** Clients refresh "typing" every few seconds; clear it if they go quiet (closed tab, crash). */
 const TYPING_TIMEOUT_MS = 6000;
 const RECONNECT_SECONDS = 20;
+/** Only announce people who stay this long, so quick join/leave flaps (reloads, React dev double-mounts) stay quiet. */
+const ANNOUNCE_AFTER_MS = 1000;
 const MINUTE = 60_000;
 
 const LIVEKIT = {
@@ -79,12 +81,14 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
   state = new StudyState();
 
   private priv = new Map<string, Private>();
+  /** Session ids whose arrival was announced (so their departure is too). */
+  private announced = new Set<string>();
   private npcs = new NpcDirector({
     state: this.state,
     say: (npcId, text) => this.broadcast('npc:say', { npcId, text }),
     react: (npcId, emote) => this.broadcast('npc:react', { npcId, emote }),
     announce: (text) => this.announce(text),
-    spun: (event) => this.broadcast('gacha:spun', event),
+    summoned: (event) => this.broadcast('npc:summoned', event),
   });
 
   messages = {
@@ -121,20 +125,12 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
       this.npcs.yieldSeat(seat.id);
     }),
 
-    'gacha:spin': validate(z.object({ kind: z.enum(NPC_KINDS) }), (client, msg) => {
+    'npc:summon': validate(z.object({ kind: z.enum(NPC_KINDS) }), (client, msg) => {
       const p = this.state.players.get(client.sessionId);
       if (!p) return;
-      const error = this.npcs.spin(client.sessionId, p, msg.kind);
-      if (error) client.send('gacha:error', { message: error });
+      const error = this.npcs.summon(client.sessionId, p, msg.kind);
+      if (error) client.send('npc:error', { message: error });
     }),
-
-    'npc:update': validate(
-      z.object({ id: z.string().max(16), name: z.string().max(40).optional(), settings: z.record(z.string(), z.unknown()).optional() }),
-      (client, msg) => {
-        const p = this.state.players.get(client.sessionId);
-        if (p) this.npcs.update(msg.id, msg, p.name);
-      },
-    ),
 
     'npc:remove': validate(npcId, (client, msg) => {
       const p = this.state.players.get(client.sessionId);
@@ -146,17 +142,13 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
       if (p) this.npcs.pet(client.sessionId, p, msg.id);
     }),
 
-    'npc:talk': validate(npcId, (client, msg) => {
-      const p = this.state.players.get(client.sessionId);
-      if (p) this.npcs.talk(p, msg.id);
-    }),
-
     stand: (client: Client) => {
       const p = this.state.players.get(client.sessionId);
       if (!p?.seatId) return;
-      // Step back from the table, away from the direction the seat faces.
-      p.x = clamp(p.x - Math.sin(p.yaw) * 0.5, BOUNDS.minX, BOUNDS.maxX);
-      p.z = clamp(p.z - Math.cos(p.yaw) * 0.5, BOUNDS.minZ, BOUNDS.maxZ);
+      // Step out to the seat's stand-up spot (behind a chair, in front of the sofa)
+      const out = SEAT_BY_ID.get(p.seatId)?.out ?? p;
+      p.x = clamp(out.x, BOUNDS.minX, BOUNDS.maxX);
+      p.z = clamp(out.z, BOUNDS.minZ, BOUNDS.maxZ);
       p.seatId = '';
     },
 
@@ -265,7 +257,11 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
     player.moving = false;
     this.state.players.set(client.sessionId, player);
     metrics.joins.inc();
-    this.announce(`👋 ${player.name} joined the room`);
+    this.clock.setTimeout(() => {
+      if (!this.state.players.has(client.sessionId)) return;
+      this.announced.add(client.sessionId);
+      this.announce(`👋 ${player.name} joined the room`);
+    }, ANNOUNCE_AFTER_MS);
     this.npcs.onPlayerJoined(player);
 
     // Anonymous, client-generated id used only to group study stats. Trusted as-is in this demo.
@@ -300,7 +296,7 @@ export class StudyRoom extends Room<{ state: StudyState; metadata: StudyRoomMeta
   onLeave(client: Client) {
     this.endFocus(client.sessionId);
     const name = this.state.players.get(client.sessionId)?.name;
-    if (name) this.announce(`🚪 ${name} left the room`);
+    if (name && this.announced.delete(client.sessionId)) this.announce(`🚪 ${name} left the room`);
     this.state.players.delete(client.sessionId);
     this.priv.delete(client.sessionId);
   }

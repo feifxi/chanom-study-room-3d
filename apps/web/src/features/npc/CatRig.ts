@@ -56,7 +56,7 @@ export class CatRig {
 
   constructor(coatId: string) {
     const coat = COAT_BY_ID.get(coatId) ?? CAT_COATS[0]!;
-    const fur = toon(coat.body, coat.rare ? { emissive: coat.body, emissiveIntensity: 0.25 } : {});
+    const fur = toon(coat.body);
     const belly = toon(coat.belly);
     this.group.add(this.body);
     const b = this.body;

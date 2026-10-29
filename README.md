@@ -47,11 +47,12 @@ pnpm --filter @study/game bots 5        # five wandering test students
 ```bash
 pnpm check        # what CI runs: Prettier check, then typecheck, lint and unit tests in every package
 pnpm test         # unit tests only (Vitest)
+pnpm e2e          # Playwright end-to-end tests (starts the dev servers if needed; Chrome, muted)
 pnpm format       # apply Prettier
 pnpm build        # production builds (Next standalone + tsup)
 ```
 
-The `smoke` script above is the end-to-end test: it needs `pnpm dev` (or at least the game server) running.
+`pnpm e2e` drives the real app in a browser. The older `smoke` script tests the game server directly over WebSockets and needs `pnpm dev` (or at least the game server) running.
 
 ### Where things live
 
@@ -97,17 +98,17 @@ Everything a person says shows above their head:
 
 ## Room friends (NPCs)
 
-A pastel gachapon **Buddy Machine** stands near the entrance. Walk up and press **E**:
+A small **Buddy Machine** stands against the left wall. Walk up and press **E** to summon a friend for the whole room. That's all it does; there's nothing to configure.
 
-- **Summon** a 🐈 library cat or a 🧑‍🎓 study buddy. Everyone sees the capsule roll out and pop open; cats roll a random coat (5% chance of a ✨ golden one).
-- **Residents**: anyone can rename a friend, change its habits (cat: roam / stay in the nook; buddy: subject, 25/5 or 50/10, chatty / quiet) or say goodbye.
-- Cats wander, groom and nap on the sofa (more at night). Press **E** next to one to pet it: hearts, a purr, and it follows you for a bit.
-- Study buddies take a free seat, run their own pomodoro (shown on their name tag), cheer you when you finish a focus stretch, and give up their seat if you want it.
+- **Summon** a 🐈 library cat or a 🧑‍🎓 study buddy. Everyone sees a capsule roll out, then the friend appears and chat announces it.
+- **Goodbye**: anyone can send a friend home; it walks back into the machine.
+- Cats wander, groom and nap on the sofa arms (more at night). Press **E** next to one to pet it: hearts, a purr, and it follows you for a while. A cat that's following you never blocks a seat, and it stops following when you sit down.
+- Study buddies pick a random free desk, run a 25/5 pomodoro (shown on their name tag), cheer you when you finish a focus stretch, and give up their seat if you want it.
 - Up to 6 friends per room; every new room starts with one cat, and friends go home when the room closes. NPC logic runs on the server (grid A* pathfinding in `@study/shared`), so everyone sees the same thing.
 
 ## Controls
 
-WASD / arrow keys to walk · Shift to run · E to interact (sit/stand, pet a cat, talk to a buddy, open the Buddy Machine) · Enter to chat · drag to orbit, scroll to zoom.
+WASD / arrow keys to walk · Shift to run · E to interact with whatever is closest (sit at a desk or on the sofa, pet a cat, open the Buddy Machine) · Enter to chat · drag to orbit, scroll or − / + to zoom. The sun / moon switch at the top right pins the room to day or night; the clock icon follows real time.
 
 ## Roadmap
 
@@ -118,4 +119,5 @@ WASD / arrow keys to walk · Shift to run · E to interact (sit/stand, pet a cat
 5. ✅ Study stats, streaks, leaderboard, to-do list, real-time day/night
 6. ✅ Room NPCs from the Buddy Machine; join/leave lines in chat
 7. ✅ Maintainability pass: unit tests, lint everywhere, Prettier, CI workflow (`.github/workflows/ci.yml`)
-8. Terraform on AWS (EC2 + RDS + S3 in `ap-southeast-7`), deploys, Grafana stack and CloudWatch alarms
+8. ✅ Connecta-style UI refresh, day / night switch, sofa seating, simpler Buddy Machine, Playwright tests
+9. Terraform on AWS (EC2 + RDS + S3 in `ap-southeast-7`), deploys, Grafana stack and CloudWatch alarms

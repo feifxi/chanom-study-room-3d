@@ -32,8 +32,6 @@ export const Npc = schema(
     name: t.string(),
     /** JSON: { coat } for cats, an AvatarLook for buddies */
     look: t.string(),
-    /** JSON NpcSettings */
-    settings: t.string(),
     x: t.float32(),
     z: t.float32(),
     y: t.float32().default(0),
@@ -45,6 +43,8 @@ export const Npc = schema(
     statusEndsAt: t.number().default(0),
     focusSince: t.number().default(0),
     subject: t.string().default(''),
+    /** Session id of the person a cat is following ('' = nobody). */
+    following: t.string().default(''),
   },
   'Npc',
 );

@@ -3,7 +3,7 @@
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { ROOM, SEATS, TABLES } from '@study/shared';
+import { COFFEE_TABLE, DESK_SEATS, ROOM, TABLES } from '@study/shared';
 import type { DayLight } from './dayCycle';
 import { CHAIR_BACK } from './Avatar';
 
@@ -128,11 +128,11 @@ function StudyTable({ x, z, width, depth, lamps }: { x: number; z: number; width
   );
 }
 
-/** Per-seat props: chair, open laptop (screen is a share target later) and a notebook. */
+/** Per-desk-seat props: chair, open laptop (screen is a share target later) and a notebook. */
 function SeatProps() {
   return (
     <>
-      {SEATS.map((s) => {
+      {DESK_SEATS.map((s) => {
         // Unit vector from the seat toward its table
         const fx = Math.sin(s.yaw);
         const fz = Math.cos(s.yaw);
@@ -244,16 +244,17 @@ function ReadingNook({ lamps }: { lamps: number }) {
         <circleGeometry args={[2, 40]} />
         <meshStandardMaterial color="#e6d3ef" />
       </mesh>
+      {/* Sofa: three seats (see SOFA in @study/shared); small cushions on the arms, where cats like to nap */}
       <Box size={[1.2, 0.45, 3]} position={[-9.2, 0.225, 4.1]} color="#6f80d6" />
       <Box size={[0.3, 0.6, 3]} position={[-9.65, 0.7, 4.1]} color="#6f80d6" />
-      {[3.3, 4.9].map((z) => (
-        <Box key={z} size={[0.22, 0.38, 0.55]} position={[-9.4, 0.65, z]} color="#f2c46d" />
+      {[2.75, 5.45].map((z) => (
+        <Box key={z} size={[1.2, 0.18, 0.2]} position={[-9.2, 0.54, z]} color="#5d6ec4" />
       ))}
-      <mesh position={[-7.6, 0.45, 4.1]} castShadow>
+      <mesh position={[COFFEE_TABLE.x, 0.45, COFFEE_TABLE.z]} castShadow>
         <cylinderGeometry args={[0.45, 0.45, 0.05, 24]} />
         <meshStandardMaterial color="#b98a5e" />
       </mesh>
-      <mesh position={[-7.6, 0.22, 4.1]}>
+      <mesh position={[COFFEE_TABLE.x, 0.22, COFFEE_TABLE.z]}>
         <cylinderGeometry args={[0.05, 0.05, 0.45, 8]} />
         <meshStandardMaterial color="#6b4a33" />
       </mesh>

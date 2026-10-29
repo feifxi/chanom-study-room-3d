@@ -16,7 +16,7 @@ import type { LocalMotion } from './Avatar';
 import type { StudyRoom } from './roomSession';
 
 /** What pressing E would do right now. */
-export type Hint = { kind: 'seat'; seatId: string } | { kind: 'pet' | 'talk'; npcId: string; name: string } | { kind: 'machine' };
+export type Hint = { kind: 'seat'; seatId: string } | { kind: 'pet'; npcId: string; name: string } | { kind: 'machine' };
 
 export interface OrbitTarget {
   target: THREE.Vector3;
@@ -41,31 +41,30 @@ const STAND_RETRY_MS = 400;
 const localPlayer = (room: StudyRoom): PlayerView | undefined => room.state.players?.get(room.sessionId);
 
 /**
- * What E would do at (x, z): friends first, then the Buddy Machine, then the
- * nearest free seat. Pure, so it's easy to reason about (and test).
+ * What E would do at (x, z): the closest thing in reach wins, whether it's a cat
+ * to pet, the Buddy Machine or a free seat. A cat already following you is
+ * skipped, so it can't stand between you and a chair. Pure, so it's easy to test.
  */
 export function findHint(room: StudyRoom, x: number, z: number): Hint | null {
   let best: Hint | null = null;
-  let bestD = NPC_REACH;
-  for (const [id, n] of room.state.npcs ?? []) {
-    const d = Math.hypot(n.x - x, n.z - z);
-    if (d < bestD) {
+  let bestD = Infinity;
+  const consider = (hint: Hint, d: number, reach: number) => {
+    if (d < reach && d < bestD) {
       bestD = d;
-      best = { kind: n.kind === 'cat' ? 'pet' : 'talk', npcId: id, name: n.name };
+      best = hint;
     }
+  };
+
+  for (const [id, n] of room.state.npcs ?? []) {
+    if (n.kind !== 'cat' || n.following === room.sessionId) continue;
+    consider({ kind: 'pet', npcId: id, name: n.name }, Math.hypot(n.x - x, n.z - z), NPC_REACH);
   }
-  if (best) return best;
-  if (Math.hypot(GACHA_MACHINE.x - x, GACHA_MACHINE.z - z) < GACHA_MACHINE.reach) return { kind: 'machine' };
+  consider({ kind: 'machine' }, Math.hypot(GACHA_MACHINE.x - x, GACHA_MACHINE.z - z), GACHA_MACHINE.reach);
 
   const taken = new Set<string>();
   for (const [, o] of room.state.players ?? []) if (o.seatId) taken.add(o.seatId);
-  bestD = SIT_REACH * 0.8;
   for (const s of SEATS) {
-    const d = Math.hypot(s.x - x, s.z - z);
-    if (d < bestD && !taken.has(s.id)) {
-      bestD = d;
-      best = { kind: 'seat', seatId: s.id };
-    }
+    if (!taken.has(s.id)) consider({ kind: 'seat', seatId: s.id }, Math.hypot(s.x - x, s.z - z), SIT_REACH * 0.8);
   }
   return best;
 }
@@ -80,6 +79,7 @@ export class LocalPlayerDriver {
   hint: Hint | null = null;
   private hintKey = '';
   private synced = false;
+  private wasSeated = false;
   private standSentAt = 0;
   private lastSent = { at: 0, x: 0, z: 0, yaw: 0, moving: false };
   private fwd = new THREE.Vector3();
@@ -99,7 +99,6 @@ export class LocalPlayerDriver {
     const h = this.hint;
     if (localPlayer(this.room)?.seatId) this.room.send('stand', {});
     else if (h?.kind === 'pet') this.room.send('npc:pet', { id: h.npcId });
-    else if (h?.kind === 'talk') this.room.send('npc:talk', { id: h.npcId });
     else if (h?.kind === 'machine') return 'openMachine';
     else if (h?.kind === 'seat') this.room.send('sit', { seatId: h.seatId });
   }
@@ -126,6 +125,9 @@ export class LocalPlayerDriver {
     }
 
     const [ix, iz] = this.input();
+    // Just stood up: the server moved us to the seat's stand-up spot, so start from there
+    if (this.wasSeated && !p.seatId) Object.assign(m, { x: p.x, z: p.z });
+    this.wasSeated = !!p.seatId;
     if (p.seatId) this.staySeated(p, ix || iz);
     else this.walk(p, ix, iz, dt, camera);
 

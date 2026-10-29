@@ -3,7 +3,8 @@
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { GACHA_MACHINE, SPIN_REVEAL_MS, type GachaSpun } from '@study/shared';
+import { GACHA_MACHINE, SUMMON_REVEAL_MS } from '@study/shared';
+import type { Summon } from '../room/roomSession';
 
 // Muted pastels so the machine blends in with the library
 const CAPSULE_COLORS = ['#e9a9c2', '#a9cde3', '#e8d49a', '#b7d6b0', '#c9b8e3', '#e8c0a6'];
@@ -28,10 +29,10 @@ function Box({
 }
 
 /**
- * The Buddy Machine: a pastel capsule-toy machine. When anyone spins it, the knob
+ * The Buddy Machine: a pastel capsule-toy machine. When anyone summons a friend, the knob
  * turns, a capsule drops out, rolls forward and pops open just as the NPC appears.
  */
-export function GachaMachine({ lastSpin }: { lastSpin: (GachaSpun & { at: number }) | undefined }) {
+export function GachaMachine({ lastSummon }: { lastSummon: Summon | undefined }) {
   const knob = useRef<THREE.Group>(null);
   const dome = useRef<THREE.Group>(null);
   const capsule = useRef<THREE.Group>(null);
@@ -50,15 +51,15 @@ export function GachaMachine({ lastSpin }: { lastSpin: (GachaSpun & { at: number
     [],
   );
 
-  const capsuleColor = lastSpin?.rare ? '#ffcf3f' : lastSpin?.kind === 'buddy' ? '#8fd3ff' : '#ff8fc0';
+  const capsuleColor = lastSummon?.kind === 'buddy' ? '#a9cde3' : '#e9a9c2';
 
   useFrame(() => {
-    const since = lastSpin ? (Date.now() - lastSpin.at) / 1000 : Infinity;
-    const reveal = SPIN_REVEAL_MS / 1000;
+    const since = lastSummon ? (Date.now() - lastSummon.at) / 1000 : Infinity;
+    const reveal = SUMMON_REVEAL_MS / 1000;
 
     // Knob: two full turns during the first 0.8 s
     if (knob.current) knob.current.rotation.z = since < 0.8 ? -(since / 0.8) * Math.PI * 4 : 0;
-    // Capsules jiggle in the dome while it spins
+    // Capsules jiggle in the dome while it turns
     if (dome.current) dome.current.rotation.y = since < 0.9 ? Math.sin(since * 40) * 0.08 : 0;
 
     const c = capsule.current;

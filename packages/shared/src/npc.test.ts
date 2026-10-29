@@ -1,21 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CAT_COATS, NPC_RADIUS, npcRadius, parseJson, rollCoat } from './npc';
+import { NPC_RADIUS, npcRadius, parseJson } from './npc';
 import { sanitizeLook, DEFAULT_LOOK } from './avatar';
-
-describe('rollCoat', () => {
-  it('maps the whole random range onto coats', () => {
-    expect(rollCoat(() => 0).id).toBe(CAT_COATS[0]!.id);
-    expect(rollCoat(() => 0.999999).id).toBe(CAT_COATS.at(-1)!.id);
-  });
-
-  it('makes the golden cat rare (about 5%)', () => {
-    let golden = 0;
-    const n = 20_000;
-    for (let i = 0; i < n; i++) if (rollCoat().rare) golden++;
-    expect(golden / n).toBeGreaterThan(0.03);
-    expect(golden / n).toBeLessThan(0.07);
-  });
-});
 
 describe('parseJson', () => {
   it('parses valid JSON', () => expect(parseJson('{"coat":"grey"}', {})).toEqual({ coat: 'grey' }));
@@ -36,5 +21,29 @@ describe('sanitizeLook', () => {
   it('replaces anything unknown with defaults', () => {
     expect(sanitizeLook({ hair: 'javascript:alert(1)', outfit: 42, accessory: 'crown' })).toEqual(DEFAULT_LOOK);
     expect(sanitizeLook(null)).toEqual(DEFAULT_LOOK);
+  });
+});
+
+describe('seats', () => {
+  it('lets people sit on the sofa, standing up in front of it', async () => {
+    const { SEATS, SOFA } = await import('./layout');
+    const { isWalkable } = await import('./navigation');
+    const sofa = SEATS.filter((s) => s.kind === 'sofa');
+    expect(sofa.length).toBeGreaterThan(0);
+    for (const s of sofa) {
+      expect(s.x).toBeGreaterThan(SOFA.minX);
+      expect(s.x).toBeLessThan(SOFA.maxX);
+      expect(isWalkable(s.out)).toBe(true);
+    }
+  });
+
+  it('has a walkable stand-up spot for every seat', async () => {
+    const { SEATS } = await import('./layout');
+    const { isWalkable, nearestWalkable } = await import('./navigation');
+    for (const s of SEATS) {
+      const out = nearestWalkable(s.out);
+      expect(isWalkable(out)).toBe(true);
+      expect(Math.hypot(out.x - s.out.x, out.z - s.out.z)).toBeLessThan(0.5);
+    }
   });
 });

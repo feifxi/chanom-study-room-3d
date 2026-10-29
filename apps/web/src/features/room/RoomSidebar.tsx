@@ -1,50 +1,23 @@
 'use client';
 
-import { useState } from 'react';
 import type { PlayerView } from '@study/shared';
 import { useNow } from '@/lib/time';
 import { STATUS_ICON } from '../focus/status';
 import { TodoPanel } from '../todo/TodoPanel';
 import { formatMinutes } from '../stats/useStats';
+import { IconRail, RAIL_ICONS } from './hud/IconRail';
 import type { StudyRoom } from './roomSession';
 
-type Tab = 'todo' | 'ranks' | 'help';
-
-/** Toolbar under the room header that opens one small panel at a time. */
+/** The left rail: your to-do list, today's ranking in this room, and help. */
 export function RoomSidebar({ room }: { room: StudyRoom }) {
-  const [tab, setTab] = useState<Tab | null>(null);
-  const tabs: { id: Tab; label: string }[] = [
-    { id: 'todo', label: '📝 To-do' },
-    { id: 'ranks', label: '🏆 Today' },
-    { id: 'help', label: '❔' },
-  ];
   return (
-    <div className="absolute top-20 left-4 flex w-72 flex-col gap-2">
-      <div className="flex gap-1.5">
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(tab === t.id ? null : t.id)}
-            className={`rounded-full border px-3 py-1 text-xs font-bold whitespace-nowrap shadow-sm ${tab === t.id ? 'border-accent bg-accent text-white' : 'border-line bg-white/90'}`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-      {/* The to-do panel stays mounted so a half-typed item survives switching tabs */}
-      <div className={tab === 'todo' ? '' : 'hidden'}>
-        <TodoPanel />
-      </div>
-      {tab === 'ranks' && <RanksPanel room={room} />}
-      {tab === 'help' && (
-        <div className="panel p-3 text-xs leading-relaxed text-muted">
-          WASD / arrows to walk · Shift to run · E to sit/stand · Enter to chat · drag to orbit · scroll to zoom
-          <br />
-          Turn your mic on at the bottom right; the closer people stand, the louder they are. Sit at a table to share your screen with that
-          table.
-        </div>
-      )}
-    </div>
+    <IconRail
+      items={[
+        { id: 'todo', icon: RAIL_ICONS.todo, label: 'To-do', keepMounted: true, render: () => <TodoPanel /> },
+        { id: 'ranks', icon: RAIL_ICONS.ranks, label: 'Focus today', render: () => <RanksPanel room={room} /> },
+        { id: 'help', icon: RAIL_ICONS.help, label: 'How to play', render: () => <HelpPanel /> },
+      ]}
+    />
   );
 }
 
@@ -55,9 +28,9 @@ function RanksPanel({ room }: { room: StudyRoom }) {
   room.state.players?.forEach((p, id) => rows.push({ ...p, id, name: p.name, todayMin: p.todayMin, status: p.status }));
   rows.sort((a, b) => b.todayMin - a.todayMin);
   return (
-    <div className="panel flex flex-col gap-2 p-3">
-      <span className="text-xs font-extrabold tracking-wider text-muted uppercase">Focus today in this room</span>
-      <ol className="flex max-h-64 flex-col gap-1 overflow-y-auto text-sm">
+    <div className="panel flex flex-col gap-3 p-4">
+      <h2 className="text-sm font-extrabold">Focus today</h2>
+      <ol className="flex max-h-64 flex-col gap-1.5 overflow-y-auto text-sm">
         {rows.map((r, i) => (
           <li key={r.id} className={`flex items-center gap-2 ${r.id === room.sessionId ? 'font-bold' : ''}`}>
             <span className="w-5 text-center">{['🥇', '🥈', '🥉'][i] ?? i + 1}</span>
@@ -70,6 +43,32 @@ function RanksPanel({ room }: { room: StudyRoom }) {
         ))}
       </ol>
       <p className="text-[11px] text-muted">Counts finished focus stretches of 1 minute or more.</p>
+    </div>
+  );
+}
+
+const KEYS: [string, string][] = [
+  ['WASD / arrows', 'Walk (Shift to run)'],
+  ['E', 'Sit or stand, pet a cat, use the Buddy Machine'],
+  ['Enter', 'Chat'],
+  ['Drag / scroll', 'Turn the camera / zoom'],
+];
+
+function HelpPanel() {
+  return (
+    <div className="panel flex flex-col gap-3 p-4">
+      <h2 className="text-sm font-extrabold">How to play</h2>
+      <dl className="flex flex-col gap-2 text-xs">
+        {KEYS.map(([k, v]) => (
+          <div key={k} className="flex items-start gap-2">
+            <dt className="flex-none rounded-md border border-line bg-soft px-1.5 py-0.5 font-mono font-bold">{k}</dt>
+            <dd className="pt-0.5 text-muted">{v}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="text-xs leading-relaxed text-muted">
+        Turn your mic on in the dock: the closer people stand, the louder they are. Sit at a table to share your screen with that table.
+      </p>
     </div>
   );
 }

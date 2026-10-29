@@ -120,8 +120,8 @@ export function LabelLayer({ board, ids, players, localId, bubbles, voice, clock
             </div>
             {talking && <SpeechBubble bubble={bubble} now={now} />}
             <div
-              className={`rounded-full px-2 py-0.5 text-[11px] font-bold whitespace-nowrap shadow-sm ${
-                isLocal ? 'bg-accent text-white' : 'bg-white/90 text-ink'
+              className={`rounded-lg px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-white shadow-sm ${
+                isLocal ? 'bg-accent' : 'bg-navy/85'
               } ${voice.speaking.has(id) ? 'speaking' : ''}`}
             >
               {/* Mic: bright while speaking, faded when on but quiet */}
@@ -159,7 +159,7 @@ export function LabelLayer({ board, ids, players, localId, bubbles, voice, clock
           >
             <Emotes target={key} reactions={reactions} />
             <SpeechBubble bubble={bubbles[key]} now={now} />
-            <div className="flex items-center gap-1 rounded-full border border-[#ffd0e4] bg-[#fff7fb]/95 px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-ink shadow-sm">
+            <div className="flex items-center gap-1 rounded-lg bg-lavender/95 px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-lavender-ink shadow-sm">
               <span>{icon}</span>
               {npc.name}
               {npc.kind === 'buddy' && npc.status === 'focus' && (
@@ -167,7 +167,7 @@ export function LabelLayer({ board, ids, players, localId, bubbles, voice, clock
                   · {minutesSince(npc.focusSince, serverNow)}m{npc.subject && ` · ${npc.subject}`}
                 </span>
               )}
-              <span className="rounded bg-[#ffd0e4] px-1 text-[9px] tracking-wide text-accent-ink">NPC</span>
+              <span className="rounded bg-white/80 px-1 text-[9px] tracking-wide">NPC</span>
             </div>
           </div>
         );

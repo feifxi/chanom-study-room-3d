@@ -1,4 +1,4 @@
-import type { GachaSpun, NpcKind, Point } from '@study/shared';
+import type { NpcKind, NpcSummoned, Point } from '@study/shared';
 import type { Npc, StudyState } from '../state';
 
 /** What the NPC code needs from its room. */
@@ -10,7 +10,7 @@ export interface NpcHost {
   react(npcId: string, emote: string): void;
   /** A system line in the room chat. */
   announce(text: string): void;
-  spun(event: GachaSpun): void;
+  summoned(event: NpcSummoned): void;
 }
 
 /** Server-only behaviour state for one NPC (never synced to clients). */
@@ -21,10 +21,8 @@ export interface Brain {
   until: number;
   /** What to do on arrival. */
   arrive?: () => void;
-  followId?: string;
   stuckFor: number;
   repaths: number;
-  lastSay: number;
   // Study buddy only
   phase: 'focus' | 'break';
   phaseEndsAt: number;
@@ -50,6 +48,3 @@ export const SPEED = { cat: 0.9, catFollow: 2.1, buddy: 1.9 } as const;
 
 export const rand = Math.random;
 export const between = (a: number, b: number) => a + rand() * (b - a);
-
-/** An NPC's settings JSON. The director only ever writes sanitised settings, so this can't fail in practice. */
-export const readSettings = <T>(npc: Npc): T => JSON.parse(npc.settings) as T;

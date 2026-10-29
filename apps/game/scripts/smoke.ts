@@ -11,10 +11,10 @@ import {
   ROOM_NAME,
   SEATS,
   SEAT_BY_ID,
-  SPIN_COOLDOWN_MS,
-  SPIN_REVEAL_MS,
+  SUMMON_COOLDOWN_MS,
+  SUMMON_REVEAL_MS,
   type ChatMessage,
-  type GachaSpun,
+  type NpcSummoned,
   type NpcView,
   type RoomListing,
   type StudyStateView,
@@ -155,40 +155,36 @@ check('voice token is issued for this room and session', grant?.video?.room === 
   );
 
   const errors: string[] = [];
-  const spun: GachaSpun[] = [];
+  const spun: NpcSummoned[] = [];
   const announcements: string[] = [];
   const reactions: { npcId: string; emote: string }[] = [];
-  a.onMessage('gacha:error', (m: { message: string }) => errors.push(m.message));
-  a.onMessage('gacha:spun', (m: GachaSpun) => spun.push(m));
+  a.onMessage('npc:error', (m: { message: string }) => errors.push(m.message));
+  a.onMessage('npc:summoned', (m: NpcSummoned) => spun.push(m));
   a.onMessage('npc:react', (m: { npcId: string; emote: string }) => reactions.push(m));
   b.onMessage('chat', () => {});
   a.onMessage('chat', (m: ChatMessage) => m.system && announcements.push(m.text));
 
   if (me(a).seatId) a.send('stand', {});
   await sleep(200);
-  a.send('gacha:spin', { kind: 'cat' });
+  a.send('npc:summon', { kind: 'cat' });
   await sleep(300);
-  check('spinning from across the room is refused', errors.length === 1 && spun.length === 0, errors[0]);
+  check('summoning from across the room is refused', errors.length === 1 && spun.length === 0, errors[0]);
 
   await walkTo(a, GACHA_MACHINE.x + 1.1, GACHA_MACHINE.z + 0.6);
   const before = npcs().size;
-  a.send('gacha:spin', { kind: 'cat' });
+  a.send('npc:summon', { kind: 'cat' });
   await sleep(300);
-  check('spin announces the capsule to everyone first', spun.length === 1 && npcs().size === before, spun[0]?.label);
-  a.send('gacha:spin', { kind: 'cat' });
+  check('a summon shows the capsule to everyone first', spun.length === 1 && npcs().size === before, spun[0]?.label);
+  a.send('npc:summon', { kind: 'cat' });
   await sleep(300);
-  check('a second spin right away hits the cooldown', errors.length === 2, errors[1]);
-  await sleep(SPIN_REVEAL_MS + 300);
+  check('a second summon right away hits the cooldown', errors.length === 2, errors[1]);
+  await sleep(SUMMON_REVEAL_MS + 300);
   const catId = spun[0]?.npcId ?? '';
   check(
     'the NPC appears after the reveal, with a chat announcement',
     npcs().has(catId) && announcements.some((t) => t.includes('summoned')),
     announcements.at(-1),
   );
-
-  a.send('npc:update', { id: catId, name: '  Captain Fluff  ' });
-  await sleep(300);
-  check('anyone can rename an NPC', npcs().get(catId)?.name === 'Captain Fluff');
 
   const cat = npcs().get(catId);
   if (cat) await walkTo(a, cat.x + 0.5, cat.z + 0.5);
@@ -200,10 +196,10 @@ check('voice token is issued for this room and session', grant?.video?.room === 
   );
 
   // Study buddy: summon, wait for it to find a seat, then take that seat
-  await sleep(SPIN_COOLDOWN_MS);
+  await sleep(SUMMON_COOLDOWN_MS);
   await walkTo(a, GACHA_MACHINE.x + 1.1, GACHA_MACHINE.z + 0.6);
-  a.send('gacha:spin', { kind: 'buddy' });
-  await sleep(SPIN_REVEAL_MS + 400);
+  a.send('npc:summon', { kind: 'buddy' });
+  await sleep(SUMMON_REVEAL_MS + 400);
   const buddyId = spun.at(-1)?.npcId ?? '';
   let buddy: NpcView | undefined;
   for (let i = 0; i < 40; i++) {
@@ -246,7 +242,7 @@ const roomNews: string[] = [];
 // Room objects keep only the last handler per type, so wrap whatever chat handler is there
 for (const r of rooms) r.onMessage('chat', (m: ChatMessage) => m.system && roomNews.push(m.text));
 const late = await join('late');
-await sleep(300);
+await sleep(1300); // joins are announced after a second
 check('players onAdd fires on join', added > 0);
 check(
   'a join shows up in chat',

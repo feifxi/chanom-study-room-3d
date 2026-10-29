@@ -30,9 +30,9 @@ export function TodoPanel() {
 
   const left = todos.filter((t) => !t.done).length;
   return (
-    <div className="panel flex flex-col gap-2 p-3">
+    <div className="panel flex flex-col gap-3 p-4">
       <div className="flex items-baseline justify-between">
-        <span className="text-xs font-extrabold tracking-wider text-muted uppercase">To-do</span>
+        <h2 className="text-sm font-extrabold">To-do</h2>
         <span className="text-xs text-muted">{todos.length ? `${left} of ${todos.length} left` : 'Only you can see this'}</span>
       </div>
       <form

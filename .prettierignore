@@ -5,3 +5,5 @@ pnpm-lock.yaml
 packages/db/drizzle
 apps/web/next-env.d.ts
 *.tsbuildinfo
+apps/web/test-results
+apps/web/playwright-report

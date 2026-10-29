@@ -2,11 +2,11 @@
 
 import { useEffect, useReducer } from 'react';
 import { Callbacks, Client } from '@colyseus/sdk';
-import { ROOM_NAME, type ChatMessage, type GachaSpun, type JoinOptions } from '@study/shared';
+import { ROOM_NAME, type ChatMessage, type NpcSummoned, type JoinOptions } from '@study/shared';
 import { GAME_URL } from '@/lib/config';
 import { REACTION_MS, initialSession, sessionReducer, type StudyRoom } from './roomSession';
 
-const GACHA_ERROR_MS = 3500;
+const SUMMON_ERROR_MS = 3500;
 const BUBBLE_SWEEP_MS = 500;
 
 /** The two synced collections we list in React. Colyseus' typings expect Schema classes, so we describe just what we use. */
@@ -74,10 +74,10 @@ export function useStudyRoom(roomId: string | null, getOptions: () => JoinOption
         dispatch({ type: 'react', key, ...m });
         later(REACTION_MS, () => dispatch({ type: 'reactionDone', key }));
       });
-      r.onMessage('gacha:spun', (spin: GachaSpun) => dispatch({ type: 'spun', spin, now: Date.now() }));
-      r.onMessage('gacha:error', (m: { message: string }) => {
-        dispatch({ type: 'gachaError', message: m.message });
-        later(GACHA_ERROR_MS, () => dispatch({ type: 'gachaError', message: null }));
+      r.onMessage('npc:summoned', (summon: NpcSummoned) => dispatch({ type: 'summoned', summon, now: Date.now() }));
+      r.onMessage('npc:error', (m: { message: string }) => {
+        dispatch({ type: 'summonError', message: m.message });
+        later(SUMMON_ERROR_MS, () => dispatch({ type: 'summonError', message: null }));
       });
 
       // Clock sync: assume the reply was stamped halfway through the round trip

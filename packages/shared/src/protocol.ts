@@ -31,13 +31,11 @@ export interface ClientMessages {
   /** Ask for a LiveKit token for this room (answered with `voice:token`). */
   'voice:token': Record<string, never>;
   /** Buddy Machine: summon a new NPC (must be standing at the machine). */
-  'gacha:spin': { kind: NpcKind };
-  /** Rename an NPC or change its settings (anyone can). */
-  'npc:update': { id: string; name?: string; settings?: Record<string, unknown> };
+  'npc:summon': { kind: NpcKind };
+  /** Say goodbye: the NPC walks back into the machine (anyone can). */
   'npc:remove': { id: string };
-  /** Pet a cat / talk to a buddy you're standing next to. */
+  /** Pet a cat you're standing next to. */
   'npc:pet': { id: string };
-  'npc:talk': { id: string };
 }
 
 /** Server → client broadcast messages (not part of synced state). */
@@ -48,8 +46,9 @@ export interface ServerMessages {
   'voice:token': { url: string; token: string };
   'npc:say': { npcId: string; text: string };
   'npc:react': { npcId: string; emote: string };
-  'gacha:spun': import('./npc').GachaSpun;
-  'gacha:error': { message: string };
+  'npc:summoned': import('./npc').NpcSummoned;
+  /** Why your summon was refused (sent only to you). */
+  'npc:error': { message: string };
 }
 
 export interface ChatMessage {
