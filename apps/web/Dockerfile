@@ -15,10 +15,11 @@ RUN pnpm --filter @study/web build
 FROM node:24-bookworm-slim AS run
 ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0 NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app
+# Static files (the lo-fi music) aren't part of Next's standalone output. Copied first: they rarely
+# change, so this layer stays cached and ECR already has it on most deploys.
+COPY apps/web/public ./apps/web/public
 COPY --from=build /repo/apps/web/.next/standalone ./
 COPY --from=build /repo/apps/web/.next/static ./apps/web/.next/static
-# Static files (the lo-fi music) aren't part of Next's standalone output
-COPY --from=build /repo/apps/web/public ./apps/web/public
 USER node
 EXPOSE 3000
 CMD ["node", "apps/web/server.js"]
