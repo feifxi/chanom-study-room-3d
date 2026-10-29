@@ -21,11 +21,28 @@ git diff --quiet HEAD || TAG="$TAG-dirty-$(date +%Y%m%d%H%M%S)"
 
 echo "==> Building and pushing images ($TAG)"
 aws ecr get-login-password | docker login --username AWS --password-stdin "$REGISTRY_HOST" >/dev/null
-docker build --platform linux/arm64 -f apps/game/Dockerfile -t "$REGISTRY_HOST/chanom/game:$TAG" .
-docker build --platform linux/arm64 -f apps/web/Dockerfile --build-arg "NEXT_PUBLIC_GAME_URL=https://game.$DOMAIN" \
-  -t "$REGISTRY_HOST/chanom/web:$TAG" .
-docker push --quiet "$REGISTRY_HOST/chanom/game:$TAG"
-docker push --quiet "$REGISTRY_HOST/chanom/web:$TAG"
+
+# Safe to re-run: an image already in ECR is skipped (tags are immutable), and pushes are retried,
+# because a large upload can drop on a flaky connection
+build_and_push() { # <name> [docker build args...]
+  local name=$1 image="$REGISTRY_HOST/chanom/$1:$TAG"
+  shift
+  if aws ecr describe-images --repository-name "chanom/$name" --image-ids "imageTag=$TAG" >/dev/null 2>&1; then
+    echo "    chanom/$name:$TAG is already in ECR, skipping"
+    return
+  fi
+  # No provenance/SBOM attestations: one manifest per image keeps ECR's image count and lifecycle simple
+  docker build --platform linux/arm64 --provenance=false --sbom=false -f "apps/$name/Dockerfile" -t "$image" "$@" .
+  for attempt in 1 2 3; do
+    echo "    pushing chanom/$name:$TAG (attempt $attempt)"
+    if docker push --quiet "$image"; then return; fi
+    sleep 5
+  done
+  echo "Push of chanom/$name failed 3 times; check your connection and run pnpm infra:up again"
+  exit 1
+}
+build_and_push game
+build_and_push web --build-arg "NEXT_PUBLIC_GAME_URL=https://game.$DOMAIN"
 
 echo "==> Uploading configs"
 # The bundle mirrors the repo layout, so relative paths in the compose file work the same on the host
