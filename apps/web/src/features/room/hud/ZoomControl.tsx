@@ -6,10 +6,10 @@ import { Minus, Plus } from 'lucide-react';
 import type * as THREE from 'three';
 
 /**
- * Camera zoom that reads as 100% (the starting view; was 62, people preferred 140% of that).
- * Min/max match the OrbitControls limits: zoom out as far as before, and in a bit closer.
+ * Camera zoom that reads as 100% (the starting view). Started at 62; people preferred 140% of
+ * that (87), then 120% of that (104). Min/max match the OrbitControls limits.
  */
-export const ZOOM = { base: 87, min: 32, max: 210, step: 1.2 } as const;
+export const ZOOM = { base: 104, min: 32, max: 210, step: 1.2 } as const;
 
 type Box<T> = { current: T };
 
