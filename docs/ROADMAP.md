@@ -85,13 +85,14 @@ month at this size). A 3-day playtest costs about $6.
 - [ ] First real run: bootstrap apply → NS records at Namecheap → `infra:up` → playtest checks →
       `infra:down` → confirm nothing billable is left.
 
-### 11.4 Deploys (optional for playtests)
+### 11.4 Deploys ✅ (2026-10-29)
 
-- [ ] Later, once the repo is on GitHub: on `main`, run `pnpm check` + e2e, build arm64 images, push to ECR using
-      **OIDC** (no stored AWS keys), then deploy with SSM Run Command
-      (`docker compose pull && docker compose up -d`). Migrations already run when the game boots.
-- [ ] Check: a commit to `main` reaches production in minutes; a bad deploy can be rolled back to
-      the previous image tag.
+- [x] `pnpm infra:deploy` for code-only changes (no Terraform); `infra:up` applies and then deploys.
+- [x] CD: after `check` and `e2e` pass on `main`, GitHub Actions deploys on a native arm64 runner
+      using OIDC (no stored AWS keys), skips when the stack is down, and fails if the site isn't
+      healthy afterwards. Setup in [infra/README.md](../infra/README.md#continuous-deployment).
+- [ ] Rollback is "deploy the previous commit" (Actions → Run workflow, or `TAG=<old> pnpm infra:deploy`
+      when that image is still in ECR).
 
 ### 11.5 Observability in production
 

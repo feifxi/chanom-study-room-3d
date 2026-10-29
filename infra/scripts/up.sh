@@ -12,4 +12,10 @@ export AWS_DEFAULT_REGION=ap-southeast-7
 $TF init -input=false >/dev/null
 $TF apply
 
-exec bash infra/scripts/deploy.sh
+bash infra/scripts/deploy.sh
+
+DOMAIN=$($TF output -json urls | python3 -c "import json,sys; print(json.load(sys.stdin)['app'].removeprefix('https://'))")
+echo "    Passwords: terraform -chdir=infra/terraform/app output -json passwords"
+echo "    First apply? Click the confirmation link in the SNS email from AWS to get alarm emails."
+echo "    Name servers the internet sees for $DOMAIN (must match: terraform -chdir=infra/terraform/app output name_servers):"
+dig +short NS "$DOMAIN" | sed 's/^/      /'

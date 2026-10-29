@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch: # run manually, e.g. to redeploy right after `pnpm infra:up`
+
+# One deploy at a time; a newer push waits instead of cancelling a deploy halfway through
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:
@@ -40,3 +46,29 @@ jobs:
         with:
           name: playwright-report
           path: apps/web/playwright-report
+
+  # Continuous deployment: after check and e2e pass on main, ship to the playtest stack if it's up.
+  # Credentials come from GitHub's OIDC token (no AWS keys stored here); set the repository variable
+  # AWS_DEPLOY_ROLE_ARN to the bootstrap output github_deploy_role_arn to turn this on.
+  deploy:
+    needs: [check, e2e]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.AWS_DEPLOY_ROLE_ARN != ''
+    runs-on: ubuntu-24.04-arm # native arm64, same as the server: no emulation
+    environment: playtest
+    concurrency:
+      group: deploy-playtest
+      cancel-in-progress: false
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-southeast-7
+      # Builds and pushes the images, syncs configs, restarts over SSM and checks the site.
+      # Exits successfully without doing anything when the stack is down.
+      - run: bash infra/scripts/deploy.sh --skip-if-down
+        env:
+          TAG: ${{ github.sha }}

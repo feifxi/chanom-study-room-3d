@@ -38,3 +38,16 @@ resource "aws_s3_bucket_public_access_block" "bundle" {
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
+
+# Where to deploy, for infra/scripts/deploy.sh and the CD workflow (not secret). Its absence means
+# the stack is down, so CD skips instead of failing.
+resource "aws_ssm_parameter" "deploy_config" {
+  name = "/chanom/deploy/config"
+  type = "String"
+  value = jsonencode({
+    registry    = local.registry
+    bucket      = aws_s3_bucket.bundle.bucket
+    instance_id = aws_instance.host.id
+    domain      = var.domain
+  })
+}

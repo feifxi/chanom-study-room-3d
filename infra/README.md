@@ -15,10 +15,10 @@ Local development dependencies are in [`compose.yaml`](../compose.yaml) at the r
 
 Two roots:
 
-| Root                        | Lifetime                           | What                                                                           |
-| --------------------------- | ---------------------------------- | ------------------------------------------------------------------------------ |
-| `infra/terraform/bootstrap` | once, forever (free)               | Route 53 reusable delegation set: four name servers that never change          |
-| `infra/terraform/app`       | per playtest: `up` → play → `down` | VPC, EC2 host, RDS, ECR, S3 bundle, Route 53 zone, SSM secrets, alarms, budget |
+| Root                        | Lifetime                           | What                                                                                   |
+| --------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------- |
+| `infra/terraform/bootstrap` | once, forever (free)               | Route 53 reusable delegation set (stable name servers) and the GitHub OIDC deploy role |
+| `infra/terraform/app`       | per playtest: `up` → play → `down` | VPC, EC2 host, RDS, ECR, S3 bundle, Route 53 zone, SSM secrets, alarms, budget         |
 
 State is local and git-ignored (it contains the generated passwords). Region `ap-southeast-7`,
 AWS credentials from the `default` profile. Costs and reasoning: [docs/ROADMAP.md](../docs/ROADMAP.md).
@@ -62,6 +62,27 @@ After `up`:
 To start the next playtest from the last one's data, put the snapshot name that `down` printed into
 `terraform.tfvars` as `restore_snapshot_id`. Delete old snapshots in the RDS console when you no
 longer need them.
+
+## Continuous deployment
+
+Every push to `main` runs CI (`check`, `e2e`) and then the **deploy** job, which runs the same
+`infra/scripts/deploy.sh` as `pnpm infra:deploy` on a native arm64 GitHub runner. When the stack is
+down it finishes without doing anything, so CI stays green between playtests.
+
+- No AWS keys in GitHub: the job exchanges its OIDC token for the `chanom-github-deploy` role
+  (in `bootstrap`), which can only push to `chanom/*` in ECR, write the config bundle, read
+  `/chanom/deploy/config` and run commands on instances tagged `Project=chanom-study-room`.
+- Only jobs in the repository's `playtest` environment can assume the role. Add required
+  reviewers to that environment (Settings → Environments) if you want to approve each deploy.
+- Redeploy on demand: Actions → CI → **Run workflow** on `main`.
+
+One-time setup:
+
+1. `cd infra/terraform/bootstrap && terraform apply` (adds the OIDC provider and the role), then
+   `terraform output github_deploy_role_arn`.
+2. GitHub → Settings → Secrets and variables → Actions → **Variables** → New repository variable
+   `AWS_DEPLOY_ROLE_ARN` = that ARN. (A variable, not a secret: the ARN isn't sensitive.)
+3. `pnpm infra:up` once more so the app stack writes `/chanom/deploy/config`.
 
 ## Checks
 

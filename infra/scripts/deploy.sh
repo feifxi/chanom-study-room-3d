@@ -1,22 +1,36 @@
 #!/usr/bin/env bash
 # Deploy the current code to the running playtest stack: build and push the images, sync the
-# configs, restart the containers over SSM. No Terraform changes; use this after a code change.
-#   pnpm infra:deploy
+# configs, restart the containers over SSM, then check the site is healthy. No Terraform changes.
+#   pnpm infra:deploy                  from this machine
+#   deploy.sh --skip-if-down           from CI: exit 0 (nothing to do) when the stack isn't up
+# Everything it needs comes from the /chanom/deploy/config SSM parameter that the app stack writes,
+# so it works the same here and in GitHub Actions (no Terraform state needed).
 set -euo pipefail
 cd "$(dirname "$0")/../.."
-TF="terraform -chdir=infra/terraform/app"
 export AWS_DEFAULT_REGION=ap-southeast-7
 
-# Outputs only (read-only): fails early if the stack isn't up
-$TF output -raw instance_id >/dev/null 2>&1 || { echo "The stack isn't up. Run pnpm infra:up first."; exit 1; }
+SKIP_IF_DOWN=""
+[ "${1:-}" = "--skip-if-down" ] && SKIP_IF_DOWN=1
 
-REGISTRY_HOST=$($TF output -raw registry)
-BUCKET=$($TF output -raw bundle_bucket)
-INSTANCE=$($TF output -raw instance_id)
-DOMAIN=$($TF output -json urls | python3 -c "import json,sys; print(json.load(sys.stdin)['app'].removeprefix('https://'))")
-# Immutable tag per build: the commit, plus a timestamp when there are uncommitted changes
-TAG=$(git rev-parse --short HEAD)
-git diff --quiet HEAD || TAG="$TAG-dirty-$(date +%Y%m%d%H%M%S)"
+if ! CONFIG=$(aws ssm get-parameter --name /chanom/deploy/config --query Parameter.Value --output text 2>/dev/null); then
+  if [ -n "$SKIP_IF_DOWN" ]; then
+    echo "The playtest stack isn't up (no /chanom/deploy/config); nothing to deploy."
+    exit 0
+  fi
+  echo "The stack isn't up. Run pnpm infra:up first."
+  exit 1
+fi
+cfg() { python3 -c "import json,sys; print(json.loads(sys.argv[1])[sys.argv[2]])" "$CONFIG" "$1"; }
+REGISTRY_HOST=$(cfg registry)
+BUCKET=$(cfg bucket)
+INSTANCE=$(cfg instance_id)
+DOMAIN=$(cfg domain)
+
+# Immutable tag per build: the commit (CI passes TAG), plus a timestamp for uncommitted local changes
+if [ -z "${TAG:-}" ]; then
+  TAG=$(git rev-parse --short HEAD)
+  git diff --quiet HEAD || TAG="$TAG-dirty-$(date +%Y%m%d%H%M%S)"
+fi
 
 echo "==> Building and pushing images ($TAG)"
 aws ecr get-login-password | docker login --username AWS --password-stdin "$REGISTRY_HOST" >/dev/null
@@ -37,7 +51,7 @@ build_and_push() { # <name> [docker build args...]
     if docker push --quiet "$image"; then return; fi
     sleep 5
   done
-  echo "Push of chanom/$name failed 3 times; check your connection and run pnpm infra:up again"
+  echo "Push of chanom/$name failed 3 times; check the connection and deploy again"
   exit 1
 }
 build_and_push game
@@ -50,7 +64,7 @@ aws s3 sync infra/compose "s3://$BUCKET/bundle/infra/compose" --delete --only-sh
 aws s3 sync infra/observability "s3://$BUCKET/bundle/infra/observability" --delete --only-show-errors \
   --exclude "alertmanager/secrets/*" --exclude "*.py" --exclude "README.md"
 
-echo "==> Waiting for the host to finish its first boot"
+echo "==> Waiting for the host to be ready"
 ready=""
 for _ in $(seq 1 60); do
   STATUS=$(aws ssm describe-instance-information --filters "Key=InstanceIds,Values=$INSTANCE" \
@@ -72,12 +86,21 @@ echo "==> Deploying"
 CMD=$(aws ssm send-command --instance-ids "$INSTANCE" --document-name AWS-RunShellScript \
   --parameters "commands=[\"/opt/chanom/deploy.sh $TAG\"]" --timeout-seconds 900 --query Command.CommandId --output text)
 aws ssm wait command-executed --command-id "$CMD" --instance-id "$INSTANCE" || true
+RESULT=$(aws ssm get-command-invocation --command-id "$CMD" --instance-id "$INSTANCE" --query Status --output text)
 aws ssm get-command-invocation --command-id "$CMD" --instance-id "$INSTANCE" \
   --query '{status: Status, output: StandardOutputContent, errors: StandardErrorContent}' --output yaml | tail -20
+[ "$RESULT" = "Success" ] || { echo "The deploy command on the host failed ($RESULT)"; exit 1; }
+
+echo "==> Checking the site"
+healthy=""
+for _ in $(seq 1 30); do
+  if curl -fsS -m 5 "https://game.$DOMAIN/health" >/dev/null 2>&1 && curl -fsS -m 5 -o /dev/null "https://$DOMAIN/"; then
+    healthy=1
+    break
+  fi
+  sleep 5
+done
+[ -n "$healthy" ] || { echo "https://$DOMAIN or its game server isn't healthy 2.5 minutes after the deploy"; exit 1; }
 
 echo
-echo "==> Done. App: https://$DOMAIN · Admin: https://$DOMAIN/admin · Grafana: https://grafana.$DOMAIN"
-echo "    Passwords: terraform -chdir=infra/terraform/app output -json passwords"
-echo "    Name servers the internet sees for $DOMAIN (must match: terraform -chdir=infra/terraform/app output name_servers):"
-dig +short NS "$DOMAIN" | sed 's/^/      /'
-echo "    First apply? Click the confirmation link in the SNS email from AWS to get alarm emails."
+echo "==> Deployed $TAG. App: https://$DOMAIN · Admin: https://$DOMAIN/admin · Grafana: https://grafana.$DOMAIN"
