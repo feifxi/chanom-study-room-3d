@@ -35,30 +35,34 @@ service watched by Grafana. Work in this order; each step ends with something yo
       (2–3 days to a week) and is stopped or destroyed in between.
 - [x] **Alerts:** Alertmanager → Discord webhook. AWS-side alerts (Budgets, CloudWatch) go by
       email, because SNS can't post to Discord without extra glue.
-- [x] **Database:** Postgres in a container on the EC2 host for the playtest, its data on a
-      separate EBS volume that survives `terraform destroy`, plus a nightly `pg_dump` to S3.
-      RDS (+~$4/week) can come later if it's ever needed.
+- [x] **Database: RDS PostgreSQL 17 `db.t4g.micro`** (private subnet, automated backups).
+      Managed backups, CloudWatch/Performance Insights metrics and a production-like setup to
+      practise on. Between playtests it is stopped (storage only) or deleted with a final
+      snapshot and restored on the next `up`.
 
 Cost (on-demand, ap-southeast-7, checked with the AWS Pricing API):
 
-| Item                                      | Price                   | 1 week running | While stopped |
-| ----------------------------------------- | ----------------------- | -------------- | ------------- |
-| EC2 `t4g.medium` (4 GB, app + monitoring) | $0.0382/hour            | $6.42          | $0            |
-| EBS gp3, 30 GB root + 10 GB data          | $0.0864/GB-month        | $0.80          | $0.80         |
-| Public IPv4 (Elastic IP)                  | $0.005/hour             | $0.84          | $0.84         |
-| Route 53 hosted zone                      | $0.50/month             | $0.12          | $0.12         |
-| S3 (state, backups), ECR images           | cents                   | ~$0.10         | ~$0.10        |
-| Data transfer out                         | first 100 GB/month free | ~$0            | $0            |
-| **Total**                                 |                         | **≈ $8.3**     | **≈ $1.9**    |
+| Item                                      | Price                                  | 1 week running | While stopped |
+| ----------------------------------------- | -------------------------------------- | -------------- | ------------- |
+| EC2 `t4g.medium` (4 GB, app + monitoring) | $0.0382/hour                           | $6.42          | $0            |
+| RDS `db.t4g.micro` PostgreSQL, Single-AZ  | $0.023/hour                            | $3.86          | $0            |
+| RDS storage gp3, 20 GB                    | $0.124/GB-month                        | $0.58          | $0.58         |
+| EBS gp3 root, 30 GB                       | $0.0864/GB-month                       | $0.60          | $0.60         |
+| Public IPv4 (Elastic IP)                  | $0.005/hour                            | $0.84          | $0.84         |
+| Route 53 hosted zone                      | $0.50/month                            | $0.12          | $0.12         |
+| S3 (state), ECR images, RDS backups       | cents (backups free up to the DB size) | ~$0.10         | ~$0.10        |
+| Data transfer out                         | first 100 GB/month free                | ~$0            | $0            |
+| **Total**                                 |                                        | **≈ $12.5**    | **≈ $2.2**    |
 
-(RDS `db.t4g.micro` would add $0.023/hour ≈ $3.9/week; `t4g.small` would halve the EC2 cost but
-2 GB is tight with the monitoring stack.) Set the AWS Budget on cost **without** credits so the
+Notes: AWS starts a stopped RDS instance again **after 7 days**, so for longer breaks use
+`infra:down` (final snapshot, then delete; `infra:up` restores it, ~10–15 minutes). `t4g.small`
+would halve the EC2 cost, but 2 GB is tight with the monitoring stack. Set the AWS Budget on cost **without** credits so the
 alert reflects real usage.
 
 ### 11.2 Containers
 
 - [ ] Dockerfiles: `apps/web` (Next standalone) and `apps/game` (tsup bundle), both for arm64.
-- [ ] `docker-compose.prod.yml`: Caddy (TLS + reverse proxy), web, game, Postgres, LiveKit (with
+- [ ] `docker-compose.prod.yml`: Caddy (TLS + reverse proxy), web, game, LiveKit (with
       TURN on 443 for strict networks), and the observability stack.
 - [ ] Caddyfile: `studyroom.chanombude.me` → web, `game.studyroom…` → game (WebSocket),
       `rtc.studyroom…` → LiveKit, `grafana.studyroom…` → Grafana (behind auth).
@@ -66,24 +70,26 @@ alert reflects real usage.
 
 ### 11.3 Terraform (`infra/`), two stacks
 
-**`infra/foundation`**: long-lived, costs ~$1.5/month, rarely changes
+**`infra/foundation`**: long-lived, costs ~$1/month, rarely changes
 
-- [ ] S3 bucket for Terraform state (native locking) and database backups.
+- [ ] S3 bucket for Terraform state (native locking).
 - [ ] Route 53 zone `studyroom.chanombude.me` (its NS go into Namecheap once).
 - [ ] ECR repositories for `web` and `game`.
-- [ ] The Postgres data EBS volume (pinned to one availability zone).
 - [ ] AWS Budget ($20, without credits) and an SNS topic that emails you.
 
 **`infra/app`**: created for a playtest, stopped or destroyed afterwards
 
-- [ ] VPC + public subnet in the data volume's AZ, security group (80/443, LiveKit 7881/tcp + UDP).
-- [ ] EC2 `t4g.medium` + Elastic IP, IAM role (SSM, ECR pull, S3 backups, CloudWatch agent);
-      no SSH, shell through SSM.
+- [ ] VPC: a public subnet (EC2) and two private subnets (RDS needs two AZs); security groups
+      (80/443 and LiveKit 7881/tcp + UDP from anywhere; Postgres only from the EC2 host).
+- [ ] EC2 `t4g.medium` + Elastic IP, IAM role (SSM, ECR pull, CloudWatch agent); no SSH, shell
+      through SSM.
+- [ ] RDS PostgreSQL 17 `db.t4g.micro`, 20 GB gp3, 7-day automated backups, final snapshot on
+      delete; restored from the latest snapshot when the stack comes back.
 - [ ] DNS records in the zone; SSM Parameter Store secrets (`ADMIN_PASSWORD`, LiveKit keys,
-      Discord webhook).
-- [ ] CloudWatch alarms (instance status, CPU, disk) → SNS email.
-- [ ] Scripts: `infra:up`, `infra:stop` / `infra:start` (keep everything, pay ~$1.9/week),
-      `infra:down` (destroy the app stack, keep data and DNS).
+      Discord webhook, database password).
+- [ ] CloudWatch alarms (instance status, CPU, disk; RDS CPU, free storage, connections) → SNS email.
+- [ ] Scripts: `infra:up`, `infra:stop` / `infra:start` (EC2 and RDS stopped, ~$2.2/week; RDS wakes
+      itself after 7 days), `infra:down` (final snapshot, destroy the app stack, keep DNS).
 - [ ] Check: `up` → play → `down` → `up` again keeps the feedback and stats.
 
 ### 11.4 Deploys
