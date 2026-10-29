@@ -2,7 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "types": ["node"],
-    "outDir": "dist"
+    // tsc only typechecks here; tsup builds dist/
+    "noEmit": true
   },
   "include": ["src", "scripts"]
 }
