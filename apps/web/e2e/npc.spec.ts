@@ -1,14 +1,15 @@
 import { expect, test } from '@playwright/test';
 import { GACHA_MACHINE, NPC_SPAWN } from '@study/shared';
-import { enterRoom, walkTo } from './helpers';
+import { enterRoom, roomSnapshot, walkTo } from './helpers';
 
 const npcCount = (page: import('@playwright/test').Page) =>
   page.evaluate(() => (window as unknown as { __study: { room: { state: { npcs: Map<string, unknown> } } } }).__study.room.state.npcs.size);
 
 test('summon a cat at the Buddy Machine, then say goodbye', async ({ page }) => {
   await enterRoom(page);
-  await walkTo(page, NPC_SPAWN.x + 0.3, NPC_SPAWN.z + 0.6);
-  await expect(page.getByText('Press E to open the Buddy Machine')).toBeVisible();
+  // Right in front of the machine, 1 m away: nothing else in the room can be closer
+  await walkTo(page, NPC_SPAWN.x, NPC_SPAWN.z);
+  await expect(page.getByText('Press E to open the Buddy Machine'), JSON.stringify(await roomSnapshot(page))).toBeVisible();
   await page.keyboard.press('e');
 
   const panel = page.getByRole('complementary', { name: 'Buddy Machine' });
@@ -33,8 +34,8 @@ test('summon a cat at the Buddy Machine, then say goodbye', async ({ page }) => 
 
 test('walking away closes the Buddy Machine', async ({ page }) => {
   await enterRoom(page);
-  await walkTo(page, NPC_SPAWN.x + 0.3, NPC_SPAWN.z + 0.6);
-  await expect(page.getByText('Press E to open the Buddy Machine')).toBeVisible();
+  await walkTo(page, NPC_SPAWN.x, NPC_SPAWN.z);
+  await expect(page.getByText('Press E to open the Buddy Machine'), JSON.stringify(await roomSnapshot(page))).toBeVisible();
   await page.keyboard.press('e');
   const panel = page.getByRole('complementary', { name: 'Buddy Machine' });
   await expect(panel).toBeVisible();
