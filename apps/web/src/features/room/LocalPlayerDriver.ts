@@ -262,7 +262,11 @@ export class LocalPlayerDriver {
       this.correction.z -= az;
       if (Math.hypot(this.correction.x, this.correction.z) < 0.005) this.correction = { x: 0, z: 0 };
     }
-    if (this.history.length === 0 && Math.hypot(p.x - m.x, p.z - m.z) > IDLE_SNAP_DISTANCE) this.jumpTo(p);
+    // Out of sync only if nothing is in flight *and* nothing is waiting to be sent: a position we moved
+    // to since the last send (a long frame, or the test helper) goes out this frame, so it isn't drift
+    const ls = this.lastSent;
+    const unsent = Math.abs(ls.x - m.x) > 0.01 || Math.abs(ls.z - m.z) > 0.01;
+    if (this.history.length === 0 && !unsent && Math.hypot(p.x - m.x, p.z - m.z) > IDLE_SNAP_DISTANCE) this.jumpTo(p);
   }
 
   /** Take the server's position as-is (spawn, standing up, recovering) and forget pending moves. */

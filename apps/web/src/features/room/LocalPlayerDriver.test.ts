@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
 import { GACHA_MACHINE, RUN_SPEED, SEATS, WALK_SPEED, type NpcView, type PlayerView } from '@study/shared';
 import { LocalPlayerDriver, findHint } from './LocalPlayerDriver';
@@ -108,5 +108,48 @@ describe('LocalPlayerDriver on a slow device', () => {
     d.press('KeyD');
     for (let i = 0; i < 5; i++) d.frame(0.2, camera, null); // one second at 5 fps
     expect(Math.hypot(motion.current.x, motion.current.z - 5)).toBeCloseTo(WALK_SPEED, 0);
+  });
+});
+
+describe('LocalPlayerDriver staying in sync', () => {
+  /** A driver whose first move the server has already acknowledged, with a controllable clock. */
+  function setup() {
+    let now = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => now);
+    const server = { x: 0, z: 5, yaw: 0, seatId: '', moveSeq: 0 };
+    const sent: { x: number; z: number; seq: number }[] = [];
+    const room = {
+      sessionId: 'me',
+      state: { players: new Map([['me', server]]), npcs: new Map() },
+      send: (type: string, msg: { x: number; z: number; seq: number }) => type === 'move' && sent.push(msg),
+    } as unknown as StudyRoom;
+    const motion = { current: { x: 0, z: 5, yaw: 0, moving: false } };
+    const camera = new THREE.OrthographicCamera();
+    const d = new LocalPlayerDriver(room, motion);
+    now = 1000;
+    d.frame(1 / 60, camera, null);
+    server.moveSeq = sent.at(-1)?.seq ?? 0;
+    d.frame(1 / 60, camera, null); // the acknowledgement clears the history
+    const later = () => (now += 500);
+    return { d, server, sent, motion, camera, later };
+  }
+
+  afterEach(() => vi.restoreAllMocks());
+
+  it('a big move between frames is sent, not snapped back to the server', () => {
+    const { d, sent, motion, camera, later } = setup();
+    motion.current.x = 2; // one long frame later (or the e2e helper moving us)
+    later();
+    d.frame(0.5, camera, null);
+    expect(motion.current.x).toBe(2);
+    expect(sent.at(-1)).toMatchObject({ x: 2 });
+  });
+
+  it('still snaps to the server when it really moved us (nothing pending on our side)', () => {
+    const { d, server, motion, camera, later } = setup();
+    server.x = 4; // the server put us somewhere else
+    later();
+    d.frame(1 / 60, camera, null);
+    expect(motion.current.x).toBe(4);
   });
 });
