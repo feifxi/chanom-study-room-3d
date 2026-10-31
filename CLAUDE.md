@@ -8,6 +8,10 @@ TypeScript everywhere. Docs: `docs/ROADMAP.md` (status and next steps), `docs/AR
 `docs/DECISIONS.md` (decision log — add a row when making a notable choice), `infra/README.md`,
 `infra/observability/README.md` (SLOs, chaos drills, runbooks).
 
+**Current work:** the approved plan in `docs/plans/2026-11-api-and-sre.md` (Hono API server, then SRE:
+deploy only what changed, graceful drain, synthetic join probe, load test, error budgets). Start at
+the first unticked phase; `docs/ROADMAP.md` → "Next" has the summary and other open items.
+
 ## Commands
 
 ```bash
@@ -76,8 +80,12 @@ Key cross-file mechanics:
   `scene`, `camera`, `gl`, `clock`, `lk`); e2e helpers (`e2e/helpers.ts`: `enterRoom`, `walkTo`, `me`)
   rely on it. `walkTo` moves through the client's predicted position, never by sending raw moves.
 - **e2e** tests share one public room, so they run serially (`workers: 1`); feedback tests skip
-  without a database. CI runners have no GPU (SwiftShader, ~5 fps), so timing-sensitive tests must
-  not assume smooth frames.
+  without a database. CI runners have no GPU (SwiftShader, 2–5 fps and slower on busy runners), so
+  timing-sensitive tests must not assume smooth frames. To reproduce a CI-only failure: `CI=1`, and
+  slow only the frames with `page.addInitScript` replacing `requestAnimationFrame` with a 500 ms
+  `setTimeout` (CPU throttling also slows the test's timers, so it doesn't reproduce it). There is
+  no `gh` CLI here; CI artifacts can't be downloaded, so make failing assertions print state
+  (`roomSnapshot` in `e2e/helpers.ts`).
 
 ## Infra and deploys
 
