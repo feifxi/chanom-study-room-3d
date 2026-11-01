@@ -18,8 +18,10 @@ services:
       - '80:80'
       - '443:443'
       - '443:443/udp' # HTTP/3
+    # Config is mounted as folders, not single files: a deploy replaces each file with a new one,
+    # and a single-file mount keeps showing the old file, so a reload would re-read stale config.
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy:/etc/caddy:ro
       - caddy-data:/data
       - caddy-config:/config
     depends_on: [web, game, api]
@@ -86,12 +88,11 @@ services:
     image: prom/prometheus:v3.5.0
     restart: unless-stopped
     command:
-      - --config.file=/etc/prometheus/prometheus.yml
+      - --config.file=/etc/prometheus/prometheus.prod.yml
       - --storage.tsdb.retention.time=15d
       - --web.enable-lifecycle # POST /-/reload after a deploy (infra/compose/reload-configs.sh); internal only
     volumes:
-      - ../observability/prometheus/prometheus.prod.yml:/etc/prometheus/prometheus.yml:ro
-      - ../observability/prometheus/rules:/etc/prometheus/rules:ro
+      - ../observability/prometheus:/etc/prometheus:ro # prometheus.prod.yml + rules/
       - prometheus-data:/prometheus
     logging: *logging
 
@@ -99,8 +100,7 @@ services:
     image: prom/alertmanager:v0.28.1
     restart: unless-stopped
     volumes:
-      - ../observability/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
-      - ../observability/alertmanager/secrets:/etc/alertmanager/secrets:ro # discord_webhook_url
+      - ../observability/alertmanager:/etc/alertmanager:ro # alertmanager.yml + secrets/discord_webhook_url
     logging: *logging
 
   loki:
@@ -108,7 +108,7 @@ services:
     restart: unless-stopped
     command: -config.file=/etc/loki/loki.yml
     volumes:
-      - ../observability/loki/loki.yml:/etc/loki/loki.yml:ro
+      - ../observability/loki:/etc/loki:ro
       - loki-data:/loki
     logging: *logging
 
@@ -117,7 +117,7 @@ services:
     restart: unless-stopped
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     volumes:
-      - ../observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - ../observability/alloy:/etc/alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro # container logs (the game logs JSON to stdout)
     depends_on: [loki]
     logging: *logging

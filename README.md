@@ -27,7 +27,7 @@ packages/
 docs/      Roadmap, architecture, decision log
 infra/     Everything that runs the app (see infra/README.md)
   terraform/      AWS: bootstrap (DNS delegation set) and the playtest stack
-  compose/        Production Docker Compose stack, Caddyfile, LiveKit config
+  compose/        Production Docker Compose stack, caddy/Caddyfile, LiveKit config
   observability/  Prometheus, Alertmanager, Loki, Alloy, Grafana config and the SRE guide
   scripts/        infra:up / infra:down
 compose.yaml      Local dev dependencies: Postgres, LiveKit, and the monitoring stack (profile)
