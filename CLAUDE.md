@@ -8,9 +8,7 @@ TypeScript everywhere. Docs: `docs/ROADMAP.md` (status and next steps), `docs/AR
 `docs/DECISIONS.md` (decision log — add a row when making a notable choice), `infra/README.md`,
 `infra/observability/README.md` (SLOs, chaos drills, runbooks).
 
-**Current work:** the approved plan in `docs/plans/2026-11-api-and-sre.md` (Hono API server, then SRE:
-deploy only what changed, graceful drain, synthetic join probe, load test, error budgets). Start at
-the first unticked phase; `docs/ROADMAP.md` → "Next" has the summary and other open items.
+**Current work:** see `docs/ROADMAP.md` → "Next" (a new plan is being decided).
 
 ## Commands
 
