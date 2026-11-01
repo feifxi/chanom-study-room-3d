@@ -39,7 +39,7 @@ Requirements: Node 24 (see `.nvmrc`), pnpm (`corepack enable pnpm`), Docker.
 
 ```bash
 pnpm install
-pnpm dev                 # web on http://localhost:3000, game server on :2567
+pnpm dev                 # web on http://localhost:3000, game server on :2567, API on :2568
 ```
 
 Useful extras:
@@ -47,7 +47,7 @@ Useful extras:
 ```bash
 docker compose up -d                    # Postgres (:5433) and LiveKit (:7880): start these first
 pnpm --filter @study/game smoke         # end-to-end checks against a running game server
-pnpm --filter @study/game stats-check   # study-stats queries against Postgres
+pnpm --filter @study/api stats-check    # study-stats queries and endpoints against Postgres
 pnpm --filter @study/game bots 5        # five wandering test students
 pnpm --filter @study/game load 8 10     # ~8 API requests/s for 10 minutes (for the SLO panels)
 pnpm obs:up                             # Grafana :3001, Prometheus :9090, Alertmanager :9093
@@ -70,21 +70,24 @@ pnpm build        # production builds (Next standalone + tsup)
 ### Where things live
 
 ```
+apps/api/src/
+  app.ts                Hono app: /api/* routes and /metrics; AppType for the web's typed client
+  features/             stats (stats + leaderboard), feedback, admin (auth with signed cookie + lockout, CSV)
+  index.ts              Boot: Postgres + migrations, then serve on :2568
 apps/game/src/
-  index.ts              Server boot and HTTP routes (/rooms, /stats, /leaderboard, /health, /metrics)
+  index.ts              Server boot and HTTP routes (/rooms, /internal/live, /health, /metrics)
   rooms/StudyRoom.ts    Colyseus room: message handlers, join/leave, focus tracking
   rooms/rules.ts        Pure game rules (speed limit, status, input sanitising), unit tested
   npc/NpcDirector.ts    Buddy Machine and NPC API used by the room
   npc/cat.ts, buddy.ts  NPC behaviour; npc/motion.ts walks them along A* paths
-  admin/                Admin auth (signed cookie, lockout) and the /feedback + /admin/* routes
   metrics.ts, log.ts    Prometheus metrics (HTTP RED, sessions, NPC ticks), chaos switches, pino logger
 apps/web/src/
   app/                  Next routes; the lobby and room render client-side only
   features/room/        3D scene, avatars, labels, local player (LocalPlayerDriver), connection (useStudyRoom + roomSession reducer)
   features/<feature>/   chat, focus, music, npc, voice, feedback, admin, stats, todo, avatar, lobby
   e2e/ (in apps/web)    Playwright tests
-  lib/                  profile (localStorage), config, time helpers
-packages/shared/src/    Protocol types, room layout, navigation (A*), collisions, NPC data: used by both apps
+  lib/                  profile (localStorage), config, typed API client (api.ts), time helpers
+packages/shared/src/    Protocol types, room layout, navigation (A*), collisions, NPC data: used by every app
 packages/db/            Drizzle schema, migrations, stats queries
 ```
 
@@ -127,7 +130,7 @@ A small **Buddy Machine** stands against the left wall. Walk up and press **E** 
 
 - When someone leaves a room the first time, a small card asks how it was: five faces (1–5), optional tags (bug / idea / love it) and an optional comment. **Skip** leaves right away and the card comes back at most once a day; after sending it never asks again. The visit's context is attached automatically (time in the room, whether they used voice, screen size, browser).
 - **`/admin`** is the product analytics page: feedback first (average score, 1–5 breakdown, tags, every comment with its context, CSV export, delete), then visitors (unique per day, visits, average visit, focus minutes) and who is online per room. Service health and performance are deliberately left to Grafana (see below).
-- The admin password lives in **`ADMIN_PASSWORD`** on the game server, never in code. `pnpm dev` uses `chanom-dev` unless you set it. Signing in sets a signed, HttpOnly cookie for 7 days; 5 wrong passwords lock that address out for 10 minutes. Without `ADMIN_PASSWORD` the admin API is off.
+- The admin password lives in **`ADMIN_PASSWORD`** on the API server, never in code. `pnpm dev` uses `chanom-dev` unless you set it. Signing in sets a signed, HttpOnly cookie for 7 days; 5 wrong passwords lock that address out for 10 minutes. Without `ADMIN_PASSWORD` the admin API is off.
 
 ### Two dashboards, two jobs
 

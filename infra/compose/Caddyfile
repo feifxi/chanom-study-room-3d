@@ -2,12 +2,20 @@
 # it on this machine, where Caddy uses its own local certificates). Certificates are automatic.
 {$DOMAIN} {
 	encode zstd gzip
-	reverse_proxy web:3000
+	# The REST API is same-origin with the site (no CORS; the admin cookie stays first-party)
+	handle /api/* {
+		reverse_proxy api:2568
+	}
+	handle {
+		reverse_proxy web:3000
+	}
 }
 
 game.{$DOMAIN} {
-	# Prometheus scrapes /metrics inside the compose network; it isn't public
-	handle /metrics {
+	# Prometheus scrapes /metrics and the API reads /internal/live inside the compose network;
+	# neither is public
+	@private path /metrics /internal/*
+	handle @private {
 		respond 404
 	}
 	reverse_proxy game:2567

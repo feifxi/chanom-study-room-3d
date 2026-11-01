@@ -1,24 +1,26 @@
 # Production stack
 
-Everything runs on one host with Docker Compose: Caddy (HTTPS, routing), web, game, LiveKit and
-the observability stack. The database is RDS on AWS (see [docs/ROADMAP.md](../docs/ROADMAP.md)).
+Everything runs on one host with Docker Compose: Caddy (HTTPS, routing), web, api, game, LiveKit
+and the observability stack. The database is RDS on AWS (see [docs/ROADMAP.md](../docs/ROADMAP.md)).
 
-| Hostname          | Service                                                 |
-| ----------------- | ------------------------------------------------------- |
-| `$DOMAIN`         | web (Next.js)                                           |
-| `game.$DOMAIN`    | game server (WebSocket + API; `/metrics` is not public) |
-| `rtc.$DOMAIN`     | LiveKit signalling (media on 7881/tcp, 7882/udp)        |
-| `grafana.$DOMAIN` | Grafana (login: `admin` / `GF_ADMIN_PASSWORD`)          |
+| Hostname          | Service                                                                         |
+| ----------------- | ------------------------------------------------------------------------------- |
+| `$DOMAIN`         | web (Next.js); `/api/*` goes to the API server (Hono)                           |
+| `game.$DOMAIN`    | game server (WebSocket + `/rooms`; `/metrics` and `/internal/*` are not public) |
+| `rtc.$DOMAIN`     | LiveKit signalling (media on 7881/tcp, 7882/udp)                                |
+| `grafana.$DOMAIN` | Grafana (login: `admin` / `GF_ADMIN_PASSWORD`)                                  |
 
 ## Images
 
 ```bash
+docker build -f apps/api/Dockerfile -t chanom/api:local .
 docker build -f apps/game/Dockerfile -t chanom/game:local .
 docker build -f apps/web/Dockerfile --build-arg NEXT_PUBLIC_GAME_URL=https://game.$DOMAIN -t chanom/web:local .
 ```
 
-- **game** (~370 MB): tsup bundles the server and all its dependencies into `dist/`, so the image
-  has no `node_modules`. Migrations run at boot.
+- **api** and **game**: tsup bundles each server and all its dependencies into `dist/`, so the
+  images have no `node_modules`. The API runs the migrations at boot; the game container starts
+  once the API is healthy.
 - **web** (~467 MB): Next.js standalone output plus `public/` (the 16 MB of music, in its own
   early layer so it stays cached). The game server URL is baked in at build time.
 

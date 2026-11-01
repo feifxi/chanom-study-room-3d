@@ -23,14 +23,23 @@ Last updated: 2026-11-01 (API server + SRE plan dropped; a new plan is coming).
 
 ## Next
 
-To be decided: a new plan replaces the API server + SRE plan (dropped 2026-11-01).
+Final steps for this project (set by the user on 2026-11-02; the 2D pixel version moved to a
+separate project):
 
-**Reminder (user to do):** delete the GitHub repo and create a fresh one, then set CD up again:
-steps in [infra/README.md](../infra/README.md#moving-to-a-new-github-repo). The deploy role trusts the
-repo's numeric ID, so CD fails until bootstrap is updated with the new ID.
-
-Also open (not urgent): try mobile on real phones; external uptime check; `pnpm infra:down` when
-the AWS stack isn't needed (it costs about $1.8/day while up).
+1. [ ] **REST API on its own server** (`apps/api`, Hono). Built, not yet deployed:
+   - [x] Stats, leaderboard, feedback and admin moved from the game server to `apps/api` (port 2568),
+         same-origin under `/api` (Caddy in production, a Next rewrite in dev). Typed client
+         `hc<AppType>` in the web app. The API runs the migrations; the game waits for it.
+   - [x] Game server keeps `/rooms`, `/health`, `/metrics`, the WebSocket, and adds
+         `/internal/live` for the admin page (404 through Caddy).
+   - [x] Prometheus job `api`, `ApiServerDown` alert, API logs in Loki, ECR repo `chanom/api`.
+   - [ ] **User:** `terraform apply` in `infra/terraform/app` (adds the `chanom/api` ECR repo)
+         before the next deploy, or the deploy fails at "pushing chanom/api".
+2. [ ] **Move to a new GitHub repo** and delete the old one, then set CD up again: steps in
+       [infra/README.md](../infra/README.md#moving-to-a-new-github-repo). The deploy role trusts the
+       repo's numeric ID, so CD fails until bootstrap is updated with the new ID.
+3. [ ] **Test everything** on the AWS stack (rooms, voice, stats, feedback, admin, Grafana, CD),
+       then `pnpm infra:down` (about $1.8/day while up).
 
 ## Online: the AWS playtest stack
 

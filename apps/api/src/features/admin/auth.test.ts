@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AdminAuth, readCookie } from './auth';
+import { AdminAuth } from './auth';
 
 describe('AdminAuth', () => {
   it('is off without a password', () => {
@@ -36,12 +36,5 @@ describe('AdminAuth', () => {
     expect(auth.isLockedOut('ip', 1000)).toBe(true);
     expect(auth.isLockedOut('other', 1000)).toBe(false);
     expect(auth.isLockedOut('ip', 1000 + 11 * 60_000)).toBe(false);
-  });
-});
-
-describe('readCookie', () => {
-  it('finds a cookie among others', () => {
-    expect(readCookie('a=1; chanom_admin=abc.def; b=2', 'chanom_admin')).toBe('abc.def');
-    expect(readCookie(undefined, 'x')).toBeUndefined();
   });
 });

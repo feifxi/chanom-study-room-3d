@@ -19,6 +19,11 @@ scrape_configs:
       - targets: ['game:2567']
         labels:
           service: game
+  - job_name: api
+    static_configs:
+      - targets: ['api:2568']
+        labels:
+          service: api
   - job_name: prometheus
     static_configs:
       - targets: ['localhost:9090']

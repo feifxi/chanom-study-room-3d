@@ -14,8 +14,8 @@ echo "==> Saving feedback"
 mkdir -p infra/backups
 JAR=$(mktemp)
 OUT="infra/backups/feedback-$(date +%Y%m%d-%H%M).csv"
-if curl -fsS -c "$JAR" -H 'Content-Type: application/json' -d "{\"password\":\"$ADMIN\"}" "https://game.$DOMAIN/admin/login" >/dev/null &&
-  curl -fsS -b "$JAR" "https://game.$DOMAIN/admin/feedback.csv" -o "$OUT"; then
+if curl -fsS -c "$JAR" -H 'Content-Type: application/json' -d "{\"password\":\"$ADMIN\"}" "https://$DOMAIN/api/admin/login" >/dev/null &&
+  curl -fsS -b "$JAR" "https://$DOMAIN/api/admin/feedback.csv" -o "$OUT"; then
   echo "    $OUT ($(($(wc -l <"$OUT") - 1)) responses)"
 else
   echo "    Could not download it (the final RDS snapshot still has everything)."

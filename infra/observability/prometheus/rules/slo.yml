@@ -3,19 +3,19 @@ groups:
   - name: slo-api_availability
     rules:
       - record: slo:api_availability:error_ratio_rate5m
-        expr: "((sum(rate(study_http_requests_total{route!~\"/metrics|/health\",code=~\"5..\"}[5m])) or vector(0))) / (sum(rate(study_http_requests_total{route!~\"/metrics|/health\"}[5m])))"
+        expr: "((sum(rate(study_http_requests_total{route!~\"/metrics|/health|/api/health|/internal/live\",code=~\"5..\"}[5m])) or vector(0))) / (sum(rate(study_http_requests_total{route!~\"/metrics|/health|/api/health|/internal/live\"}[5m])))"
       - record: slo:api_availability:error_ratio_rate30m
-        expr: "((sum(rate(study_http_requests_total{route!~\"/metrics|/health\",code=~\"5..\"}[30m])) or vector(0))) / (sum(rate(study_http_requests_total{route!~\"/metrics|/health\"}[30m])))"
+        expr: "((sum(rate(study_http_requests_total{route!~\"/metrics|/health|/api/health|/internal/live\",code=~\"5..\"}[30m])) or vector(0))) / (sum(rate(study_http_requests_total{route!~\"/metrics|/health|/api/health|/internal/live\"}[30m])))"
       - record: slo:api_availability:error_ratio_rate1h
-        expr: "((sum(rate(study_http_requests_total{route!~\"/metrics|/health\",code=~\"5..\"}[1h])) or vector(0))) / (sum(rate(study_http_requests_total{route!~\"/metrics|/health\"}[1h])))"
+        expr: "((sum(rate(study_http_requests_total{route!~\"/metrics|/health|/api/health|/internal/live\",code=~\"5..\"}[1h])) or vector(0))) / (sum(rate(study_http_requests_total{route!~\"/metrics|/health|/api/health|/internal/live\"}[1h])))"
       - record: slo:api_availability:error_ratio_rate2h
-        expr: "((sum(rate(study_http_requests_total{route!~\"/metrics|/health\",code=~\"5..\"}[2h])) or vector(0))) / (sum(rate(study_http_requests_total{route!~\"/metrics|/health\"}[2h])))"
+        expr: "((sum(rate(study_http_requests_total{route!~\"/metrics|/health|/api/health|/internal/live\",code=~\"5..\"}[2h])) or vector(0))) / (sum(rate(study_http_requests_total{route!~\"/metrics|/health|/api/health|/internal/live\"}[2h])))"
       - record: slo:api_availability:error_ratio_rate6h
-        expr: "((sum(rate(study_http_requests_total{route!~\"/metrics|/health\",code=~\"5..\"}[6h])) or vector(0))) / (sum(rate(study_http_requests_total{route!~\"/metrics|/health\"}[6h])))"
+        expr: "((sum(rate(study_http_requests_total{route!~\"/metrics|/health|/api/health|/internal/live\",code=~\"5..\"}[6h])) or vector(0))) / (sum(rate(study_http_requests_total{route!~\"/metrics|/health|/api/health|/internal/live\"}[6h])))"
       - record: slo:api_availability:error_ratio_rate1d
-        expr: "((sum(rate(study_http_requests_total{route!~\"/metrics|/health\",code=~\"5..\"}[1d])) or vector(0))) / (sum(rate(study_http_requests_total{route!~\"/metrics|/health\"}[1d])))"
+        expr: "((sum(rate(study_http_requests_total{route!~\"/metrics|/health|/api/health|/internal/live\",code=~\"5..\"}[1d])) or vector(0))) / (sum(rate(study_http_requests_total{route!~\"/metrics|/health|/api/health|/internal/live\"}[1d])))"
       - record: slo:api_availability:error_ratio_rate3d
-        expr: "((sum(rate(study_http_requests_total{route!~\"/metrics|/health\",code=~\"5..\"}[3d])) or vector(0))) / (sum(rate(study_http_requests_total{route!~\"/metrics|/health\"}[3d])))"
+        expr: "((sum(rate(study_http_requests_total{route!~\"/metrics|/health|/api/health|/internal/live\",code=~\"5..\"}[3d])) or vector(0))) / (sum(rate(study_http_requests_total{route!~\"/metrics|/health|/api/health|/internal/live\"}[3d])))"
       - record: slo:api_availability:objective
         expr: "0.995"
       - alert: ApiAvailabilityFastBurn
@@ -25,7 +25,7 @@ groups:
           slo: api_availability
         annotations:
           summary: "API availability SLO is burning its error budget fast"
-          description: "SLO: 99.5% of API requests (rooms list, stats, leaderboard, feedback, admin) don't fail with a 5xx. Current 1h error ratio: {{ $value | humanizePercentage }}."
+          description: "SLO: 99.5% of API requests (rooms list on the game server; stats, leaderboard, feedback, admin on the API server) don't fail with a 5xx. Current 1h error ratio: {{ $value | humanizePercentage }}."
           runbook_url: "infra/observability/README.md#api-availability"
       - alert: ApiAvailabilitySlowBurn
         expr: "(slo:api_availability:error_ratio_rate1d > (3 * 0.005) and slo:api_availability:error_ratio_rate2h > (3 * 0.005)) or (slo:api_availability:error_ratio_rate3d > (1 * 0.005) and slo:api_availability:error_ratio_rate6h > (1 * 0.005))"
@@ -34,24 +34,24 @@ groups:
           slo: api_availability
         annotations:
           summary: "API availability SLO is burning its error budget slowly"
-          description: "SLO: 99.5% of API requests (rooms list, stats, leaderboard, feedback, admin) don't fail with a 5xx. Current 1h error ratio: {{ $value | humanizePercentage }}."
+          description: "SLO: 99.5% of API requests (rooms list on the game server; stats, leaderboard, feedback, admin on the API server) don't fail with a 5xx. Current 1h error ratio: {{ $value | humanizePercentage }}."
           runbook_url: "infra/observability/README.md#api-availability"
   - name: slo-api_latency
     rules:
       - record: slo:api_latency:error_ratio_rate5m
-        expr: "((sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health\"}[5m])) - sum(rate(study_http_request_duration_seconds_bucket{route!~\"/metrics|/health\",le=\"0.3\"}[5m])))) / (sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health\"}[5m])))"
+        expr: "((sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health|/api/health|/internal/live\"}[5m])) - sum(rate(study_http_request_duration_seconds_bucket{route!~\"/metrics|/health|/api/health|/internal/live\",le=\"0.3\"}[5m])))) / (sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health|/api/health|/internal/live\"}[5m])))"
       - record: slo:api_latency:error_ratio_rate30m
-        expr: "((sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health\"}[30m])) - sum(rate(study_http_request_duration_seconds_bucket{route!~\"/metrics|/health\",le=\"0.3\"}[30m])))) / (sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health\"}[30m])))"
+        expr: "((sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health|/api/health|/internal/live\"}[30m])) - sum(rate(study_http_request_duration_seconds_bucket{route!~\"/metrics|/health|/api/health|/internal/live\",le=\"0.3\"}[30m])))) / (sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health|/api/health|/internal/live\"}[30m])))"
       - record: slo:api_latency:error_ratio_rate1h
-        expr: "((sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health\"}[1h])) - sum(rate(study_http_request_duration_seconds_bucket{route!~\"/metrics|/health\",le=\"0.3\"}[1h])))) / (sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health\"}[1h])))"
+        expr: "((sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health|/api/health|/internal/live\"}[1h])) - sum(rate(study_http_request_duration_seconds_bucket{route!~\"/metrics|/health|/api/health|/internal/live\",le=\"0.3\"}[1h])))) / (sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health|/api/health|/internal/live\"}[1h])))"
       - record: slo:api_latency:error_ratio_rate2h
-        expr: "((sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health\"}[2h])) - sum(rate(study_http_request_duration_seconds_bucket{route!~\"/metrics|/health\",le=\"0.3\"}[2h])))) / (sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health\"}[2h])))"
+        expr: "((sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health|/api/health|/internal/live\"}[2h])) - sum(rate(study_http_request_duration_seconds_bucket{route!~\"/metrics|/health|/api/health|/internal/live\",le=\"0.3\"}[2h])))) / (sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health|/api/health|/internal/live\"}[2h])))"
       - record: slo:api_latency:error_ratio_rate6h
-        expr: "((sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health\"}[6h])) - sum(rate(study_http_request_duration_seconds_bucket{route!~\"/metrics|/health\",le=\"0.3\"}[6h])))) / (sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health\"}[6h])))"
+        expr: "((sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health|/api/health|/internal/live\"}[6h])) - sum(rate(study_http_request_duration_seconds_bucket{route!~\"/metrics|/health|/api/health|/internal/live\",le=\"0.3\"}[6h])))) / (sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health|/api/health|/internal/live\"}[6h])))"
       - record: slo:api_latency:error_ratio_rate1d
-        expr: "((sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health\"}[1d])) - sum(rate(study_http_request_duration_seconds_bucket{route!~\"/metrics|/health\",le=\"0.3\"}[1d])))) / (sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health\"}[1d])))"
+        expr: "((sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health|/api/health|/internal/live\"}[1d])) - sum(rate(study_http_request_duration_seconds_bucket{route!~\"/metrics|/health|/api/health|/internal/live\",le=\"0.3\"}[1d])))) / (sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health|/api/health|/internal/live\"}[1d])))"
       - record: slo:api_latency:error_ratio_rate3d
-        expr: "((sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health\"}[3d])) - sum(rate(study_http_request_duration_seconds_bucket{route!~\"/metrics|/health\",le=\"0.3\"}[3d])))) / (sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health\"}[3d])))"
+        expr: "((sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health|/api/health|/internal/live\"}[3d])) - sum(rate(study_http_request_duration_seconds_bucket{route!~\"/metrics|/health|/api/health|/internal/live\",le=\"0.3\"}[3d])))) / (sum(rate(study_http_request_duration_seconds_count{route!~\"/metrics|/health|/api/health|/internal/live\"}[3d])))"
       - record: slo:api_latency:objective
         expr: "0.99"
       - alert: ApiLatencyFastBurn
@@ -118,6 +118,14 @@ groups:
         annotations:
           summary: "The game server is not answering /metrics"
           runbook_url: "infra/observability/README.md#game-server-down"
+      - alert: ApiServerDown
+        expr: "up{job=\"api\"} == 0"
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "The API server is not answering /metrics (stats, feedback and admin are down; rooms still work)"
+          runbook_url: "infra/observability/README.md#api-server-down"
       - alert: EventLoopLagHigh
         expr: "study_game_nodejs_eventloop_lag_p99_seconds > 0.1"
         for: 5m

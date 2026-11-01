@@ -65,12 +65,3 @@ export class AdminAuth {
     return createHmac('sha256', this.key!).update(exp).digest();
   }
 }
-
-/** Read one cookie from a Cookie header. */
-export function readCookie(header: string | undefined, name: string) {
-  for (const part of header?.split(';') ?? []) {
-    const [k, ...v] = part.trim().split('=');
-    if (k === name) return decodeURIComponent(v.join('='));
-  }
-  return undefined;
-}

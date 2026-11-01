@@ -16,6 +16,8 @@
         "DATABASE_URL",
         "ADMIN_PASSWORD",
         "TRUST_PROXY",
+        "API_DEV_URL",
+        "GAME_INTERNAL_URL",
         "LIVEKIT_*",
         "LOG_*",
         "CHAOS_*",

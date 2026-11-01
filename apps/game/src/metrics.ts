@@ -9,7 +9,7 @@ export const registry = new Registry();
 collectDefaultMetrics({ register: registry, prefix: 'study_game_' });
 
 export const metrics = {
-  // --- RED for the HTTP API (rooms list, stats, feedback, admin, matchmaking) ---
+  // --- RED for HTTP (rooms list, health; the REST API has its own server, apps/api) ---
   httpRequests: new Counter({
     name: 'study_http_requests_total',
     help: 'HTTP requests by route, method and status code',
@@ -35,12 +35,6 @@ export const metrics = {
     name: 'study_npc_tick_seconds',
     help: 'Time to simulate one 10 Hz NPC tick for a room',
     buckets: [0.0005, 0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1],
-    registers: [registry],
-  }),
-  feedback: new Counter({
-    name: 'study_feedback_total',
-    help: 'Feedback received, by rating',
-    labelNames: ['rating'] as const,
     registers: [registry],
   }),
 
@@ -75,10 +69,8 @@ const SLOW_REQUEST_S = 1;
 
 /** Known routes, so requests answered before routing (e.g. by middleware) still get a useful label. */
 const ROUTE_PATTERNS: [RegExp, string][] = [
-  [/^\/stats\/[^/]+$/, '/stats/:visitorId'],
-  [/^\/admin\/feedback\/[^/]+$/, '/admin/feedback/:id'],
   [/^\/matchmake(\/|$)/, '/matchmake'],
-  [/^\/(rooms|leaderboard|feedback|health|metrics|admin\/(login|logout|overview|feedback\.csv))$/, ''],
+  [/^\/(rooms|health|metrics|internal\/live)$/, ''],
 ];
 
 /** Route label from a raw path; anything unknown collapses to "unmatched" to keep label cardinality bounded. */
@@ -103,7 +95,7 @@ export function httpMetrics(req: Request, res: Response, next: NextFunction) {
 }
 
 /**
- * Chaos switches for SRE practice (off unless the env vars are set): fail a share of API
+ * Chaos switches for SRE practice (off unless the env vars are set): fail a share of HTTP
  * requests with 503 and/or add latency, so you can watch SLOs burn and alerts fire.
  *   CHAOS_ERROR_RATE=0.2 CHAOS_LATENCY_MS=400 pnpm dev
  */

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FeedbackRow } from '@study/shared';
-import { feedbackCsv } from './routes';
+import { feedbackCsv } from './csv';
 
 const row = (over: Partial<FeedbackRow> = {}): FeedbackRow => ({
   id: 1,

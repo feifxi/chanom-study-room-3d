@@ -54,6 +54,7 @@ build_and_push() { # <name> [docker build args...]
   echo "Push of chanom/$name failed 3 times; check the connection and deploy again"
   exit 1
 }
+build_and_push api
 build_and_push game
 build_and_push web --build-arg "NEXT_PUBLIC_GAME_URL=https://game.$DOMAIN"
 
@@ -94,13 +95,14 @@ aws ssm get-command-invocation --command-id "$CMD" --instance-id "$INSTANCE" \
 echo "==> Checking the site"
 healthy=""
 for _ in $(seq 1 30); do
-  if curl -fsS -m 5 "https://game.$DOMAIN/health" >/dev/null 2>&1 && curl -fsS -m 5 -o /dev/null "https://$DOMAIN/"; then
+  if curl -fsS -m 5 "https://game.$DOMAIN/health" >/dev/null 2>&1 && curl -fsS -m 5 "https://$DOMAIN/api/health" >/dev/null 2>&1 &&
+    curl -fsS -m 5 -o /dev/null "https://$DOMAIN/"; then
     healthy=1
     break
   fi
   sleep 5
 done
-[ -n "$healthy" ] || { echo "https://$DOMAIN or its game server isn't healthy 2.5 minutes after the deploy"; exit 1; }
+[ -n "$healthy" ] || { echo "https://$DOMAIN, its API or its game server isn't healthy 2.5 minutes after the deploy"; exit 1; }
 
 echo
 echo "==> Deployed $TAG. App: https://$DOMAIN · Admin: https://$DOMAIN/admin · Grafana: https://grafana.$DOMAIN"

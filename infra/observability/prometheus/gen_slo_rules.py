@@ -6,13 +6,14 @@ Edit the SLOS table, then run:  python3 infra/observability/prometheus/gen_slo_r
 """
 from pathlib import Path
 
-API = 'route!~"/metrics|/health"'
+# Health checks, scrapes and the API's internal call to the game server aren't people's requests
+API = 'route!~"/metrics|/health|/api/health|/internal/live"'
 SLOS = [
     {
         "name": "api_availability",
         "title": "API availability",
         "objective": 0.995,
-        "desc": "99.5% of API requests (rooms list, stats, leaderboard, feedback, admin) don't fail with a 5xx",
+        "desc": "99.5% of API requests (rooms list on the game server; stats, leaderboard, feedback, admin on the API server) don't fail with a 5xx",
         # Colyseus matchmaking is served outside express, so it isn't in these metrics; joins are covered by session_stability
         # `or vector(0)`: with no 5xx series at all, sum() returns nothing instead of 0
         "bad": f'(sum(rate(study_http_requests_total{{{API},code=~"5.."}}[{{w}}])) or vector(0))',
@@ -83,6 +84,14 @@ out += [
     "        annotations:",
     '          summary: "The game server is not answering /metrics"',
     '          runbook_url: "infra/observability/README.md#game-server-down"',
+    "      - alert: ApiServerDown",
+    '        expr: "up{job=\\"api\\"} == 0"',
+    "        for: 1m",
+    "        labels:",
+    "          severity: page",
+    "        annotations:",
+    '          summary: "The API server is not answering /metrics (stats, feedback and admin are down; rooms still work)"',
+    '          runbook_url: "infra/observability/README.md#api-server-down"',
     "      - alert: EventLoopLagHigh",
     '        expr: "study_game_nodejs_eventloop_lag_p99_seconds > 0.1"',
     "        for: 5m",

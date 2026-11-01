@@ -10,7 +10,7 @@ meant to move to the AWS host later.
 
 ```bash
 pnpm obs:up     # Prometheus, Alertmanager, Loki, Alloy, Grafana (docker compose profile "observability")
-pnpm dev        # the app; the game server writes JSON logs to apps/game/logs/game.log
+pnpm dev        # the app; game and API write JSON logs to apps/game/logs/ and apps/api/logs/
 pnpm obs:down   # stop the stack (data is kept in docker volumes)
 ```
 
@@ -30,31 +30,33 @@ pnpm --filter @study/game bots 6      # six wandering WebSocket players
 
 ## What is collected
 
-**Metrics** (`GET :2567/metrics`, scraped every 15 s)
+**Metrics** (`GET :2567/metrics` on the game server and `GET :2568/metrics` on the API, scraped every
+15 s; `job` tells them apart)
 
-| Metric                                                      | Meaning                                                         |
-| ----------------------------------------------------------- | --------------------------------------------------------------- |
-| `study_http_requests_total{route,method,code}`              | API requests (route is the pattern, e.g. `/stats/:visitorId`)   |
-| `study_http_request_duration_seconds{route,method}`         | API latency histogram (has a 0.3 s bucket for the latency SLO)  |
-| `study_joins_total`                                         | Players who joined a room                                       |
-| `study_disconnects_total{kind}`                             | `left`, `dropped`, `reconnected`, `timed_out` (never came back) |
-| `study_players`, `study_rooms`                              | People online, rooms open                                       |
-| `study_npc_tick_seconds`                                    | Time for one 10 Hz NPC simulation step                          |
-| `study_feedback_total{rating}`, `study_chat_messages_total` | Product signals, handy for correlation                          |
-| `study_game_*`                                              | Node.js runtime: event loop lag, heap, GC, CPU, memory          |
+| Metric                                                      | Meaning                                                            |
+| ----------------------------------------------------------- | ------------------------------------------------------------------ |
+| `study_http_requests_total{route,method,code}`              | HTTP requests (route is the pattern, e.g. `/api/stats/:visitorId`) |
+| `study_http_request_duration_seconds{route,method}`         | API latency histogram (has a 0.3 s bucket for the latency SLO)     |
+| `study_joins_total`                                         | Players who joined a room                                          |
+| `study_disconnects_total{kind}`                             | `left`, `dropped`, `reconnected`, `timed_out` (never came back)    |
+| `study_players`, `study_rooms`                              | People online, rooms open                                          |
+| `study_npc_tick_seconds`                                    | Time for one 10 Hz NPC simulation step                             |
+| `study_feedback_total{rating}`, `study_chat_messages_total` | Product signals, handy for correlation                             |
+| `study_game_*`, `study_api_*`                               | Node.js runtime: event loop lag, heap, GC, CPU, memory             |
 
 **Logs** (Loki, via Alloy)
 
-- `{service="game"}`: the game server's pino JSON. `level` is a label; `room` is structured metadata.
+- `{service="game"}`, `{service="api"}`: the game and API servers' pino JSON. `level` is a label;
+  `room` is structured metadata.
 - `{service="postgres"}`, `{service="livekit"}`, …: every container in this compose project.
 
 Useful LogQL:
 
 ```logql
 {service="game", level="error"}
-{service="game"} | json | route="/feedback"
+{service="api"} | json | route="/api/feedback"
 sum by (level) (count_over_time({service="game"}[5m]))
-{service="game"} | json | seconds > 0.3          # slow requests, with their route
+{service=~"game|api"} | json | seconds > 0.3   # slow requests, with their route
 ```
 
 ## SLOs
@@ -118,8 +120,9 @@ saw at each step; that's the raw material for a postmortem.
 
 - **Symptom:** a share of API requests return 5xx.
 - **Check:** "Errors (5xx share)" and "Requests / s by route": one route or all of them? In Loki:
-  `{service="game", level="error"} | json` shows the route and status.
-- **Common causes:** the database is down (`/stats`, `/leaderboard`, `/feedback` fail; look at
+  `{service=~"game|api", level="error"} | json` shows the route and status.
+- **Common causes:** the API server is down (every `/api/*` route fails; see "API server down"),
+  the database is down (`/api/stats`, `/api/leaderboard`, `/api/feedback` fail; look at
   `{service="postgres"}`), a bad deploy, chaos left on (look for "CHAOS is on" in the logs).
 - **Mitigate:** roll back, restart Postgres, or turn chaos off. Rooms keep working without the
   database.
@@ -128,7 +131,7 @@ saw at each step; that's the raw material for a postmortem.
 
 - **Symptom:** p95/p99 above 300 ms.
 - **Check:** is it every route (event loop lag, CPU) or only database routes (slow queries)?
-  `{service="game"} | json | seconds > 0.3` lists the slow ones.
+  `{service=~"game|api"} | json | seconds > 0.3` lists the slow ones.
 - **Mitigate:** fewer bots or less load, look for a busy loop in the "Event loop lag" panel, add a
   database index.
 
@@ -145,6 +148,15 @@ saw at each step; that's the raw material for a postmortem.
 - **Check:** `up{job="game"}` in Prometheus; is the process running? Is port 2567 taken? The last
   lines in `{service="game"}`.
 - **Mitigate:** restart it. On AWS: `docker compose ps` / `logs` on the host via SSM.
+
+### API server down
+
+- **Symptom:** stats, the leaderboard, feedback and `/admin` fail; rooms, chat and voice still work.
+- **Check:** `up{job="api"}` in Prometheus; is the process running? Is port 2568 taken? The last
+  lines in `{service="api"}`. On start it runs the migrations: a failed migration or an unreachable
+  database is logged there (it then keeps serving with stats off, so `/api/health` says `db: false`).
+- **Mitigate:** restart it (`docker compose restart api` on the host). Restarting the API doesn't
+  disconnect anyone from their room.
 
 ### Event loop lag
 
@@ -197,7 +209,8 @@ The same pieces run on the EC2 host next to the app containers. Differences:
 - Grafana gets real authentication; nothing listens on public ports except through Caddy.
 - Alloy collects the app containers' stdout (pino JSON in production) via the Docker socket
   instead of the dev log file.
-- Prometheus scrapes `game:2567` on the compose network instead of `host.docker.internal`.
+- Prometheus scrapes `game:2567` and `api:2568` on the compose network instead of
+  `host.docker.internal`.
 - The Discord webhook URL comes from SSM Parameter Store instead of a local file. CloudWatch
   alarms and the AWS Budget email you, and an external uptime check (which can also post to
   Discord) covers the case where the whole host is down.

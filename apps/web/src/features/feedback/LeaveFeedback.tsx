@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { FEEDBACK_COMMENT_MAX, FEEDBACK_TAGS, type FeedbackPayload, type FeedbackTag } from '@study/shared';
-import { GAME_URL } from '@/lib/config';
+import { api } from '@/lib/api';
 import { FACES, TAG_LABELS } from './faces';
 import { markFeedbackSent, markFeedbackSkipped } from './askPolicy';
 
@@ -33,11 +33,7 @@ export function LeaveFeedback({ context, onLeave, onStay }: Props) {
     setSending(true);
     const body: FeedbackPayload = { ...context, rating, comment: comment.trim(), tags };
     try {
-      const res = await fetch(`${GAME_URL}/feedback`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+      const res = await api.feedback.$post({ json: body });
       if (res.ok) markFeedbackSent();
     } catch {
       // Feedback is a bonus: never trap someone in the room because it failed

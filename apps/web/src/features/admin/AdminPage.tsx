@@ -13,7 +13,7 @@ const REFRESH_MS = 5000;
 
 /**
  * /admin: product analytics. Feedback and scores first, then visitors and who's online.
- * Service health and performance belong in Grafana. Password-protected by the game server.
+ * Service health and performance belong in Grafana. Password-protected by the API server.
  */
 export function AdminPage() {
   const [result, setResult] = useState<OverviewResult | null>(null);
@@ -158,22 +158,28 @@ function Dashboard({ data, onDelete, onSignOut }: { data: AdminOverview; onDelet
         </Card>
 
         <Card title="Right now">
-          <div className="grid grid-cols-2 gap-3">
-            <Stat label="Online" value={live.online} />
-            <Stat label="Peak since restart" value={live.peakOnline} />
-          </div>
-          <ul className="flex flex-col gap-1.5">
-            {live.rooms.length === 0 && <li className="text-sm text-muted">No open rooms.</li>}
-            {live.rooms.map((r) => (
-              <li key={r.label} className="flex items-center gap-3 rounded-xl bg-soft px-3 py-2 text-sm">
-                <span className="flex-1 font-bold">{r.label}</span>
-                <span className="text-muted">
-                  {r.clients}/{r.maxClients} people
-                </span>
-                <span className="text-muted">{r.npcs} NPCs</span>
-              </li>
-            ))}
-          </ul>
+          {live ? (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <Stat label="Online" value={live.online} />
+                <Stat label="Peak since restart" value={live.peakOnline} />
+              </div>
+              <ul className="flex flex-col gap-1.5">
+                {live.rooms.length === 0 && <li className="text-sm text-muted">No open rooms.</li>}
+                {live.rooms.map((r) => (
+                  <li key={r.label} className="flex items-center gap-3 rounded-xl bg-soft px-3 py-2 text-sm">
+                    <span className="flex-1 font-bold">{r.label}</span>
+                    <span className="text-muted">
+                      {r.clients}/{r.maxClients} people
+                    </span>
+                    <span className="text-muted">{r.npcs} NPCs</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <p className="text-sm text-muted">Live data unavailable: the game server isn&apos;t answering.</p>
+          )}
         </Card>
       </div>
     </main>

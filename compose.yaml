@@ -73,6 +73,7 @@ services:
     volumes:
       - ./infra/observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
       - ./apps/game/logs:/logs:ro # pnpm dev writes the game server's JSON logs here
+      - ./apps/api/logs:/logs-api:ro # ...and the API server's
       - /var/run/docker.sock:/var/run/docker.sock:ro # container logs
     depends_on: [loki]
     ports:

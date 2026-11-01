@@ -57,7 +57,7 @@ After `up`:
 - HTTPS certificates appear a minute or two after DNS resolves (Caddy keeps retrying).
 - Click the confirmation link in the SNS email from AWS to get alarm emails.
 - Shell on the host (no SSH): `aws ssm start-session --target $(terraform -chdir=infra/terraform/app output -raw instance_id)`.
-- Redeploy after a code change: `pnpm infra:deploy` (a few minutes). Rooms live in the game server's memory, so everyone is disconnected for about a minute and rejoins a fresh room; that's accepted for a playtest.
+- Redeploy after a code change: `pnpm infra:deploy` (a few minutes). Rooms live in the game server's memory, so everyone is disconnected for about a minute and rejoins a fresh room; that's accepted for a playtest. (Every deploy still restarts every container: images are tagged by commit.)
 
 To start the next playtest from the last one's data, put the snapshot name that `down` printed into
 `terraform.tfvars` as `restore_snapshot_id`. Delete old snapshots in the RDS console when you no

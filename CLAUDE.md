@@ -15,7 +15,7 @@ TypeScript everywhere. Docs: `docs/ROADMAP.md` (status and next steps), `docs/AR
 ```bash
 pnpm install
 docker compose up -d                 # Postgres :5433 + LiveKit :7880 (start before dev)
-pnpm dev                             # web :3000 + game server :2567
+pnpm dev                             # web :3000 + game server :2567 + API :2568
 pnpm check                           # what CI runs: prettier --check, then typecheck + lint + unit tests everywhere
 pnpm e2e                             # Playwright (starts dev servers if needed; Chrome, muted)
 pnpm format                          # prettier --write
@@ -32,6 +32,7 @@ cd apps/web && npx vitest run src/features/room/reconcile.test.ts
 cd apps/web && npx playwright test e2e/touch.spec.ts          # or e2e/room.spec.ts:60 for one test
 CI=1 npx playwright test                                       # reproduce CI: Playwright's Chromium, retries
 cd apps/game && npx vitest run src/rooms/rules.test.ts
+cd apps/api && npx vitest run src/app.test.ts
 ```
 
 Lint is `--max-warnings 0`. Web typecheck runs `next typegen` first (route types like `LayoutProps`
@@ -43,17 +44,24 @@ don't exist in a fresh clone otherwise). Runtime env vars only reach `pnpm dev` 
 - `apps/game` — Colyseus 0.18 server + express. `rooms/StudyRoom.ts` handles messages (zod-validated)
   and join/leave; pure, unit-tested rules live in `rooms/rules.ts`; NPCs (cats, study buddies) are
   simulated server-side in `npc/` with A* from shared. Rooms are in memory: a deploy disconnects
-  everyone (accepted). HTTP routes: `/rooms`, `/stats`, `/leaderboard`, `/feedback`, `/admin/*`
-  (behind `ADMIN_PASSWORD`), `/metrics`, `/health`. The transport is an explicit `WebSocketTransport`
-  (needed for the tsup bundle). Postgres is optional: without `DATABASE_URL` rooms work, stats and
-  feedback are off.
+  everyone (accepted). HTTP routes: `/rooms`, `/metrics`, `/health`, and `/internal/live` (admin
+  live data for the API; Caddy hides it). The transport is an explicit `WebSocketTransport` (needed
+  for the tsup bundle). It writes visits and focus sessions but doesn't run migrations.
+- `apps/api` — Hono REST API on :2568, same-origin under `/api` (Caddy in production, a Next
+  `rewrites()` in dev): `/api/stats/:visitorId`, `/api/leaderboard`, `/api/feedback`, `/api/admin/*`
+  (behind `ADMIN_PASSWORD`, signed HttpOnly cookie on `Path=/api`), `/api/health`; `/metrics` outside
+  `/api`. `createApp(deps)` takes the db, auth and the live-data fetcher, so tests use
+  `app.request()` with fakes. It owns the schema (runs the migrations; the prod game container waits
+  for it). Exports `AppType`; the web app's typed client is `lib/api.ts` (`hc<AppType>('/api')`).
+  The admin overview's 401 comes from middleware, which the client types don't include. Postgres is
+  optional: without `DATABASE_URL` rooms work, stats and feedback answer 503.
 - `apps/web` — Next.js 16 (App Router, Turbopack), React Three Fiber 9, Tailwind v4. The lobby, room
   and admin render client-side only. `features/<feature>/` holds everything per feature;
   `features/room/` is the 3D scene, HUD (`hud/`), connection (`useStudyRoom` + `roomSession`
   reducer) and local player.
 - `packages/shared` — consumed as TypeScript source (`exports: ./src/index.ts`, no build step):
   protocol types, room layout/seats/obstacles, collisions, A* navigation, constants such as
-  `WALK_SPEED`/`RUN_SPEED`. Both apps import it; change layout or protocol here.
+  `WALK_SPEED`/`RUN_SPEED`. Every app imports it; change layout or protocol here.
 - `packages/db` — Drizzle schema, migrations (`pnpm db:generate`, `db:migrate`), stats/admin queries.
 
 Key cross-file mechanics:

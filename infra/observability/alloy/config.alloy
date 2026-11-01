@@ -1,5 +1,6 @@
 // Grafana Alloy ships logs to Loki:
-//  1. the game server's JSON log file (pnpm dev writes apps/game/logs/game.log), and
+//  1. the game and API servers' JSON log files (pnpm dev writes apps/game/logs/game.log and
+//     apps/api/logs/api.log), and
 //  2. every container in this compose project (Postgres, LiveKit, the monitoring stack itself).
 // UI: http://localhost:12345
 
@@ -9,9 +10,12 @@ loki.write "local" {
   }
 }
 
-// --- 1. Game server (pino JSON lines) ---
+// --- 1. Game and API servers (pino JSON lines) ---
 local.file_match "game" {
-  path_targets = [{"__path__" = "/logs/*.log", "service" = "game", "env" = "local"}]
+  path_targets = [
+    {"__path__" = "/logs/*.log", "service" = "game", "env" = "local"},
+    {"__path__" = "/logs-api/*.log", "service" = "api", "env" = "local"},
+  ]
 }
 
 loki.source.file "game" {
@@ -65,11 +69,11 @@ loki.source.docker "containers" {
   forward_to = [loki.process.containers.receiver]
 }
 
-// In production the game logs pino JSON to stdout: give it the same `level` label as the dev file.
+// In production the game and API log pino JSON to stdout: give them the same `level` label as the dev files.
 // Lines that aren't JSON (other containers) pass through unchanged.
 loki.process "containers" {
   stage.match {
-    selector = "{service=\"game\"}"
+    selector = "{service=~\"game|api\"}"
     stage.json {
       expressions = { level = "level", room = "roomId" }
     }

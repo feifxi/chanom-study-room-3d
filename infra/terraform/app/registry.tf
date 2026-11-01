@@ -3,7 +3,7 @@ locals {
 }
 
 resource "aws_ecr_repository" "app" {
-  for_each             = toset(["web", "game"])
+  for_each             = toset(["web", "game", "api"])
   name                 = "chanom/${each.key}"
   image_tag_mutability = "IMMUTABLE"
   force_delete         = true # destroy removes the images too

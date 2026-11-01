@@ -4,19 +4,23 @@
 
 ```
 Browser ──HTTP──▶ web  (Next.js, :3000)  lobby /, room /room, analytics /admin
-   │
+   │                 └─ /api/* (dev rewrite) ──▶ api (Hono, :2568)
+   │                        /api/stats, /api/leaderboard, /api/feedback, /api/admin/*,
+   │                        /api/health, /metrics; runs the migrations
+   │                              │  └── GET /internal/live ──▶ game (admin live data)
+   │                              ▼
+   │                        Postgres (:5433)  visitors, focus_sessions, visits, feedback
+   │                              ▲
    ├──WebSocket + HTTP──▶ game (Colyseus + express, :2567)
-   │                        rooms, NPC simulation, /rooms, /stats, /leaderboard,
-   │                        /feedback, /admin/*, /metrics, /health
-   │                              │
-   │                              └──▶ Postgres (:5433)  visitors, focus_sessions, visits, feedback
+   │                        rooms, NPC simulation, /rooms, /internal/live, /metrics, /health;
+   │                        writes visits and focus sessions
    │
    └──WebRTC──▶ LiveKit (:7880 signalling, 7881/tcp, 7882/udp media)
                   voice and screen share; tokens are issued by the game server
 
 Observability (pnpm obs:up, localhost only)
-  Prometheus :9090 ──scrapes──▶ game /metrics      Alertmanager :9093 ◀── alerts
-  Alloy :12345 ──ships──▶ Loki    (apps/game/logs/game.log + every compose container)
+  Prometheus :9090 ──scrapes──▶ game and api /metrics      Alertmanager :9093 ◀── alerts
+  Alloy :12345 ──ships──▶ Loki    (apps/game/logs, apps/api/logs + every compose container)
   Grafana :3001 ── Prometheus, Loki, Alertmanager datasources; "Service overview" dashboard
 ```
 
@@ -32,7 +36,11 @@ Observability (pnpm obs:up, localhost only)
 - **Music is client-only**: static MP3s in `apps/web/public/music`, played per person.
 - **Postgres is optional.** Without `DATABASE_URL` rooms still work; stats, visits and feedback are
   off (and `/admin` says so).
-- **The web app talks to the game server directly** (CORS with credentials for `/admin`).
+- **The REST API is its own server** (`apps/api`, Hono) so a slow admin query never shares the
+  game's event loop. It is same-origin under `/api` (Caddy in production, a Next rewrite in dev):
+  no CORS, and the admin cookie is first-party. The web app calls it through a typed client
+  (`hc<AppType>`, `lib/api.ts`). The game server is still reached directly for `/rooms` and the
+  WebSocket. Restarting the game still disconnects everyone; restarting the API doesn't.
 
 ## On AWS (`ap-southeast-7`, up during playtests)
 
@@ -42,7 +50,8 @@ Namecheap (registrar) ─ nameservers ─▶ Route 53
 ┌──────────────────────── VPC ────────────────────────┐
 │ public subnet                                       │
 │   EC2 t4g.medium · Docker Compose                   │
-│     Caddy (TLS) → web, game, LiveKit, Grafana       │
+│     Caddy (TLS) → web, api (/api/*), game, LiveKit, │
+│       Grafana                                       │
 │     Prometheus · Alertmanager · Loki · Alloy        │
 │ private subnets (2 AZs)                             │
 │   RDS PostgreSQL 17 · db.t4g.micro · backups        │
@@ -63,13 +72,17 @@ apps/web/            Next.js 16 client
                      music, voice, feedback, admin, stats, todo, avatar, lobby
   public/music/      lo-fi tracks (Pixabay)
   e2e/               Playwright tests
+apps/api/            REST API (Hono): createApp(deps) in app.ts, AppType for the web client
+  src/features/      stats (stats + leaderboard), feedback, admin (auth, routes, CSV)
+  src/metrics.ts     Prometheus metrics, HTTP RED middleware, chaos switches
+  scripts/           stats-check (stats queries + endpoints against Postgres)
 apps/game/           Colyseus server
   src/rooms/         StudyRoom (handlers, join/leave) and pure rules
   src/npc/           NpcDirector (API), cat, buddy, motion
-  src/admin/         admin auth (signed cookie) and the feedback/admin routes
+  src/live.ts        room listing and /internal/live (admin live data)
   src/metrics.ts     Prometheus metrics, HTTP RED middleware, chaos switches
   src/log.ts         pino logger
-  scripts/           smoke (WebSocket e2e), bots, load, stats-check
+  scripts/           smoke (WebSocket e2e), bots, load
 packages/shared/     protocol types, layout, navigation (A*), collisions, NPC and feedback types
 packages/db/         Drizzle schema, migrations, stats and admin queries
 infra/terraform/     AWS: bootstrap (delegation set, once) and app (the playtest stack)
@@ -87,6 +100,7 @@ docs/                this file, the roadmap, the decision log
 | ----------- | ------------------------- |
 | 3000        | web (Next.js dev)         |
 | 2567        | game server               |
+| 2568        | API server                |
 | 5433        | Postgres                  |
 | 7880–7882   | LiveKit                   |
 | 3001        | Grafana                   |
@@ -98,13 +112,16 @@ docs/                this file, the roadmap, the decision log
 See [`.env.example`](../.env.example). Runtime variables only reach `pnpm dev` if they are listed
 under `passThroughEnv` in `turbo.json` (Turborepo 2 drops undeclared ones).
 
-| Variable                                       | Used by | Purpose                                                   |
-| ---------------------------------------------- | ------- | --------------------------------------------------------- |
-| `NEXT_PUBLIC_GAME_URL`                         | web     | Where the game server is                                  |
-| `PORT`, `WEB_ORIGIN`                           | game    | Listen port; the web origin allowed by CORS               |
-| `DATABASE_URL`                                 | game    | Postgres (optional)                                       |
-| `ADMIN_PASSWORD`                               | game    | Turns on `/admin` (dev default `chanom-dev`)              |
-| `LIVEKIT_PUBLIC_URL`, `LIVEKIT_API_KEY/SECRET` | game    | Voice tokens                                              |
-| `TRUST_PROXY`                                  | game    | Real client IPs behind Caddy (rate limits)                |
-| `LOG_LEVEL`, `LOG_FILE`                        | game    | pino level; JSON log file for Alloy (dev)                 |
-| `CHAOS_ERROR_RATE`, `CHAOS_LATENCY_MS`         | game    | Inject API failures / latency for drills (off by default) |
+| Variable                                       | Used by | Purpose                                                    |
+| ---------------------------------------------- | ------- | ---------------------------------------------------------- |
+| `NEXT_PUBLIC_GAME_URL`                         | web     | Where the game server is                                   |
+| `API_DEV_URL`                                  | web     | Where the dev `/api` rewrite goes (`localhost:2568`)       |
+| `PORT`, `WEB_ORIGIN`                           | game    | Listen port; the web origin allowed by CORS                |
+| `PORT`                                         | api     | Listen port (2568)                                         |
+| `DATABASE_URL`                                 | both    | Postgres (optional); the API runs the migrations           |
+| `ADMIN_PASSWORD`                               | api     | Turns on `/admin` (dev default `chanom-dev`)               |
+| `GAME_INTERNAL_URL`                            | api     | Game server for admin live data (`http://game:2567`)       |
+| `LIVEKIT_PUBLIC_URL`, `LIVEKIT_API_KEY/SECRET` | game    | Voice tokens                                               |
+| `TRUST_PROXY`                                  | both    | Real client IPs behind Caddy (rate limits, admin lockout)  |
+| `LOG_LEVEL`, `LOG_FILE`                        | both    | pino level; JSON log file for Alloy (dev)                  |
+| `CHAOS_ERROR_RATE`, `CHAOS_LATENCY_MS`         | both    | Inject HTTP failures / latency for drills (off by default) |

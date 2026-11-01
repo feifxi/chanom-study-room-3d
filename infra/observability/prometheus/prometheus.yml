@@ -1,4 +1,4 @@
-# Local Prometheus. The game server runs on the host (pnpm dev), so it's reached through host.docker.internal.
+# Local Prometheus. The game and API servers run on the host (pnpm dev), so they're reached through host.docker.internal.
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
@@ -19,6 +19,11 @@ scrape_configs:
       - targets: ['host.docker.internal:2567']
         labels:
           service: game
+  - job_name: api
+    static_configs:
+      - targets: ['host.docker.internal:2568']
+        labels:
+          service: api
   - job_name: prometheus
     static_configs:
       - targets: ['localhost:9090']

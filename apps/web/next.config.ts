@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   // Workspace packages ship TypeScript source.
   transpilePackages: ['@study/shared'],
+  // The REST API is same-origin under /api. In production Caddy routes it before it reaches Next;
+  // in dev this proxies it to apps/api, so the browser code is the same in both.
+  async rewrites() {
+    if (process.env.NODE_ENV === 'production') return [];
+    return [{ source: '/api/:path*', destination: `${process.env.API_DEV_URL ?? 'http://localhost:2568'}/api/:path*` }];
+  },
 };
 
 export default nextConfig;

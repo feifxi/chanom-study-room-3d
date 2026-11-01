@@ -1,8 +1,8 @@
 import { defineConfig } from '@playwright/test';
 
 /**
- * End-to-end tests against the real app: Next dev server + Colyseus game server.
- *   pnpm e2e            (starts both servers if they aren't running)
+ * End-to-end tests against the real app: Next dev server + Colyseus game server + Hono API.
+ *   pnpm e2e            (starts the servers that aren't already running)
  * The room is WebGL, so Chrome uses SwiftShader; audio is always muted.
  */
 export default defineConfig({
@@ -27,6 +27,12 @@ export default defineConfig({
     {
       command: 'pnpm --filter @study/game dev',
       url: 'http://localhost:2567/health',
+      reuseExistingServer: true,
+      timeout: 60_000,
+    },
+    {
+      command: 'pnpm --filter @study/api dev',
+      url: 'http://localhost:2568/api/health',
       reuseExistingServer: true,
       timeout: 60_000,
     },

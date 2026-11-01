@@ -1,13 +1,13 @@
 import { expect, test } from '@playwright/test';
 import { enterRoom, uniqueName, useProfile } from './helpers';
 
-const GAME_URL = 'http://localhost:2567';
-/** Matches the dev default in apps/game's dev script; set ADMIN_PASSWORD to override. */
+/** Matches the dev default in apps/api's dev script; set ADMIN_PASSWORD to override. */
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'chanom-dev';
 
 test.beforeEach(async ({ request }) => {
-  const health = (await (await request.get(`${GAME_URL}/health`)).json()) as { stats: boolean };
-  test.skip(!health.stats, 'feedback needs the database');
+  // Through the web origin, like the browser: this also checks the dev /api rewrite
+  const health = (await (await request.get('/api/health')).json()) as { db: boolean };
+  test.skip(!health.db, 'feedback needs the database');
 });
 
 test('leaving asks for feedback once, and it shows up on the admin page', async ({ page }) => {
@@ -64,6 +64,6 @@ test('the feedback card is gone when you come back into a room', async ({ page }
 });
 
 test('the admin data needs a session', async ({ request }) => {
-  expect((await request.get(`${GAME_URL}/admin/overview`)).status()).toBe(401);
-  expect((await request.get(`${GAME_URL}/admin/feedback.csv`)).status()).toBe(401);
+  expect((await request.get('/api/admin/overview')).status()).toBe(401);
+  expect((await request.get('/api/admin/feedback.csv')).status()).toBe(401);
 });

@@ -10,10 +10,9 @@ RUN pnpm install --frozen-lockfile --filter @study/game...
 RUN pnpm --filter @study/game build
 
 FROM node:24-bookworm-slim AS run
-ENV NODE_ENV=production PORT=2567 MIGRATIONS_DIR=/app/drizzle
+ENV NODE_ENV=production PORT=2567
 WORKDIR /app
 COPY --from=build /repo/apps/game/dist ./dist
-COPY --from=build /repo/packages/db/drizzle ./drizzle
 RUN echo '{"type":"module"}' > package.json
 USER node
 EXPOSE 2567

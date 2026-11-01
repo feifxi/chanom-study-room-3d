@@ -1,14 +1,15 @@
 /**
  * Checks the study-stats queries and endpoints against a real Postgres:
- *   pnpm --filter @study/game stats-check   (game server running with DATABASE_URL)
+ *   pnpm --filter @study/api stats-check   (API running with DATABASE_URL)
  *
  * Seeds focus sessions for a throwaway visitor across several Thai days,
  * then verifies totals, the streak, the 7-day series and the leaderboard.
  */
 import { eq } from 'drizzle-orm';
-import { createDb, dayKey, focusSessions, upsertVisitor, visitors, type VisitorStatsView } from './_db';
+import { createDb, dayKey, focusSessions, upsertVisitor, visitors } from '@study/db';
+import type { VisitorStatsView } from '@study/shared';
 
-const URL = process.env.GAME_URL ?? 'http://localhost:2567';
+const URL = process.env.API_URL ?? 'http://localhost:2568/api';
 const { db, close } = createDb(process.env.DATABASE_URL ?? 'postgres://study:study@localhost:5433/study');
 let failures = 0;
 const check = (label: string, ok: boolean, detail = '') => {

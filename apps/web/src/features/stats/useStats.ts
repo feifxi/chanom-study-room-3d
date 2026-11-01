@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { LeaderRowView, VisitorStatsView } from '@study/shared';
-import { GAME_URL } from '@/lib/config';
+import { api } from '@/lib/api';
 
 export interface StatsState {
   /** null while loading or when stats are disabled on the server */
@@ -19,9 +19,13 @@ export function useStats(visitorId: string | undefined): StatsState {
     let alive = true;
     const load = async () => {
       try {
-        const [s, l] = await Promise.all([fetch(`${GAME_URL}/stats/${visitorId}`), fetch(`${GAME_URL}/leaderboard?period=week`)]);
+        const [s, l] = await Promise.all([
+          api.stats[':visitorId'].$get({ param: { visitorId } }),
+          api.leaderboard.$get({ query: { period: 'week' } }),
+        ]);
         if (!alive) return;
         if (s.status === 503) return setState({ stats: null, leaders: null, enabled: false });
+        if (!s.ok || !l.ok) return;
         setState({ stats: await s.json(), leaders: await l.json(), enabled: true });
       } catch {
         // Server offline: leave the last values in place

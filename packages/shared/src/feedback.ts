@@ -35,17 +35,21 @@ export interface AdminSummary {
   daily: { date: string; visitors: number }[];
 }
 
+/** GET /internal/live on the game server: who is online right now (the API adds it to the overview). */
+export interface AdminLive {
+  online: number;
+  /** Highest number of people online at once since the game server started. */
+  peakOnline: number;
+  rooms: { label: string; clients: number; maxClients: number; npcs: number }[];
+}
+
 /**
  * GET /admin/overview: product analytics (feedback first, then usage).
  * Service health and performance live in Grafana, not here.
  */
 export interface AdminOverview {
-  live: {
-    online: number;
-    /** Highest number of people online at once since the server started. */
-    peakOnline: number;
-    rooms: { label: string; clients: number; maxClients: number; npcs: number }[];
-  };
+  /** null when the API can't reach the game server */
+  live: AdminLive | null;
   /** null when the database is off */
   summary: AdminSummary | null;
   feedback: FeedbackRow[];
