@@ -92,6 +92,18 @@ aws ssm get-command-invocation --command-id "$CMD" --instance-id "$INSTANCE" \
   --query '{status: Status, output: StandardOutputContent, errors: StandardErrorContent}' --output yaml | tail -20
 [ "$RESULT" = "Success" ] || { echo "The deploy command on the host failed ($RESULT)"; exit 1; }
 
+echo "==> Reloading Caddy and the monitoring configs (graceful)"
+# Unchanged containers keep running with the old config files (see reload-configs.sh)
+CMD=$(aws ssm send-command --instance-ids "$INSTANCE" --document-name AWS-RunShellScript \
+  --parameters 'commands=["bash /opt/chanom/bundle/infra/compose/reload-configs.sh"]' --query Command.CommandId --output text)
+aws ssm wait command-executed --command-id "$CMD" --instance-id "$INSTANCE" || true
+RESULT=$(aws ssm get-command-invocation --command-id "$CMD" --instance-id "$INSTANCE" --query Status --output text)
+[ "$RESULT" = "Success" ] || {
+  aws ssm get-command-invocation --command-id "$CMD" --instance-id "$INSTANCE" --query StandardErrorContent --output text | tail -5
+  echo "Reloading the configs on the host failed ($RESULT)"
+  exit 1
+}
+
 echo "==> Checking the site"
 healthy=""
 for _ in $(seq 1 30); do

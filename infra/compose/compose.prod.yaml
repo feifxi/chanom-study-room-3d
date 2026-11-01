@@ -88,6 +88,7 @@ services:
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.retention.time=15d
+      - --web.enable-lifecycle # POST /-/reload after a deploy (infra/compose/reload-configs.sh); internal only
     volumes:
       - ../observability/prometheus/prometheus.prod.yml:/etc/prometheus/prometheus.yml:ro
       - ../observability/prometheus/rules:/etc/prometheus/rules:ro
