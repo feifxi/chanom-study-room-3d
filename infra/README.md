@@ -90,6 +90,27 @@ token's subject with the role's trust policy. GitHub signs newer repos with an i
 in `github_repo_ids` (bootstrap). Check yours with
 `curl -s https://api.github.com/repos/feifxi/chanom-study-room-3d/actions/oidc/customization/sub`.
 
+### Moving to a new GitHub repo
+
+GitHub signs this account's OIDC tokens with the repo's numeric ID, so a recreated repo (even with
+the same name) can't assume the deploy role until bootstrap knows the new ID. Nothing is lost by
+deleting the old repo except its Actions history: the code is local and no secrets live in GitHub.
+
+1. Locally: `git status` is clean and `git branch` shows `main` and `agent-hq`.
+2. Delete the old repo (Settings → Delete this repository). Create the new one **empty** (no README,
+   .gitignore or license) and **public**: the arm64 deploy runner (`ubuntu-24.04-arm`) and Actions
+   minutes are free only for public repos.
+3. If the name changed: `git remote set-url origin https://github.com/<owner>/<name>.git`. Then
+   `git push -u origin main agent-hq` (the deploy job skips until step 5).
+4. Get the new IDs: `curl -s https://api.github.com/repos/<owner>/<name>/actions/oidc/customization/sub`
+   → `repo:<owner>@<ownerId>/<name>@<repoId>`. Put them in `github_repo_ids` (and `github_repo` if
+   the name changed) in `terraform/bootstrap/github-deploy.tf`, commit, then
+   `terraform -chdir=infra/terraform/bootstrap apply` (expect 1 change: the role's trust policy).
+5. Repo → Settings → Secrets and variables → Actions → **Variables**: `AWS_DEPLOY_ROLE_ARN` =
+   `terraform -chdir=infra/terraform/bootstrap output -raw github_deploy_role_arn` (unchanged).
+6. Actions → CI/CD → **Run workflow** on `main`; the deploy step should end with `==> Deployed …`.
+   Optional: Settings → Environments → `playtest` with yourself as a required reviewer.
+
 ## Checks
 
 ```bash

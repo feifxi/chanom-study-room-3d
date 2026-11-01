@@ -32,6 +32,10 @@ The full plan, with phases and checks: **[plans/2026-11-api-and-sre.md](plans/20
 5. Load test and `docs/CAPACITY.md`.
 6. Error budget policy (window = one playtest) and postmortems.
 
+**Reminder (user to do):** delete the GitHub repo and create a fresh one, then set CD up again:
+steps in [infra/README.md](../infra/README.md#moving-to-a-new-github-repo). The deploy role trusts the
+repo's numeric ID, so CD fails until bootstrap is updated with the new ID.
+
 Also open (not urgent): try mobile on real phones; external uptime check; `pnpm infra:down` when
 the AWS stack isn't needed (it costs about $1.8/day while up). After this plan, the next product
 theme is **activities to do together**.
