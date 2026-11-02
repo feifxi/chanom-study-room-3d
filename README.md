@@ -131,5 +131,4 @@ infra/        Terraform, production Compose stack, observability config, deploy 
 
 ## Credits
 
-Lo-fi tracks by Alex Morgan on [Pixabay](https://pixabay.com/) (royalty-free). The earlier Agent
-HQ prototype lives on the `agent-hq` branch.
+Lo-fi tracks by Alex Morgan on [Pixabay](https://pixabay.com/) (royalty-free).
