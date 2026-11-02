@@ -1,7 +1,7 @@
 # Production stack
 
 Everything runs on one host with Docker Compose: Caddy (HTTPS, routing), web, api, game, LiveKit
-and the observability stack. The database is RDS on AWS (see [docs/ROADMAP.md](../docs/ROADMAP.md)).
+and the observability stack. The database is RDS ([infra/README.md](../README.md)).
 
 | Hostname          | Service                                                                         |
 | ----------------- | ------------------------------------------------------------------------------- |
@@ -40,9 +40,12 @@ docker compose -f infra/compose/compose.prod.yaml --env-file infra/compose/.env.
 docker compose up -d livekit
 ```
 
-Verified on 2026-10-29: every route through Caddy, `/metrics` hidden, admin needs a session,
-joining a room over WSS, voice through LiveKit (track published), Prometheus scraping all
-targets, container logs in Loki with levels.
+## Config changes
+
+Configs are mounted as **folders** (`caddy/`, `../observability/*/`), not single files. A deploy
+syncs them from S3, which replaces each file; a single-file mount would keep showing the old one.
+After the sync, `reload-configs.sh` reloads Caddy, Prometheus, Alertmanager and Alloy in place, so
+config-only changes don't restart anything.
 
 ## Known limits
 

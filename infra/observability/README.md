@@ -1,7 +1,7 @@
 # Observability and SRE practice
 
-Metrics, logs, SLOs and alerts for the study room, runnable on a laptop. The same configuration is
-meant to move to the AWS host later.
+Metrics, logs, SLOs and alerts for the study room. The same configuration runs on a laptop
+(`pnpm obs:up`) and on the AWS host (see "In production" below).
 
 > `/admin` in the app is **product analytics** (feedback, ratings, visitors).
 > This stack is about **service health**: is it fast and reliable enough, and why not?
@@ -67,7 +67,7 @@ sum by (level) (count_over_time({service="game"}[5m]))
 | API latency       | API requests answered within 300 ms                 | 99%       | 1% of requests         |
 | Session stability | Room sessions that don't end with a lost connection | 99%       | 1% of sessions         |
 
-"API" means everything except `/metrics` and `/health`. Colyseus matchmaking is served outside
+"API" means every HTTP route except `/metrics`, `/health`, `/api/health` and `/internal/live`. Colyseus matchmaking is served outside
 express, so it isn't in the HTTP metrics; whether joins work shows up in session stability instead.
 
 The rules are generated: edit the table in `prometheus/gen_slo_rules.py`, then
@@ -87,8 +87,8 @@ Each SLO gets recording rules `slo:<name>:error_ratio_rate{5m,30m,1h,2h,6h,1d,3d
 The short window makes alerts stop quickly once the problem is fixed. Alertmanager **inhibits**
 the ticket while the page for the same SLO is firing.
 
-Plus two plain alerts: `GameServerDown` (scrape failing for 1 minute) and `EventLoopLagHigh`
-(p99 lag above 100 ms for 5 minutes).
+Plus three plain alerts: `GameServerDown` and `ApiServerDown` (scrape failing for 1 minute) and
+`EventLoopLagHigh` (p99 lag above 100 ms for 5 minutes).
 
 > Locally there are only hours of data, so "budget left" on the dashboard uses the 3-day window.
 > With real traffic you would compute it over 30 days.
@@ -105,7 +105,8 @@ saw at each step; that's the raw material for a postmortem.
 2. **Slowness.** `CHAOS_LATENCY_MS=400 pnpm dev` plus load. The latency SLO burns while
    availability stays green, a reminder that "up" is not the same as "good".
 3. **Server down.** Stop `pnpm dev`. `GameServerDown` fires after a minute. Is the lobby's
-   "Can't reach the server" message a good user experience?
+   "Can't reach the server" message a good user experience? Then stop only the API: rooms keep
+   working and `ApiServerDown` fires.
 4. **Lost sessions.** Start `bots 6`, then kill them hard (`kill -9` the process). You'll see
    `dropped`, then `timed_out` 20 seconds later, and the session-stability SLO burns. Compare with
    stopping them nicely (Ctrl+C).
@@ -202,7 +203,7 @@ each time it sends, so adding it later only needs another `pnpm infra:up`, no re
 Treat the webhook URL like a password: anyone with it can post to the channel. If it leaks,
 delete the webhook in Discord and create a new one.
 
-## Moving to AWS
+## In production
 
 The same pieces run on the EC2 host next to the app containers. Differences:
 
@@ -212,5 +213,4 @@ The same pieces run on the EC2 host next to the app containers. Differences:
 - Prometheus scrapes `game:2567` and `api:2568` on the compose network instead of
   `host.docker.internal`.
 - The Discord webhook URL comes from SSM Parameter Store instead of a local file. CloudWatch
-  alarms and the AWS Budget email you, and an external uptime check (which can also post to
-  Discord) covers the case where the whole host is down.
+  alarms and the AWS Budget email you, which also covers the whole host being down.

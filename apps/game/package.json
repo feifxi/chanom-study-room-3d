@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "DATABASE_URL=${DATABASE_URL:-postgres://study:study@localhost:5433/study} ADMIN_PASSWORD=${ADMIN_PASSWORD:-chanom-dev} LOG_FILE=${LOG_FILE:-logs/game.log} tsx watch src/index.ts",
+    "dev": "DATABASE_URL=${DATABASE_URL:-postgres://study:study@localhost:5433/study} LOG_FILE=${LOG_FILE:-logs/game.log} tsx watch src/index.ts",
     "build": "tsup",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",

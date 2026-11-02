@@ -13,7 +13,7 @@ variable "github_repo" {
 variable "github_repo_ids" {
   description = "The repository's owner ID and repo ID, as in its OIDC subject"
   type        = object({ owner = number, repo = number })
-  default     = { owner = 137422903, repo = 1438191155 }
+  default     = { owner = 137422903, repo = 1442478017 }
 }
 
 data "aws_caller_identity" "current" {}

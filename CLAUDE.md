@@ -4,11 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A 3D multiplayer study room (cosy library, anime chibi avatars): walk around, sit at desks, chat,
 proximity voice, desk screen share, personal pomodoro, room NPCs. pnpm + Turborepo monorepo,
-TypeScript everywhere. Docs: `docs/ROADMAP.md` (status and next steps), `docs/ARCHITECTURE.md`,
-`docs/DECISIONS.md` (decision log — add a row when making a notable choice), `infra/README.md`,
+TypeScript everywhere. Docs: `README.md` (features, architecture), `infra/README.md` (AWS, CI/CD),
 `infra/observability/README.md` (SLOs, chaos drills, runbooks).
 
-**Current work:** see `docs/ROADMAP.md` → "Next" (a new plan is being decided).
+**Status:** finished; the AWS stack is down unless a playtest is running.
 
 ## Commands
 
