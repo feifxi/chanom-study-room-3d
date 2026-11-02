@@ -183,7 +183,7 @@ saw at each step; that's the raw material for a postmortem.
 Alertmanager posts firing and resolved alerts to a Discord channel. One-time setup:
 
 1. In Discord, create a server for yourself (or use one you own) and a channel such as `#alerts`.
-2. Channel settings (⚙️) → **Integrations** → **Webhooks** → **New Webhook** → name it
+2. Channel settings → **Integrations** → **Webhooks** → **New Webhook** → name it
    "Alertmanager" → **Copy Webhook URL**.
 3. Save it where git won't see it (the folder is ignored):
    ```bash

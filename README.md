@@ -1,29 +1,14 @@
-<div align="center">
+# Chanom Study Room
 
-# 📚 Chanom Study Room
+A cosy 3D library where friends study together online. Walk around as an anime chibi, sit at a
+desk, chat, talk with proximity voice and run a pomodoro side by side.
 
-**A cosy 3D library where friends study together online.**
-Walk around as an anime chibi, sit at a desk, chat, talk with proximity voice
-and run a pomodoro side by side.
+**Live demo:** [studyroom.chanombude.me](https://studyroom.chanombude.me) (online during playtests
+only; the AWS stack is turned off in between to save cost)
 
-### [▶ Play now: studyroom.chanombude.me](https://studyroom.chanombude.me)
+![Friends studying together in the library: chibi avatars on the sofa and at a desk, a cat NPC, the Pomodoro panel and chat](.github/screenshot.png)
 
-<sub>Online during playtests; between them the AWS stack is turned off to save cost.</sub>
-
-![Next.js](https://img.shields.io/badge/Next.js_16-000?logo=nextdotjs&logoColor=white)
-![Three.js](https://img.shields.io/badge/React_Three_Fiber-000?logo=threedotjs&logoColor=white)
-![Colyseus](https://img.shields.io/badge/Colyseus-ec4899)
-![Hono](https://img.shields.io/badge/Hono-E36002?logo=hono&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
-![LiveKit](https://img.shields.io/badge/LiveKit-1f1f1f)
-![AWS](https://img.shields.io/badge/AWS-232F3E?logo=amazonwebservices&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
-
-<img src=".github/screenshot.png" alt="Friends studying together in the library: chibi avatars on the sofa and at a desk, a cat NPC, the Pomodoro panel and chat" width="900">
-
-</div>
-
-## ✨ Features
+## Features
 
 - **Multiplayer rooms**: up to 20 people per room; a new room opens when one is full. No accounts:
   pick a nickname and an outfit.
@@ -37,7 +22,7 @@ and run a pomodoro side by side.
 - **Phones and tablets**: joystick, action button and a compact layout.
 - **Feedback and `/admin`**: a rating card when you leave, and an analytics page behind a password.
 
-### 🎮 Controls
+### Controls
 
 | Action        | Keyboard              | Phone / tablet      |
 | ------------- | --------------------- | ------------------- |
@@ -46,7 +31,7 @@ and run a pomodoro side by side.
 | Chat          | Enter                 | Chat button         |
 | Camera        | Drag to orbit, scroll | Drag, pinch to zoom |
 
-## 🧱 Tech stack
+## Tech stack
 
 | Part      | Tech                                                                    |
 | --------- | ----------------------------------------------------------------------- |
@@ -57,7 +42,7 @@ and run a pomodoro side by side.
 | Ops       | Docker Compose, Caddy, Terraform on AWS, GitHub Actions (OIDC)          |
 | Observing | Prometheus, Grafana, Loki, Alloy, Alertmanager (SLOs, burn-rate alerts) |
 
-## 🚀 Getting started
+## Getting started
 
 Requirements: Node 24 (`.nvmrc`), pnpm (`corepack enable pnpm`), Docker.
 
@@ -70,7 +55,7 @@ pnpm dev                 # web :3000, game server :2567, API :2568
 Open http://localhost:3000. The admin page is http://localhost:3000/admin (dev password
 `chanom-dev`). Every setting has a local default; [`.env.example`](.env.example) lists them.
 
-## 🛠️ Commands
+## Commands
 
 | Command                             | What it does                                                |
 | ----------------------------------- | ----------------------------------------------------------- |
@@ -83,7 +68,7 @@ Open http://localhost:3000. The admin page is http://localhost:3000/admin (dev p
 | `pnpm obs:up` / `obs:down`          | Local Grafana (:3001), Prometheus, Loki and Alertmanager    |
 | `pnpm infra:up` / `deploy` / `down` | The AWS stack ([infra/README.md](infra/README.md))          |
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 Browser ──HTTPS──▶ Caddy ─┬─ /          ──▶ web   Next.js: lobby, 3D room, /admin
@@ -111,7 +96,7 @@ behind Caddy, RDS PostgreSQL, ECR, Route 53, all in Terraform. Pushes to `main` 
 through GitHub OIDC (no AWS keys stored). The stack is created with `pnpm infra:up` and removed with
 `pnpm infra:down`.
 
-## 📁 Project structure
+## Project structure
 
 ```
 apps/
@@ -124,12 +109,12 @@ packages/
 infra/        Terraform, production Compose stack, observability config, deploy scripts
 ```
 
-## 📖 Documentation
+## Documentation
 
 - [Infrastructure](infra/README.md): AWS setup, deploys and CI/CD
 - [Observability](infra/observability/README.md): SLOs, alerts, drills and runbooks
 
-## 🙏 Credits
+## Credits
 
 Lo-fi tracks by Alex Morgan on [Pixabay](https://pixabay.com/) (royalty-free). The earlier Agent
 HQ prototype lives on the `agent-hq` branch.
