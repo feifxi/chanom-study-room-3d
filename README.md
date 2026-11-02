@@ -1,12 +1,27 @@
-# Chanom Study Room
+<div align="center">
 
-A cosy 3D library where friends study together online. Walk around as an anime chibi, sit at a
-desk, chat, talk with proximity voice and run a pomodoro side by side.
+# 📚 Chanom Study Room
 
-**Live demo:** [studyroom.chanombude.me](https://studyroom.chanombude.me) (online during playtests
-only; the AWS stack is turned off in between to save cost)
+**A cosy 3D library where friends study together online.**
+Walk around as an anime chibi, sit at a desk, chat, talk with proximity voice
+and run a pomodoro side by side.
 
-![Friends studying together in the library: chibi avatars on the sofa and at a desk, a cat NPC, the Pomodoro panel and chat](.github/screenshot.png)
+### [▶ Play now: studyroom.chanombude.me](https://studyroom.chanombude.me)
+
+<sub>Online during playtests; between them the AWS stack is turned off to save cost.</sub>
+
+![Next.js](https://img.shields.io/badge/Next.js_16-000?logo=nextdotjs&logoColor=white)
+![Three.js](https://img.shields.io/badge/React_Three_Fiber-000?logo=threedotjs&logoColor=white)
+![Colyseus](https://img.shields.io/badge/Colyseus-ec4899)
+![Hono](https://img.shields.io/badge/Hono-E36002?logo=hono&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
+![LiveKit](https://img.shields.io/badge/LiveKit-1f1f1f)
+![AWS](https://img.shields.io/badge/AWS-232F3E?logo=amazonwebservices&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+
+<img src=".github/screenshot.png" alt="Friends studying together in the library: chibi avatars on the sofa and at a desk, a cat NPC, the Pomodoro panel and chat" width="900">
+
+</div>
 
 ## Features
 
