@@ -1,9 +1,12 @@
 name: CI/CD
 
+# Docs-only changes skip CI/CD: nothing to test or deploy. A push that also touches code still runs.
 on:
   push:
     branches: [main]
+    paths-ignore: ['**.md', '.github/screenshot.png']
   pull_request:
+    paths-ignore: ['**.md', '.github/screenshot.png']
   workflow_dispatch: # run manually, e.g. to redeploy right after `pnpm infra:up`
 
 # One deploy at a time; a newer push waits instead of cancelling a deploy halfway through
