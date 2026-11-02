@@ -20,10 +20,6 @@ provider "aws" {
 
 resource "aws_route53_delegation_set" "studyroom" {
   reference_name = "chanom-studyroom"
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 output "delegation_set_id" {
