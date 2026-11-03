@@ -19,7 +19,7 @@ and run a pomodoro side by side.
 ![AWS](https://img.shields.io/badge/AWS-232F3E?logo=amazonwebservices&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
 
-<img src=".github/screenshot.png" alt="Friends studying together in the library: chibi avatars on the sofa and at a desk, a cat NPC, the Pomodoro panel and chat" width="900">
+<img src=".github/assets/screenshot.png" alt="Friends studying together in the library: chibi avatars on the sofa and at a desk, a cat NPC, the Pomodoro panel and chat" width="900">
 
 </div>
 
