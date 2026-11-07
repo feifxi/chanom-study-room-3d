@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { Monitor, Moon, Palette, Sun } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { VARIANTS, setVariant, useVariant, type VariantKind } from '@/lib/variants';
 import { PALETTES, usePalette } from './Providers';
 
 const PAGES = [
@@ -19,10 +21,13 @@ const PAGES = [
   ['Server home', '/servers/chanom'],
   ['Text channel', '/servers/chanom/chat/general'],
   ['3D room', '/servers/chanom/rooms/library'],
+  ['Public room', '/servers/public/rooms/cafe-lounge-1'],
   ['Invite (guest)', '/invite/cafe-chanom'],
 ] as const;
 
-/** Demo-only chrome: switch theme and palette, jump to any page. Not part of the app design. */
+const VARIANT_TITLES: Record<VariantKind, string> = { home: 'Home design', server: 'Server page design', room: 'Room layout' };
+
+/** Demo-only chrome: theme, palette, design variants, and a jump to any page. Not part of the app design. */
 export function DemoToolbar() {
   const { theme, setTheme } = useTheme();
   const { palette, setPalette } = usePalette();
@@ -37,8 +42,8 @@ export function DemoToolbar() {
           <Palette className="size-3.5" /> Demo
         </button>
       </PopoverTrigger>
-      <PopoverContent side="left" className="max-h-[90dvh] w-72 overflow-y-auto rounded-2xl p-3">
-        <p className="mb-2 text-[11px] font-black tracking-wider text-muted-foreground uppercase">Theme</p>
+      <PopoverContent side="left" className="max-h-[92dvh] w-80 overflow-y-auto rounded-2xl p-3">
+        <Title>Theme</Title>
         <div className="mb-3 grid grid-cols-3 gap-1.5">
           {(
             [
@@ -60,23 +65,34 @@ export function DemoToolbar() {
             </button>
           ))}
         </div>
-        <p className="mb-2 text-[11px] font-black tracking-wider text-muted-foreground uppercase">Palette</p>
-        <div className="mb-3 flex flex-col gap-1">
+
+        <Title>Palette · {PALETTES.find((p) => p.id === palette)?.label}</Title>
+        <div className="mb-3 grid grid-cols-5 gap-1.5">
           {PALETTES.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => setPalette(p.id)}
-              className={cn(
-                'flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm font-bold',
-                palette === p.id ? 'bg-secondary' : 'hover:bg-muted',
-              )}
-            >
-              <span className="size-4 rounded-full" style={{ background: p.swatch }} />
-              {p.label}
-            </button>
+            <Tooltip key={p.id}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setPalette(p.id)}
+                  aria-label={p.label}
+                  aria-pressed={palette === p.id}
+                  className={cn(
+                    'grid h-9 place-items-center rounded-xl border-2',
+                    palette === p.id ? 'border-foreground' : 'border-transparent hover:border-border',
+                  )}
+                >
+                  <span className="size-5 rounded-full shadow-sm" style={{ background: p.swatch }} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>{p.label}</TooltipContent>
+            </Tooltip>
           ))}
         </div>
-        <p className="mb-2 text-[11px] font-black tracking-wider text-muted-foreground uppercase">Pages</p>
+
+        {(Object.keys(VARIANTS) as VariantKind[]).map((kind) => (
+          <VariantPicker key={kind} kind={kind} />
+        ))}
+
+        <Title>Pages</Title>
         <div className="flex flex-wrap gap-1">
           {PAGES.map(([label, href]) => (
             <Link
@@ -91,4 +107,29 @@ export function DemoToolbar() {
       </PopoverContent>
     </Popover>
   );
+}
+
+function VariantPicker({ kind }: { kind: VariantKind }) {
+  const current = useVariant(kind);
+  return (
+    <div className="mb-3">
+      <Title>{VARIANT_TITLES[kind]}</Title>
+      <div className="flex flex-col gap-1">
+        {VARIANTS[kind].map(([id, label, hint]) => (
+          <button
+            key={id}
+            onClick={() => setVariant(kind, id as never)}
+            className={cn('rounded-xl border px-2.5 py-1.5 text-left', current === id ? 'border-primary bg-secondary' : 'hover:bg-muted')}
+          >
+            <span className="block text-sm font-extrabold">{label}</span>
+            <span className="block text-[11px] leading-snug text-muted-foreground">{hint}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Title({ children }: { children: React.ReactNode }) {
+  return <p className="mb-1.5 text-[11px] font-black tracking-wider text-muted-foreground uppercase">{children}</p>;
 }

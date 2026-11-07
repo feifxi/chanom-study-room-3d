@@ -12,6 +12,10 @@ export const PALETTES = [
   { id: 'blueberry', label: 'Blueberry soda', swatch: '#4a7fd6' },
   { id: 'taro', label: 'Taro bubble tea', swatch: '#8a6ad8' },
   { id: 'cocoa', label: 'Cocoa', swatch: '#a0674b' },
+  { id: 'lemon', label: 'Lemon soda', swatch: '#e8b10c' },
+  { id: 'mintchoco', label: 'Mint choco', swatch: '#23a594' },
+  { id: 'cherry', label: 'Cherry cola', swatch: '#c9344d' },
+  { id: 'mono', label: 'Mono', swatch: '#1c1c1c' },
 ] as const;
 export type Palette = (typeof PALETTES)[number]['id'];
 

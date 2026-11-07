@@ -20,14 +20,18 @@ export function RoomTools({
   pomo,
   music,
   touch,
+  direction = 'right',
   className,
 }: {
   study: ReactNode;
   pomo: ReturnType<typeof usePomodoro>;
   music: Music;
   touch: boolean;
+  /** Where panels open: beside a vertical rail (left side), or above a horizontal one (bottom bar). */
+  direction?: 'right' | 'up';
   className?: string;
 }) {
+  const up = direction === 'up';
   const [open, setOpen] = useState<ToolId | null>(null);
 
   const tools: { id: ToolId; icon: LucideIcon; label: string; badge?: ReactNode }[] = [
@@ -50,8 +54,8 @@ export function RoomTools({
   ];
 
   return (
-    <div className={cn('flex items-start gap-2', className)}>
-      <nav aria-label="Room tools" className="panel flex flex-col gap-1 p-1.5">
+    <div className={cn('flex gap-2', up ? 'relative' : 'items-start', className)}>
+      <nav aria-label="Room tools" className={cn('panel flex gap-1 p-1.5', up ? 'flex-row' : 'flex-col')}>
         {tools.map((t) => (
           <Tooltip key={t.id}>
             <TooltipTrigger asChild>
@@ -68,12 +72,12 @@ export function RoomTools({
                 {t.badge}
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right">{t.label}</TooltipContent>
+            <TooltipContent side={up ? 'top' : 'right'}>{t.label}</TooltipContent>
           </Tooltip>
         ))}
       </nav>
 
-      <div className="w-[min(300px,calc(100vw-5.5rem))]">
+      <div className={cn('w-[min(300px,calc(100vw-5.5rem))]', up && 'absolute bottom-full left-0 mb-2')}>
         <div className={cn(open !== 'study' && 'hidden')}>{study}</div>
         {open === 'music' && (
           <ToolCard title="Music" note="Only you hear it" onClose={() => setOpen(null)}>
@@ -82,22 +86,30 @@ export function RoomTools({
         )}
         {open === 'help' && (
           <ToolCard title="How to play" onClose={() => setOpen(null)}>
-            <dl className="flex flex-col gap-2 text-xs">
-              {(touch ? TOUCH : KEYS).map(([k, v]) => (
-                <div key={k} className="flex items-start gap-2">
-                  <dt className="flex-none rounded-md border bg-muted px-1.5 py-0.5 font-mono font-bold">{k}</dt>
-                  <dd className="pt-0.5 text-muted-foreground">{v}</dd>
-                </div>
-              ))}
-            </dl>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              Turn your mic on in the dock: the closer people stand, the louder they are. Sit at a table to share your screen with that
-              table.
-            </p>
+            <HelpContent touch={touch} />
           </ToolCard>
         )}
       </div>
     </div>
+  );
+}
+
+/** Controls for keyboard or touch, plus the two things people ask first (voice and screen share). */
+export function HelpContent({ touch }: { touch: boolean }) {
+  return (
+    <>
+      <dl className="flex flex-col gap-2 text-xs">
+        {(touch ? TOUCH : KEYS).map(([k, v]) => (
+          <div key={k} className="flex items-start gap-2">
+            <dt className="flex-none rounded-md border bg-muted px-1.5 py-0.5 font-mono font-bold">{k}</dt>
+            <dd className="pt-0.5 text-muted-foreground">{v}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="text-xs leading-relaxed text-muted-foreground">
+        Turn your mic on in the dock: the closer people stand, the louder they are. Sit at a table to share your screen with that table.
+      </p>
+    </>
   );
 }
 
