@@ -1,0 +1,426 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Cosy and cute, but modern. Light: V1's warm cream and strawberry milk. Dark: a plum-cocoa night
+ * (Discord-dark modern, never pure black). Six drink palettes swap only the brand colour family:
+ * strawberry (default), Thai tea, matcha, blueberry, taro and cocoa. Everything else reads these tokens.
+ */
+:root {
+  --radius: 1rem;
+
+  --background: #fbf4f1;
+  --background-2: #f7ebf0;
+  --foreground: #45323d;
+  --card: #ffffff;
+  --card-foreground: #45323d;
+  --popover: #ffffff;
+  --popover-foreground: #45323d;
+  --muted: #f8eef0;
+  --muted-foreground: #8c7782;
+  --accent: #fcf0f3;
+  --accent-foreground: #45323d;
+  --border: #f0e1e6;
+  --input: #ead9df;
+  --destructive: #d9435f;
+  --sidebar: #fffaf8;
+  --sidebar-foreground: #45323d;
+  --sidebar-border: #f0e1e6;
+  --rail: #f4e5ea;
+
+  /* Pastel tints for tiles and chips, each with a readable ink */
+  --lavender: #f0e9fc;
+  --lavender-ink: #7758c4;
+  --peach: #ffeadc;
+  --peach-ink: #b3612f;
+  --mint: #e3f5ea;
+  --mint-ink: #2f7d55;
+  --sky: #e4f1fc;
+  --sky-ink: #2e6ea8;
+  --tea: #e9955a;
+  --cocoa: #4a3443;
+  --online: #3fbf7f;
+  --idle: #f2b84b;
+  --gold: #e8a93a;
+
+  /* Brand family (strawberry) */
+  --primary: #df6392;
+  --primary-foreground: #ffffff;
+  --primary-ink: #bd4373;
+  --secondary: #ffe7f0;
+  --secondary-foreground: #bd4373;
+  --ring: #df6392;
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-ring: var(--ring);
+  --chart-1: var(--primary);
+  --chart-2: var(--tea);
+  --chart-3: var(--lavender-ink);
+  --chart-4: var(--mint-ink);
+  --chart-5: var(--sky-ink);
+  --shadow-soft: 0 10px 30px rgb(110 60 85 / 0.1);
+}
+
+.dark {
+  --background: #18131c;
+  --background-2: #1f1724;
+  --foreground: #f5ecf1;
+  --card: #241c29;
+  --card-foreground: #f5ecf1;
+  --popover: #2a2130;
+  --popover-foreground: #f5ecf1;
+  --muted: #2e2534;
+  --muted-foreground: #a99aa3;
+  --accent: #32283a;
+  --accent-foreground: #f5ecf1;
+  --border: rgb(255 255 255 / 0.08);
+  --input: rgb(255 255 255 / 0.12);
+  --destructive: #f0647e;
+  --sidebar: #1e1823;
+  --sidebar-foreground: #f5ecf1;
+  --sidebar-border: rgb(255 255 255 / 0.06);
+  --rail: #140f18;
+
+  --lavender: #2f2843;
+  --lavender-ink: #c3b0ff;
+  --peach: #3d2b24;
+  --peach-ink: #ffbf94;
+  --mint: #1f3529;
+  --mint-ink: #8fe0b2;
+  --sky: #1e2c3d;
+  --sky-ink: #9fcdf5;
+  --cocoa: #120d15;
+
+  --primary: #f27aa7;
+  --primary-foreground: #2b0f1d;
+  --primary-ink: #ff9cc1;
+  --secondary: #3b2432;
+  --secondary-foreground: #ffb3cf;
+  --ring: #f27aa7;
+  --shadow-soft: 0 12px 34px rgb(0 0 0 / 0.35);
+}
+
+[data-palette='matcha'] {
+  --primary: #4f9e6c;
+  --primary-ink: #367a50;
+  --secondary: #e1f3e6;
+  --secondary-foreground: #367a50;
+  --ring: #4f9e6c;
+  --background-2: #eef4ec;
+}
+.dark[data-palette='matcha'] {
+  --primary: #7acb98;
+  --primary-foreground: #0e2417;
+  --primary-ink: #9ee0b6;
+  --secondary: #1f3328;
+  --secondary-foreground: #a8e6c0;
+  --ring: #7acb98;
+  --background-2: #141c18;
+}
+[data-palette='taro'] {
+  --primary: #8a6ad8;
+  --primary-ink: #6c4fc0;
+  --secondary: #eee8fd;
+  --secondary-foreground: #6c4fc0;
+  --ring: #8a6ad8;
+  --background-2: #f1ecfa;
+}
+.dark[data-palette='taro'] {
+  --primary: #ad94f5;
+  --primary-foreground: #1c1235;
+  --primary-ink: #c7b5ff;
+  --secondary: #2c2443;
+  --secondary-foreground: #cdbcff;
+  --ring: #ad94f5;
+  --background-2: #19152a;
+}
+
+[data-palette='thaitea'] {
+  --primary: #e8772e;
+  --primary-ink: #c25a14;
+  --secondary: #ffead9;
+  --secondary-foreground: #b4520f;
+  --ring: #e8772e;
+  --background-2: #fbeee3;
+}
+.dark[data-palette='thaitea'] {
+  --primary: #ff9a52;
+  --primary-foreground: #2e1404;
+  --primary-ink: #ffb784;
+  --secondary: #3a2618;
+  --secondary-foreground: #ffc196;
+  --ring: #ff9a52;
+  --background-2: #1f1712;
+}
+[data-palette='blueberry'] {
+  --primary: #4a7fd6;
+  --primary-ink: #2f62b5;
+  --secondary: #e3edfc;
+  --secondary-foreground: #2f62b5;
+  --ring: #4a7fd6;
+  --background-2: #ecf1fa;
+}
+.dark[data-palette='blueberry'] {
+  --primary: #7aa7f5;
+  --primary-foreground: #0c1a33;
+  --primary-ink: #a3c3ff;
+  --secondary: #1f2a40;
+  --secondary-foreground: #adc8ff;
+  --ring: #7aa7f5;
+  --background-2: #131826;
+}
+[data-palette='cocoa'] {
+  --primary: #a0674b;
+  --primary-ink: #7e4b33;
+  --secondary: #f4e6dd;
+  --secondary-foreground: #7e4b33;
+  --ring: #a0674b;
+  --background-2: #f5ece5;
+}
+.dark[data-palette='cocoa'] {
+  --primary: #d49a7a;
+  --primary-foreground: #26140b;
+  --primary-ink: #e8b799;
+  --secondary: #36261f;
+  --secondary-foreground: #f0c4a8;
+  --ring: #d49a7a;
+  --background-2: #1c1613;
+}
+
+@theme inline {
+  --font-sans: var(--font-nunito), var(--font-thai), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-nunito), var(--font-thai), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-face), ui-monospace, monospace;
+  --color-background: var(--background);
+  --color-background-2: var(--background-2);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-ink: var(--primary-ink);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-rail: var(--rail);
+  --color-lavender: var(--lavender);
+  --color-lavender-ink: var(--lavender-ink);
+  --color-peach: var(--peach);
+  --color-peach-ink: var(--peach-ink);
+  --color-mint: var(--mint);
+  --color-mint-ink: var(--mint-ink);
+  --color-sky: var(--sky);
+  --color-sky-ink: var(--sky-ink);
+  --color-tea: var(--tea);
+  --color-cocoa: var(--cocoa);
+  --color-online: var(--online);
+  --color-idle: var(--idle);
+  --color-gold: var(--gold);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.25);
+  --radius-2xl: calc(var(--radius) * 1.5);
+  --radius-3xl: calc(var(--radius) * 2);
+  --radius-4xl: calc(var(--radius) * 2.5);
+  --shadow-soft: var(--shadow-soft);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* The app's backdrop: a soft gradient instead of a flat fill */
+.app-bg {
+  background: linear-gradient(180deg, var(--background), var(--background-2)) fixed;
+}
+
+/* ---------- Kept from V1: floating room panels, the cocoa dock, labels ---------- */
+/* In the components layer so Tailwind utilities (e.g. min-w-0 on phones) can override them */
+@layer components {
+  .panel {
+    background: color-mix(in oklab, var(--card) 96%, transparent);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(8px);
+  }
+
+  .dock {
+    background: var(--cocoa);
+    border-radius: 24px;
+    box-shadow: 0 14px 36px rgb(20 10 18 / 0.4);
+  }
+
+  .dock-btn {
+    display: flex;
+    min-width: 64px;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    border-radius: 14px;
+    padding: 8px 10px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgb(255 255 255 / 0.08);
+    transition: background-color 0.15s ease;
+  }
+  .dock-btn:not(:disabled):hover {
+    background: rgb(255 255 255 / 0.17);
+  }
+  .dock-btn[aria-pressed='true'] {
+    background: rgb(255 255 255 / 0.24);
+  }
+  .dock-btn:disabled {
+    opacity: 0.4;
+  }
+}
+
+.typing-dots {
+  align-items: center;
+  gap: 4px;
+  padding: 7px 10px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
+}
+.typing-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: typing-bounce 1s infinite ease-in-out;
+}
+.typing-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.typing-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes typing-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.speaking {
+  box-shadow:
+    0 0 0 2px #22c55e,
+    0 0 12px rgb(34 197 94 / 0.6);
+  animation: speaking-pulse 0.9s ease-in-out infinite alternate;
+}
+@keyframes speaking-pulse {
+  from {
+    box-shadow:
+      0 0 0 2px #22c55e,
+      0 0 4px rgb(34 197 94 / 0.4);
+  }
+  to {
+    box-shadow:
+      0 0 0 3px #22c55e,
+      0 0 14px rgb(34 197 94 / 0.7);
+  }
+}
+
+.emote-float {
+  position: absolute;
+  bottom: 100%;
+  font-size: 18px;
+  text-shadow: 0 0 6px #fff;
+  animation: emote-float 1.6s ease-out forwards;
+}
+@keyframes emote-float {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.6);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-34px) scale(1);
+  }
+}
+
+/* The little V1 bounce, for avatars and stickers in 2D */
+@keyframes hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+.hop:hover {
+  animation: hop 0.5s ease-in-out;
+}
+
+.camera-flash {
+  animation: camera-flash 0.45s ease-out;
+}
+@keyframes camera-flash {
+  from {
+    opacity: 0.9;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typing-dots span,
+  .speaking,
+  .hop:hover {
+    animation: none;
+  }
+}

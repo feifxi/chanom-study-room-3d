@@ -1,3 +1,5 @@
 packages:
   - apps/*
   - packages/*
+  # Temporary V2 UI demo (frontend only); scripts are named demo:* so turbo/CI skip it
+  - demo
