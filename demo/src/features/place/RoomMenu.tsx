@@ -65,7 +65,7 @@ export function RoomMenu({
   const [invite, setInvite] = useState(false);
   const [settings, setSettings] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false);
-  const [notify, setNotify] = useState('all');
+  const [notify, setNotify] = useState('mentions');
   const canEdit = !!room.myRole;
 
   return (
@@ -105,7 +105,7 @@ export function RoomMenu({
             <DropdownMenuSubContent className="rounded-2xl p-1.5">
               <DropdownMenuRadioGroup value={notify} onValueChange={setNotify}>
                 <DropdownMenuRadioItem value="all">Every message</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="mentions">Only @mentions</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="mentions">Only @mentions (default)</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="none">Nothing</DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
             </DropdownMenuSubContent>

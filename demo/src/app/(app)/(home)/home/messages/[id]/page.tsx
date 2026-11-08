@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, Ban, BellOff, Flag, MoreHorizontal, Play, Search, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
-import { Composer, MessageList } from '@/components/chat/Chat';
+import { ChatThread, DmLocked } from '@/components/chat/Chat';
 import { PRESENCE_LABEL, UserAvatar } from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,7 +19,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { DMS, SERVERS, serverById, userById, type Message } from '@/lib/mock';
+import { DMS, SERVERS, serverById, userById } from '@/lib/mock';
 
 const AvatarPreview = dynamic(() => import('@/features/avatar/AvatarPreview').then((m) => m.AvatarPreview), { ssr: false });
 
@@ -30,8 +30,10 @@ const AvatarPreview = dynamic(() => import('@/features/avatar/AvatarPreview').th
 export default function DmPage() {
   const { id } = useParams<{ id: string }>();
   const u = userById(id);
-  const [messages, setMessages] = useState<Message[]>(DMS.find((d) => d.with === id)?.messages ?? []);
-  const where = u.inRoom && serverById(u.inRoom.serverId);
+  const dm = DMS.find((d) => d.with === id);
+  const [state, setState] = useState<'friends' | 'unfriended' | 'blocked'>(dm?.unfriended ? 'unfriended' : 'friends');
+  // Only friends see where you are (presence is private), so an unfriended or blocked chat hides it
+  const where = state === 'friends' && u.inRoom && serverById(u.inRoom.serverId);
   const shared = SERVERS.filter((s) => s.members.includes(u.id));
   const yourRooms = SERVERS.filter((s) => !s.members.includes(u.id)).slice(0, 4);
 
@@ -46,12 +48,12 @@ export default function DmPage() {
           >
             <ArrowLeft className="size-4" />
           </Link>
-          <UserAvatar user={u} size={36} presence />
+          <UserAvatar user={u} size={36} presence={state === 'friends'} />
           <div className="min-w-0 flex-1">
             <p className="font-black">{u.name}</p>
             <p className="truncate text-xs text-muted-foreground">
               {where ? `In ${where.emoji} ${where.name} · ` : ''}
-              {u.activity ?? PRESENCE_LABEL[u.presence]}
+              {state === 'friends' ? (u.activity ?? PRESENCE_LABEL[u.presence]) : `@${u.handle}`}
             </p>
           </div>
           {where && u.inRoom && (
@@ -87,7 +89,13 @@ export default function DmPage() {
                 <BellOff /> Mute this chat
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" onSelect={() => toast(`${u.name} is blocked`)}>
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={() => {
+                  setState('blocked');
+                  toast(`${u.name} is blocked. Their messages are hidden in rooms you share.`);
+                }}
+              >
                 <Ban /> Block
               </DropdownMenuItem>
               <DropdownMenuItem variant="destructive" onSelect={() => toast('Report sent. Thanks for telling us.')}>
@@ -96,20 +104,36 @@ export default function DmPage() {
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          <div className="flex flex-col items-start gap-2 px-6 pt-8">
-            <UserAvatar user={u} size={72} />
-            <p className="text-2xl font-black">{u.name}</p>
-            <p className="text-sm text-muted-foreground">This is the start of your messages with {u.name}.</p>
-          </div>
-          <MessageList messages={messages} />
-        </div>
-        <div className="p-3">
-          <Composer
-            placeholder={`Message ${u.name}`}
-            onSend={(text) => setMessages([...messages, { id: String(Date.now()), author: 'me', at: 'Now', text }])}
-          />
-        </div>
+        <ChatThread
+          key={id}
+          initial={dm?.messages ?? []}
+          unread={dm?.unread}
+          members={['me', u.id]}
+          placeholder={`Message ${u.name}`}
+          replier={id === 'mai' ? { id: 'mai', text: 'hehe ok, see you there 🐱' } : undefined}
+          intro={
+            <div className="flex flex-col items-start gap-2 px-6 pt-8">
+              <UserAvatar user={u} size={72} />
+              <p className="text-2xl font-black">{u.name}</p>
+              <p className="text-sm text-muted-foreground">This is the start of your messages with {u.name}.</p>
+            </div>
+          }
+          locked={
+            state === 'friends' ? undefined : (
+              <DmLocked
+                name={u.name}
+                state={state}
+                onAction={() => {
+                  if (state === 'unfriended') toast.success(`Friend request sent to ${u.name}`);
+                  else {
+                    setState(dm?.unfriended ? 'unfriended' : 'friends');
+                    toast(`${u.name} is unblocked`);
+                  }
+                }}
+              />
+            )
+          }
+        />
       </section>
 
       <aside className="hidden w-72 flex-none flex-col gap-4 overflow-y-auto border-l p-4 xl:flex">

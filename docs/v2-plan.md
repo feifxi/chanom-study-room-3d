@@ -104,7 +104,9 @@ Two kinds of room anyone can walk into, named so people know what they get:
 - **Presence is private by default,** for everyone: friends see you're online and which room you're
   in; room members see you in that room's people list; strangers see nothing unless you share a
   room. "Appear offline" is an option.
-- **Text chat v1:** messages, edit/delete, @mentions, unread dots, image uploads.
+- **Text chat v1:** react, reply (no threads), edit, delete (owner and mods: anyone's), @mentions
+  with @room for owner and mods, up to 4 pictures, "New messages" line, typing. No read receipts
+  ("Seen"), like Discord. History kept forever. Details: [04-chat-and-dms.md](v2/features/04-chat-and-dms.md).
 - **Presence:** who's in which room shows on Home and in friends lists.
 - **In 3D:**
   - Two chats, kept apart (like Gather's two chat systems): **Bubbles** for quick talk, shown over
@@ -233,7 +235,7 @@ The UI is approved in `demo/` first, then a spec is written to `docs/v2/features
 | 1   | App shell and navigation                                  | [01-app-shell.md](v2/features/01-app-shell.md)               |
 | 2   | Accounts and sign-up                                      | [02-accounts.md](v2/features/02-accounts.md)                 |
 | 3   | Rooms and membership (visibility, roles, invites, guests) | [03-rooms-membership.md](v2/features/03-rooms-membership.md) |
-| 4   | Room chat and DMs                                         |                                                              |
+| 4   | Room chat and DMs                                         | [04-chat-and-dms.md](v2/features/04-chat-and-dms.md)         |
 | 5   | Friends                                                   |                                                              |
 | 6   | The 3D room                                               |                                                              |
 | 7   | Map templates and the editor                              |                                                              |

@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { UserAvatar } from '@/components/UserAvatar';
 import { cn } from '@/lib/utils';
-import { DMS, USERS, serverById, userById } from '@/lib/mock';
+import { BLOCKED, DMS, USERS, serverById, userById } from '@/lib/mock';
 
 /**
  * Messages, left side: your conversations (newest first, unread in bold), then the friends you
@@ -19,7 +19,8 @@ export function MessagesSidebar({ className }: { className?: string }) {
   const q = query.trim().toLowerCase();
   const match = (name: string) => !q || name.toLowerCase().includes(q);
   const talked = new Set(DMS.map((d) => d.with));
-  const others = Object.values(USERS).filter((u) => !talked.has(u.id) && match(u.name));
+  // Blocked people aren't friends any more, so they leave the list
+  const others = Object.values(USERS).filter((u) => !talked.has(u.id) && !BLOCKED.has(u.id) && match(u.name));
 
   return (
     <aside className={cn('flex flex-col gap-2 border-r bg-muted/30 p-3', className)}>
@@ -44,7 +45,7 @@ export function MessagesSidebar({ className }: { className?: string }) {
               href={`/home/messages/${d.id}`}
               className={cn('flex items-center gap-2.5 rounded-2xl px-2 py-2', id === d.id ? 'bg-card shadow-sm' : 'hover:bg-card/60')}
             >
-              <UserAvatar user={u} size={40} presence />
+              <UserAvatar user={u} size={40} presence={!d.unfriended} />
               <span className="min-w-0 flex-1">
                 <span className="flex items-baseline gap-2">
                   <span className={cn('truncate text-sm', d.unread ? 'font-black' : 'font-bold')}>{u.name}</span>
@@ -54,7 +55,7 @@ export function MessagesSidebar({ className }: { className?: string }) {
                   {last?.author === 'me' && 'You: '}
                   {last?.text}
                 </span>
-                <Where userId={u.id} />
+                {!d.unfriended && <Where userId={u.id} />}
               </span>
               {!!d.unread && (
                 <span className="grid h-5 min-w-5 flex-none place-items-center rounded-full bg-primary px-1.5 text-[11px] font-black text-primary-foreground">
@@ -87,7 +88,7 @@ export function MessagesSidebar({ className }: { className?: string }) {
   );
 }
 
-/** "in 🍓 Chanom Friends" under a friend who's in a room right now. */
+/** "in 🍓 Chanom Friends" under a friend who's in a room right now (friends only: presence is private). */
 function Where({ userId }: { userId: string }) {
   const at = userById(userId).inRoom;
   const room = at && serverById(at.serverId);

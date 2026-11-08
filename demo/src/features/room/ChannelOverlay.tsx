@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { MessageCircle, X } from 'lucide-react';
-import { Composer, MessageList } from '@/components/chat/Chat';
+import { ChatThread, DmLocked } from '@/components/chat/Chat';
 import { UserAvatar } from '@/components/UserAvatar';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { DMS, channelMessages, userById, type Message, type Server } from '@/lib/mock';
+import { DMS, channelMessages, userById, type Server } from '@/lib/mock';
 
 /** What the big chat panel shows: one of the server's chats, or a DM. */
 export interface ChatTarget {
@@ -49,11 +50,10 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
   };
   const serverUnread = channels.reduce((n, c) => n + (c.unread ?? 0), 0);
   const dmUnread = DMS.reduce((n, d) => n + (d.unread ?? 0), 0);
-  const [sent, setSent] = useState<Record<string, Message[]>>({});
   const dm = current.kind === 'dm' ? DMS.find((d) => d.id === current.id) : undefined;
   const friend = dm ? userById(dm.with) : undefined;
   const base = dm ? dm.messages : channelMessages(server.id, current.id);
-  const messages = [...base, ...(sent[key(current)] ?? [])];
+  const unread = dm ? dm.unread : server.channels.find((c) => c.id === current.id)?.unread;
   const is = (kind: ChatTarget['kind'], id: string) => current.kind === kind && current.id === id;
 
   return (
@@ -120,18 +120,19 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
                   ))}
             </div>
           </div>
-          <MessageList messages={messages} className="min-h-0 flex-1 overflow-y-auto" />
-          <div className="p-3">
-            <Composer
-              placeholder={friend ? `Message ${friend.name}` : 'Message the room'}
-              onSend={(text) =>
-                setSent((s) => ({
-                  ...s,
-                  [key(current)]: [...(s[key(current)] ?? []), { id: `${Date.now()}`, author: 'me', at: 'Now', text }],
-                }))
-              }
-            />
-          </div>
+          <ChatThread
+            key={key(current)}
+            initial={base}
+            unread={unread}
+            members={friend ? ['me', friend.id] : server.members}
+            moderator={!friend && !!server.roles.me}
+            placeholder={friend ? `Message ${friend.name}` : 'Message the room'}
+            locked={
+              friend && dm?.unfriended ? (
+                <DmLocked name={friend.name} state="unfriended" onAction={() => toast.success(`Friend request sent to ${friend.name}`)} />
+              ) : undefined
+            }
+          />
         </div>
       </div>
     </DialogContent>

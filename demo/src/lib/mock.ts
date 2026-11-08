@@ -389,8 +389,14 @@ export interface Message {
   author: string;
   at: string;
   text: string;
+  /** The demo's placeholder picture (mock messages). */
   image?: boolean;
+  /** Pictures you attached in the demo (object URLs), up to 4. */
+  images?: string[];
   reactions?: { emoji: string; count: number; mine?: boolean }[];
+  /** The message this one replies to (quoted above it). */
+  replyTo?: string;
+  edited?: boolean;
   system?: boolean;
 }
 
@@ -406,6 +412,8 @@ export const CHANNEL_MESSAGES: Record<string, Message[]> = {
       reactions: [{ emoji: '🍪', count: 3, mine: true }],
     },
     { id: '4', author: 'jod', at: 'Today 20:50', text: 'the library is so cosy tonight, come study', image: true },
+    { id: '5', author: 'pim', at: 'Today 20:52', text: 'anyone want to buy my notes? dm me' },
+    { id: '6', author: 'nam', at: 'Today 20:55', text: 'me!! 🙋 count me in for friday', replyTo: '1', edited: true },
   ],
   'chanom/study-notes': [
     { id: '1', author: 'nam', at: 'Yesterday 18:02', text: 'Calculus II chapter 7 summary 📌 (integration by parts, partial fractions)' },
@@ -423,8 +431,13 @@ export interface Dm {
   id: string;
   with: string;
   unread?: number;
+  /** No longer friends: the history stays, read-only, with a way to add them again. */
+  unfriended?: boolean;
   messages: Message[];
 }
+
+/** People you've blocked: their DM is hidden and their room messages fold away (demo: Pim). */
+export const BLOCKED = new Set(['pim']);
 
 export const DMS: Dm[] = [
   {
@@ -445,7 +458,8 @@ export const DMS: Dm[] = [
       { id: '2', author: 'me', at: 'Yesterday', text: '👍' },
     ],
   },
-  { id: 'ken', with: 'ken', messages: [{ id: '1', author: 'ken', at: 'Mon', text: 'gg last night 🎴' }] },
+  // Demo of an unfriended chat
+  { id: 'ken', with: 'ken', unfriended: true, messages: [{ id: '1', author: 'ken', at: 'Mon', text: 'gg last night 🎴' }] },
 ];
 
 export const FRIEND_REQUESTS = [{ id: 'bow', incoming: true }];

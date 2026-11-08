@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Bell, CalendarHeart, MessageCircle, Play, Rocket, UserPlus } from 'lucide-react';
-import { Composer, MessageList } from '@/components/chat/Chat';
+import { ChatThread } from '@/components/chat/Chat';
 import { InviteDialog } from '@/components/server/InviteDialog';
 import { PRESENCE_LABEL, UserAvatar } from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { channelMessages, userById, type Message, type Server } from '@/lib/mock';
+import { channelMessages, userById, type Server } from '@/lib/mock';
 import { levelFor, placeRoom, walkInHref } from './model';
 import { RoomMenu } from './RoomMenu';
 import { Scene } from './Scene';
@@ -21,10 +21,8 @@ import { Scene } from './Scene';
  */
 export function PlaceChat({ server }: { server: Server }) {
   const room = placeRoom(server);
-  const [sent, setSent] = useState<Message[]>([]);
   const [invite, setInvite] = useState(false);
   const [pinned, setPinned] = useState(server.id === 'chanom');
-  const messages = room.chat ? [...channelMessages(server.id, room.chat.id), ...sent] : sent;
   const inside = room.people.map(userById);
   const away = server.members.filter((id) => id !== 'me' && !room.people.includes(id)).map(userById);
   const level = levelFor(room.boosts).level;
@@ -97,13 +95,14 @@ export function PlaceChat({ server }: { server: Server }) {
               <CalendarHeart className="size-4" /> {server.event}
             </p>
           )}
-          <MessageList messages={messages} className="min-h-0 flex-1 overflow-y-auto" />
-          <div className="p-3">
-            <Composer
-              placeholder="Message the room"
-              onSend={(text) => setSent([...sent, { id: String(Date.now()), author: 'me', at: 'Now', text }])}
-            />
-          </div>
+          <ChatThread
+            key={server.id}
+            initial={room.chat ? channelMessages(server.id, room.chat.id) : []}
+            unread={room.chat?.unread}
+            members={server.members}
+            moderator={!!room.myRole}
+            placeholder="Message the room"
+          />
         </section>
 
         <aside className="panel hidden w-72 flex-none flex-col gap-3 overflow-y-auto p-3 lg:flex" aria-label="People">
