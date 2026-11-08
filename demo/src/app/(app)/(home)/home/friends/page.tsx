@@ -94,7 +94,7 @@ function FriendList({ people }: { people: User[] }) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem>View profile</DropdownMenuItem>
-                <DropdownMenuItem>Invite to a server</DropdownMenuItem>
+                <DropdownMenuItem>Invite to a room</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>Remove friend</DropdownMenuItem>
                 <DropdownMenuItem variant="destructive">Block</DropdownMenuItem>

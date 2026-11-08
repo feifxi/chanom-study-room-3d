@@ -5,8 +5,8 @@ import { useTheme } from 'next-themes';
 import { Monitor, Moon, Palette, Sun } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { CROWDS, setCrowd, setManyRooms, useCrowd, useManyRooms } from '@/lib/demoCrowd';
 import { cn } from '@/lib/utils';
-import { VARIANTS, setVariant, useVariant, type VariantKind } from '@/lib/variants';
 import { PALETTES, usePalette } from './Providers';
 
 const PAGES = [
@@ -18,19 +18,18 @@ const PAGES = [
   ['Shop', '/home/shop'],
   ['Connecta Plus', '/home/plus'],
   ['Discover', '/discover'],
-  ['Server home', '/servers/chanom'],
-  ['Text channel', '/servers/chanom/chat/general'],
+  ['Room chat (outside 3D)', '/servers/chanom'],
   ['3D room', '/servers/chanom/rooms/library'],
   ['Public room', '/servers/public/rooms/cafe-lounge-1'],
   ['Invite (guest)', '/invite/cafe-chanom'],
 ] as const;
 
-const VARIANT_TITLES: Record<VariantKind, string> = { home: 'Home design', server: 'Server page design', room: 'Room layout' };
-
-/** Demo-only chrome: theme, palette, design variants, and a jump to any page. Not part of the app design. */
+/** Demo-only chrome: theme, palette, a crowd for the 3D room, 100 rooms on Home, and a jump to any page. Not part of the app design. */
 export function DemoToolbar() {
   const { theme, setTheme } = useTheme();
   const { palette, setPalette } = usePalette();
+  const crowd = useCrowd();
+  const many = useManyRooms();
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -88,9 +87,39 @@ export function DemoToolbar() {
           ))}
         </div>
 
-        {(Object.keys(VARIANTS) as VariantKind[]).map((kind) => (
-          <VariantPicker key={kind} kind={kind} />
-        ))}
+        <Title>Crowd in the 3D room</Title>
+        <div className="mb-3 grid grid-cols-3 gap-1.5">
+          {CROWDS.map((n) => (
+            <button
+              key={n}
+              onClick={() => setCrowd(n)}
+              aria-pressed={crowd === n}
+              className={cn(
+                'rounded-xl border p-2 text-xs font-bold',
+                crowd === n ? 'border-primary bg-secondary text-secondary-foreground' : 'hover:bg-muted',
+              )}
+            >
+              {n ? `${n} people` : 'Just us'}
+            </button>
+          ))}
+        </div>
+
+        <Title>Your rooms on Home</Title>
+        <div className="mb-3 grid grid-cols-2 gap-1.5">
+          {([false, true] as const).map((on) => (
+            <button
+              key={String(on)}
+              onClick={() => setManyRooms(on)}
+              aria-pressed={many === on}
+              className={cn(
+                'rounded-xl border p-2 text-xs font-bold',
+                many === on ? 'border-primary bg-secondary text-secondary-foreground' : 'hover:bg-muted',
+              )}
+            >
+              {on ? '100 rooms' : '11 rooms'}
+            </button>
+          ))}
+        </div>
 
         <Title>Pages</Title>
         <div className="flex flex-wrap gap-1">
@@ -106,27 +135,6 @@ export function DemoToolbar() {
         </div>
       </PopoverContent>
     </Popover>
-  );
-}
-
-function VariantPicker({ kind }: { kind: VariantKind }) {
-  const current = useVariant(kind);
-  return (
-    <div className="mb-3">
-      <Title>{VARIANT_TITLES[kind]}</Title>
-      <div className="flex flex-col gap-1">
-        {VARIANTS[kind].map(([id, label, hint]) => (
-          <button
-            key={id}
-            onClick={() => setVariant(kind, id as never)}
-            className={cn('rounded-xl border px-2.5 py-1.5 text-left', current === id ? 'border-primary bg-secondary' : 'hover:bg-muted')}
-          >
-            <span className="block text-sm font-extrabold">{label}</span>
-            <span className="block text-[11px] leading-snug text-muted-foreground">{hint}</span>
-          </button>
-        ))}
-      </div>
-    </div>
   );
 }
 

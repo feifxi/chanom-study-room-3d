@@ -206,7 +206,9 @@ function PlusTab() {
         <p className="text-2xl font-black">Connecta Plus ✨</p>
         <p className="mt-1 text-sm">Renews on 7 Dec 2026 · ฿99 / month</p>
       </div>
-      <p className="text-sm text-muted-foreground">You’ve boosted 1 server: Chanom Friends.</p>
+      <p className="text-sm text-muted-foreground">
+        Plus includes 2 boosts. Both are on Chanom Friends, which makes it Level 1 (50 people at once).
+      </p>
       <Button asChild className="w-fit rounded-full font-bold">
         <Link href="/home/plus">Manage Plus and boosts</Link>
       </Button>
@@ -220,14 +222,14 @@ function Toggles({ tab }: { tab: Tab }) {
       <div className="flex flex-col gap-5">
         <Row label="Mentions and DMs" defaultChecked />
         <Row label="When a friend walks into a room" hint="“Mai is in the Library”" defaultChecked />
-        <Row label="Server events starting" defaultChecked />
+        <Row label="Room events starting" hint="“Werewolf night starts in 10 minutes”" defaultChecked />
         <Row label="Sounds" defaultChecked />
       </div>
     );
   return (
     <div className="flex flex-col gap-5">
-      <Row label="DMs from server members who aren’t friends" />
-      <Row label="Friend requests from anyone" hint="Off: only people who share a server with you" defaultChecked />
+      <Row label="Messages from people in my rooms who aren’t friends" />
+      <Row label="Friend requests from anyone" hint="Off: only people who share a room with you" defaultChecked />
       <Row label="Show what I’m doing to friends" hint="“Focusing · Calculus”, “Playing Slave”" defaultChecked />
       <Row label="Filter rude words in chats" defaultChecked />
       <Button variant="outline" className="w-fit rounded-full font-bold">

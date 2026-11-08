@@ -7,32 +7,31 @@ import { cn } from '@/lib/utils';
 import { MusicPanel } from '../music/MusicPanel';
 import { TRACKS } from '../music/tracks';
 import type { Music } from '../music/useMusic';
+import { useDismiss } from './useDismiss';
 import { formatLeft, type usePomodoro } from './usePomodoro';
 
 type ToolId = 'study' | 'music' | 'help';
 
 /**
- * V1's left icon rail, back by request: one button per personal tool, one panel open beside it at a
- * time. The study panel stays mounted while closed so a half-typed to-do survives.
+ * My tools, the left rail (V1's icon rail): your own things that don't affect anyone else, one
+ * panel open beside it at a time. The study panel stays mounted while closed so a half-typed to-do
+ * survives. Like every HUD panel, it closes when you press anywhere else.
  */
 export function RoomTools({
   study,
   pomo,
   music,
   touch,
-  direction = 'right',
   className,
 }: {
   study: ReactNode;
   pomo: ReturnType<typeof usePomodoro>;
   music: Music;
   touch: boolean;
-  /** Where panels open: beside a vertical rail (left side), or above a horizontal one (bottom bar). */
-  direction?: 'right' | 'up';
   className?: string;
 }) {
-  const up = direction === 'up';
   const [open, setOpen] = useState<ToolId | null>(null);
+  const ref = useDismiss<HTMLDivElement>(!!open, () => setOpen(null));
 
   const tools: { id: ToolId; icon: LucideIcon; label: string; badge?: ReactNode }[] = [
     {
@@ -54,8 +53,8 @@ export function RoomTools({
   ];
 
   return (
-    <div className={cn('flex gap-2', up ? 'relative' : 'items-start', className)}>
-      <nav aria-label="Room tools" className={cn('panel flex gap-1 p-1.5', up ? 'flex-row' : 'flex-col')}>
+    <div ref={ref} className={cn('flex items-start gap-2', className)}>
+      <nav aria-label="Room tools" className="panel flex flex-col gap-1 p-1.5">
         {tools.map((t) => (
           <Tooltip key={t.id}>
             <TooltipTrigger asChild>
@@ -72,12 +71,12 @@ export function RoomTools({
                 {t.badge}
               </button>
             </TooltipTrigger>
-            <TooltipContent side={up ? 'top' : 'right'}>{t.label}</TooltipContent>
+            <TooltipContent side="right">{t.label}</TooltipContent>
           </Tooltip>
         ))}
       </nav>
 
-      <div className={cn('w-[min(300px,calc(100vw-5.5rem))]', up && 'absolute bottom-full left-0 mb-2')}>
+      <div className="w-[min(300px,calc(100vw-5.5rem))]">
         <div className={cn(open !== 'study' && 'hidden')}>{study}</div>
         {open === 'music' && (
           <ToolCard title="Music" note="Only you hear it" onClose={() => setOpen(null)}>

@@ -10,7 +10,7 @@ const mono = JetBrains_Mono({ variable: '--font-mono-face', subsets: ['latin'] }
 
 export const metadata: Metadata = {
   title: 'Connecta (V2 demo)',
-  description: 'Frontend-only demo of the V2 design: servers, chats and cosy 3D rooms.',
+  description: 'Frontend-only demo of the V2 design: cosy 3D rooms with their own chat.',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {

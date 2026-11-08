@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Hash, X } from 'lucide-react';
+import { MessageCircle, X } from 'lucide-react';
 import { Composer, MessageList } from '@/components/chat/Chat';
 import { UserAvatar } from '@/components/UserAvatar';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
@@ -17,8 +17,8 @@ export interface ChatTarget {
 const key = (t: ChatTarget) => `${t.kind}:${t.id}`;
 
 /**
- * A chat opened from inside a room: a big panel over the dimmed room. The left side has the same
- * Server / Messages tabs as the room card. You're still in the room (voice keeps going); close it to be back in 3D.
+ * The big chat window: Room chat or a DM opened large (⤢ in the Chat panel) over the dimmed room,
+ * for long reads and images. You're still in the room (voice keeps going); close it to be back in 3D.
  */
 export function ChannelOverlay({ server, target, onClose }: { server: Server; target: ChatTarget | null; onClose: () => void }) {
   return (
@@ -29,6 +29,8 @@ export function ChannelOverlay({ server, target, onClose }: { server: Server; ta
 }
 
 function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
+  // A room has one main chat (the mock servers' first chat stands in for it)
+  const channels = server.channels.slice(0, 1);
   const [current, setCurrent] = useState(initial);
   // Switching tabs goes back to the chat you last had open there (or the first one)
   const [last, setLast] = useState<Record<ChatTarget['kind'], string | undefined>>({
@@ -45,7 +47,7 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
     const id = last[kind];
     if (id) setCurrent({ kind, id });
   };
-  const serverUnread = server.channels.reduce((n, c) => n + (c.unread ?? 0), 0);
+  const serverUnread = channels.reduce((n, c) => n + (c.unread ?? 0), 0);
   const dmUnread = DMS.reduce((n, d) => n + (d.unread ?? 0), 0);
   const [sent, setSent] = useState<Record<string, Message[]>>({});
   const dm = current.kind === 'dm' ? DMS.find((d) => d.id === current.id) : undefined;
@@ -66,7 +68,7 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
           <span className={cn('grid size-11 place-items-center rounded-2xl text-xl', server.tint)}>{server.emoji}</span>
         )}
         <div className="min-w-0 flex-1">
-          <DialogTitle className="text-xl font-black">{friend ? friend.name : `# ${current.id}`}</DialogTitle>
+          <DialogTitle className="text-xl font-black">{friend ? friend.name : 'Room chat'}</DialogTitle>
           <DialogDescription className="text-sm">
             {friend ? (friend.activity ?? 'Direct message') : server.name} · you’re still in the room
           </DialogDescription>
@@ -83,10 +85,10 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
           <Tabs tab={current.kind} onTab={switchTab} server={server} serverUnread={serverUnread} dmUnread={dmUnread} />
           <div className="flex flex-col gap-0.5">
             {current.kind === 'channel'
-              ? server.channels.map((c) => (
+              ? channels.map((c) => (
                   <SideItem key={c.id} active={is('channel', c.id)} onClick={() => open({ kind: 'channel', id: c.id })} dot={!!c.unread}>
-                    <Hash className="size-4" />
-                    <span className="flex-1 truncate">{c.name}</span>
+                    <MessageCircle className="size-4" />
+                    <span className="flex-1 truncate">Room chat</span>
                   </SideItem>
                 ))
               : DMS.map((d) => {
@@ -106,9 +108,9 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
             <Tabs tab={current.kind} onTab={switchTab} server={server} serverUnread={serverUnread} dmUnread={dmUnread} />
             <div className="flex gap-1 overflow-x-auto">
               {current.kind === 'channel'
-                ? server.channels.map((c) => (
+                ? channels.map((c) => (
                     <Chip key={c.id} active={is('channel', c.id)} onClick={() => open({ kind: 'channel', id: c.id })}>
-                      # {c.name}
+                      Room chat
                     </Chip>
                   ))
                 : DMS.map((d) => (
@@ -121,7 +123,7 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
           <MessageList messages={messages} className="min-h-0 flex-1 overflow-y-auto" />
           <div className="p-3">
             <Composer
-              placeholder={friend ? `Message ${friend.name}` : `Message #${current.id}`}
+              placeholder={friend ? `Message ${friend.name}` : 'Message the room'}
               onSend={(text) =>
                 setSent((s) => ({
                   ...s,
@@ -136,7 +138,7 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
   );
 }
 
-/** Same two tabs as the room card: the server's chats, or your DMs. */
+/** Room chat or your DMs. */
 function Tabs({
   tab,
   onTab,
@@ -151,7 +153,7 @@ function Tabs({
   dmUnread: number;
 }) {
   const tabs = [
-    ...(server.channels.length ? [['channel', `${server.emoji} Server`, serverUnread] as const] : []),
+    ...(server.channels.length ? [['channel', `${server.emoji} Room`, serverUnread] as const] : []),
     ['dm', 'Messages', dmUnread] as const,
   ];
   return (

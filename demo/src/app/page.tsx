@@ -1,20 +1,20 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Footprints, Gamepad2, Hash, Link2, MessageCircle, ShieldCheck, Sparkles, Timer, Users } from 'lucide-react';
+import { ArrowRight, Footprints, Gamepad2, Link2, MessageCircle, ShieldCheck, Sparkles, Timer, Users } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 
 const FEATURES = [
   {
-    icon: Hash,
+    icon: MessageCircle,
     tint: 'bg-secondary text-secondary-foreground',
-    title: 'Servers with chats',
-    text: 'Make a server for your friends or your whole class. Text chats keep things going when nobody is online.',
+    title: 'Rooms that keep their chat',
+    text: 'Make a room for your friends or your whole class. Its chat keeps going when nobody is inside, even from your phone.',
   },
   {
     icon: Footprints,
     tint: 'bg-lavender text-lavender-ink',
-    title: '3D rooms, not voice channels',
+    title: 'Walk up to talk',
     text: 'Walk up to someone to talk. Groups split into little conversations, like at a real hangout.',
   },
   {
@@ -33,13 +33,13 @@ const FEATURES = [
     icon: Sparkles,
     tint: 'bg-sky text-sky-ink',
     title: 'Cute, and yours',
-    text: 'Dress up your chibi, pick a pet, choose a cosy room for your server. Everything bounces a little.',
+    text: 'Dress up your chibi, pick a pet, choose a cosy map for your room. Everything bounces a little.',
   },
   {
     icon: ShieldCheck,
     tint: 'bg-muted text-foreground',
     title: 'Safe by default',
-    text: 'Private servers by default, guests only where owners allow them, and reporting everywhere. 16+.',
+    text: 'Rooms are private by default, guests only where owners allow them, and reporting everywhere. 16+.',
   },
 ];
 
@@ -76,18 +76,18 @@ export default function Landing() {
         <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 pt-10 pb-16 sm:px-6 lg:grid-cols-[1fr_1.15fr] lg:pt-16">
           <div className="flex flex-col items-start gap-6">
             <span className="rounded-full bg-secondary px-3 py-1 text-xs font-extrabold text-secondary-foreground">
-              New: servers, chats and rooms for your friends ✨
+              New: your own rooms, with chat that stays ✨
             </span>
             <h1 className="text-5xl leading-[1.02] font-black tracking-[-0.04em] text-balance sm:text-6xl">
               Hang out somewhere <span className="text-primary">cosy</span>.
             </h1>
             <p className="max-w-md text-lg text-muted-foreground">
-              Connecta is a little 3D place for your friends. Make a server, share a link, and walk over to whoever you want to talk to.
+              Connecta is a little 3D place for your friends. Make a room, share a link, and walk over to whoever you want to talk to.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg" className="h-12 rounded-full px-6 text-base font-extrabold">
                 <Link href="/login">
-                  Make your server <ArrowRight />
+                  Make your room <ArrowRight />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="h-12 rounded-full px-6 text-base font-bold">
@@ -146,7 +146,7 @@ export default function Landing() {
 
         <section id="features" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6">
           <h2 className="text-3xl font-black tracking-[-0.03em]">Everything your group needs</h2>
-          <p className="mt-2 text-muted-foreground">Servers and chats like you’re used to, with rooms you can actually walk into.</p>
+          <p className="mt-2 text-muted-foreground">A room you can actually walk into, with a chat that’s there when you’re not.</p>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
               <div key={f.title} className="rounded-3xl border bg-card p-5 shadow-soft">
@@ -163,7 +163,7 @@ export default function Landing() {
         <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
           <div className="grid grid-cols-1 gap-6 rounded-[2rem] bg-cocoa p-8 text-white md:grid-cols-3 md:p-10">
             {[
-              ['1', 'Make a server', 'Pick a name, an icon and a cosy room for it.'],
+              ['1', 'Make a room', 'Pick a cosy map and give it a name.'],
               ['2', 'Send the link', 'Friends sign in with Google or Discord. Guests can drop into rooms you open to them.'],
               ['3', 'Walk in', 'Everyone shows up as a chibi. Sit, chat, play, study.'],
             ].map(([n, title, text]) => (
@@ -180,8 +180,7 @@ export default function Landing() {
           <Users className="mx-auto size-8 text-primary" />
           <h2 className="mt-3 text-3xl font-black tracking-[-0.03em]">Free for friends. Cuter with Plus.</h2>
           <p className="mx-auto mt-2 max-w-lg text-muted-foreground">
-            Servers, rooms, voice and chats are free. Plus adds outfits, a pet and bigger uploads. Boosts give your server more rooms and
-            more seats.
+            Rooms, voice and chat are free, for 25 at once. Plus adds outfits, a pet and bigger uploads. Boosts let a room fit up to 100.
           </p>
           <div className="mt-6 flex justify-center gap-3">
             <Button asChild className="h-11 rounded-full px-6 font-extrabold">

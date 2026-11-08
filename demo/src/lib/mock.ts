@@ -173,6 +173,12 @@ export interface Server {
   rooms: Room[];
   boosted?: number;
   event?: string;
+  /** How many are inside right now when it's more than the named people (crowds, a full room). */
+  insideCount?: number;
+  /** When you were last there, as shown on Home ("2h ago"). */
+  lastActive?: string;
+  /** Days since you were last there; Home folds rooms quiet for 30+ days away. */
+  idleDays?: number;
 }
 
 export const SERVERS: Server[] = [
@@ -220,6 +226,10 @@ export const SERVERS: Server[] = [
     members: ['me', 'ken', 'nam', 'pim'],
     memberCount: 64,
     roles: { ken: 'Owner' },
+    // Exam season: the free 25 are all inside, so it shows as full
+    insideCount: 25,
+    lastActive: 'yesterday',
+    idleDays: 1,
     channels: [
       { id: 'announcements', name: 'announcements', topic: 'Deadlines and exam rooms' },
       { id: 'general', name: 'general', topic: 'Chat', unread: 12 },
@@ -268,10 +278,110 @@ export const SERVERS: Server[] = [
       { id: 'cafe', name: 'Café', mapId: 'cafe', capacity: 25, allowGuests: true, quiet: false, people: [] },
     ],
     event: 'Drawing telephone · Sat 21:00',
+    lastActive: '3 days ago',
+    idleDays: 3,
   },
+  ...extraRooms(),
 ];
 
-export const serverById = (id: string) => (id === PUBLIC_SERVER.id ? PUBLIC_SERVER : SERVERS.find((s) => s.id === id));
+/**
+ * More rooms you're in, so Home shows what a long list looks like. They borrow the chat and map
+ * plumbing of a real mock room; only the name, look and who's there differ.
+ */
+function extraRooms(): Server[] {
+  const rows: [string, string, string, string, string, 'Owner' | 'Mod' | null, number, number][] = [
+    ['study-sprint', 'Study Sprint Squad', '⏱️', 'bg-peach', 'library', 'Owner', 0, 0],
+    ['ielts-buddies', 'IELTS Buddies', '🗣️', 'bg-sky', 'cafe', null, 2, 0],
+    ['band', 'Band Practice', '🎸', 'bg-mint', 'rooftop', null, 0, 2],
+    ['family', 'Family Room', '🏠', 'bg-secondary', 'cafe', 'Owner', 0, 3],
+    ['manga', 'Manga Club', '📖', 'bg-lavender', 'library', 'Mod', 1, 7],
+    ['dorm-3b', 'Dorm 3B', '🛏️', 'bg-peach', 'rooftop', null, 0, 9],
+    ['cpe-lab', 'CPE Lab Group 4', '🧪', 'bg-sky', 'library', null, 0, 14],
+    ['werewolf', 'Werewolf Fridays', '🐺', 'bg-lavender', 'rooftop', null, 3, 21],
+  ];
+  return rows.map(([id, name, emoji, tint, mapId, role, inside, idleDays]) =>
+    lightRoom(id, name, emoji, tint, mapId, role, inside, idleDays),
+  );
+}
+
+/** "2 weeks ago" from a number of days, for the mock rooms. (A function, so SERVERS can use it before this line.) */
+export function ago(days: number) {
+  if (days < 1) return 'today';
+  if (days < 2) return 'yesterday';
+  if (days < 7) return `${days} days ago`;
+  if (days < 30) return `${Math.round(days / 7)} weeks ago`;
+  if (days < 365) return `${Math.round(days / 30)} months ago`;
+  return 'over a year ago';
+}
+
+function lightRoom(
+  id: string,
+  name: string,
+  emoji: string,
+  tint: string,
+  mapId: string,
+  role: 'Owner' | 'Mod' | null,
+  inside: number,
+  idleDays: number,
+): Server {
+  return {
+    id,
+    name,
+    emoji,
+    tint,
+    banner: 'from-[#ffe9d6] via-[#efe4ff] to-[#dfeeff]',
+    description: `${name}. Come hang out.`,
+    visibility: 'private' as const,
+    members: ['me', 'nam', 'pim'],
+    memberCount: 6 + name.length,
+    roles: (role ? { me: role } : {}) as Server['roles'],
+    channels: [{ id: 'chat', name: 'chat', topic: '' }],
+    rooms: [{ id: mapId, name: 'Main', mapId, capacity: 25, allowGuests: false, quiet: false, people: [] }],
+    insideCount: inside,
+    lastActive: ago(idleDays),
+    idleDays,
+  };
+}
+
+/**
+ * Demo only ("Lots of rooms" in the Demo tab): 89 more rooms, so Home can be judged at 100. Most
+ * haven't been visited in a while, like a real long list.
+ */
+export const MANY_ROOMS: Server[] = (() => {
+  const a = ['Cosy', 'Midnight', 'Sunday', 'Rainy', 'Tiny', 'Secret', 'Lazy', 'Golden', 'Quiet', 'Loud', 'Matcha', 'Strawberry', 'Thai'];
+  const b = [
+    'Study Club',
+    'Book Nook',
+    'Gamers',
+    'Art Room',
+    'Music Lab',
+    'Movie Night',
+    'Debate Team',
+    'Coders',
+    'Crew',
+    'Lounge',
+    'Squad',
+  ];
+  const emojis = ['📚', '🎮', '🎨', '🎵', '🍿', '💬', '💻', '☕', '🌙', '🍓', '🧋', '🐱'];
+  const tints = ['bg-peach', 'bg-sky', 'bg-mint', 'bg-lavender', 'bg-secondary'];
+  const maps = ['library', 'cafe', 'rooftop'];
+  return Array.from({ length: 89 }, (_, i) =>
+    lightRoom(
+      `room-${i}`,
+      `${a[i % a.length]} ${b[(i * 7) % b.length]}${i >= a.length * 3 ? ` ${Math.floor(i / 13)}` : ''}`,
+      emojis[i % emojis.length]!,
+      tints[i % tints.length]!,
+      maps[i % maps.length]!,
+      i % 17 === 0 ? 'Owner' : i % 11 === 0 ? 'Mod' : null,
+      i % 9 === 0 ? (i % 5) + 1 : 0,
+      // A few recent, most quiet for weeks or months
+      i < 12 ? i : 20 + ((i * 37) % 300),
+    ),
+  );
+})();
+
+export const serverById = (id: string) =>
+  id === PUBLIC_SERVER.id ? PUBLIC_SERVER : (SERVERS.find((s) => s.id === id) ?? MANY_ROOMS.find((s) => s.id === id));
 
 export interface Message {
   id: string;
@@ -371,6 +481,10 @@ export const SHOP: ShopItem[] = [
 
 export const COINS = 1240;
 
+/**
+ * Drop-in rooms: run by Connecta from its templates, open to everyone, no members and no saved
+ * chat. When one fills up, a new copy opens (#2, #3).
+ */
 export const PUBLIC_ROOMS = [
   { id: 'silent-library-1', name: 'Silent Library #1', mapId: 'library', people: 18, capacity: 20, quiet: true, vibe: 'Silent study' },
   { id: 'silent-library-2', name: 'Silent Library #2', mapId: 'library', people: 6, capacity: 20, quiet: true, vibe: 'Silent study' },
@@ -406,34 +520,118 @@ export const PUBLIC_SERVER: Server = {
   })),
 };
 
-export const DISCOVER = [
+/**
+ * Drop-in rooms as people see them: one card per template, counting everyone across its copies.
+ * Copies open and close on their own, so "how many are here" matters, not one copy's capacity.
+ * Dropping in picks the copy with friends, or the one with the most space.
+ */
+export interface DropIn {
+  id: string;
+  name: string;
+  mapId: string;
+  vibe: string;
+  quiet: boolean;
+  /** Everyone across all copies right now. */
+  here: number;
+  copies: number;
+  /** The copy you'd land in. */
+  joinId: string;
+  friendsInside?: string[];
+}
+
+export const DROP_INS: DropIn[] = [
+  {
+    id: 'silent-library',
+    name: 'Silent Library',
+    mapId: 'library',
+    vibe: 'Silent study',
+    quiet: true,
+    here: 142,
+    copies: 8,
+    joinId: 'silent-library-2',
+  },
+  {
+    id: 'cafe-lounge',
+    name: 'Café Lounge',
+    mapId: 'cafe',
+    vibe: 'Chill and chat',
+    quiet: false,
+    here: 57,
+    copies: 3,
+    joinId: 'cafe-lounge-1',
+    friendsInside: ['bow'],
+  },
+  {
+    id: 'night-rooftop',
+    name: 'Night Rooftop',
+    mapId: 'rooftop',
+    vibe: 'Late night talks',
+    quiet: false,
+    here: 3,
+    copies: 1,
+    joinId: 'rooftop-1',
+  },
+];
+
+/**
+ * Open rooms: rooms people made and set to Open, so anyone can walk in (and join as a member).
+ * Unlike drop-in rooms they have an owner, members and a saved chat, and one copy only: full is full.
+ */
+export interface OpenRoom {
+  id: string;
+  name: string;
+  emoji: string;
+  tint: string;
+  mapId: string;
+  owner: string;
+  members: number;
+  inside: number;
+  capacity: number;
+  tags: string[];
+  blurb: string;
+  /** Members must be approved ("Ask to join"); still listed so people can find it. */
+  ask?: boolean;
+  friendsInside?: string[];
+}
+
+export const OPEN_ROOMS: OpenRoom[] = [
   {
     id: 'gamenight',
     name: 'Game Night Club',
     emoji: '🎴',
     tint: 'bg-mint',
+    mapId: 'rooftop',
+    owner: 'Bow',
     members: 230,
-    online: 41,
+    inside: 41,
+    capacity: 50,
     tags: ['Games', 'Werewolf'],
     blurb: 'Werewolf, cards and drawing games every weekend.',
+    friendsInside: ['ploy'],
   },
   {
     id: 'lofi-study',
     name: 'Lo-fi Study Hall',
     emoji: '🎧',
     tint: 'bg-lavender',
-    members: 1840,
-    online: 212,
+    mapId: 'library',
+    owner: 'Studyhall',
+    members: 980,
+    inside: 96,
+    capacity: 100,
     tags: ['Study', 'Quiet'],
-    blurb: 'Silent study rooms all day, group sprints every hour.',
+    blurb: 'Silent study all day, group sprints every hour.',
   },
   {
     id: 'anime-club',
     name: 'Anime Club TH',
     emoji: '🌸',
     tint: 'bg-secondary',
+    mapId: 'cafe',
+    owner: 'Fern',
     members: 920,
-    online: 88,
+    inside: 50,
+    capacity: 50,
     tags: ['Anime', 'Watch party'],
     blurb: 'Weekly watch parties on the big TV.',
   },
@@ -442,9 +640,13 @@ export const DISCOVER = [
     name: 'IELTS Speaking Café',
     emoji: '🗣️',
     tint: 'bg-peach',
+    mapId: 'cafe',
+    owner: 'Teacher Ann',
     members: 410,
-    online: 23,
+    inside: 9,
+    capacity: 25,
     tags: ['Language', 'Voice'],
-    blurb: 'Practise speaking in small tables. Request to join.',
+    blurb: 'Practise speaking in small tables.',
+    ask: true,
   },
 ];

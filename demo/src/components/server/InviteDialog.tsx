@@ -11,8 +11,8 @@ import { cn } from '@/lib/utils';
 import { USERS, type Server } from '@/lib/mock';
 
 /**
- * Two kinds of link: a member invite (they need an account, then they're in the server), and a
- * guest link to one room (no account, sees only that room, expires).
+ * Two kinds of link: a member invite (they need an account, then the room is on their Home with its
+ * chat), and a guest link (no account, a visit to the 3D room only, expires).
  */
 export function InviteDialog({ server, open, onOpenChange }: { server: Server; open: boolean; onOpenChange: (o: boolean) => void }) {
   const [kind, setKind] = useState<'member' | 'guest'>('member');
@@ -28,13 +28,13 @@ export function InviteDialog({ server, open, onOpenChange }: { server: Server; o
       <DialogContent className="max-w-[calc(100%-2rem)] rounded-3xl sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-black">Invite to {server.name}</DialogTitle>
-          <DialogDescription>Share a link. Members need an account; guests only visit one room.</DialogDescription>
+          <DialogDescription>Share a link. Members need an account; guests just visit, no account.</DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-2 rounded-2xl bg-muted p-1">
           {(
             [
               ['member', UserPlus, 'New member'],
-              ['guest', DoorOpen, 'Guest in a room'],
+              ['guest', DoorOpen, 'Guest visit'],
             ] as const
           ).map(([id, Icon, label]) => (
             <button
@@ -52,8 +52,8 @@ export function InviteDialog({ server, open, onOpenChange }: { server: Server; o
         {kind === 'guest' && (
           <p className="rounded-2xl bg-peach p-3 text-sm text-peach-ink">
             {guestRooms.length
-              ? `Guests can walk into the ${guestRooms.map((r) => r.name).join(', ')} without an account. They can't see your chats or other rooms. The link stops working in 24 hours.`
-              : 'No room allows guests yet. Turn on “Allow guests” for a room in Server settings.'}
+              ? 'Guests can walk in without an account. They can’t see the saved room chat or your members. The link stops working in 24 hours.'
+              : 'This room doesn’t allow guests. Turn on “Allow guests” in Room settings → Map & capacity.'}
           </p>
         )}
         <div className="flex gap-2">

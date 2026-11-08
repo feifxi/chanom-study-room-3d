@@ -18,6 +18,7 @@ import type { MockRoom } from './mockRoom';
 import type { Quality } from './quality';
 import type { Bubble } from './roomSession';
 import { StaticShadows } from './StaticShadows';
+import { ZOOM, ZoomBridge } from './ZoomControl';
 
 interface Props {
   room: MockRoom;
@@ -30,10 +31,13 @@ interface Props {
   findId: string | null;
   onHint: (h: Hint | null) => void;
   driverRef: React.RefObject<LocalPlayerDriver | null>;
+  /** A zoom the DOM control asked for, applied on the next frame. */
+  zoomRequest: { current: number | null };
+  onZoom: (percent: number) => void;
 }
 
 /** The V1 library scene, driven by the mock room instead of the game server. */
-export function RoomCanvas({ room, motion, board, light, quality, bubbles, findId, onHint, driverRef }: Props) {
+export function RoomCanvas({ room, motion, board, light, quality, bubbles, findId, onHint, driverRef, zoomRequest, onZoom }: Props) {
   const ids = useMemo(() => [...room.state.players.keys()], [room]);
   const npcIds = useMemo(() => [...room.state.npcs.keys()], [room]);
   return (
@@ -42,7 +46,7 @@ export function RoomCanvas({ room, motion, board, light, quality, bubbles, findI
       orthographic
       dpr={[1, quality.dpr]}
       frameloop="never"
-      camera={{ position: [SPAWN.x + 20, 18, SPAWN.z + 20], zoom: 62, near: 0.1, far: 200 }}
+      camera={{ position: [SPAWN.x + 20, 18, SPAWN.z + 20], zoom: ZOOM.start, near: 0.1, far: 200 }}
       gl={{ preserveDrawingBuffer: true }}
     >
       <FrameDriver fps={quality.fps} />
@@ -53,8 +57,8 @@ export function RoomCanvas({ room, motion, board, light, quality, bubbles, findI
         target={[SPAWN.x, 0.6, SPAWN.z]}
         enablePan={false}
         enableDamping
-        minZoom={34}
-        maxZoom={120}
+        minZoom={ZOOM.min}
+        maxZoom={ZOOM.max}
         minPolarAngle={0.35}
         maxPolarAngle={1.2}
       />
@@ -77,6 +81,7 @@ export function RoomCanvas({ room, motion, board, light, quality, bubbles, findI
       ))}
       {findId && <FindMarker room={room} motion={motion} targetId={findId} />}
       <LabelProjector board={board} />
+      <ZoomBridge request={zoomRequest} onZoom={onZoom} />
     </Canvas>
   );
 }

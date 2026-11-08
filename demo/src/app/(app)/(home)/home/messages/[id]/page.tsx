@@ -4,43 +4,97 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Phone, Search, UserRound } from 'lucide-react';
+import { ArrowLeft, Ban, BellOff, Flag, MoreHorizontal, Play, Search, UserPlus } from 'lucide-react';
+import { toast } from 'sonner';
 import { Composer, MessageList } from '@/components/chat/Chat';
 import { PRESENCE_LABEL, UserAvatar } from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { DMS, SERVERS, serverById, userById, type Message } from '@/lib/mock';
 
 const AvatarPreview = dynamic(() => import('@/features/avatar/AvatarPreview').then((m) => m.AvatarPreview), { ssr: false });
 
-/** A 1-to-1 chat, with the friend's profile on the side and a one-tap way to join where they are. */
+/**
+ * A 1-to-1 chat (text only: there are no calls; to talk, meet in a room). The friend's profile is on
+ * the side with where they are right now and the rooms you share, so "come join" is one tap.
+ */
 export default function DmPage() {
   const { id } = useParams<{ id: string }>();
   const u = userById(id);
-  const [messages, setMessages] = useState<Message[]>(DMS.find((d) => d.id === id)?.messages ?? []);
+  const [messages, setMessages] = useState<Message[]>(DMS.find((d) => d.with === id)?.messages ?? []);
   const where = u.inRoom && serverById(u.inRoom.serverId);
-  const room = where?.rooms.find((r) => r.id === u.inRoom?.roomId);
-  const mutual = SERVERS.filter((s) => s.members.includes(u.id));
+  const shared = SERVERS.filter((s) => s.members.includes(u.id));
+  const yourRooms = SERVERS.filter((s) => !s.members.includes(u.id)).slice(0, 4);
 
   return (
     <div className="flex h-full">
       <section className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center gap-3 border-b px-4 py-3">
+          <Link
+            href="/home/messages"
+            className="-ml-1 rounded-full p-1.5 text-muted-foreground hover:bg-muted md:hidden"
+            aria-label="All messages"
+          >
+            <ArrowLeft className="size-4" />
+          </Link>
           <UserAvatar user={u} size={36} presence />
           <div className="min-w-0 flex-1">
             <p className="font-black">{u.name}</p>
-            <p className="truncate text-xs text-muted-foreground">{u.activity ?? PRESENCE_LABEL[u.presence]}</p>
+            <p className="truncate text-xs text-muted-foreground">
+              {where ? `In ${where.emoji} ${where.name} · ` : ''}
+              {u.activity ?? PRESENCE_LABEL[u.presence]}
+            </p>
           </div>
-          {where && room && (
+          {where && u.inRoom && (
             <Button asChild className="rounded-full font-extrabold">
-              <Link href={`/servers/${where.id}/rooms/${room.id}`}>Join in {room.name}</Link>
+              <Link href={`/servers/${where.id}/rooms/${u.inRoom.roomId}`}>
+                <Play className="fill-current" /> Join {u.name}
+              </Link>
             </Button>
           )}
-          <Button size="icon" variant="ghost" className="rounded-full" aria-label="Voice call">
-            <Phone />
-          </Button>
-          <Button size="icon" variant="ghost" className="rounded-full" aria-label="Search">
+          <Button size="icon" variant="ghost" className="rounded-full" aria-label="Search this chat">
             <Search />
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon" variant="ghost" className="rounded-full" aria-label={`More for ${u.name}`}>
+                <MoreHorizontal />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 rounded-2xl p-1.5">
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <UserPlus className="size-4" /> Invite to a room
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="rounded-2xl p-1.5">
+                  {yourRooms.map((s) => (
+                    <DropdownMenuItem key={s.id} onSelect={() => toast.success(`Invited ${u.name} to ${s.name}`)}>
+                      {s.emoji} {s.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+              <DropdownMenuItem onSelect={() => toast(`Muted ${u.name}: no notifications from this chat`)}>
+                <BellOff /> Mute this chat
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive" onSelect={() => toast(`${u.name} is blocked`)}>
+                <Ban /> Block
+              </DropdownMenuItem>
+              <DropdownMenuItem variant="destructive" onSelect={() => toast('Report sent. Thanks for telling us.')}>
+                <Flag /> Report
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </header>
         <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="flex flex-col items-start gap-2 px-6 pt-8">
@@ -73,20 +127,23 @@ export default function DmPage() {
             )}
           </div>
         </div>
-        {where && room && (
+        {where && u.inRoom && (
           <div className="rounded-3xl bg-mint/60 p-4">
             <p className="text-xs font-bold text-mint-ink">Right now</p>
             <p className="font-black">
-              {room.name} · {where.name}
+              {where.emoji} {where.name}
             </p>
             <p className="text-sm text-muted-foreground">{u.activity}</p>
+            <Button asChild size="sm" className="mt-3 rounded-full font-extrabold">
+              <Link href={`/servers/${where.id}/rooms/${u.inRoom.roomId}`}>
+                <Play className="fill-current" /> Walk in
+              </Link>
+            </Button>
           </div>
         )}
         <div>
-          <p className="mb-2 flex items-center gap-1.5 text-xs font-black tracking-wider text-muted-foreground uppercase">
-            <UserRound className="size-3.5" /> Servers you share · {mutual.length}
-          </p>
-          {mutual.map((s) => (
+          <p className="mb-2 text-xs font-black tracking-wider text-muted-foreground uppercase">Rooms you share · {shared.length}</p>
+          {shared.map((s) => (
             <Link
               key={s.id}
               href={`/servers/${s.id}`}
@@ -95,6 +152,7 @@ export default function DmPage() {
               <span className={`grid size-8 place-items-center rounded-xl ${s.tint}`}>{s.emoji}</span> {s.name}
             </Link>
           ))}
+          {!shared.length && <p className="text-sm text-muted-foreground">None yet. Invite {u.name} to one of yours.</p>}
         </div>
       </aside>
     </div>

@@ -11,8 +11,8 @@ import { Input } from '@/components/ui/input';
 import { MAPS, SERVERS, userById } from '@/lib/mock';
 
 /**
- * What someone sees when they open a guest link: walk straight into the one room as a guest
- * (no account), or sign in to become a member of the whole server.
+ * What someone sees when they open an invite: walk straight in as a guest (no account, if the room
+ * allows guests), or sign in to join the room as a member (its chat, on your Home).
  */
 export default function InvitePage() {
   const router = useRouter();
@@ -34,10 +34,10 @@ export default function InvitePage() {
             <div className="text-center">
               <p className="text-sm font-bold text-muted-foreground">feifei invited you to</p>
               <h1 className="text-2xl font-black tracking-[-0.03em]">
-                the {room.name} in {server.emoji} {server.name}
+                {server.emoji} {server.name}
               </h1>
               <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <AvatarStack users={others} /> {others.length} people around
+                <AvatarStack users={others} /> {others.length} inside · {map.emoji} {map.name}
               </div>
             </div>
 
@@ -52,7 +52,7 @@ export default function InvitePage() {
                 <DoorOpen className="size-4 text-primary" /> Walk in as a guest
               </p>
               <p className="text-xs text-muted-foreground">
-                No account needed. You’ll only see this room, and you can chat but not talk on voice.
+                No account needed. You can chat but not talk on voice, and you won’t see the saved room chat.
               </p>
               <div className="flex gap-2">
                 <Input
@@ -73,7 +73,7 @@ export default function InvitePage() {
             </div>
             <Button asChild variant="outline" className="h-11 rounded-2xl font-bold">
               <Link href="/login">
-                <Lock /> Sign in to join the whole server
+                <Lock /> Sign in to join as a member
               </Link>
             </Button>
             <p className="text-center text-xs text-muted-foreground">This guest link stops working in 23 hours.</p>
