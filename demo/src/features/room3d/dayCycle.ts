@@ -47,35 +47,12 @@ export function lightAt(hour: number): DayLight {
   };
 }
 
-/** How the room is lit: follow the clock, or pin it to day or night. */
+/** How the room is lit: follow the clock, or pin it to day or night. The room's owner picks (feature 7). */
 export const THEME_MODES = ['auto', 'day', 'night'] as const;
 export type ThemeMode = (typeof THEME_MODES)[number];
 
 /** Representative hours for the pinned modes. */
 const PINNED_HOUR: Record<Exclude<ThemeMode, 'auto'>, number> = { day: 13, night: 22 };
-const THEME_KEY = 'connecta:theme';
-
-function loadThemeMode(): ThemeMode {
-  try {
-    const saved = localStorage.getItem(THEME_KEY);
-    return (THEME_MODES as readonly string[]).includes(saved ?? '') ? (saved as ThemeMode) : 'auto';
-  } catch {
-    return 'auto';
-  }
-}
-
-/** The viewer's chosen lighting mode, remembered in this browser. The room page is client-only, so localStorage is safe here. */
-export function useThemeMode() {
-  const [mode, setMode] = useState<ThemeMode>(loadThemeMode);
-  useEffect(() => {
-    try {
-      localStorage.setItem(THEME_KEY, mode);
-    } catch {
-      // Private mode or blocked storage: the choice just won't be remembered
-    }
-  }, [mode]);
-  return [mode, setMode] as const;
-}
 
 /** Current local time as fractional hours, overridable with ?hour=21 for testing. */
 function currentHour() {

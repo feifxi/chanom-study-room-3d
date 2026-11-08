@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Globe, Link2, Lock, Map as MapIcon, Rocket, ScrollText, Shield, UserCheck, Users } from 'lucide-react';
+import { Globe, Link2, Lock, Map as MapIcon, ScrollText, Shield, UserCheck, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
@@ -10,21 +10,23 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { MAPS, type Visibility } from '@/lib/mock';
-import { BOOST_LEVELS, levelFor, type PlaceRoom } from './model';
+import { MAP_SIZES, MAPS, type Visibility } from '@/lib/mock';
+import { planOf, type PlaceRoom } from './model';
+import { SizePicker, TemplateCard } from './MapPickers';
 import { InvitesPanel, MembersPanel } from './RoomMembers';
+import { mapById, ROOM_TIMES, saveLook, toThumbnail, useRoomLook, type RoomLook } from './roomLook';
+import { Scene } from './Scene';
 
 const TABS = [
   ['overview', 'Overview', ScrollText],
-  ['map', 'Map & capacity', MapIcon],
+  ['map', 'Map & look', MapIcon],
   ['members', 'Members & roles', Users],
   ['invites', 'Invites', Link2],
   ['safety', 'Safety', Shield],
-  ['boosts', 'Boosts', Rocket],
 ] as const;
 type TabId = (typeof TABS)[number][0];
 /** Mods manage people and safety; the room itself (name, map, visibility, deleting) is the owner's. */
-const MOD_TABS: TabId[] = ['members', 'invites', 'safety', 'boosts'];
+const MOD_TABS: TabId[] = ['members', 'invites', 'safety'];
 
 const VIS: { id: Visibility; icon: typeof Lock; title: string; text: string }[] = [
   { id: 'private', icon: Lock, title: 'Private', text: 'Invite only. Not listed anywhere.' },
@@ -86,7 +88,6 @@ function Body({ room, initial }: { room: PlaceRoom; initial: string }) {
           {current === 'overview' && <Overview room={room} />}
           {current === 'map' && <MapAndCapacity room={room} />}
           {current === 'members' && <MembersPanel room={room} myRole={myRole} />}
-          {current === 'boosts' && <Boosts room={room} />}
           {current === 'invites' && (
             <InvitesPanel
               toggles={
@@ -172,58 +173,82 @@ function Overview({ room }: { room: PlaceRoom }) {
 }
 
 function MapAndCapacity({ room }: { room: PlaceRoom }) {
-  const [mapId, setMapId] = useState(room.map.id);
-  const max = levelFor(room.boosts).capacity;
+  const saved = useRoomLook(room.id, room.map.id);
+  const [look, setLook] = useState(saved);
+  const set = (patch: Partial<RoomLook>) => setLook((l) => ({ ...l, ...patch }));
+  const max = Math.min(planOf(room.ownerPlus).capacity, MAP_SIZES.find((s) => s.id === look.size)!.upTo);
   const someoneInside = room.people.length > 0;
+  const mapChanged = look.mapId !== saved.mapId || look.size !== saved.size;
+
+  const save = () => {
+    // Everything applies at once, a new map too: people inside get a short loading screen (feature 7)
+    if (!saveLook(room.id, look)) return toast.error('Couldn’t save that. Try a smaller picture.');
+    toast.success(mapChanged && someoneInside ? `Moving everyone to ${mapById(look.mapId).name}` : 'Saved for everyone in the room');
+  };
+
   return (
-    <div className="flex flex-col gap-5">
-      <div>
-        <p className="mb-2 text-sm font-extrabold">Map</p>
+    <div className="flex flex-col gap-6">
+      <section>
+        <p className="mb-2 text-sm font-extrabold">Template</p>
         <div className="grid gap-2 sm:grid-cols-3">
           {MAPS.map((m) => (
+            <TemplateCard key={m.id} map={m} picked={look.mapId === m.id} onPick={() => set({ mapId: m.id })} />
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Every template has the same things to do (study spots, private zones, big screen, jukebox, games, whiteboard, Buddy Machine); only
+          the place and its look differ. Premium maps for rooms whose owner has Plus are on the way.
+        </p>
+      </section>
+
+      <section>
+        <p className="mb-2 text-sm font-extrabold">Size</p>
+        <SizePicker size={look.size} plus={room.ownerPlus} onPick={(size) => set({ size })} />
+      </section>
+
+      {mapChanged && (
+        <p className="-mt-3 rounded-2xl bg-peach p-3 text-sm font-bold text-peach-ink">
+          {someoneInside
+            ? `${room.people.length} people are inside. When you save, everyone sees a short loading screen and lands at the door of the new map. Voice and chat keep going; seats and screen shares end. Boards and card games move with you.`
+            : 'Nobody’s inside, so the new map is ready for the next person. The chat, members and link stay.'}
+        </p>
+      )}
+
+      <section>
+        <p className="mb-2 text-sm font-extrabold">Time of day</p>
+        <div className="grid gap-2 sm:grid-cols-3">
+          {ROOM_TIMES.map((t) => (
             <button
-              key={m.id}
-              onClick={() => setMapId(m.id)}
-              className={cn('rounded-2xl border-2 p-2 text-left', mapId === m.id ? 'border-primary' : 'border-border')}
+              key={t.id}
+              type="button"
+              onClick={() => set({ time: t.id })}
+              aria-pressed={look.time === t.id}
+              className={cn(
+                'rounded-2xl border-2 p-2.5 text-left',
+                look.time === t.id ? 'border-primary bg-secondary/40' : 'border-border',
+              )}
             >
-              <span className={cn('grid h-20 place-items-center rounded-xl text-3xl', m.tint)}>{m.emoji}</span>
-              <p className="mt-1.5 text-sm font-extrabold">{m.name}</p>
-              <p className="text-[11px] text-muted-foreground">{m.zones.join(' · ')}</p>
+              <span className="block text-sm font-extrabold">
+                {t.id === 'clock' ? '🕐' : t.id === 'day' ? '☀️' : '🌙'} {t.label}
+              </span>
+              <span className="text-[11px] text-muted-foreground">{t.text}</span>
             </button>
           ))}
         </div>
-        {mapId !== room.map.id && (
-          <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl bg-peach p-3 text-sm text-peach-ink">
-            <p className="min-w-0 flex-1 font-bold">
-              {someoneInside
-                ? `${room.people.length} people are inside. The map switches when everyone leaves; the chat, members and link stay.`
-                : 'Nobody’s inside, so the map switches right away. The chat, members and link stay.'}
-            </p>
-            {someoneInside && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="rounded-full bg-card font-extrabold"
-                onClick={() => toast('Everyone gets a 30-second heads-up, then reloads into the new map')}
-              >
-                Switch now
-              </Button>
-            )}
-          </div>
-        )}
         <p className="mt-2 text-xs text-muted-foreground">
-          Maps are made by the Connecta team. Drawings, games and the room’s bubbles reset whenever the room empties, so switching loses
-          nothing saved.
+          The same for everyone inside{look.time === 'clock' && ', on the room’s clock (Asia/Bangkok, from your settings)'}. Battery saver
+          stays each person’s own.
         </p>
-      </div>
+      </section>
+
+      <ThumbnailPicker roomId={room.id} look={look} onChange={(thumb) => set({ thumb })} />
+
       <div className="flex flex-col gap-2">
         <Label>
           People at once · <span className="font-mono">{max}</span>
         </Label>
-        <Slider defaultValue={[max]} min={2} max={max} />
-        <p className="text-xs text-muted-foreground">
-          Free: 25 · Level 1: 50 · Level 2: 100. When it’s full, it’s full: boost the room to fit more.
-        </p>
+        <Slider key={max} defaultValue={[max]} min={2} max={max} />
+        <p className="text-xs text-muted-foreground">Free: 25 · Plus: 50 on a Cosy map, 100 on a Big one. When it’s full, it’s full.</p>
       </div>
       <Toggles
         rows={[
@@ -231,64 +256,60 @@ function MapAndCapacity({ room }: { room: PlaceRoom }) {
           ['Quiet room', 'No room-wide games or jukebox. Good for studying.', room.scene.quiet],
         ]}
       />
+      <Button className="w-fit rounded-full font-extrabold" onClick={save}>
+        {mapChanged && someoneInside ? 'Save and move everyone' : 'Save changes'}
+      </Button>
     </div>
   );
 }
 
-/** Anyone in the room can boost it; Connecta Plus comes with 2 boosts to put on any room. */
-function Boosts({ room }: { room: PlaceRoom }) {
-  const now = levelFor(room.boosts);
-  const next = BOOST_LEVELS[now.level + 1];
+/** The room's picture on Home, Discover and invites: the owner's own, or the map's. */
+function ThumbnailPicker({ roomId, look, onChange }: { roomId: string; look: RoomLook; onChange: (thumb?: string) => void }) {
+  const [busy, setBusy] = useState(false);
+  const pick = async (file?: File) => {
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) return toast.error('That picture is over 5 MB');
+    setBusy(true);
+    try {
+      onChange(await toThumbnail(file));
+    } catch {
+      toast.error('That doesn’t look like a picture');
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
-    <div className="flex flex-col gap-4">
-      <div className="rounded-3xl bg-gradient-to-br from-secondary via-peach to-lavender p-5">
-        <p className="text-sm font-bold text-muted-foreground">
-          Level {now.level} · {room.boosts} boosts · {now.capacity} people at once
-        </p>
-        {next && (
-          <>
-            <div className="mt-3 h-3 overflow-hidden rounded-full bg-card/70">
-              <div className="h-full rounded-full bg-primary" style={{ width: `${(room.boosts / next.boosts) * 100}%` }} />
-            </div>
-            <p className="mt-2 text-sm">
-              {next.boosts - room.boosts} more to Level {next.level}
-            </p>
-          </>
-        )}
+    <section>
+      <p className="mb-2 text-sm font-extrabold">Thumbnail</p>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative isolate aspect-video w-48 overflow-hidden rounded-2xl">
+          {look.thumb ? (
+            // eslint-disable-next-line @next/next/no-img-element -- a data URL preview
+            <img src={look.thumb} alt="Room thumbnail" className="absolute inset-0 size-full object-cover" />
+          ) : (
+            <Scene roomId={`preview:${roomId}`} mapId={look.mapId} emojiClass="right-3 bottom-2 text-4xl" />
+          )}
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="w-fit cursor-pointer rounded-full border bg-card px-4 py-1.5 text-sm font-extrabold hover:bg-muted">
+            {busy ? 'Loading…' : look.thumb ? 'Change picture' : 'Upload a picture'}
+            <input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(e) => pick(e.target.files?.[0])} />
+          </label>
+          {look.thumb && (
+            <button
+              type="button"
+              onClick={() => onChange(undefined)}
+              className="w-fit text-xs font-bold text-muted-foreground hover:underline"
+            >
+              Use the map’s picture
+            </button>
+          )}
+          <p className="max-w-64 text-xs text-muted-foreground">
+            16:9, up to 5 MB. Checked before it shows. Without one, the map’s picture is used.
+          </p>
+        </div>
       </div>
-      <div className="grid gap-2 sm:grid-cols-2">
-        {BOOST_LEVELS.map((l) => (
-          <div
-            key={l.level}
-            className={cn('rounded-2xl border-2 p-3', l.level === now.level ? 'border-primary bg-secondary/40' : 'border-border')}
-          >
-            <p className="font-black">
-              {l.level ? `Level ${l.level}` : 'Free'}
-              <span className="ml-2 text-xs font-bold text-muted-foreground">{l.boosts ? `${l.boosts} boosts` : 'no boosts'}</span>
-            </p>
-            <ul className="mt-1 flex flex-col gap-0.5 text-sm">
-              <li className="flex items-center gap-1.5 font-bold">
-                <Check className="size-3.5 text-primary" /> {l.capacity} people at once
-              </li>
-              <li className="flex items-center gap-1.5 font-bold">
-                <Check className="size-3.5 text-primary" /> {l.members.toLocaleString()} members
-              </li>
-              {l.perks.map((p) => (
-                <li key={p} className="flex items-center gap-1.5 text-muted-foreground">
-                  <Check className="size-3.5 text-primary" /> {p}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <Button className="rounded-full font-extrabold" onClick={() => toast.success('Boosted! Thank you 💖')}>
-          <Rocket /> Boost this room
-        </Button>
-        <p className="text-xs text-muted-foreground">Anyone in the room can boost. Connecta Plus includes 2 boosts for any room.</p>
-      </div>
-    </div>
+    </section>
   );
 }
 

@@ -150,3 +150,9 @@ export const AWAY_EVENT = 'connecta-demo:away';
 export function goAwayNow() {
   window.dispatchEvent(new Event(AWAY_EVENT));
 }
+
+/** Demo: the Connecta team just published an update to this room's map (feature 7's live switch). */
+export const MAP_UPDATE_EVENT = 'connecta-demo:map-update';
+export function publishMapUpdate() {
+  window.dispatchEvent(new Event(MAP_UPDATE_EVENT));
+}

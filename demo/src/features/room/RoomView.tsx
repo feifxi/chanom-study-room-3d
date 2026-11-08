@@ -3,21 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {
-  Camera,
-  Clock,
-  HeadphoneOff,
-  Headphones,
-  Leaf,
-  Megaphone,
-  MessageCircle,
-  Mic,
-  MicOff,
-  Moon,
-  MonitorUp,
-  Sparkles,
-  Sun,
-} from 'lucide-react';
+import { Camera, HeadphoneOff, Headphones, Leaf, Megaphone, MessageCircle, Mic, MicOff, MonitorUp, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { SEAT_BY_ID, SPAWN } from '@study/shared';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
@@ -25,13 +11,16 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { setConnection } from '@/lib/connection';
 import { DMS, ME, USERS, serverById } from '@/lib/mock';
 import { AWAY_EVENT, crowdPeople, useCrowd } from '@/lib/demoCrowd';
+import { questProgress } from '@/lib/quests';
 import { GUEST_LOOK, loadGuest } from '@/lib/guest';
 import { useCompactScreen, useTouchScreen, isTouchScreen } from '@/lib/screen';
 import { useNow } from '@/lib/time';
 import { cn } from '@/lib/utils';
 import { useMusic } from '../music/useMusic';
 import type { LocalMotion } from '../room3d/Avatar';
-import { useDayLight, useThemeMode } from '../room3d/dayCycle';
+import { useRoomLook } from '@/features/place/roomLook';
+import { MapMove } from './MapMove';
+import { useDayLight } from '../room3d/dayCycle';
 import { Joystick } from '../room3d/Joystick';
 import { LabelBoard, LabelLayer } from '../room3d/labels';
 import type { Hint } from '../room3d/LocalController';
@@ -75,7 +64,7 @@ const AWAY_MS = 10 * 60_000;
 
 /**
  * The room screen, five named parts:
- * - **Room card** (top left): the room itself: invite, settings, your view (day/night), Leave
+ * - **Room card** (top left): the room itself: invite, settings, the room's time of day, battery saver, Leave
  * - **My tools** (left rail): study, music, help; only you
  * - **Chat** (bottom left): Room chat, Bubbles and Messages in one panel
  * - **People** (top right): a pill of faces that opens who's here
@@ -109,8 +98,12 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const zoomRequest = useRef<number | null>(null);
   const [zoom, setZoom] = useState(100);
   const board = useMemo(() => new LabelBoard(), []);
-  const [themeMode, setThemeMode] = useThemeMode();
-  const light = useDayLight(themeMode);
+  // The owner sets the room's look and time of day for everyone (feature 7); drop-ins use the defaults
+  const lookId = server.id === 'public' ? `public:${roomDef.id}` : server.id;
+  const look = useRoomLook(lookId, roomDef.mapId);
+  // After a live map change everyone stands up (seats belong to the old map); the demo has only one 3D map
+  const arrive = useCallback(() => room.send('stand', {}), [room]);
+  const light = useDayLight(look.time === 'clock' ? 'auto' : look.time);
   const [saver, setSaver] = useState(isTouchScreen);
   const quality = QUALITY[saver ? 'saver' : 'smooth'];
   const compact = useCompactScreen();
@@ -139,8 +132,28 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const [stage, setStage] = useState(false);
   const canStage = !guest && (server.roles.me === 'Owner' || server.roles.me === 'Mod');
 
-  const onPhase = useCallback((phase: Phase) => room.setStatus(phase === 'idle' ? 'idle' : phase, subjectRef.current), [room]);
+  const onPhase = useCallback(
+    (phase: Phase) => {
+      room.setStatus(phase === 'idle' ? 'idle' : phase, subjectRef.current);
+      // A focus block ran to its end (focus → break): one finished session
+      if (phase === 'break') questProgress('pomo-2');
+    },
+    [room],
+  );
   const pomo = usePomodoro(onPhase);
+  // While a focus timer runs you're studying, maybe in another tab: never away, and quest minutes count
+  const focusing = useRef(false);
+  useEffect(() => {
+    focusing.current = pomo.phase === 'focus';
+    if (pomo.phase !== 'focus') return;
+    const id = setInterval(() => questProgress('focus-60'), 60_000);
+    return () => clearInterval(id);
+  }, [pomo.phase]);
+  // Connected to a room with someone else in it (counted by the server; tabs don't matter)
+  useEffect(() => {
+    const id = setInterval(() => room.state.players.size > 1 && questProgress('room-30'), 60_000);
+    return () => clearInterval(id);
+  }, [room]);
   const music = useMusic(speaking.size > 0);
 
   // Stay "connected" while browsing chats elsewhere, like a voice channel
@@ -150,6 +163,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
 
   const say = useCallback((id: string, name: string, text: string) => {
     setBubbles((b) => ({ ...b, [id]: { text, until: Date.now() + bubbleMs(text) } }));
+    if (id === 'me') questProgress('say-5');
     setLines((l) => [...l, { id: `${Date.now()}-${id}`, name, text }]);
   }, []);
 
@@ -181,7 +195,8 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
       const m = motion.current;
       setZone(zoneAt(m.x, m.z));
       const last = Math.max(lastDom, driverRef.current?.lastInput ?? 0);
-      const isAway = forced || performance.now() - last > AWAY_MS;
+      // Focusing is never away: people study in other tabs (notes, slides) and keep their mic as it was
+      const isAway = !focusing.current && (forced || performance.now() - last > AWAY_MS);
       setAway((was) => {
         if (isAway && !was) {
           setMic(false);
@@ -326,11 +341,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
         {!compact && (deaf ? 'Deafened' : 'Sound')}
       </button>
       {canStage && (
-        <DockBtn
-          icon={Megaphone}
-          label="Everyone"
-          compact={compact}
-          pressed={stage}
+        <button
           onClick={() => {
             if (!stage) {
               setDeaf(false);
@@ -339,39 +350,22 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
             }
             setStage(!stage);
           }}
-        />
+          aria-pressed={stage}
+          aria-label={stage ? 'Stop talking to everyone' : 'Talk to everyone'}
+          className={cn('dock-btn', compact && 'min-w-0 px-3', stage && 'dock-btn-live')}
+        >
+          <Megaphone className="size-5" />
+          {!compact && (stage ? 'On air' : 'Everyone')}
+        </button>
       )}
       <DockBtn icon={MessageCircle} label="Chat" compact={compact} pressed={chatPressed} onClick={toggleChat} />
       <DockBtn icon={Camera} label="Photo" compact={compact} onClick={() => setPhoto(true)} />
       <DockBtn icon={Sparkles} label="Activities" compact={compact} pressed={activities} onClick={() => setActivities(!activities)} />
     </nav>
   );
-  // How the room looks for you: follow the clock, day or night, and battery saver. Set once and
-  // forgotten, so it sits in the room card instead of taking a corner of the screen.
+  // Battery saver is the one thing that's yours alone: the time of day is the room's (owner's) choice
   const view = (
     <div className="flex flex-col gap-1.5">
-      <div className="grid grid-cols-3 gap-1 rounded-xl bg-card p-1">
-        {(
-          [
-            ['auto', Clock, 'Clock'],
-            ['day', Sun, 'Day'],
-            ['night', Moon, 'Night'],
-          ] as const
-        ).map(([m, Icon, label]) => (
-          <button
-            key={m}
-            onClick={() => setThemeMode(m)}
-            aria-pressed={themeMode === m}
-            title={m === 'auto' ? 'Follow the clock' : label}
-            className={cn(
-              'flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-extrabold',
-              themeMode === m ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-            )}
-          >
-            <Icon className="size-3.5" /> {label}
-          </button>
-        ))}
-      </div>
       <button
         onClick={() => setSaver(!saver)}
         aria-pressed={saver}
@@ -460,6 +454,8 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
               className={cn('absolute left-3 z-20', compact ? 'top-[132px]' : 'top-[88px]')}
             />
             {!compact && chatOpen && <div className="absolute bottom-3 left-3">{chat}</div>}
+
+            <MapMove lookId={lookId} mapId={look.mapId} onArrive={arrive} />
 
             {/* Top centre: you're in a private zone, or talking to everyone */}
             {(zone || stage) && (

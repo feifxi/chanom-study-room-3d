@@ -21,7 +21,7 @@ export const ROLE_RULES: { role: RoomRole; can: string[]; cannot?: string[] }[] 
       'Delete messages',
       'Change the safety settings',
     ],
-    cannot: ['Act on the owner or other mods', 'Change the map, visibility or boosts'],
+    cannot: ['Act on the owner or other mods', 'Change the map or visibility'],
   },
   { role: 'Member', can: ['Chat and walk in', 'Invite people, if the room allows it'] },
 ];

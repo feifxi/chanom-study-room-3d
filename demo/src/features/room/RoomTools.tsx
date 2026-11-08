@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { BookOpenText, CircleHelp, Music2, X, type LucideIcon } from 'lucide-react';
+import { BookOpenText, CircleHelp, Music2, Target, X, type LucideIcon } from 'lucide-react';
+import { QuestList } from '@/components/app/QuestList';
+import { useQuests } from '@/lib/quests';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { MusicPanel } from '../music/MusicPanel';
@@ -10,7 +12,7 @@ import type { Music } from '../music/useMusic';
 import { useDismiss } from './useDismiss';
 import { formatLeft, type usePomodoro } from './usePomodoro';
 
-type ToolId = 'study' | 'music' | 'help';
+type ToolId = 'study' | 'music' | 'quests' | 'help';
 
 /**
  * My tools, the left rail (V1's icon rail): your own things that don't affect anyone else, one
@@ -32,6 +34,8 @@ export function RoomTools({
 }) {
   const [open, setOpen] = useState<ToolId | null>(null);
   const ref = useDismiss<HTMLDivElement>(!!open, () => setOpen(null));
+  const { quests, coins } = useQuests();
+  const done = quests.filter((q) => q.progress >= q.goal).length;
 
   const tools: { id: ToolId; icon: LucideIcon; label: string; badge?: ReactNode }[] = [
     {
@@ -48,6 +52,12 @@ export function RoomTools({
       icon: Music2,
       label: music.playing ? `Music: ${TRACKS[music.index]!.title}` : 'Music',
       badge: music.playing && <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-online" />,
+    },
+    {
+      id: 'quests',
+      icon: Target,
+      label: `Today’s quests: ${done} of ${quests.length} done`,
+      badge: <span className="font-mono text-[9px] leading-none font-black text-primary">{`${done}/${quests.length}`}</span>,
     },
     { id: 'help', icon: CircleHelp, label: 'How to play' },
   ];
@@ -81,6 +91,12 @@ export function RoomTools({
         {open === 'music' && (
           <ToolCard title="Music" note="Only you hear it" onClose={() => setOpen(null)}>
             <MusicPanel music={music} />
+          </ToolCard>
+        )}
+        {open === 'quests' && (
+          <ToolCard title="Today’s quests" note={`🪙 ${coins.toLocaleString()}`} onClose={() => setOpen(null)}>
+            <QuestList />
+            <p className="text-[11px] text-muted-foreground">New ones at midnight. Coins buy outfits and pets in the Shop.</p>
           </ToolCard>
         )}
         {open === 'help' && (

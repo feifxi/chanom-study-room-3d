@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Bell, ChevronDown, MessageCircle, Pin, Play, Plus, Rocket, Search, UserCheck } from 'lucide-react';
+import { ArrowRight, Bell, ChevronDown, Crown, MessageCircle, Pin, Play, Plus, Search, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { OpenRoomCard } from '@/components/app/OpenRoomCard';
 import { AvatarStack, UserAvatar } from '@/components/UserAvatar';
@@ -13,7 +13,8 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useManyRooms } from '@/lib/demoCrowd';
 import { DROP_INS, MANY_ROOMS, MAPS, ME, OPEN_ROOMS, SERVERS, USERS, serverById, userById } from '@/lib/mock';
-import { chatHref, levelFor, placeRoom, walkInHref, type PlaceRoom } from './model';
+import { chatHref, placeRoom, walkInHref, type PlaceRoom } from './model';
+import { SizePicker, TemplateCard } from './MapPickers';
 import { JOIN_REQUESTS } from './membership';
 import { RoomMenu } from './RoomMenu';
 import { Scene } from './Scene';
@@ -272,11 +273,11 @@ export function PlaceHome() {
 
 function RoomCard({ room, pinned, unread, menu }: { room: PlaceRoom; pinned: boolean; unread: number; menu: React.ReactNode }) {
   const inside = room.people.map(userById);
-  const level = levelFor(room.boosts).level;
 
   return (
     <article className="group relative isolate flex min-h-64 flex-col overflow-hidden rounded-[2rem] text-white shadow-soft">
       <Scene
+        roomId={room.id}
         mapId={room.map.id}
         className="transition-transform duration-700 group-hover:scale-105"
         emojiClass="top-6 bottom-auto text-6xl"
@@ -311,9 +312,9 @@ function RoomCard({ room, pinned, unread, menu }: { room: PlaceRoom; pinned: boo
             <UserCheck className="size-3" /> {JOIN_REQUESTS.length} asking to join
           </Chip>
         )}
-        {level > 0 && (
+        {room.ownerPlus && (
           <Chip>
-            <Rocket className="size-3" /> Lv {level}
+            <Crown className="size-3" /> Plus
           </Chip>
         )}
       </div>
@@ -419,31 +420,28 @@ function Chip({ children, className }: { children: React.ReactNode; className?: 
   );
 }
 
-/** Making a room: a name and a map. Everything else has a sensible default and lives in settings. */
+/** Making a room: a name and a template (Cosy size). Everything else has a sensible default and lives in settings. */
 function CreateRoomDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const [mapId, setMapId] = useState(MAPS[0]!.id);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[calc(100%-2rem)] rounded-3xl sm:max-w-2xl">
+      <DialogContent className="max-h-[90dvh] max-w-[calc(100%-2rem)] overflow-y-auto rounded-3xl sm:max-w-2xl">
         <DialogTitle className="text-xl font-black">Make a room</DialogTitle>
-        <DialogDescription>Pick a map and name it. It’s private until you invite people; up to 25 at once for free.</DialogDescription>
+        <DialogDescription>Pick a template and name it. It’s private until you invite people; up to 25 at once for free.</DialogDescription>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="new-room">Room name</Label>
           <Input id="new-room" placeholder="e.g. Chanom Friends" className="rounded-xl" />
         </div>
         <div className="grid gap-2 sm:grid-cols-3">
           {MAPS.map((m) => (
-            <button
-              key={m.id}
-              onClick={() => setMapId(m.id)}
-              className={cn('rounded-2xl border-2 p-2 text-left', mapId === m.id ? 'border-primary' : 'border-border')}
-            >
-              <span className={cn('grid h-20 place-items-center rounded-xl text-3xl', m.tint)}>{m.emoji}</span>
-              <p className="mt-1.5 text-sm font-extrabold">{m.name}</p>
-              <p className="text-[11px] text-muted-foreground">{m.blurb}</p>
-            </button>
+            <TemplateCard key={m.id} map={m} picked={mapId === m.id} onPick={() => setMapId(m.id)} />
           ))}
         </div>
+        <SizePicker size="cosy" plus={!!ME.plus} onPick={() => {}} />
+        <p className="-mt-2 text-xs text-muted-foreground">
+          Every template has the same things to do; only the place differs. Colours, the sign, time of day and a thumbnail are in the room’s
+          settings once it’s made.
+        </p>
         <Button
           className="w-fit rounded-full font-extrabold"
           onClick={() => {

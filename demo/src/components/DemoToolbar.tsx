@@ -5,7 +5,8 @@ import { useTheme } from 'next-themes';
 import { Monitor, Moon, Palette, Sun } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { CROWDS, goAwayNow, setCrowd, setManyRooms, useCrowd, useManyRooms } from '@/lib/demoCrowd';
+import { CROWDS, goAwayNow, publishMapUpdate, setCrowd, setManyRooms, useCrowd, useManyRooms } from '@/lib/demoCrowd';
+import { nudgeQuests } from '@/lib/quests';
 import { cn } from '@/lib/utils';
 import { PALETTES, usePalette } from './Providers';
 
@@ -22,6 +23,7 @@ const PAGES = [
   ['3D room', '/servers/chanom/rooms/library'],
   ['Public room', '/servers/public/rooms/cafe-lounge-1'],
   ['Invite (guest)', '/invite/cafe-chanom'],
+  ['Map editor (admin)', '/admin/maps'],
 ] as const;
 
 /** Demo-only chrome: theme, palette, a crowd for the 3D room, 100 rooms on Home, and a jump to any page. Not part of the app design. */
@@ -106,6 +108,12 @@ export function DemoToolbar() {
 
         <button onClick={goAwayNow} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
           💤 Go away now (in a 3D room; skips the 10 minutes)
+        </button>
+        <button onClick={nudgeQuests} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
+          🎯 One step on every quest (skip the waiting)
+        </button>
+        <button onClick={publishMapUpdate} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
+          🛠️ Team publishes a map update (in a 3D room; 60 s heads-up)
         </button>
 
         <Title>Your rooms on Home</Title>

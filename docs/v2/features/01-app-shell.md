@@ -16,7 +16,7 @@ So the shell follows Gather instead:
 
 - **The room is the app.** There's no server page and no channel list.
 - **Everything else is a panel over the room:** chat, people, settings.
-- **Discord's features stay** (chat, mentions, DMs, roles, invites, boosts). Only where they live changes.
+- **Discord's features stay** (chat, mentions, DMs, roles, invites). Only where they live changes.
 
 ## Screens
 
@@ -34,16 +34,16 @@ So the shell follows Gather instead:
     Recent / A–Z. Rooms nobody's opened for 30+ days fold away under **"Quiet for a while · N"**,
     which suggests leaving the ones you don't need. Searching or filtering lists every match.
   - **A card shows:** a picture of the map, `inside/capacity`, an unread chip (`@ you · 3 new` for
-    a mention), boost level, pinned, your role (owner/mod), the faces inside, **Walk in** and **Chat**.
+    a mention), Plus badge (owner has Plus), pinned, your role (owner/mod), the faces inside, **Walk in** and **Chat**.
   - **Clicking a room** opens its page (the chat outside 3D, with its info on the side). Walk in enters 3D.
   - **When it's full:** the chip says `25/25 full` and Walk in becomes **Full · notify me**. Chat still works.
   - **"Make a room"** in the section header: a name and a map.
 - **The "…" on a room** (cards, rows, the room's Chat page): About this room, Invite friends, Copy
   room link, Pin / Unpin, Mark as read, Notifications (every message / only @mentions / nothing),
-  **Room settings** (owners and mods: edit the room from Home without walking in), Boost this room,
+  **Room settings** (owners and mods: edit the room from Home without walking in),
   and Leave room (members; owners transfer or delete in Settings).
 - **About this room:** a quick card with everything: picture, description, next event, map, who can
-  join, members, inside now, owner, mods, boosts and your role, plus Walk in / Chat / Settings.
+  join, members, inside now, owner, mods, plan and your role, plus Walk in / Chat / Settings.
 - **"Open now":** two open rooms you're not in (friends inside first) and two drop-in rooms, with
   "See all in Discover". Home suggests; Discover is the full list with search and tags.
 - **Open room cards** show how full the room is (`41/50`, members). **Drop-in cards** show everyone
@@ -67,7 +67,7 @@ So the shell follows Gather instead:
 ### A room's chat, outside 3D (the room's URL)
 
 - The permanent chat full size, over a blurred picture of the room.
-- **Header:** back to Home, the room (name, boost level, map, `inside/capacity`), Invite, Settings and a big **Walk in**.
+- **Header:** back to Home, the room (name, Plus badge, map, `inside/capacity`), Invite, Settings and a big **Walk in**.
 - **Side panel:** who's inside now, then the other members.
 - **Pinned on top:** the next event.
 - **Visibility:** "You're reading from outside · nobody sees you". You don't appear in the room, and voice is off.
@@ -81,7 +81,7 @@ The HUD has five named parts. Each owns one kind of thing, so it's always clear 
 | Part          | Where         | What it holds                                                              |
 | ------------- | ------------- | -------------------------------------------------------------------------- |
 | **Room card** | top left      | the room itself: name, map, who's here; Invite, Settings, Your view, Leave |
-| **My tools**  | left rail     | your own things: Study session, Music, How to play                         |
+| **My tools**  | left rail     | your own things: Study session, Music, Quests, How to play                 |
 | **Chat**      | bottom left   | all text: Room chat, Bubbles, Messages                                     |
 | **People**    | top right     | who's here, and what you can do with each person                           |
 | **Zoom**      | bottom right  | − 100% + (not on touch screens)                                            |
@@ -95,10 +95,9 @@ Plus the **chat window**: Room chat or a DM opened large over the dimmed room (�
 - **Room card** (300px). Like Gather there's no back button: you're in the room or you've left it.
   Expanded:
   - Invite friends, and Settings (members only)
-  - **Your view** (only you see it): Clock / Day / Night, and Battery saver. Moved here from My
-    tools: it's about the room, set once and rarely touched.
+  - **Your view** (only you see it): Battery saver. Moved here from My tools: set once, rarely touched.
   - **Leave room** at the bottom; goes to Home. Guests can expand the card too (Invite copies the link).
-- **My tools:** Study session (Pomodoro, to-do, Focus today), Music, How to play.
+- **My tools:** Study session (Pomodoro, to-do, Focus today), Music, Quests (🎯 today's three, plan "Business model"), How to play.
 - **Chat**, one panel with three tabs, so the room's main text is always one tap away:
   - **Bubbles** (first tab, the default): what people say out loud right now. It pops over their
     head and is gone when the room empties. In the room you're there to talk to whoever is around,
@@ -135,20 +134,18 @@ Plus the **chat window**: Room chat or a DM opened large over the dimmed room (�
 
 Opened from the room's "…" (Home or the Chat page), its Chat page, or the Room card in 3D. Tabs:
 Overview (name, description, who can join, and for the owner a danger zone: transfer ownership,
-delete), Map & capacity, Members & roles, Invites, Safety, Boosts.
+delete), Map & look, Members & roles, Invites, Safety.
 
 - **Who can join:** Private (invite only, not listed), Ask to join (listed, mods approve), Open (listed, anyone can walk in and join).
 - **Members vs capacity:** two different limits, explained on the Members tab. Members: 150
-  free, 300 / 500 / 1,000 with boosts. Capacity: how many are inside at once (25 / 50 / 100 by boosts).
+  free, 1,000 with the owner's Plus. Capacity: how many are inside at once (25 free, up to 100 with Plus).
   When it's full, members wait for a spot or ask to be told; the owner and mods always fit.
 
 - **Map:**
   - Pick a template.
-  - If people are inside, the switch waits until the room empties; "Switch now" gives everyone a heads-up and reloads them.
+  - It switches at once, live: people inside get a short loading screen (feature 7).
   - The chat, members and link stay either way.
-- **Capacity:** a slider up to the boost level's limit (25 / 50 / 100). When it's full, it's full.
-- **Boosts:** the current level, progress to the next, every level's perks, and "Boost this room".
-  Anyone can boost; Plus includes 2 boosts.
+- **Capacity:** a slider up to the plan's and map's limit (25 free; 50 Cosy or 100 Big with Plus). When it's full, it's full.
 
 ### Phones
 
@@ -181,8 +178,8 @@ delete), Map & capacity, Members & roles, Invites, Safety, Boosts.
 - **Home's live data** (who's inside, unread per room) comes from the presence gateway, not by polling each room.
 - **Room cards need a recent picture** of each map. Start with one static image per template; a
   periodic snapshot of each room is a later nice-to-have.
-- **Capacity is enforced by Colyseus** at join time (`maxClients` from the room's boost level).
-- **Switching maps** is a field on the room plus a "pending map" applied when the room empties, or on Switch now.
+- **Capacity is enforced by Colyseus** at join time (`maxClients` from the owner's plan and the map size).
+- **Switching maps** is live (feature 7, "Live map changes").
 
 ## Open questions
 

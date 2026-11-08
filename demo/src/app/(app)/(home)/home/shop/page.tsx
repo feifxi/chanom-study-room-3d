@@ -2,13 +2,16 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Coins, Crown, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { Coins, Crown } from 'lucide-react';
+import { QuestList } from '@/components/app/QuestList';
 import { toast } from 'sonner';
 import type { Accessory, AvatarLook } from '@study/shared';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { COINS, ME, SHOP, type ShopCategory, type ShopItem } from '@/lib/mock';
+import { ME, SHOP, type ShopCategory, type ShopItem } from '@/lib/mock';
+import { spendCoins, useQuests } from '@/lib/quests';
 
 const AvatarPreview = dynamic(() => import('@/features/avatar/AvatarPreview').then((m) => m.AvatarPreview), { ssr: false });
 
@@ -37,13 +40,12 @@ export default function ShopPage() {
   const [cat, setCat] = useState<ShopCategory | 'all'>('all');
   const [trying, setTrying] = useState<ShopItem | null>(null);
   const [owned, setOwned] = useState(() => new Set(SHOP.filter((i) => i.owned).map((i) => i.id)));
-  const [coins, setCoins] = useState(COINS);
+  const { coins } = useQuests();
   const look = { ...ME.look, ...(trying ? TRY_ON[trying.id] : {}) };
   const items = SHOP.filter((i) => cat === 'all' || i.category === cat);
 
   const buy = (item: ShopItem) => {
-    if (coins < item.price) return toast.error('Not enough coins yet. Top up or earn them with focus streaks.');
-    setCoins(coins - item.price);
+    if (!spendCoins(item.price)) return toast.error('Not enough coins yet. Today’s quests earn more.');
     setOwned(new Set(owned).add(item.id));
     toast.success(`${item.emoji} ${item.name} is yours!`);
   };
@@ -64,8 +66,15 @@ export default function ShopPage() {
             {trying ? `Trying on: ${trying.name}` : 'Your character'}
           </span>
         </div>
-        {trying && !owned.has(trying.id) ? (
-          <Button className="h-11 rounded-2xl font-extrabold" onClick={() => buy(trying)} disabled={trying.plusOnly && !ME.plus}>
+        {/* Premium skins come with Plus and are never sold for coins */}
+        {trying?.plusOnly && !ME.plus ? (
+          <Button asChild className="h-11 rounded-2xl font-extrabold">
+            <Link href="/home/plus">
+              <Crown /> Comes with Plus
+            </Link>
+          </Button>
+        ) : trying && !trying.plusOnly && !owned.has(trying.id) ? (
+          <Button className="h-11 rounded-2xl font-extrabold" onClick={() => buy(trying)}>
             Buy for {trying.price} <Coins />
           </Button>
         ) : (
@@ -73,10 +82,15 @@ export default function ShopPage() {
             {trying ? 'Wear it' : 'Pick something to try on'}
           </Button>
         )}
-        <Button variant="outline" className="rounded-2xl font-bold">
-          <Sparkles /> Get more coins
-        </Button>
-        <p className="text-xs text-muted-foreground">Everything here is just for looks. Coins also come from focus streaks.</p>
+        <section className="flex flex-col gap-2">
+          <h2 className="flex items-baseline justify-between text-sm font-black">
+            Today’s quests <span className="text-[11px] font-bold text-muted-foreground">new at midnight</span>
+          </h2>
+          <QuestList />
+        </section>
+        <p className="text-xs text-muted-foreground">
+          Everything here is just for looks. Coins can’t be bought: you earn them with quests. Premium skins come with Plus.
+        </p>
       </aside>
 
       <section className="min-w-0 flex-1 overflow-y-auto p-5">
@@ -128,7 +142,9 @@ export default function ShopPage() {
                 <span className="p-3">
                   <span className="block truncate text-sm font-extrabold">{item.name}</span>
                   <span className="mt-0.5 flex items-center gap-1 text-sm font-bold text-muted-foreground">
-                    {has ? (
+                    {item.plusOnly ? (
+                      <span className={ME.plus ? 'text-mint-ink' : undefined}>{ME.plus ? 'Yours with Plus ✓' : 'With Plus'}</span>
+                    ) : has ? (
                       <span className="text-mint-ink">Owned ✓</span>
                     ) : (
                       <>

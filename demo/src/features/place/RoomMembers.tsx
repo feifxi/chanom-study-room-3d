@@ -29,7 +29,7 @@ import {
   type RoomBan,
   type RoomRole,
 } from './membership';
-import { levelFor, type PlaceRoom } from './model';
+import { planOf, type PlaceRoom } from './model';
 
 /** Can `me` act on someone with `their` role? Owner: anyone but themselves. Mod: members only. */
 export const canActOn = (me: RoomRole | undefined, their: RoomRole) =>
@@ -69,9 +69,9 @@ export function MembersPanel({ room, myRole }: { room: PlaceRoom; myRole: RoomRo
       <div className="grid gap-2 sm:grid-cols-2">
         <p className="rounded-2xl bg-muted p-3 text-sm">
           <span className="block text-lg font-black">
-            {room.server.memberCount}/{levelFor(room.boosts).members}
+            {room.server.memberCount}/{planOf(room.ownerPlus).members}
           </span>
-          members. They have the Room chat any time, from anywhere. Boosts raise the limit (150 / 300 / 500 / 1,000).
+          members. They have the Room chat any time, from anywhere. Free rooms hold 150; the owner’s Plus raises it to 1,000.
         </p>
         <p className="rounded-2xl bg-muted p-3 text-sm">
           <span className="block text-lg font-black">

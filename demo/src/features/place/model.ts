@@ -3,7 +3,7 @@ import { MAPS, type Channel, type MapTemplate, type Room, type Server } from '@/
 /**
  * Place layout's model (decided 2026-11-08): no servers, just rooms. A room has one map (from a
  * template), one permanent main chat, its own members, roles, invites and visibility. When full it's
- * full; boosts raise its capacity.
+ * full; the owner's Plus raises its capacity.
  *
  * The demo's mock data is still shaped as servers (the other layouts use it), so each mock server
  * stands in for one room: its busiest room gives the map and the crowd, its first chat is the main
@@ -11,19 +11,16 @@ import { MAPS, type Channel, type MapTemplate, type Room, type Server } from '@/
  */
 
 /**
- * Boost levels: boosts needed, people at once, members, and what else unlocks. Members grow with
- * capacity (about 6 members per spot): a room where most members could never fit inside at once
- * feels empty-but-full. Free fits a friend group or a class (150, about Dunbar's number); a big
- * community boosts to grow, up to 1,000.
+ * One subscription, Connecta Plus (decided 2026-11-09; room boosts dropped). A room
+ * follows its owner's plan. Members grow with capacity (about 6 per spot inside), so a room never has
+ * far more members than could ever fit: Free fits a friend group or a class, Plus a community.
  */
-export const BOOST_LEVELS = [
-  { level: 0, boosts: 0, capacity: 25, members: 150, perks: ['Every basic template', '720p screen share', 'Normal uploads'] },
-  { level: 1, boosts: 2, capacity: 50, members: 300, perks: ['Premium templates', 'Custom room colours and banner'] },
-  { level: 2, boosts: 7, capacity: 100, members: 500, perks: ['1080p screen share for everyone', 'Bigger uploads', 'Animated room icon'] },
-  { level: 3, boosts: 14, capacity: 100, members: 1000, perks: ['Custom invite link', 'More private zones and decor', 'Event tools'] },
-] as const;
+export const PLANS = {
+  free: { name: 'Free', capacity: 25, members: 150 },
+  plus: { name: 'Plus', capacity: 100, members: 1000 },
+} as const;
 
-export const levelFor = (boosts: number) => [...BOOST_LEVELS].reverse().find((l) => boosts >= l.boosts)!;
+export const planOf = (ownerPlus: boolean) => PLANS[ownerPlus ? 'plus' : 'free'];
 
 export interface PlaceRoom {
   id: string;
@@ -44,15 +41,16 @@ export interface PlaceRoom {
   /** Your role here; no role means a member. */
   myRole?: 'Owner' | 'Mod';
   chat?: Channel;
-  boosts: number;
+  /** The room follows its owner's plan. */
+  ownerPlus: boolean;
   capacity: number;
 }
 
 export function placeRoom(server: Server): PlaceRoom {
   const scene = [...server.rooms].sort((a, b) => b.people.length - a.people.length)[0]!;
-  const boosts = server.boosted ?? 0;
+  const ownerPlus = !!server.ownerPlus;
   const people = server.rooms.flatMap((r) => r.people);
-  const capacity = levelFor(boosts).capacity;
+  const capacity = planOf(ownerPlus).capacity;
   const inside = Math.max(people.length, server.insideCount ?? 0);
   const role = server.roles.me;
   return {
@@ -69,7 +67,7 @@ export function placeRoom(server: Server): PlaceRoom {
     full: inside >= capacity,
     myRole: role === 'Owner' ? 'Owner' : role === 'Mod' ? 'Mod' : undefined,
     chat: server.channels[0],
-    boosts,
+    ownerPlus,
     capacity,
   };
 }

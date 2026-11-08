@@ -7,14 +7,15 @@ import { InviteDialog } from '@/components/server/InviteDialog';
 import { placeRoom } from '@/features/place/model';
 import { RoomSettingsDialog } from '@/features/place/RoomSettingsDialog';
 import { cn } from '@/lib/utils';
-import { MAPS, type Room, type Server } from '@/lib/mock';
+import { mapById, useRoomLook } from '@/features/place/roomLook';
+import type { Room, Server } from '@/lib/mock';
 import { useDismiss } from './useDismiss';
 
 /**
  * Room card, top left: where you are and everything about the room itself. Collapsed it's just the
  * room. Expanded:
  * - Invite and (for members) the room's Settings
- * - Your view: day / night / follow the clock and battery saver; only you see the change
+ * - Battery saver: only you see the change
  * - Leave (like Gather there's no "back": you're either in the room or you've left it)
  * Chat lives in its own panel (bottom left), not in here.
  */
@@ -32,7 +33,7 @@ export function RoomCard({
   /** How many people are in this room right now, you included. */
   here: number;
   guest: boolean;
-  /** Your view controls (day/night, battery saver). */
+  /** Your own view controls (battery saver). */
   view: ReactNode;
   onLeave: () => void;
   className?: string;
@@ -42,7 +43,8 @@ export function RoomCard({
   const ref = useDismiss<HTMLDivElement>(open, () => setOpen(false));
   const [invite, setInvite] = useState(false);
   const [settings, setSettings] = useState<string | null>(null);
-  const map = MAPS.find((m) => m.id === room.mapId)!;
+  const look = useRoomLook(isPublic ? `public:${room.id}` : server.id, room.mapId);
+  const map = mapById(look.mapId);
   const name = isPublic ? room.name : server.name;
 
   return (

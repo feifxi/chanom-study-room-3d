@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Bell, CalendarHeart, MessageCircle, Play, Rocket, UserPlus } from 'lucide-react';
+import { ArrowLeft, Bell, CalendarHeart, MessageCircle, Play, Crown, UserPlus } from 'lucide-react';
 import { ChatThread } from '@/components/chat/Chat';
 import { InviteDialog } from '@/components/server/InviteDialog';
 import { PRESENCE_LABEL, UserAvatar } from '@/components/UserAvatar';
@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { channelMessages, userById, type Server } from '@/lib/mock';
-import { levelFor, placeRoom, walkInHref } from './model';
+import { placeRoom, walkInHref } from './model';
 import { RoomMenu } from './RoomMenu';
 import { Scene } from './Scene';
 
@@ -25,11 +25,10 @@ export function PlaceChat({ server }: { server: Server }) {
   const [pinned, setPinned] = useState(server.id === 'chanom');
   const inside = room.people.map(userById);
   const away = server.members.filter((id) => id !== 'me' && !room.people.includes(id)).map(userById);
-  const level = levelFor(room.boosts).level;
 
   return (
     <div className="fixed inset-0 isolate flex flex-col gap-3 p-3">
-      <Scene mapId={room.map.id} className="fixed" emojiClass="text-[9rem]" />
+      <Scene roomId={room.id} mapId={room.map.id} className="fixed" emojiClass="text-[9rem]" />
       <div className="fixed inset-0 -z-10 bg-black/35 backdrop-blur-sm" />
 
       <header className="panel flex flex-none items-center gap-2 p-2">
@@ -44,9 +43,9 @@ export function PlaceChat({ server }: { server: Server }) {
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5 text-[15px] font-black">
             <span className="truncate">{room.name}</span>
-            {level > 0 && (
+            {room.ownerPlus && (
               <span className="flex flex-none items-center gap-0.5 rounded-full bg-lavender px-1.5 text-[10px] font-black text-lavender-ink">
-                <Rocket className="size-3" /> Lv {level}
+                <Crown className="size-3" /> Plus
               </span>
             )}
           </span>

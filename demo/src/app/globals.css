@@ -422,6 +422,21 @@
   .dock-btn:disabled {
     opacity: 0.4;
   }
+  /* Talking to everyone: unmistakably "on air", not just pressed */
+  .dock-btn.dock-btn-live:not(:disabled) {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    animation: on-air 1.6s ease-out infinite;
+  }
+}
+
+@keyframes on-air {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 70%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 10px transparent;
+  }
 }
 
 .typing-dots {
@@ -530,5 +545,18 @@
   .speaking,
   .hop:hover {
     animation: none;
+  }
+}
+
+/* Map change loading bar (feature 7): fills once over the loading screen */
+.map-move-bar {
+  animation: map-move linear forwards;
+}
+@keyframes map-move {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
   }
 }

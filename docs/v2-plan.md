@@ -28,7 +28,7 @@ model is Gather's, kept simpler:
   - The map comes from a platform template (Library, Café, Rooftop, ...); the user names the room.
   - Areas inside the map (study tables, a café corner, a card table, private zones) replace "rooms in a server".
 - **A room owns its people and rules:** members, roles (Owner, Mod, Member), invites, visibility, guests, safety settings.
-- **When it's full, it's full.** A private room never opens copies; boosts raise its capacity.
+- **When it's full, it's full.** A private room never opens copies; the owner's Plus raises its capacity.
   Drop-in rooms are the exception (see below).
 - **Chat outside 3D.** The permanent chat is readable and writable without entering 3D. Phones and
   slow devices use it that way; walking in is one tap.
@@ -51,10 +51,10 @@ model is Gather's, kept simpler:
 - **Members vs capacity:** members are everyone who belongs to the room; capacity is how many are
   inside at once. A room can have 120 members and a capacity of 25: members always have the chat,
   and wait for a spot (or ask to be told) to walk in. The owner and mods always fit.
-- **Member limit grows with boosts:** 150 free, 300 / 500 / 1,000 at Levels 1–3 (about 6 members
-  per spot inside). Free fits a friend group or a class; a big community boosts to grow. Connecta
+- **Member limit grows with the plan:** 150 free, 1,000 with the owner's Plus (about 6 members per
+  spot inside, at most 10 at 100 people). Free fits a friend group or a class. Connecta
   is for small and medium groups that meet in a place, not for 50,000-member communities.
-- **Capacity:** 25 people at once for free, 50 or 100 with boosts. About 100 is the ceiling (phones
+- **Capacity:** 25 people at once for free, up to 100 with the owner's Plus. About 100 is the ceiling (phones
   drawing many avatars, crowded voice), to be confirmed by a load test with the bots script.
 - **Limits:** create up to 10 rooms and join up to 100; Connecta Plus raises both.
 - **What persists:**
@@ -65,12 +65,20 @@ model is Gather's, kept simpler:
 ### Maps
 
 - **Who builds them:** only the platform admin, in a map editor. Users pick templates; they can't edit maps or upload models.
-- **What a map holds:** study areas, activity areas and private zones together.
-- **Platform template updates** apply only when a room next starts fresh (first join, or after everyone leaves).
-- **Changing a room's map** updates the same room (same link, chat and members):
-  - If nobody's inside, it switches immediately.
-  - Otherwise it switches when the room empties.
-  - The owner can "Switch now": everyone gets a short heads-up, then reloads into the new map.
+- **What a map holds:** study areas, activity areas and private zones together. Every template has
+  the same **standard kit** (study spots, lounge, 2+ private zones, big screen, jukebox, game table,
+  open floor, whiteboard, Buddy Machine, nap spots, spawn point), so every activity works in every
+  map; only the place, props and theme differ.
+- **Templates:** Cosy Library, Cat Café and Starry Rooftop at launch (more ideas in feature 7).
+  Two sizes: Cosy (up to 50) and Big (up to 100, owner's Plus).
+- **Owners set, they don't edit:** the template, its size, the room's time of day (the same for
+  everyone inside) and a thumbnail.
+- **Map changes are live; nobody has to leave** (decided 2026-11-09). Everyone inside sees a short
+  loading screen and lands at the door of the new map. Voice and chat keep going; seats and screen
+  shares end; boards and card games move to the same kit piece in the new map.
+- **Platform template updates** (and rollbacks) reach rooms in use after a 60-second "update coming"
+  banner, the same way.
+- **Changing a room's map** keeps the same room (link, chat, members) and applies at once, live.
 
 ### Open rooms and drop-in rooms
 
@@ -165,24 +173,43 @@ All of these are secondary and pluggable through an activity framework in Colyse
 
 ## Business model
 
-Discord's way of making money, applied to rooms. Two kinds of payment work together:
+**One subscription, Connecta Plus** (decided 2026-11-09). Room boosts were dropped: copying
+Discord's boosts plus Plus plus coins was too much for a cosy app of small groups.
 
-- **Room boosts** benefit everyone in the room. Anyone in the room can boost it, so friends can chip in together.
+|                               | Free        | Plus                  |
+| ----------------------------- | ----------- | --------------------- |
+| Rooms you own: people at once | 25          | 100 (Big maps)        |
+| Rooms you own: members        | 150         | 1,000                 |
+| Maps                          | basic       | + premium maps        |
+| Screen share                  | 720p        | 1080p                 |
+| Rooms you can make / join     | 10 / 100    | 30 / 200              |
+| Skins and pets                | base set    | + premium skins, pets |
+| Name tag and profile banner   | plain       | animated              |
+| Uploads                       | 10 MB       | 50 MB                 |
+| AI quizzes and flashcards     | a few a day | plenty                |
 
-  | Level | Boosts | People at once | Members | Also                                                                |
-  | ----- | ------ | -------------- | ------- | ------------------------------------------------------------------- |
-  | Free  | 0      | 25             | 150     | every basic template, 720p screen share, normal uploads             |
-  | 1     | 2      | 50             | 300     | premium templates, custom room colours and banner                   |
-  | 2     | 7      | 100            | 500     | 1080p screen share for everyone, bigger uploads, animated room icon |
-  | 3     | 14     | 100            | 1,000   | custom invite link, more private zones and decor, event tools       |
-
-- **Connecta Plus** (personal):
-  - Cosmetics, pets, a profile frame, bigger uploads in DMs.
-  - Higher limits on how many rooms you can own and join.
-  - **2 boosts to put on any room.** One friend with Plus brings their room to Level 1.
-- **Shop:** cosmetics for coins.
+- **A room follows its owner's plan.** Everyone inside gets the room space and the maps; only the
+  owner pays. Friends chip in by **gifting Plus**.
+- **If Plus ends:** nothing is deleted. After 7 days of grace the owner's rooms go back to 25 at
+  once, and a premium or Big map moves to its basic version (live, feature 7).
+- **Premium maps** are presets like every template: the same standard kit, a nicer or rarer place.
+  Owners can't pick colours.
+- **Coins are earned, never bought.** Money only buys Plus. Coins buy cosmetics in the Shop
+  (accessories ~200–400, outfits ~500–800, pets ~1,000–1,500: something new about once a week).
+  Premium skins and pets come with Plus and are never sold for coins; Plus earns no extra coins.
+- **Daily quests** (3 a day, new at midnight, ~60 coins a day), one from each group so a studier in
+  a Quiet room can always earn something:
+  - 📖 Focus: focus for 1 hour, finish 2 focus sessions
+  - 💬 Together: 30 minutes in a room with others, say 5 things (bubbles or Room chat)
+  - 🎲 Play: pet a cat 3 times, use the Buddy Machine, play any activity once (as activities land)
+- **Keep quests simple to check:** each one counts a single event the server already sees (timer
+  minutes, time connected with someone else in the room, messages, a pet, an activity's "round
+  finished"). Nothing like "with a friend" or "3 different people". Each pays once a day, so faking
+  one gains almost nothing.
+- **Shown** on the Shop page and in 3D under My tools → 🎯 (with "1/3"); a toast when one's done.
+- **Not in v1:** weekly bonus and streaks (a focus streak may come with study tools, feature 8).
 - **Rules:** never sell power, no ads in rooms, never charge to join. Paid perks are things that cost
-  us money to run (capacity, HD video, storage) or are purely cosmetic. Free limits are set by real cost.
+  us money to run (capacity, HD video, storage, AI) or are purely cosmetic. Free limits are set by real cost.
 
 Prices are not set yet.
 
@@ -243,7 +270,7 @@ The UI is approved in `demo/` first, then a spec is written to `docs/v2/features
 | 4   | Room chat and DMs                                         | [04-chat-and-dms.md](v2/features/04-chat-and-dms.md)         |
 | 5   | Friends                                                   | [05-friends.md](v2/features/05-friends.md)                   |
 | 6   | The 3D room                                               | [06-3d-room.md](v2/features/06-3d-room.md)                   |
-| 7   | Map templates and the editor                              |                                                              |
+| 7   | Map templates and the editor                              | [07-maps.md](v2/features/07-maps.md)                         |
 | 8   | Study tools                                               |                                                              |
 | 9   | Activity framework                                        |                                                              |
 | 10  | Watch together, jukebox, photo mode                       |                                                              |

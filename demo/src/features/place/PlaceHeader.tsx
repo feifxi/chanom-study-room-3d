@@ -17,7 +17,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { COINS, DMS, FRIEND_REQUESTS, ME, userById } from '@/lib/mock';
+import { DMS, FRIEND_REQUESTS, ME, userById } from '@/lib/mock';
+import { useQuests } from '@/lib/quests';
 
 const NAV = [
   { href: '/home', label: 'Home', icon: House },
@@ -126,6 +127,7 @@ function Messages() {
 
 function Me() {
   const [settings, setSettings] = useState(false);
+  const { coins } = useQuests();
   return (
     <>
       <DropdownMenu>
@@ -148,7 +150,7 @@ function Me() {
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/home/shop">
-              <ShoppingBag /> Shop <span className="ml-auto font-mono text-xs text-muted-foreground">🪙 {COINS.toLocaleString()}</span>
+              <ShoppingBag /> Shop <span className="ml-auto font-mono text-xs text-muted-foreground">🪙 {coins.toLocaleString()}</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>

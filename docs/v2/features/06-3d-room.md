@@ -40,7 +40,7 @@ Areas built into the map (a reading nook, a booth, a card table). The demo's lib
 - **On the floor:** a soft purple tint and a dashed edge, so you see where it starts.
 - **Inside, a label at the top:** "🔒 🛋️ Reading nook · only people here can hear you".
 - **No locks** in v1: anyone can walk in, like a real café table.
-- A map can have several; more private zones are a Level 3 boost perk (business model).
+- A map can have several; the standard kit asks for at least 2 (feature 7).
 
 ## Bubbles
 
@@ -51,7 +51,9 @@ Areas built into the map (a reading nook, a booth, a card table). The demo's lib
 
 ## Away
 
-- After **10 minutes** with no keys, clicks, wheel or movement: **💤** on your label, the label fades,
+- **Focusing is never away.** While your focus timer runs you show "📖 Focusing" and your mic stays as
+  it was, because people study in other tabs (notes, slides, a PDF). Updated 2026-11-09.
+- With no focus timer, after **10 minutes** with no keys, clicks, wheel or movement: **💤** on your label, the label fades,
   the people list says "Away", and your **mic turns off** (so a forgotten tab doesn't broadcast your
   room). "Talk to everyone" stops too.
 - Any input brings you back ("Welcome back ✨"). The mic stays off until you turn it on.
@@ -62,8 +64,9 @@ Areas built into the map (a reading nook, a booth, a card table). The demo's lib
 - **Owner and mods** get an **Everyone** (📢) button in the dock.
 - While it's on, everyone in the room hears them at full volume wherever they stand, even inside
   private zones. Turning it on turns the mic on.
-- A 📢 shows on their label and "📢 Talking to everyone" in the people list; they see a
-  "📢 Everyone hears you · Stop" bar at the top.
+- While on, the dock button turns **pink with a pulsing ring and reads "On air"** (not just the
+  lighter "pressed" look of other buttons), a 📢 shows on their label and "📢 Talking to everyone" in
+  the people list, and they see a "📢 Everyone hears you · Stop" bar at the top.
 - For "Werewolf starts in 5 minutes!" or a teacher's announcement (Gather's "spotlight").
 
 ## What resets

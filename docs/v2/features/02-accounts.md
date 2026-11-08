@@ -74,7 +74,7 @@ Like Discord's, but shorter:
 4. **What stays:** your messages in room chats and DMs, shown as "Deleted user" with a plain grey
    face, so threads still read properly.
 5. **What goes:** your character, friends, birthday, sign-ins and focus stats at the end of the
-   7 days. Connecta Plus is cancelled right away; boosts end with the account. Your @handle is
+   7 days. Connecta Plus is cancelled right away. Your @handle is
    freed 30 days later.
 6. Guests have nothing to delete; their session expires.
 

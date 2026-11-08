@@ -212,10 +212,10 @@ function PlusTab() {
         <p className="mt-1 text-sm">Renews on 7 Dec 2026 · ฿99 / month</p>
       </div>
       <p className="text-sm text-muted-foreground">
-        Plus includes 2 boosts. Both are on Chanom Friends, which makes it Level 1 (50 people at once).
+        Rooms you own follow your plan: Chanom Friends fits 100 people at once and can use Big and premium maps.
       </p>
       <Button asChild className="w-fit rounded-full font-bold">
-        <Link href="/home/plus">Manage Plus and boosts</Link>
+        <Link href="/home/plus">Manage Plus</Link>
       </Button>
     </div>
   );

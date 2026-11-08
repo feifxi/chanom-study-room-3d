@@ -1,4 +1,5 @@
 import { NAP_SPOTS, SEAT_BY_ID, SPAWN, STARTER_CAT, WALK_SPEED, type AvatarLook, type NpcView, type PlayerView } from '@study/shared';
+import { questProgress } from '@/lib/quests';
 import type { StudyRoom } from './roomSession';
 
 /**
@@ -94,6 +95,9 @@ export class MockRoom implements StudyRoom {
       if (seat && !taken) Object.assign(me, { seatId: seat.id, x: seat.x, z: seat.z, yaw: seat.yaw, moving: false });
     } else if (type === 'stand') {
       this.stand(me);
+    } else if (type === 'npc:pet') {
+      // The real server counts this for today's quests (feature 7's coin model)
+      questProgress('pet-3');
     }
   }
 

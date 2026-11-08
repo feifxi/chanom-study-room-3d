@@ -180,7 +180,7 @@ export default function Landing() {
           <Users className="mx-auto size-8 text-primary" />
           <h2 className="mt-3 text-3xl font-black tracking-[-0.03em]">Free for friends. Cuter with Plus.</h2>
           <p className="mx-auto mt-2 max-w-lg text-muted-foreground">
-            Rooms, voice and chat are free, for 25 at once. Plus adds outfits, a pet and bigger uploads. Boosts let a room fit up to 100.
+            Rooms, voice and chat are free, for 25 at once. Plus adds premium outfits, pets and maps, and lets your rooms fit up to 100.
           </p>
           <div className="mt-6 flex justify-center gap-3">
             <Button asChild className="h-11 rounded-full px-6 font-extrabold">

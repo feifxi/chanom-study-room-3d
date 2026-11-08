@@ -33,14 +33,14 @@ Leaving is in the room's "…" menu on Home. Rooms you haven't opened in 30+ day
 Three fixed roles, no custom roles (custom roles are a big part of why Discord feels complicated,
 and our rooms are small groups). Explained in Members & roles → "What can each role do?".
 
-| Role       | Can                                                                                                                                     | Can't                                                            |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| **Owner**  | Everything: name, map, visibility, make or remove mods, hand the room over, delete it, plus everything a mod can                        | Act on themselves                                                |
-| **Mod**    | Kick, ban and time out members and guests; approve join requests; make and cancel invite links; delete messages; change safety settings | Act on the owner or other mods; change map, visibility or boosts |
-| **Member** | Chat, walk in, invite people if the room allows it ("Members can invite")                                                               |                                                                  |
+| Role       | Can                                                                                                                                     | Can't                                                    |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| **Owner**  | Everything: name, map, visibility, make or remove mods, hand the room over, delete it, plus everything a mod can                        | Act on themselves                                        |
+| **Mod**    | Kick, ban and time out members and guests; approve join requests; make and cancel invite links; delete messages; change safety settings | Act on the owner or other mods; change map or visibility |
+| **Member** | Chat, walk in, invite people if the room allows it ("Members can invite")                                                               |                                                          |
 
-Room settings for a **mod** only show Members & roles, Invites, Safety and Boosts. Overview (name,
-visibility, hand over, delete) and Map & capacity are the owner's.
+Room settings for a **mod** only show Members & roles, Invites and Safety. Overview (name,
+visibility, hand over, delete) and Map & look are the owner's.
 
 ## Invites
 
@@ -50,7 +50,7 @@ One **Invite** dialog (room "…" menu, the room card in 3D, the Chat page), two
   default (or 1 day, or never), optionally after **1 / 5 / 10 / 25 uses**. Changing the options or
   pressing ↻ makes a new link; the old one keeps its own rules.
 - **Guest pass** (`connecta.app/g/<code>`): walk in without an account for **24 hours**. Only when
-  the room allows guests (Map & capacity → Allow guests).
+  the room allows guests (Map & look → Allow guests).
 - **Invite a friend:** friends who aren't members yet, with an Invite button that sends it in a DM.
 
 **Room settings → Invites** (owner and mods): the "Members can invite" and "Guests can use voice"

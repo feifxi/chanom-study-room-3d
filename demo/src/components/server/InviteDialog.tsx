@@ -76,7 +76,7 @@ export function InviteDialog({ server, open, onOpenChange }: { server: Server; o
           <p className="rounded-2xl bg-peach p-3 text-sm text-peach-ink">
             {guestRooms.length
               ? 'Walk in without an account for 24 hours. Guests can listen and type in Bubbles, but can’t talk or see the saved room chat.'
-              : 'This room doesn’t allow guests. Turn on “Allow guests” in Room settings → Map & capacity.'}
+              : 'This room doesn’t allow guests. Turn on “Allow guests” in Room settings → Map & look.'}
           </p>
         )}
 

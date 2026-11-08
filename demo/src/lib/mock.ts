@@ -119,7 +119,7 @@ export const USERS: Record<string, User> = {
     presence: 'online',
     activity: '🎸 Jamming',
     // A private room of Earth's band that you're not in: the Friends page offers "Ask to join"
-    inOtherRoom: { name: 'Garage Band', emoji: '🎸', map: 'Night Rooftop' },
+    inOtherRoom: { name: 'Garage Band', emoji: '🎸', map: 'Starry Rooftop' },
   },
 };
 
@@ -135,13 +135,37 @@ export interface Channel {
   mention?: boolean;
 }
 
+/**
+ * The standard kit (feature 7): every map has every piece, so every activity works in every map.
+ * Templates differ only in the place, the props and the theme; `look` says how each piece looks.
+ */
+export const KIT = [
+  { id: 'study', name: 'Study spots', need: '12+ seats (Cosy) · 24+ (Big)' },
+  { id: 'lounge', name: 'Lounge', need: 'a sofa corner to hang out' },
+  { id: 'private', name: 'Private zones', need: 'at least 2' },
+  { id: 'screen', name: 'Big screen', need: 'watch together' },
+  { id: 'jukebox', name: 'Jukebox', need: 'room music' },
+  { id: 'games', name: 'Game table', need: 'cards and board games' },
+  { id: 'floor', name: 'Open floor', need: 'room for Pick a Side' },
+  { id: 'whiteboard', name: 'Whiteboard', need: 'draw together' },
+  { id: 'buddy', name: 'Buddy Machine', need: 'study buddies' },
+  { id: 'nap', name: 'Nap spots', need: 'where the cats sleep' },
+  { id: 'spawn', name: 'Spawn point', need: 'where you walk in' },
+] as const;
+export type KitId = (typeof KIT)[number]['id'];
+
 export interface MapTemplate {
   id: string;
   name: string;
   emoji: string;
   blurb: string;
+  /** One line on how it feels. */
+  mood: string;
+  /** The zones you'd name when telling a friend where you are. */
   zones: string[];
   tint: string;
+  /** How each standard-kit piece looks in this map. */
+  look: Record<KitId, string>;
 }
 
 export const MAPS: MapTemplate[] = [
@@ -149,27 +173,85 @@ export const MAPS: MapTemplate[] = [
     id: 'library',
     name: 'Cosy Library',
     emoji: '📚',
-    blurb: 'Six study tables, a reading nook with a sofa, warm lamps.',
+    blurb: 'Study tables under warm lamps, tall bookshelves and a reading nook with a sofa.',
+    mood: 'Quiet focus, rain on the windows',
     zones: ['Study tables', 'Reading nook', 'Buddy Machine'],
     tint: 'bg-lavender',
+    look: {
+      study: 'Study tables with green lamps',
+      lounge: 'The sofa by the shelves',
+      private: 'Reading nook, map-room alcove',
+      screen: 'Pull-down projector screen',
+      jukebox: 'Old radio on the shelf',
+      games: 'Chess table',
+      floor: 'The rug in the middle',
+      whiteboard: 'Chalkboard on a stand',
+      buddy: 'Buddy Machine by the door',
+      nap: 'Cushions on the sofa arms',
+      spawn: 'The front door',
+    },
   },
   {
     id: 'cafe',
-    name: 'Milk Tea Café',
-    emoji: '☕',
-    blurb: 'Café tables, a jukebox corner and a big TV for watching together.',
-    zones: ['Café tables', 'Jukebox', 'TV corner', 'Card table'],
+    name: 'Cat Café',
+    emoji: '🐈',
+    blurb: 'Café tables, cats everywhere, a jukebox and a big TV for watching together.',
+    mood: 'Warm, chatty, a cat on every chair',
+    zones: ['Café tables', 'Cat tower', 'TV corner', 'Card table'],
     tint: 'bg-peach',
+    look: {
+      study: 'Café tables and a window counter',
+      lounge: 'Beanbags by the cat tower',
+      private: 'Booths by the window',
+      screen: 'TV on the wall',
+      jukebox: 'Jukebox by the counter',
+      games: 'Card table',
+      floor: 'Open space by the counter',
+      whiteboard: 'Menu board',
+      buddy: 'Buddy Machine by the till',
+      nap: 'Cat beds and the cat tower',
+      spawn: 'Shop door with a bell',
+    },
   },
   {
     id: 'rooftop',
-    name: 'Night Rooftop',
+    name: 'Starry Rooftop',
     emoji: '🌙',
-    blurb: 'Fairy lights, beanbags, a campfire circle and a whiteboard wall.',
-    zones: ['Campfire circle', 'Whiteboard wall', 'Stargazing deck'],
+    blurb: 'Fairy lights, beanbags, a campfire circle and a telescope under the stars.',
+    mood: 'Late-night talks under the stars',
+    zones: ['Campfire circle', 'Stargazing deck', 'Rooftop desks'],
     tint: 'bg-sky',
+    look: {
+      study: 'Picnic desks under fairy lights',
+      lounge: 'Campfire circle with beanbags',
+      private: 'Tent, telescope deck',
+      screen: 'Outdoor cinema sheet',
+      jukebox: 'Boombox',
+      games: 'Low table with cards',
+      floor: 'The open deck',
+      whiteboard: 'Chalk wall by the stairs',
+      buddy: 'Buddy Machine by the stairs',
+      nap: 'Hammocks',
+      spawn: 'The stairwell door',
+    },
   },
 ];
+
+/** Template ideas we liked, for later (feature 7). Same standard kit, different place. */
+export const FUTURE_MAPS = [
+  { name: 'Greenhouse', emoji: '🌿', idea: 'Plants, glass roof, watering-can jukebox' },
+  { name: 'Bakery Kitchen', emoji: '🥐', idea: 'Flour-dusted counters, oven glow, bread on the shelves' },
+  { name: 'Kotatsu House', emoji: '🍊', idea: 'Japanese house, kotatsu tables, snow outside' },
+  { name: 'Beach Hut', emoji: '🏖️', idea: 'Wooden deck, waves, hammocks' },
+  { name: 'Space Station', emoji: '🚀', idea: 'Round windows on Earth, floating plants' },
+];
+
+/** Cosy fits up to 50 people (25 while the owner is on Free); Big fits 100 and needs the owner's Plus. */
+export const MAP_SIZES = [
+  { id: 'cosy', name: 'Cosy', upTo: 50, plusOnly: false, text: 'Up to 50 people (25 on Free). Every room starts here.' },
+  { id: 'big', name: 'Big', upTo: 100, plusOnly: true, text: 'Up to 100 people, more seats and a second lounge.' },
+] as const;
+export type MapSize = (typeof MAP_SIZES)[number]['id'];
 
 export interface Room {
   id: string;
@@ -197,7 +279,8 @@ export interface Server {
   roles: Record<string, 'Owner' | 'Mod'>;
   channels: Channel[];
   rooms: Room[];
-  boosted?: number;
+  /** The owner has Connecta Plus: the room fits 100 and gets Big and premium maps. */
+  ownerPlus?: boolean;
   event?: string;
   /** How many are inside right now when it's more than the named people (crowds, a full room). */
   insideCount?: number;
@@ -238,7 +321,7 @@ export const SERVERS: Server[] = [
       { id: 'cafe', name: 'Café', mapId: 'cafe', capacity: 15, allowGuests: true, quiet: false, people: [] },
       { id: 'rooftop', name: 'Rooftop', mapId: 'rooftop', capacity: 15, allowGuests: false, quiet: false, people: [] },
     ],
-    boosted: 2,
+    ownerPlus: true,
     event: 'Werewolf night · Fri 20:00',
   },
   {
@@ -538,8 +621,8 @@ export const COINS = 1240;
 export const PUBLIC_ROOMS = [
   { id: 'silent-library-1', name: 'Silent Library #1', mapId: 'library', people: 18, capacity: 20, quiet: true, vibe: 'Silent study' },
   { id: 'silent-library-2', name: 'Silent Library #2', mapId: 'library', people: 6, capacity: 20, quiet: true, vibe: 'Silent study' },
-  { id: 'cafe-lounge-1', name: 'Café Lounge #1', mapId: 'cafe', people: 11, capacity: 20, quiet: false, vibe: 'Chill and chat' },
-  { id: 'rooftop-1', name: 'Night Rooftop #1', mapId: 'rooftop', people: 3, capacity: 20, quiet: false, vibe: 'Late night talks' },
+  { id: 'cafe-lounge-1', name: 'Cat Café #1', mapId: 'cafe', people: 11, capacity: 20, quiet: false, vibe: 'Chill and chat' },
+  { id: 'rooftop-1', name: 'Starry Rooftop #1', mapId: 'rooftop', people: 3, capacity: 20, quiet: false, vibe: 'Late night talks' },
 ];
 
 /**
@@ -602,7 +685,7 @@ export const DROP_INS: DropIn[] = [
   },
   {
     id: 'cafe-lounge',
-    name: 'Café Lounge',
+    name: 'Cat Café',
     mapId: 'cafe',
     vibe: 'Chill and chat',
     quiet: false,
@@ -613,7 +696,7 @@ export const DROP_INS: DropIn[] = [
   },
   {
     id: 'night-rooftop',
-    name: 'Night Rooftop',
+    name: 'Starry Rooftop',
     mapId: 'rooftop',
     vibe: 'Late night talks',
     quiet: false,

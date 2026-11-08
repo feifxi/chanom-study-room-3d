@@ -125,7 +125,7 @@ function ConfirmDelete({ onCancel, onDone }: { onCancel: () => void; onDone: () 
       <ul className="list-disc pl-5 text-sm text-muted-foreground">
         {solo.length > 0 && <li>Rooms with only you in them are deleted: {solo.map((s) => s.name).join(', ')}.</li>}
         <li>Your messages stay, shown as “Deleted user”, so conversations still make sense.</li>
-        <li>Connecta Plus is cancelled now. Your boosts end with the account.</li>
+        <li>Connecta Plus is cancelled now.</li>
         <li>Your character, friends, birthday and focus stats are removed. @{ME.handle} is freed 30 days later.</li>
       </ul>
       <div className="flex flex-col gap-1.5">
