@@ -4,7 +4,7 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { Bell, Crown, Mic, Palette, Shield, Shirt, User } from 'lucide-react';
+import { Bell, Crown, KeyRound, Mic, Palette, Shield, Shirt, User } from 'lucide-react';
 import { toast } from 'sonner';
 import type { AvatarLook } from '@study/shared';
 import { PALETTES, usePalette } from '@/components/Providers';
@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { CharacterEditor } from '@/features/avatar/CharacterEditor';
+import { AccountTab } from './AccountTab';
 import { cn } from '@/lib/utils';
 import { ME } from '@/lib/mock';
 
@@ -28,6 +29,7 @@ const TABS = [
   ['notifications', 'Notifications', Bell],
   ['privacy', 'Privacy & safety', Shield],
   ['plus', 'Plus & billing', Crown],
+  ['account', 'Account', KeyRound],
 ] as const;
 type Tab = (typeof TABS)[number][0];
 
@@ -66,6 +68,8 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
               <Voice />
             ) : tab === 'plus' ? (
               <PlusTab />
+            ) : tab === 'account' ? (
+              <AccountTab />
             ) : (
               <Toggles tab={tab} />
             )}
@@ -88,8 +92,9 @@ function Profile({ onEditCharacter }: { onEditCharacter: () => void }) {
           <Input id="dn" defaultValue={ME.name} className="rounded-xl" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="un">Username</Label>
+          <Label htmlFor="un">@handle</Label>
           <Input id="un" defaultValue={`@${ME.handle}`} className="rounded-xl" />
+          <p className="text-xs text-muted-foreground">You can change it once every 30 days.</p>
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="bio">About me</Label>
@@ -228,8 +233,8 @@ function Toggles({ tab }: { tab: Tab }) {
     );
   return (
     <div className="flex flex-col gap-5">
-      <Row label="Messages from people in my rooms who aren’t friends" />
-      <Row label="Friend requests from anyone" hint="Off: only people who share a room with you" defaultChecked />
+      <Row label="Appear offline" hint="Friends won’t see you’re online or which room you’re in" />
+      <Row label="Friend requests from anyone" hint="Off: only people who share a room with you. Only friends can DM you." defaultChecked />
       <Row label="Show what I’m doing to friends" hint="“Focusing · Calculus”, “Playing Slave”" defaultChecked />
       <Row label="Filter rude words in chats" defaultChecked />
       <Button variant="outline" className="w-fit rounded-full font-bold">

@@ -3,16 +3,21 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { DoorOpen, Lock } from 'lucide-react';
+import { ArrowLeft, DoorOpen, Lock } from 'lucide-react';
+import type { AvatarLook } from '@study/shared';
+import { CharacterEditor } from '@/features/avatar/CharacterEditor';
+import { GUEST_LOOK, saveGuest } from '@/lib/guest';
 import { Logo } from '@/components/Logo';
 import { AvatarStack } from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { MAPS, SERVERS, userById } from '@/lib/mock';
 
 /**
- * What someone sees when they open an invite: walk straight in as a guest (no account, if the room
- * allows guests), or sign in to join the room as a member (its chat, on your Home).
+ * What someone sees when they open an invite: walk in as a guest (no account, if the room allows
+ * guests: pick a name and a character, then you're in), or sign in to join the room as a member
+ * (its chat, on your Home). A guest who signs up later keeps the character.
  */
 export default function InvitePage() {
   const router = useRouter();
@@ -20,6 +25,13 @@ export default function InvitePage() {
   const room = server.rooms.find((r) => r.allowGuests)!;
   const map = MAPS.find((m) => m.id === room.mapId)!;
   const [name, setName] = useState('');
+  const [look, setLook] = useState<AvatarLook>(GUEST_LOOK);
+  const [picking, setPicking] = useState(false);
+  const walkIn = () => {
+    const guestName = name.trim() || 'Guest';
+    saveGuest({ name: guestName, look });
+    router.push(`/servers/${server.id}/rooms/${room.id}?guest=${encodeURIComponent(guestName)}`);
+  };
   const others = server.rooms.flatMap((r) => r.people).map(userById);
 
   return (
@@ -41,32 +53,70 @@ export default function InvitePage() {
               </div>
             </div>
 
-            <form
-              className="flex flex-col gap-2 rounded-3xl bg-muted/60 p-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                router.push(`/servers/${server.id}/rooms/${room.id}?guest=${encodeURIComponent(name || 'Guest')}`);
-              }}
-            >
-              <p className="flex items-center gap-1.5 font-extrabold">
-                <DoorOpen className="size-4 text-primary" /> Walk in as a guest
-              </p>
-              <p className="text-xs text-muted-foreground">
-                No account needed. You can chat but not talk on voice, and you won’t see the saved room chat.
-              </p>
-              <div className="flex gap-2">
-                <Input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name"
-                  maxLength={16}
-                  className="h-11 rounded-2xl bg-card"
-                />
-                <Button type="submit" className="h-11 rounded-2xl px-5 font-extrabold">
-                  Walk in
+            {picking ? (
+              <form
+                className="flex flex-col gap-4 rounded-3xl bg-muted/60 p-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  walkIn();
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setPicking(false)}
+                  className="flex w-fit items-center gap-1 text-sm font-bold text-muted-foreground hover:text-foreground"
+                >
+                  <ArrowLeft className="size-4" /> Back
+                </button>
+                <p className="font-extrabold">Pick how you look</p>
+                <CharacterEditor look={look} onChange={setLook} previewClassName="h-44 w-32">
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="guest-name" className="text-xs font-bold text-muted-foreground">
+                      Your name
+                    </Label>
+                    <Input
+                      id="guest-name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Guest"
+                      maxLength={16}
+                      className="rounded-xl bg-card"
+                    />
+                  </div>
+                </CharacterEditor>
+                <Button type="submit" className="h-11 rounded-2xl font-extrabold">
+                  <DoorOpen /> Walk in
                 </Button>
-              </div>
-            </form>
+              </form>
+            ) : (
+              <form
+                className="flex flex-col gap-2 rounded-3xl bg-muted/60 p-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setPicking(true);
+                }}
+              >
+                <p className="flex items-center gap-1.5 font-extrabold">
+                  <DoorOpen className="size-4 text-primary" /> Walk in as a guest
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  No account needed. You can listen and type in Bubbles, but not talk, send photos or share your screen, and you won’t see
+                  the saved room chat.
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Your name"
+                    maxLength={16}
+                    className="h-11 rounded-2xl bg-card"
+                  />
+                  <Button type="submit" className="h-11 rounded-2xl px-5 font-extrabold">
+                    Next
+                  </Button>
+                </div>
+              </form>
+            )}
 
             <div className="flex items-center gap-3 text-xs font-bold text-muted-foreground">
               <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />

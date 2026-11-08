@@ -84,7 +84,7 @@ The HUD has five named parts. Each owns one kind of thing, so it's always clear 
 | **My tools**  | left rail     | your own things: Study session, Music, How to play                         |
 | **Chat**      | bottom left   | all text: Room chat, Bubbles, Messages                                     |
 | **People**    | top right     | who's here, and what you can do with each person                           |
-| **Zoom**      | bottom right  | − 175% + (not on touch screens)                                            |
+| **Zoom**      | bottom right  | − 100% + (not on touch screens)                                            |
 | **Dock**      | bottom centre | your voice and actions: Mic, Sound, Chat, Photo, Activities                |
 
 Plus the **chat window**: Room chat or a DM opened large over the dimmed room (⤢ in Chat).
@@ -110,7 +110,6 @@ Plus the **chat window**: Room chat or a DM opened large over the dimmed room (�
     web); tapping one, or ⤢, opens Room chat or the DM in the big chat window.
 - **People:** a pill of faces with the count; whoever is talking shows first.
   - Tapping it opens one people panel (no folded rail mode), built to work with 100 people:
-    - a **Talking** strip on top, since that's what you look for in a voice room
     - **Find someone** search and filter chips with counts: Mic on, Focusing, Friends, Guests
     - the list grouped as You, Friends, Everyone else (A–Z), Guests, with sticky group headers
     - each row: face with a mute/deafened badge and a speaking ring, name, owner/mod/guest chip, status
@@ -125,8 +124,8 @@ Plus the **chat window**: Room chat or a DM opened large over the dimmed room (�
       Members), and for the owner Make mod / Remove mod. Kick and ban ask to confirm and take an
       optional reason, shown to them and kept in a mod log.
     - a mod can act on members and guests; the owner on everyone but themselves
-- **Zoom** (bottom right, from V1): − 175% +, which also follows scroll zoom. Rooms open at 175%;
-  100% is the whole library in view, and it goes from 55% to 340%. Hidden on touch screens: they
+- **Zoom** (bottom right, from V1): − 100% +, which also follows scroll zoom. Rooms open at 100%
+  (the default framing); about 57% shows the whole library, and it goes from 31% to 194%. Hidden on touch screens: they
   pinch, and the tablet joystick has that corner.
 - **Dock:** Mic, Sound, Chat, Photo, Activities. Screen share only appears once you're seated at a desk.
 - **Phones:** People and Chat share one bottom sheet. **Tablets:** the joystick sits bottom-right,

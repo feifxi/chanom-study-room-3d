@@ -45,6 +45,7 @@ export function CharacterEditor({
         >
           <AvatarPreview look={look} />
           <button
+            type="button"
             onClick={() => onChange(randomLook())}
             className="absolute right-2 bottom-2 grid size-8 place-items-center rounded-full bg-card/90 shadow"
             aria-label="Shuffle look"
@@ -61,6 +62,7 @@ export function CharacterEditor({
       <div className="flex flex-wrap gap-1.5">
         {ACCESSORIES.map((a) => (
           <button
+            type="button"
             key={a}
             onClick={() => onChange({ ...look, accessory: a })}
             className={cn(
@@ -93,6 +95,7 @@ function Swatches({
       <div className="flex flex-wrap gap-1.5">
         {colors.map((c) => (
           <button
+            type="button"
             key={c}
             aria-label={`${label} ${c}`}
             aria-pressed={value === c}

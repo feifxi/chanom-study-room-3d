@@ -7,11 +7,11 @@ import type * as THREE from 'three';
 import { cn } from '@/lib/utils';
 
 /**
- * Camera zoom that reads as 100% (the whole library in view). Rooms start at 175% (closer, about
- * V1's playtested framing), so the percentage still tells you how far in you are. Min/max match
- * the OrbitControls limits (55%–340%).
+ * 100% is the framing rooms open at (about V1's playtested one), so the label reads as "default"
+ * rather than a distance. Zooming out to ~57% shows the whole library. Min/max match the
+ * OrbitControls limits (31%–194%).
  */
-export const ZOOM = { base: 62, start: 62 * 1.75, min: 34, max: 210, step: 1.2 } as const;
+export const ZOOM = { base: 62 * 1.75, start: 62 * 1.75, min: 34, max: 210, step: 1.2 } as const;
 
 type Box<T> = { current: T };
 

@@ -16,7 +16,7 @@ screen, and they loved the cosy theme and the chibi bounce. They asked for games
 - **The edge:** proximity voice (one group splits into several conversations at once), presence
   without pressure, activities you do in the room, mood and identity, and joining by a link.
 - **Competitors:** Gather and Discord.
-- **Platform:** our own web app only (no Discord Activity embed), 16+, no Apple login.
+- **Platform:** our own web app only (no Discord Activity embed), 13+ like Discord, no Apple login.
 
 ## The concept: rooms, not servers
 
@@ -68,6 +68,16 @@ model is Gather's, kept simpler:
 
 ### Open rooms and drop-in rooms
 
+- **Drop-in rooms are fully open for accounts** (mic, images, screen share), like a public Discord
+  server. **Anonymous guests** can only listen and send text: no voice, images or screen share.
+- **Same rooms for every age;** under-18s aren't matched into separate copies.
+- **Moderation is pluggable and cheap first.** Messages go through one `moderate()` step whose
+  layers can each be switched on or off: a free word filter (e.g. `obscenity` plus our own list,
+  Thai included), limits (slow mode, link and message caps for new accounts), report → auto-mute
+  (e.g. 3 reports in 10 minutes mutes for 15 minutes and flags it for the admin), and the free
+  OpenAI Moderation API for images and smarter text (check it's still free when building). Paid AI
+  checks only if needed later.
+
 Two kinds of room anyone can walk into, named so people know what they get:
 
 - **Open room:** a normal room whose owner set "Who can join" to Open. It's listed in Discover and
@@ -83,11 +93,18 @@ Two kinds of room anyone can walk into, named so people know what they get:
 ### People and chat
 
 - **Friends list and DMs** come early. DMs are 1-to-1 only (no group DMs).
+- **DMs are friends only,** for everyone. Meet someone in a room → add them as a friend → DM. Friend
+  requests go by @handle or from a room's people list.
+- **Presence is private by default,** for everyone: friends see you're online and which room you're
+  in; room members see you in that room's people list; strangers see nothing unless you share a
+  room. "Appear offline" is an option.
 - **Text chat v1:** messages, edit/delete, @mentions, unread dots, image uploads.
 - **Presence:** who's in which room shows on Home and in friends lists.
 - **In 3D:**
-  - Chat pops up over the speaker's head.
-  - There's no "Nearby" text channel.
+  - Two chats, kept apart (like Gather's two chat systems): **Bubbles** for quick talk, shown over
+    the speaker's head to everyone in the room and gone when the room empties, and **Room chat**,
+    the room's permanent chat (also usable outside 3D). Bubbles reach the whole room, not just
+    people nearby.
   - A room people list where clicking someone shows a path to them.
   - Private zones (tables or areas): yes. Ping/wave: no.
 
@@ -125,6 +142,13 @@ All of these are secondary and pluggable through an activity framework in Colyse
 
 - Sign in with Google, Discord or email (passwordless).
 - Settings can edit your character, using the same editor as sign-up.
+- **Names:** a unique @handle (adding friends, @mentions) plus a free display name shown in rooms.
+- **Guests first:** a guest picks a name and character and drops in (invite link or drop-in room).
+  An account is needed to join rooms as a member, add friends or DM; signing up keeps the guest's
+  character.
+- **Age 13+.** The full birthday is stored; under 13 gets a friendly "come back later" screen.
+  Friends-only DMs and private presence apply to everyone, so under-18s need few or no extra rules;
+  any that a feature does need go in its spec as a short "Under 18" line. All age rules go through one `can(user, action)` check.
 
 ## Business model
 
@@ -201,7 +225,7 @@ The UI is approved in `demo/` first, then a spec is written to `docs/v2/features
 | #   | Feature                                                   | Spec                                           |
 | --- | --------------------------------------------------------- | ---------------------------------------------- |
 | 1   | App shell and navigation                                  | [01-app-shell.md](v2/features/01-app-shell.md) |
-| 2   | Accounts and sign-up                                      | next                                           |
+| 2   | Accounts and sign-up                                      | [02-accounts.md](v2/features/02-accounts.md)   |
 | 3   | Rooms and membership (visibility, roles, invites, guests) |                                                |
 | 4   | Room chat and DMs                                         |                                                |
 | 5   | Friends                                                   |                                                |
@@ -220,6 +244,4 @@ Feature 3 was "Servers" before the move to rooms.
 
 ## Open questions
 
-- **Two chats in a room:** Room chat (saved) and Bubbles (out loud, reset when the room empties),
-  two tabs of the Chat panel in 3D. Should they merge into one?
 - **Unsettled:** prices, Plus limits, and the domain and trademark for "Connecta".

@@ -31,6 +31,7 @@ type Tab = 'room' | 'bubbles' | 'dms';
  */
 export function ChatPanel({
   server,
+  guest,
   lines,
   onSay,
   onExpand,
@@ -38,13 +39,15 @@ export function ChatPanel({
   className,
 }: {
   server: Server;
+  /** Guests have no account: Bubbles only (no saved room chat, no DMs). */
+  guest?: boolean;
   lines: RoomLine[];
   onSay: (text: string) => void;
   onExpand: (target: ChatTarget) => void;
   onClose?: () => void;
   className?: string;
 }) {
-  const roomChat = server.id === 'public' ? undefined : server.channels[0];
+  const roomChat = server.id === 'public' || guest ? undefined : server.channels[0];
   const [tab, setTab] = useState<Tab>('bubbles');
   const [dmId, setDmId] = useState<string | null>(null);
   const [sent, setSent] = useState<Record<string, Message[]>>({});
@@ -62,7 +65,7 @@ export function ChatPanel({
   const tabs: [Tab, string, number | boolean][] = [
     ['bubbles', 'Bubbles', tab !== 'bubbles' && lines.length > seenLines],
     ...(roomChat ? [['room', 'Room chat', roomUnread] as [Tab, string, number]] : []),
-    ['dms', 'Messages', dmUnread],
+    ...(guest ? [] : [['dms', 'Messages', dmUnread] as [Tab, string, number]]),
   ];
   const mentioned = !!roomChat?.mention && roomUnread > 0;
   const open = (t: Tab) => {

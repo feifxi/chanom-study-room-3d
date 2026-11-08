@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { setConnection } from '@/lib/connection';
 import { DMS, ME, USERS, serverById } from '@/lib/mock';
 import { crowdPeople, useCrowd } from '@/lib/demoCrowd';
+import { GUEST_LOOK, loadGuest } from '@/lib/guest';
 import { useCompactScreen, useTouchScreen, isTouchScreen } from '@/lib/screen';
 import { useNow } from '@/lib/time';
 import { cn } from '@/lib/utils';
@@ -81,14 +82,15 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
         look: { hair: '#8fdcc0', outfit: '#12a37f', accessory: 'none' },
         at: { x: -6.8, z: 5.6 },
       });
-    return new MockRoom({ name: myName, look: guest ? { hair: '#c8e3ff', outfit: '#12a37f', accessory: 'headphones' } : ME.look }, people);
+    // A guest walks in with the character they picked on the invite page (client-only, so storage is safe here)
+    return new MockRoom({ name: myName, look: guest ? (loadGuest()?.look ?? GUEST_LOOK) : ME.look }, people);
   }, [roomDef, guest, myName]);
 
   const motion = useRef<LocalMotion>({ x: SPAWN.x, z: SPAWN.z, yaw: 0, moving: false });
   const driverRef = useRef<LocalPlayerDriver | null>(null);
   // Zoom buttons ask; the canvas applies it on its next frame and reports back (scroll zoom too)
   const zoomRequest = useRef<number | null>(null);
-  const [zoom, setZoom] = useState(175);
+  const [zoom, setZoom] = useState(100);
   const board = useMemo(() => new LabelBoard(), []);
   const [themeMode, setThemeMode] = useThemeMode();
   const light = useDayLight(themeMode);
@@ -212,6 +214,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const chatEl = (className: string, onClose?: () => void) => (
     <ChatPanel
       server={server}
+      guest={guest}
       lines={lines}
       onSay={(text) => say('me', myName, text)}
       onExpand={(t) => {
@@ -363,7 +366,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
             {/* Top right: who's here, folded into a pill of faces; guests get a way in */}
             <div className={cn('absolute right-3 flex items-start gap-2', compact ? 'top-[80px]' : 'top-3')}>
               {guest && (
-                <Link href="/login" className="panel px-3 py-2 text-xs font-extrabold text-primary hover:bg-secondary">
+                <Link href="/login?from=guest" className="panel px-3 py-2 text-xs font-extrabold text-primary hover:bg-secondary">
                   Join {server.name} ✨
                 </Link>
               )}

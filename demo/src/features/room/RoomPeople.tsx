@@ -38,7 +38,6 @@ const FILTERS: [Filter, string, (p: RoomPerson) => boolean][] = [
 /**
  * Who's in the room, opened from the pill of faces top right (or the phone sheet). One roomy panel
  * that still works with 100 people:
- * - who's talking right now sits on top, since that's what you look for in a voice room
  * - search and quick filters (mic on, focusing, friends, guests)
  * - the list is grouped: you, friends, everyone else (A–Z), guests
  * Tap someone and an arrow in the room points the way to them; their "…" has everything else
@@ -107,7 +106,6 @@ export function RoomPeople({
   // Kicked or banned from the list (demo: the server would drop them from the room)
   const [removed, setRemoved] = useState<Set<string>>(new Set());
   const people = all.filter((p) => !removed.has(p.id));
-  const talking = people.filter((p) => p.speaking);
   const test = FILTERS.find((f) => f[0] === filter)![2];
   const q = query.trim().toLowerCase();
   const shown = people.filter((p) => test(p) && (!q || p.name.toLowerCase().includes(q)));
@@ -136,24 +134,6 @@ export function RoomPeople({
           </button>
         )}
       </header>
-
-      {talking.length > 0 && (
-        <div className="mx-3 mb-2 flex items-center gap-2 rounded-2xl bg-mint/70 px-3 py-2 text-mint-ink">
-          <span className="flex-none text-[11px] font-black tracking-wider uppercase">Talking</span>
-          <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto [scrollbar-width:none]">
-            {talking.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => onFind(p.id)}
-                className="flex flex-none items-center gap-1.5 rounded-full bg-card/80 py-0.5 pr-2.5 pl-0.5 text-xs font-bold text-foreground"
-              >
-                <UserAvatar user={{ name: p.name, color: p.color, presence: 'online' }} size={22} ring="speaking" />
-                {p.you ? 'You' : p.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       <div className="flex flex-col gap-2 px-3 pb-2">
         <label className="flex items-center gap-2 rounded-xl bg-muted px-3 focus-within:ring-2 focus-within:ring-primary/40">

@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Mail } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ArrowLeft, ArrowRight, AtSign, Check, Mail, Sprout } from 'lucide-react';
 import type { AvatarLook } from '@study/shared';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
@@ -11,23 +11,55 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CharacterEditor } from '@/features/avatar/CharacterEditor';
 import { ME } from '@/lib/mock';
+import { ageLocked, checkHandle, clearAgeLock, clearGuest, handleFrom, loadGuest, lockAge, MIN_AGE } from '@/lib/guest';
+import { cn } from '@/lib/utils';
 
 // Read once when the page loads; the age check doesn't need to tick
 const LOADED_AT = Date.now();
 
-type Step = 'method' | 'code' | 'age' | 'character';
+type Step = 'method' | 'code' | 'age' | 'too-young' | 'character';
 
-/** Sign up / sign in: provider → (email code) → date of birth (16+) → make your character. */
+/**
+ * Sign up / sign in: provider → (email code) → date of birth (13+) → your character and @handle.
+ * `?from=guest` is a guest signing up from inside a room: their name and character carry over.
+ * Under 13 gets a friendly stop, and this device waits a day before it can try another birthday.
+ */
 export default function LoginPage() {
+  // useSearchParams needs a Suspense boundary so the page can still be prerendered
+  return (
+    <Suspense>
+      <LoginFlow />
+    </Suspense>
+  );
+}
+
+function LoginFlow() {
   const router = useRouter();
+  const fromGuest = useSearchParams().get('from') === 'guest';
   const [step, setStep] = useState<Step>('method');
   const [email, setEmail] = useState('');
   const [birth, setBirth] = useState('2004-05-14');
   const [name, setName] = useState(ME.name);
+  const [handle, setHandle] = useState(ME.handle);
+  // The handle follows the display name until you type in it yourself
+  const [handleEdited, setHandleEdited] = useState(false);
   const [look, setLook] = useState<AvatarLook>(ME.look);
+  const [keptLook, setKeptLook] = useState(false);
 
   const age = Math.floor((LOADED_AT - new Date(birth).getTime()) / (365.25 * 24 * 3600 * 1000));
-  const tooYoung = Number.isFinite(age) && age < 16;
+  const tooYoung = Number.isFinite(age) && age < MIN_AGE;
+  const check = checkHandle(handle);
+
+  const toCharacter = () => {
+    const guest = fromGuest ? loadGuest() : null;
+    if (guest) {
+      setName(guest.name);
+      setHandle(handleFrom(guest.name));
+      setLook(guest.look);
+      setKeptLook(true);
+    }
+    setStep('character');
+  };
 
   return (
     <div className="grid min-h-dvh place-items-center px-4 py-10">
@@ -117,13 +149,17 @@ export default function LoginPage() {
               className="flex flex-col gap-5"
               onSubmit={(e) => {
                 e.preventDefault();
-                if (!tooYoung) setStep('character');
+                if (tooYoung) lockAge(LOADED_AT);
+                if (tooYoung || ageLocked(LOADED_AT)) setStep('too-young');
+                else toCharacter();
               }}
             >
               <BackButton onClick={() => setStep('method')} />
               <div>
                 <h1 className="text-2xl font-black tracking-[-0.03em]">When’s your birthday? 🎂</h1>
-                <p className="mt-1 text-sm text-muted-foreground">Connecta is for people 16 and older. We don’t show this to anyone.</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Connecta is for people {MIN_AGE} and older. We don’t show this to anyone.
+                </p>
               </div>
               <Input
                 type="date"
@@ -132,39 +168,145 @@ export default function LoginPage() {
                 className="h-12 rounded-2xl"
                 aria-label="Date of birth"
               />
-              {tooYoung && (
-                <p className="rounded-2xl bg-destructive/10 p-3 text-sm font-semibold text-destructive">
-                  Sorry, you need to be 16 or older to use Connecta.
-                </p>
-              )}
-              <Button type="submit" disabled={tooYoung} className="h-12 rounded-2xl text-base font-extrabold">
+              <Button type="submit" className="h-12 rounded-2xl text-base font-extrabold">
                 Continue <ArrowRight />
               </Button>
             </form>
           )}
 
+          {step === 'too-young' && (
+            <div className="flex flex-col items-center gap-4 text-center">
+              <div className="grid size-16 place-items-center rounded-full bg-mint text-mint-ink">
+                <Sprout className="size-8" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-black tracking-[-0.03em]">Come back when you’re {MIN_AGE}</h1>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Connecta is for people {MIN_AGE} and older. We’ll keep a cosy spot for you until then 🌱
+                </p>
+              </div>
+              <Button asChild variant="outline" className="h-11 rounded-2xl px-6 font-bold">
+                <Link href="/">Back to the start</Link>
+              </Button>
+              {/* Demo only: the lock would otherwise stop you trying the flow again for a day */}
+              <button
+                type="button"
+                onClick={() => {
+                  clearAgeLock();
+                  setStep('age');
+                }}
+                className="text-xs font-bold text-muted-foreground underline underline-offset-2"
+              >
+                Demo: clear the age lock
+              </button>
+            </div>
+          )}
+
           {step === 'character' && (
-            <div className="flex flex-col gap-5">
+            <form
+              className="flex flex-col gap-5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!check.ok) return;
+                clearGuest();
+                router.push('/home');
+              }}
+            >
               <BackButton onClick={() => setStep('age')} />
               <div>
-                <h1 className="text-2xl font-black tracking-[-0.03em]">Make your character</h1>
-                <p className="mt-1 text-sm text-muted-foreground">This is you in every room. You can change it any time.</p>
+                <h1 className="text-2xl font-black tracking-[-0.03em]">{keptLook ? 'Keep your character?' : 'Make your character'}</h1>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {keptLook
+                    ? 'It’s the one you walked around with as a guest. Change anything you like.'
+                    : 'This is you in every room. You can change it any time.'}
+                </p>
               </div>
               <CharacterEditor look={look} onChange={setLook}>
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="name" className="text-xs font-bold text-muted-foreground">
                     Display name
                   </Label>
-                  <Input id="name" value={name} maxLength={16} onChange={(e) => setName(e.target.value)} className="rounded-xl" />
+                  <Input
+                    id="name"
+                    value={name}
+                    maxLength={16}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      if (!handleEdited) setHandle(handleFrom(e.target.value));
+                    }}
+                    className="rounded-xl"
+                  />
                 </div>
               </CharacterEditor>
-              <Button className="h-12 rounded-2xl text-base font-extrabold" onClick={() => router.push('/home')}>
+              <HandleField
+                handle={handle}
+                check={check}
+                onChange={(h) => {
+                  setHandle(h);
+                  setHandleEdited(true);
+                }}
+              />
+              <Button type="submit" disabled={!check.ok} className="h-12 rounded-2xl text-base font-extrabold">
                 Let’s go <ArrowRight />
               </Button>
-            </div>
+            </form>
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Your unique @handle: how friends add you and how @mentions find you. Checked as you type. */
+function HandleField({
+  handle,
+  check,
+  onChange,
+}: {
+  handle: string;
+  check: ReturnType<typeof checkHandle>;
+  onChange: (handle: string) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor="handle" className="text-xs font-bold text-muted-foreground">
+        Your @handle <span className="font-semibold">(friends add you with it)</span>
+      </Label>
+      <label
+        className={cn(
+          'flex h-11 items-center gap-1.5 rounded-xl border bg-card px-3 focus-within:ring-2',
+          check.ok ? 'focus-within:ring-primary/40' : 'border-destructive/50 focus-within:ring-destructive/30',
+        )}
+      >
+        <AtSign className="size-4 flex-none text-muted-foreground" />
+        <input
+          id="handle"
+          value={handle}
+          maxLength={20}
+          autoCapitalize="none"
+          spellCheck={false}
+          onChange={(e) => onChange(e.target.value.toLowerCase().replace(/\s/g, ''))}
+          className="min-w-0 flex-1 bg-transparent text-sm font-semibold outline-none"
+        />
+        {check.ok && <Check className="size-4 flex-none text-mint-ink" aria-label="Available" />}
+      </label>
+      {check.ok ? (
+        <p className="text-xs font-semibold text-mint-ink">@{handle} is yours if you want it</p>
+      ) : (
+        <div className="flex flex-wrap items-center gap-1.5 text-xs">
+          <span className="font-semibold text-destructive">{check.reason}</span>
+          {check.suggestions.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => onChange(s)}
+              className="rounded-full bg-secondary px-2 py-0.5 font-bold text-secondary-foreground hover:bg-secondary/70"
+            >
+              @{s}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
