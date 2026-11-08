@@ -15,6 +15,10 @@ export interface User {
   activity?: string;
   /** Where they are, so friends can join them. */
   inRoom?: { serverId: string; roomId: string };
+  /** In a room you can't walk into (private, you're not a member): friends see it, but "Ask to join". */
+  inOtherRoom?: { name: string; emoji: string; map: string };
+  /** For offline friends: "last seen 2h ago". */
+  lastSeen?: string;
   plus?: boolean;
 }
 
@@ -86,6 +90,7 @@ export const USERS: Record<string, User> = {
     color: '#c03a72',
     look: { hair: '#f59ac0', outfit: '#e84855', accessory: 'ribbon' },
     presence: 'offline',
+    lastSeen: '2h ago',
   },
   pim: {
     id: 'pim',
@@ -94,6 +99,27 @@ export const USERS: Record<string, User> = {
     color: '#7a6a3a',
     look: { hair: '#8fdcc0', outfit: '#12a37f', accessory: 'none' },
     presence: 'offline',
+    lastSeen: 'yesterday',
+  },
+  mook: {
+    id: 'mook',
+    name: 'Mook',
+    handle: 'mookie',
+    color: '#b07cc6',
+    look: { hair: '#f7d6e6', outfit: '#7c5cff', accessory: 'headphones' },
+    presence: 'offline',
+    lastSeen: '3h ago',
+  },
+  earth: {
+    id: 'earth',
+    name: 'Earth',
+    handle: 'earth.k',
+    color: '#3f8f6b',
+    look: { hair: '#3a3446', outfit: '#2f7de1', accessory: 'glasses' },
+    presence: 'online',
+    activity: '🎸 Jamming',
+    // A private room of Earth's band that you're not in: the Friends page offers "Ask to join"
+    inOtherRoom: { name: 'Garage Band', emoji: '🎸', map: 'Night Rooftop' },
   },
 };
 
@@ -463,6 +489,15 @@ export const DMS: Dm[] = [
 ];
 
 export const FRIEND_REQUESTS = [{ id: 'bow', incoming: true }];
+
+/** Requests you sent that haven't been answered (ignoring is silent, so they just wait; they expire after 30 days). */
+export const SENT_REQUESTS = [{ handle: 'tonkla_', name: 'Tonkla', color: '#6aa6ff', at: '3 days ago' }];
+
+/**
+ * Your friends in the demo: everyone except Bow (asked you, not answered yet), Pim (blocked) and Ken
+ * (unfriended, see his DM).
+ */
+export const FRIENDS = Object.values(USERS).filter((u) => !['bow', 'pim', 'ken'].includes(u.id));
 
 export type ShopCategory = 'outfits' | 'accessories' | 'pets' | 'frames';
 
