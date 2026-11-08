@@ -37,10 +37,25 @@ interface Props {
   /** A zoom the DOM control asked for, applied on the next frame. */
   zoomRequest: { current: number | null };
   onZoom: (percent: number) => void;
+  /** Extra 3D layers from features (activities). */
+  children?: React.ReactNode;
 }
 
 /** The V1 library scene, driven by the mock room instead of the game server. */
-export function RoomCanvas({ room, motion, board, light, quality, bubbles, findId, onHint, driverRef, zoomRequest, onZoom }: Props) {
+export function RoomCanvas({
+  room,
+  motion,
+  board,
+  light,
+  quality,
+  bubbles,
+  findId,
+  onHint,
+  driverRef,
+  zoomRequest,
+  onZoom,
+  children,
+}: Props) {
   const ids = useMemo(() => [...room.state.players.keys()], [room]);
   const npcIds = useMemo(() => [...room.state.npcs.keys()], [room]);
   return (
@@ -69,6 +84,7 @@ export function RoomCanvas({ room, motion, board, light, quality, bubbles, findI
       <LocalController room={room} motion={motion} onHint={onHint} onOpenMachine={() => {}} driverRef={driverRef} />
       <ClickToWalk driverRef={driverRef} />
       <ZoneMarks />
+      {children}
       <GachaMachine lastSummon={undefined} />
       {npcIds.map((id) => (
         <NpcAvatar key={id} id={id} npc={room.state.npcs.get(id)!} board={board} />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Camera,
@@ -43,13 +43,19 @@ import { ZoomControl } from '../room3d/ZoomControl';
 import { bubbleMs, type Bubble } from '../room3d/roomSession';
 import { zoneAt, type Zone } from '../room3d/zones';
 import { ActivitiesPanel } from './ActivitiesPanel';
+import { ActivityHub } from '../activities/hub';
+import { ActivityLayer3D } from '../activities/Activity3D';
+import { AwayBanner, InviteStack, LobbyCard, NextRoundCard, PlayStrip, ResultsCard, type Who } from '../activities/ActivityHud';
+import { GamePlaceholder } from '../activities/GamePlaceholder';
+import { isGameSeat, spotById, type Spot } from '../activities/spots';
+import { PICK_A_SIDE_EVENT } from '@/lib/demoCrowd';
 import { ChannelOverlay, type ChatTarget } from './ChannelOverlay';
 import { PhotoMode } from './PhotoMode';
 import { ChatPanel, type RoomLine } from './ChatPanel';
 import { PeoplePill, RoomPeople, type RoomPerson, type RoomRole } from './RoomPeople';
 import { RoomTools } from './RoomTools';
 import { StudyPanel } from './StudyPanel';
-import { useClickToWalk } from '@/lib/controls';
+import { useClickToWalk, useHideInvitesWhileFocusing } from '@/lib/controls';
 import { LeaveRoomGuard, LeaveRoomLink } from './LeaveRoom';
 import { logFocus } from '@/lib/focus';
 import { usePomodoro, type Phase } from './usePomodoro';
@@ -123,6 +129,23 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const compact = useCompactScreen();
   const touch = useTouchScreen();
   const now = useNow(1000);
+
+  // Activities (feature 9): one framework for every game; the demo's hub plays the server
+  const hub = useMemo(() => new ActivityHub(room, roomDef.roomWideGames, (text) => toast(text)), [room, roomDef.roomWideGames]);
+  useSyncExternalStore(hub.subscribe, hub.getVersion, hub.getVersion);
+  useEffect(() => {
+    const id = setInterval(() => hub.tick(Date.now()), 250);
+    // Demo: someone starts Pick a Side a little after you arrive (or from the Demo tab)
+    const t = setTimeout(() => hub.scriptPickASide(), 25_000);
+    const onDemo = () => hub.scriptPickASide();
+    window.addEventListener(PICK_A_SIDE_EVENT, onDemo);
+    return () => {
+      clearInterval(id);
+      clearTimeout(t);
+      window.removeEventListener(PICK_A_SIDE_EVENT, onDemo);
+      hub.dispose();
+    };
+  }, [hub]);
 
   const [hint, setHint] = useState<Hint | null>(null);
   const [bubbles, setBubbles] = useState<Record<string, Bubble>>({});
@@ -274,6 +297,62 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const micIds = new Set(realPeople.filter((p) => p.micOn).map((p) => p.id));
   const seatKind = me.seatId ? SEAT_BY_ID.get(me.seatId)?.kind : undefined;
   const seated = !!seatKind;
+  const atGameTable = isGameSeat(me.seatId);
+
+  const who = (id: string): Who => {
+    const p = room.state.players.get(id);
+    return {
+      name: p?.name ?? 'Someone',
+      color: id === 'me' ? (guest ? GUEST_COLOR : ME.color) : (USERS[id]?.color ?? GUEST_COLOR),
+    };
+  };
+  const mySpot = hub.mine('me');
+  const myState = mySpot ? hub.spots[mySpot.id] : undefined;
+  const [hideInvites] = useHideInvitesWhileFocusing();
+  const invites = hideInvites && pomo.phase === 'focus' ? [] : hub.invites(now);
+  const anyLive = Object.values(hub.spots).some((st) => st.phase === 'gathering' || st.phase === 'playing');
+  // Standing spots start with E (tables start when you sit): you're in the ring and it's free
+  const floor = spotById('floor');
+  const atFreeFloor =
+    !seated &&
+    roomDef.roomWideGames &&
+    hub.spots.floor.phase === 'free' &&
+    Math.hypot(me.x - floor.area.x, me.z - floor.area.z) <= floor.area.r;
+
+  /** "Go there": run to a free seat (then sit yourself), or into the ring (being there is joining). */
+  const goThere = (spot: Spot) => {
+    setActivities(false);
+    const d = driverRef.current;
+    if (!d) return;
+    if (spot.seats) {
+      const free = spot.seats
+        .map((id) => SEAT_BY_ID.get(id)!)
+        .filter((st) => room.seatFree(st.id))
+        .sort((a, b) => Math.hypot(a.x - me.x, a.z - me.z) - Math.hypot(b.x - me.x, b.z - me.z))[0];
+      if (!free) return toast(`${spot.name} is full. Watch from nearby, you’ll see the game on the table.`);
+      d.goTo(free.out.x, free.out.z, true);
+    } else {
+      const a = Math.atan2(me.x - spot.area.x, me.z - spot.area.z);
+      d.goTo(spot.area.x + Math.sin(a) * spot.area.r * 0.4, spot.area.z + Math.cos(a) * spot.area.r * 0.4, true);
+    }
+  };
+  /** Leave an activity: seats stand you up (the hub does it); out of a ring, you step outside it. */
+  const leaveActivity = (spot: Spot) => {
+    hub.leave(spot.id, 'me');
+    if (!spot.seats) {
+      const a = Math.atan2(me.x - spot.area.x, me.z - spot.area.z) || Math.PI;
+      driverRef.current?.goTo(spot.area.x + Math.sin(a) * (spot.area.r + 0.8), spot.area.z + Math.cos(a) * (spot.area.r + 0.8));
+    }
+  };
+  useEffect(() => {
+    if (!atFreeFloor) return;
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (e.code === 'KeyE' && !e.repeat && !(el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA'))) hub.start('floor', 'me');
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [atFreeFloor, hub]);
 
   const study = (
     <StudyPanel
@@ -380,7 +459,14 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
       )}
       <DockBtn icon={MessageCircle} label="Chat" compact={compact} pressed={chatPressed} onClick={toggleChat} />
       <DockBtn icon={Camera} label="Photo" compact={compact} onClick={() => setPhoto(true)} />
-      <DockBtn icon={Sparkles} label="Activities" compact={compact} pressed={activities} onClick={() => setActivities(!activities)} />
+      <DockBtn
+        icon={Sparkles}
+        label="Activities"
+        compact={compact}
+        pressed={activities}
+        dot={anyLive}
+        onClick={() => setActivities(!activities)}
+      />
     </nav>
   );
   const [clickToWalk, setClickToWalk] = useClickToWalk();
@@ -432,7 +518,9 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
             driverRef={driverRef}
             zoomRequest={zoomRequest}
             onZoom={setZoom}
-          />
+          >
+            <ActivityLayer3D spots={hub.spots} />
+          </RoomCanvas>
           <LabelLayer
             board={board}
             ids={ids}
@@ -480,6 +568,20 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                 )}
                 {!compact && <PeoplePill {...peopleProps} />}
               </div>
+              <div className={cn('absolute right-3 z-20', compact ? 'top-[132px]' : 'top-[72px]')}>
+                <InviteStack
+                  invites={invites}
+                  spots={spotById}
+                  states={(id) => hub.spots[id]}
+                  who={who}
+                  now={now}
+                  onGo={(inv) => {
+                    hub.dismiss(inv.key);
+                    goThere(spotById(inv.spotId));
+                  }}
+                  onDismiss={(inv) => hub.dismiss(inv.key)}
+                />
+              </div>
 
               {/* My tools (left rail), and Chat at the bottom left */}
               <RoomTools
@@ -494,8 +596,26 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
               <MapMove lookId={lookId} mapId={look.mapId} onArrive={arrive} />
 
               {/* Top centre: you're in a private zone, or talking to everyone */}
-              {(zone || stage) && (
-                <div className="pointer-events-none absolute top-3 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1.5 max-sm:top-[136px]">
+              {(zone || stage || (mySpot && myState?.phase === 'playing' && myState.players.includes('me'))) && (
+                <div className="pointer-events-none absolute top-3 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-1.5 max-sm:top-[136px]">
+                  {mySpot && myState?.phase === 'playing' && myState.players.includes('me') && (
+                    <div className="pointer-events-auto flex flex-col items-center gap-1.5">
+                      <PlayStrip
+                        st={myState}
+                        isHost={myState.hostId === 'me'}
+                        onLeave={() => leaveActivity(mySpot)}
+                        onEnd={() => hub.end(mySpot.id)}
+                      />
+                      {myState.awaySince.me && <AwayBanner since={myState.awaySince.me} now={now} />}
+                      <GamePlaceholder
+                        spot={mySpot}
+                        st={myState}
+                        now={now}
+                        onFinish={() => hub.finish(mySpot.id)}
+                        onSomeoneLeaves={() => hub.someoneLeaves(mySpot.id)}
+                      />
+                    </div>
+                  )}
                   {stage && (
                     <button
                       onClick={() => setStage(false)}
@@ -513,7 +633,46 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
               )}
 
               {/* Above the dock: what you can do right here (sit, pet, and share your screen once seated) */}
-              {(hint || seated) && (
+              {/* Above the dock: your activity's lobby, results or "next round" card (the same for every game) */}
+              {mySpot && myState && (myState.phase !== 'playing' || !myState.players.includes('me')) && (
+                <div className="absolute bottom-[100px] left-1/2 z-20 -translate-x-1/2">
+                  {myState.phase === 'gathering' ? (
+                    <LobbyCard
+                      spot={mySpot}
+                      st={myState}
+                      who={who}
+                      now={now}
+                      isHost={myState.hostId === 'me'}
+                      onPickGame={(g) => hub.pickGame(mySpot.id, g)}
+                      onCall={() => {
+                        hub.call(mySpot.id, 'me');
+                        toast(`📣 Everyone in ${roomDef.name} got an invite`);
+                      }}
+                      onStart={() => hub.begin(mySpot.id)}
+                      onLeave={() => leaveActivity(mySpot)}
+                    />
+                  ) : myState.phase === 'results' ? (
+                    <ResultsCard
+                      st={myState}
+                      who={who}
+                      isHost={myState.hostId === 'me'}
+                      now={now}
+                      onAgain={() => hub.begin(mySpot.id)}
+                      onLeave={() => leaveActivity(mySpot)}
+                    />
+                  ) : (
+                    <NextRoundCard st={myState} />
+                  )}
+                </div>
+              )}
+              {!mySpot && atFreeFloor && (
+                <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2 whitespace-nowrap">
+                  <button onClick={() => hub.start('floor', 'me')} className="panel rounded-full px-4 py-2 text-sm font-bold">
+                    {touch ? 'Tap' : 'Press E'} to start a game on the {floor.name.toLowerCase()} 🗳️
+                  </button>
+                </div>
+              )}
+              {(hint || seated) && !atGameTable && !atFreeFloor && (
                 <div className="absolute bottom-[100px] left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap">
                   <button
                     onClick={() => {
@@ -527,7 +686,15 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                         ? `🛋️ Lounging · ${touch ? 'tap' : 'press E'} to get up`
                         : `📖 At a desk · ${touch ? 'tap' : 'press E'} to stand up`
                       : hint?.kind === 'seat'
-                        ? `${touch ? 'Tap' : 'Press E'} to sit`
+                        ? isGameSeat(hint.seatId)
+                          ? `${touch ? 'Tap' : 'Press E'} to ${
+                              hub.spots.cards.phase === 'free'
+                                ? 'sit and start a game 🃏'
+                                : hub.spots.cards.phase === 'playing'
+                                  ? 'sit · you’ll play next round'
+                                  : `join ${hub.spots.cards.game.name} 🃏`
+                            }`
+                          : `${touch ? 'Tap' : 'Press E'} to sit`
                         : hint?.kind === 'pet'
                           ? `${touch ? 'Tap' : 'Press E'} to pet ${hint.name} 🐾`
                           : `${touch ? 'Tap' : 'Press E'}: Buddy Machine`}
@@ -551,7 +718,12 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
 
               {activities && (
                 <div className="absolute bottom-[96px] left-1/2 z-20 -translate-x-1/2">
-                  <ActivitiesPanel quiet={roomDef.quiet} onClose={() => setActivities(false)} />
+                  <ActivitiesPanel
+                    states={hub.spots}
+                    roomWideGames={roomDef.roomWideGames}
+                    hostName={(id) => who(id).name}
+                    onGo={goThere}
+                  />
                 </div>
               )}
 
@@ -592,6 +764,7 @@ function DockBtn({
   compact,
   pressed,
   disabled,
+  dot,
 }: {
   icon: typeof Mic;
   label: string;
@@ -599,6 +772,8 @@ function DockBtn({
   compact?: boolean;
   pressed?: boolean;
   disabled?: boolean;
+  /** Something's live (an activity gathering or playing). */
+  dot?: boolean;
 }) {
   return (
     <button
@@ -606,8 +781,9 @@ function DockBtn({
       aria-pressed={pressed}
       aria-label={label}
       disabled={disabled}
-      className={cn('dock-btn', compact && 'min-w-0 px-3')}
+      className={cn('dock-btn relative', compact && 'min-w-0 px-3')}
     >
+      {dot && <span className="absolute top-1.5 right-2 size-2 rounded-full bg-online ring-2 ring-card" />}
       <Icon className="size-5" />
       {!compact && label}
     </button>

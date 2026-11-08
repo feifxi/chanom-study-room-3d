@@ -156,3 +156,9 @@ export const MAP_UPDATE_EVENT = 'connecta-demo:map-update';
 export function publishMapUpdate() {
   window.dispatchEvent(new Event(MAP_UPDATE_EVENT));
 }
+
+/** Demo: someone in the room starts Pick a Side and calls everyone (feature 9's invite card). */
+export const PICK_A_SIDE_EVENT = 'connecta-demo:pick-a-side';
+export function startPickASide() {
+  window.dispatchEvent(new Event(PICK_A_SIDE_EVENT));
+}

@@ -1,5 +1,17 @@
-import { NAP_SPOTS, SEAT_BY_ID, SPAWN, STARTER_CAT, WALK_SPEED, type AvatarLook, type NpcView, type PlayerView } from '@study/shared';
+import {
+  NAP_SPOTS,
+  SEAT_BY_ID,
+  SPAWN,
+  STARTER_CAT,
+  WALK_SPEED,
+  findPath,
+  type AvatarLook,
+  type NpcView,
+  type PlayerView,
+} from '@study/shared';
 import { questProgress } from '@/lib/quests';
+// Registers the demo's game table with the shared seats and collisions before anything uses them
+import '../activities/spots';
 import type { StudyRoom } from './roomSession';
 
 /**
@@ -56,6 +68,8 @@ export class MockRoom implements StudyRoom {
   readonly sessionId = 'me';
   readonly state = { players: new Map<string, PlayerView>(), npcs: new Map<string, NpcView>() };
   private walkers = new Map<string, { path: { x: number; z: number }[]; next: number }>();
+  /** One-off walks the demo scripts send people on (to a spot), ending in a seat or standing. */
+  private trips = new Map<string, { path: { x: number; z: number }[]; seatId?: string }>();
 
   constructor(me: { name: string; look: AvatarLook }, people: MockPerson[]) {
     this.state.players.set('me', player({ name: me.name, look: JSON.stringify(me.look), x: SPAWN.x, z: SPAWN.z }));
@@ -111,6 +125,30 @@ export class MockRoom implements StudyRoom {
     this.state.players.get('me')!.typing = typing;
   }
 
+  /** Demo scripts: send someone (not you) somewhere along a real path, and sit them down if there's a seat. */
+  sendTo(id: string, dest: { x: number; z: number }, seatId?: string) {
+    const p = this.state.players.get(id);
+    if (!p || id === 'me') return;
+    this.walkers.delete(id);
+    if (p.seatId) this.stand(p);
+    const seat = seatId ? SEAT_BY_ID.get(seatId) : undefined;
+    const to = seat ? seat.out : dest;
+    const path = findPath({ x: p.x, z: p.z }, to);
+    this.trips.set(id, { path: path.length ? path : [to], seatId });
+  }
+
+  /** On a scripted walk right now. */
+  traveling(id: string) {
+    return this.trips.has(id);
+  }
+
+  /** Is this seat free (nobody on it and nobody heading to it)? */
+  seatFree(seatId: string) {
+    const sitting = [...this.state.players.values()].some((p) => p.seatId === seatId);
+    const coming = [...this.trips.values()].some((t) => t.seatId === seatId);
+    return !sitting && !coming;
+  }
+
   private stand(me: PlayerView) {
     const seat = SEAT_BY_ID.get(me.seatId);
     if (!seat) return;
@@ -119,6 +157,26 @@ export class MockRoom implements StudyRoom {
 
   /** Advance the scripted walkers. */
   tick(dt: number) {
+    for (const [id, t] of this.trips) {
+      const p = this.state.players.get(id)!;
+      const target = t.path[0]!;
+      const dx = target.x - p.x;
+      const dz = target.z - p.z;
+      const d = Math.hypot(dx, dz);
+      const step = WALK_SPEED * dt;
+      if (d > step) {
+        Object.assign(p, { x: p.x + (dx / d) * step, z: p.z + (dz / d) * step, yaw: Math.atan2(dx, dz), moving: true });
+        continue;
+      }
+      Object.assign(p, { x: target.x, z: target.z });
+      t.path.shift();
+      if (t.path.length) continue;
+      this.trips.delete(id);
+      const seat = t.seatId ? SEAT_BY_ID.get(t.seatId) : undefined;
+      const taken = [...this.state.players.values()].some((o) => o.seatId === seat?.id);
+      if (seat && !taken) Object.assign(p, { seatId: seat.id, x: seat.x, z: seat.z, yaw: seat.yaw, moving: false });
+      else p.moving = false;
+    }
     for (const [id, w] of this.walkers) {
       const p = this.state.players.get(id)!;
       const target = w.path[w.next]!;

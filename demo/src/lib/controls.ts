@@ -45,3 +45,27 @@ export const KEYS: [string, string][] = [
   ['Esc', 'Close a panel'],
   ['Drag / scroll', 'Turn the camera / zoom'],
 ];
+
+/** Hide game invite cards while your focus timer runs. Off by default: people in a room usually want in. */
+const HIDE_INVITES_KEY = 'connecta:hide-invites-focusing';
+
+function hideInvitesWhileFocusing(): boolean {
+  try {
+    return localStorage.getItem(HIDE_INVITES_KEY) === 'on';
+  } catch {
+    return false;
+  }
+}
+
+function setHideInvitesWhileFocusing(on: boolean) {
+  try {
+    localStorage.setItem(HIDE_INVITES_KEY, on ? 'on' : 'off');
+  } catch {
+    // Blocked storage: the choice just isn't remembered
+  }
+  window.dispatchEvent(new Event(EVENT));
+}
+
+export function useHideInvitesWhileFocusing() {
+  return [useSyncExternalStore(subscribe, hideInvitesWhileFocusing, () => false), setHideInvitesWhileFocusing] as const;
+}

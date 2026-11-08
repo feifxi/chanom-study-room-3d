@@ -30,7 +30,7 @@ export function OpenRoomCard(props: Props) {
         <Picture tint={map.tint} emoji={map.emoji} label="Drop-in · by Connecta" dark />
         <p className="mt-2 flex items-center gap-1 font-black">
           <span className="truncate">{d.name}</span>
-          {d.quiet && <VolumeX className="size-3.5 flex-none text-muted-foreground" aria-label="Quiet room" />}
+          {!d.roomWideGames && <VolumeX className="size-3.5 flex-none text-muted-foreground" aria-label="No room-wide games" />}
         </p>
         <p className="line-clamp-1 text-xs text-muted-foreground">{d.vibe}</p>
         <p className="mt-2 flex items-center gap-1.5 text-sm">

@@ -111,6 +111,8 @@ export class LocalPlayerDriver {
   private path: { x: number; z: number }[] = [];
   private needsPath = false;
   private stuckFor = 0;
+  /** "Go there" from a list runs; clicking the floor walks. */
+  private running = false;
   /** Any input at all (keys, stick, click): the away timer listens to this. */
   lastInput = performance.now();
 
@@ -143,9 +145,10 @@ export class LocalPlayerDriver {
    * Click or tap the floor: walk there along a path around furniture (shared A*). Keys or the joystick
    * take over at once. From a seat we stand up first and set off from the stand-up spot.
    */
-  goTo(x: number, z: number) {
+  goTo(x: number, z: number, run = false) {
     this.lastInput = performance.now();
     this.dest = { x, z };
+    this.running = run;
     this.needsPath = true;
     this.stuckFor = 0;
     if (localPlayer(this.room)?.seatId) this.room.send('stand', {});
@@ -272,7 +275,7 @@ export class LocalPlayerDriver {
     const dx = target.x - m.x;
     const dz = target.z - m.z;
     const d = Math.hypot(dx, dz);
-    const stepLen = WALK_SPEED * dt;
+    const stepLen = (this.running ? RUN_SPEED : WALK_SPEED) * dt;
     if (d <= Math.max(stepLen, 0.05)) {
       this.path.shift();
       if (!this.path.length) this.stopPath();

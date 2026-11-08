@@ -259,7 +259,8 @@ export interface Room {
   mapId: string;
   capacity: number;
   allowGuests: boolean;
-  quiet: boolean;
+  /** Can anyone start games that invite the whole room (Pick a Side, AI quiz)? Tables, TV and board always work. */
+  roomWideGames: boolean;
   /** Who's inside right now. */
   people: string[];
   /** Activities happening in the room (for the sidebar). */
@@ -314,12 +315,12 @@ export const SERVERS: Server[] = [
         mapId: 'library',
         capacity: 20,
         allowGuests: false,
-        quiet: true,
+        roomWideGames: true,
         people: ['mai', 'jod', 'ploy'],
         happening: '2 focusing',
       },
-      { id: 'cafe', name: 'Café', mapId: 'cafe', capacity: 15, allowGuests: true, quiet: false, people: [] },
-      { id: 'rooftop', name: 'Rooftop', mapId: 'rooftop', capacity: 15, allowGuests: false, quiet: false, people: [] },
+      { id: 'cafe', name: 'Café', mapId: 'cafe', capacity: 15, allowGuests: true, roomWideGames: true, people: [] },
+      { id: 'rooftop', name: 'Rooftop', mapId: 'rooftop', capacity: 15, allowGuests: false, roomWideGames: true, people: [] },
     ],
     ownerPlus: true,
     event: 'Werewolf night · Fri 20:00',
@@ -352,7 +353,7 @@ export const SERVERS: Server[] = [
         mapId: 'library',
         capacity: 30,
         allowGuests: false,
-        quiet: true,
+        roomWideGames: false,
         people: ['nam', 'pim'],
         happening: '14 focusing',
       },
@@ -362,7 +363,7 @@ export const SERVERS: Server[] = [
         mapId: 'cafe',
         capacity: 20,
         allowGuests: false,
-        quiet: false,
+        roomWideGames: true,
         people: ['ken'],
         happening: 'Slave at the card table',
       },
@@ -384,8 +385,8 @@ export const SERVERS: Server[] = [
       { id: 'looking-for-game', name: 'looking-for-game', topic: 'Find players' },
     ],
     rooms: [
-      { id: 'rooftop', name: 'Rooftop', mapId: 'rooftop', capacity: 25, allowGuests: true, quiet: false, people: [] },
-      { id: 'cafe', name: 'Café', mapId: 'cafe', capacity: 25, allowGuests: true, quiet: false, people: [] },
+      { id: 'rooftop', name: 'Rooftop', mapId: 'rooftop', capacity: 25, allowGuests: true, roomWideGames: true, people: [] },
+      { id: 'cafe', name: 'Café', mapId: 'cafe', capacity: 25, allowGuests: true, roomWideGames: true, people: [] },
     ],
     event: 'Drawing telephone · Sat 21:00',
     lastActive: '3 days ago',
@@ -446,7 +447,7 @@ function lightRoom(
     memberCount: 6 + name.length,
     roles: (role ? { me: role } : {}) as Server['roles'],
     channels: [{ id: 'chat', name: 'chat', topic: '' }],
-    rooms: [{ id: mapId, name: 'Main', mapId, capacity: 25, allowGuests: false, quiet: false, people: [] }],
+    rooms: [{ id: mapId, name: 'Main', mapId, capacity: 25, allowGuests: false, roomWideGames: true, people: [] }],
     insideCount: inside,
     lastActive: ago(idleDays),
     idleDays,
@@ -619,10 +620,26 @@ export const COINS = 1240;
  * chat. When one fills up, a new copy opens (#2, #3).
  */
 export const PUBLIC_ROOMS = [
-  { id: 'silent-library-1', name: 'Silent Library #1', mapId: 'library', people: 18, capacity: 20, quiet: true, vibe: 'Silent study' },
-  { id: 'silent-library-2', name: 'Silent Library #2', mapId: 'library', people: 6, capacity: 20, quiet: true, vibe: 'Silent study' },
-  { id: 'cafe-lounge-1', name: 'Cat Café #1', mapId: 'cafe', people: 11, capacity: 20, quiet: false, vibe: 'Chill and chat' },
-  { id: 'rooftop-1', name: 'Starry Rooftop #1', mapId: 'rooftop', people: 3, capacity: 20, quiet: false, vibe: 'Late night talks' },
+  {
+    id: 'silent-library-1',
+    name: 'Silent Library #1',
+    mapId: 'library',
+    people: 18,
+    capacity: 20,
+    roomWideGames: false,
+    vibe: 'Silent study',
+  },
+  {
+    id: 'silent-library-2',
+    name: 'Silent Library #2',
+    mapId: 'library',
+    people: 6,
+    capacity: 20,
+    roomWideGames: false,
+    vibe: 'Silent study',
+  },
+  { id: 'cafe-lounge-1', name: 'Cat Café #1', mapId: 'cafe', people: 11, capacity: 20, roomWideGames: true, vibe: 'Chill and chat' },
+  { id: 'rooftop-1', name: 'Starry Rooftop #1', mapId: 'rooftop', people: 3, capacity: 20, roomWideGames: true, vibe: 'Late night talks' },
 ];
 
 /**
@@ -647,7 +664,7 @@ export const PUBLIC_SERVER: Server = {
     mapId: r.mapId,
     capacity: r.capacity,
     allowGuests: true,
-    quiet: r.quiet,
+    roomWideGames: r.roomWideGames,
     people: ['bow', 'pim'],
     happening: r.vibe,
   })),
@@ -663,7 +680,7 @@ export interface DropIn {
   name: string;
   mapId: string;
   vibe: string;
-  quiet: boolean;
+  roomWideGames: boolean;
   /** Everyone across all copies right now. */
   here: number;
   copies: number;
@@ -678,7 +695,7 @@ export const DROP_INS: DropIn[] = [
     name: 'Silent Library',
     mapId: 'library',
     vibe: 'Silent study',
-    quiet: true,
+    roomWideGames: true,
     here: 142,
     copies: 8,
     joinId: 'silent-library-2',
@@ -688,7 +705,7 @@ export const DROP_INS: DropIn[] = [
     name: 'Cat Café',
     mapId: 'cafe',
     vibe: 'Chill and chat',
-    quiet: false,
+    roomWideGames: true,
     here: 57,
     copies: 3,
     joinId: 'cafe-lounge-1',
@@ -699,7 +716,7 @@ export const DROP_INS: DropIn[] = [
     name: 'Starry Rooftop',
     mapId: 'rooftop',
     vibe: 'Late night talks',
-    quiet: false,
+    roomWideGames: true,
     here: 3,
     copies: 1,
     joinId: 'rooftop-1',

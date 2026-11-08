@@ -19,7 +19,7 @@ import { AccountTab } from './AccountTab';
 import { cn } from '@/lib/utils';
 import { ME } from '@/lib/mock';
 import { useGlobalOptIn } from '@/lib/focus';
-import { KEYS, useClickToWalk } from '@/lib/controls';
+import { KEYS, useClickToWalk, useHideInvitesWhileFocusing } from '@/lib/controls';
 
 const AvatarPreview = dynamic(() => import('@/features/avatar/AvatarPreview').then((m) => m.AvatarPreview), { ssr: false });
 
@@ -263,6 +263,7 @@ function Toggles({ tab }: { tab: Tab }) {
       <div className="flex flex-col gap-5">
         <Row label="Mentions and DMs" defaultChecked />
         <Row label="Room events starting" hint="“Werewolf night starts in 10 minutes”" defaultChecked />
+        <HideInvitesRow />
         <Row label="Sounds" defaultChecked />
       </div>
     );
@@ -277,6 +278,20 @@ function Toggles({ tab }: { tab: Tab }) {
         Blocked people (0)
       </Button>
     </div>
+  );
+}
+
+/** Game invite cards ("Mai is starting Pick a Side") show for everyone by default, even while focusing. */
+function HideInvitesRow() {
+  const [on, setOn] = useHideInvitesWhileFocusing();
+  return (
+    <label className="flex items-center justify-between gap-4">
+      <span>
+        <span className="block text-sm font-bold">Hide game invites while I’m focusing</span>
+        <span className="block text-xs text-muted-foreground">You can still see what’s on under Activities.</span>
+      </span>
+      <Switch checked={on} onCheckedChange={setOn} />
+    </label>
   );
 }
 

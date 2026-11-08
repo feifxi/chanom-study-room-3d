@@ -1,101 +1,83 @@
 'use client';
 
-import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-
-const ACTIVITIES = [
-  {
-    id: 'tv',
-    emoji: '📺',
-    name: 'TV · Watch together',
-    where: 'Big TV by the window',
-    status: 'Nobody watching',
-    tint: 'bg-sky',
-    action: 'Show me',
-  },
-  {
-    id: 'jukebox',
-    emoji: '📻',
-    name: 'Jukebox',
-    where: 'Reading nook',
-    status: '“Sunny Café” queued by Ploy',
-    tint: 'bg-peach',
-    action: 'Show me',
-  },
-  {
-    id: 'cards',
-    emoji: '🃏',
-    name: 'Card table',
-    where: 'Back corner',
-    status: 'Slave · Ken is waiting for 2 more',
-    tint: 'bg-mint',
-    action: 'Show me',
-  },
-  { id: 'board', emoji: '🎨', name: 'Whiteboard', where: 'Left wall', status: 'Free', tint: 'bg-lavender', action: 'Show me' },
-  {
-    id: 'pick',
-    emoji: '🗳️',
-    name: 'Pick a Side',
-    where: 'Whole room',
-    status: 'Ask the room a question',
-    tint: 'bg-secondary',
-    action: 'Start',
-  },
-  {
-    id: 'quiz',
-    emoji: '🧠',
-    name: 'AI quiz',
-    where: 'Whole room',
-    status: 'Paste notes, get questions',
-    tint: 'bg-muted',
-    action: 'Start',
-  },
-];
+import type { SpotState } from '../activities/hub';
+import { SPOTS, type Spot, type SpotId } from '../activities/spots';
 
 /**
- * What you can do in this room. Activities live at spots in the map (a TV, a table, a board), so
- * "Show me" points you there; room-wide ones send everyone an invite they can ignore.
+ * What you can do in this room, live. Every activity lives at a spot in the map; "Go there" runs you
+ * over, and you start or join it there yourself (sit down, or press E), the same way for every game.
  */
-export function ActivitiesPanel({ quiet, onClose }: { quiet: boolean; onClose: () => void }) {
+export function ActivitiesPanel({
+  states,
+  roomWideGames,
+  hostName,
+  onGo,
+}: {
+  states: Record<SpotId, SpotState>;
+  roomWideGames: boolean;
+  hostName: (id: string) => string;
+  onGo: (spot: Spot) => void;
+}) {
   return (
     <div className="panel flex w-[360px] max-w-[calc(100vw-2rem)] flex-col gap-2 p-3">
       <div className="flex items-center gap-2 px-1">
         <h2 className="flex-1 text-sm font-black">Things to do here</h2>
-        <span className="rounded-full bg-peach px-2 py-0.5 text-[10px] font-black text-peach-ink">PREVIEW</span>
       </div>
-      {quiet && (
+      {!roomWideGames && (
         <p className="rounded-xl bg-muted px-3 py-2 text-xs text-muted-foreground">
-          This is a quiet room: room-wide games are off. Table games still work.
+          Room-wide games are off in this room. Tables, the TV and the board still work.
         </p>
       )}
-      {ACTIVITIES.map((a) => {
-        const off = quiet && a.where === 'Whole room';
+      {SPOTS.map((spot) => {
+        const st = states[spot.id];
+        const off = spot.roomWide && !roomWideGames;
+        const live = st.phase === 'gathering' || st.phase === 'playing';
+        const status = !spot.built
+          ? `Comes with feature ${spot.feature}`
+          : off
+            ? 'Off in this room'
+            : st.phase === 'gathering'
+              ? `${st.game.name} · ${st.players.length} in · ${hostName(st.hostId ?? '')} hosting`
+              : st.phase === 'playing'
+                ? `${st.game.name} · ${st.players.length} playing`
+                : st.phase === 'results'
+                  ? `${st.game.name} · just finished`
+                  : spot.seats
+                    ? 'Free · sit down to start a game'
+                    : 'Free · go there and press E to start';
         return (
-          <div key={a.id} className={cn('flex items-center gap-3 rounded-2xl border bg-card/70 p-2', off && 'opacity-45')}>
-            <span className={cn('grid size-10 place-items-center rounded-xl text-xl', a.tint)}>{a.emoji}</span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-extrabold">{a.name}</span>
-              <span className="block truncate text-[11px] text-muted-foreground">
-                {a.where} · {a.status}
-              </span>
-            </span>
-            <button
-              disabled={off}
-              onClick={() => {
-                toast(
-                  a.action === 'Start'
-                    ? `Invite sent: “Join ${a.name}?” People can say no and keep studying.`
-                    : `Follow the arrow to the ${a.name.split(' ·')[0]}`,
-                );
-                onClose();
-              }}
-              className={cn(
-                'rounded-full px-3 py-1 text-xs font-extrabold',
-                a.action === 'Start' ? 'bg-primary text-primary-foreground' : 'border bg-card hover:bg-muted',
+          <div
+            key={spot.id}
+            className={cn('flex items-center gap-3 rounded-2xl border bg-card/70 p-2', (!spot.built || off) && 'opacity-50')}
+          >
+            <span className={cn('relative grid size-10 flex-none place-items-center rounded-xl text-xl', spot.tint)}>
+              {spot.emoji}
+              {live && (
+                <span
+                  className={cn(
+                    'absolute -top-0.5 -right-0.5 size-3 rounded-full ring-2 ring-card',
+                    st.phase === 'gathering' ? 'animate-pulse bg-online' : 'bg-primary',
+                  )}
+                  aria-label={st.phase === 'gathering' ? 'Gathering players' : 'Playing'}
+                />
               )}
-            >
-              {a.action}
-            </button>
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-extrabold">{spot.name}</span>
+              <span className="block truncate text-[11px] text-muted-foreground">{status}</span>
+            </span>
+            {spot.built && !off && (
+              <button
+                onClick={() => onGo(spot)}
+                className={cn(
+                  'rounded-full px-3 py-1 text-xs font-extrabold',
+                  st.phase === 'gathering' ? 'bg-primary text-primary-foreground hover:bg-primary-ink' : 'border bg-card hover:bg-muted',
+                )}
+              >
+                Go there
+              </button>
+            )}
           </div>
         );
       })}

@@ -138,6 +138,9 @@ Two kinds of room anyone can walk into, named so people know what they get:
 ### Activities
 
 All of these are secondary and pluggable through an activity framework in Colyseus, not coupled to the core.
+One flow for every activity: it lives at a map spot, you join by being there (sit or step in the
+ring), the host calls everyone with one shared invite card and starts it, anyone can leave any time.
+Details: [09-activity-framework.md](v2/features/09-activity-framework.md).
 
 - **Watch together:**
   - YouTube, maybe short-video platforms.
@@ -200,7 +203,7 @@ Discord's boosts plus Plus plus coins was too much for a cosy app of small group
   (accessories ~200–400, outfits ~500–800, pets ~1,000–1,500: something new about once a week).
   Premium skins and pets come with Plus and are never sold for coins; Plus earns no extra coins.
 - **Daily quests** (3 a day, new at midnight, ~60 coins a day), one from each group so a studier in
-  a Quiet room can always earn something:
+  a room with room-wide games off can always earn something:
   - 📖 Focus: focus for 1 hour, finish 2 focus sessions
   - 💬 Together: 30 minutes in a room with others, say 5 things (bubbles or Room chat)
   - 🎲 Play: pet a cat 3 times, use the Buddy Machine, play any activity once (as activities land)
@@ -264,23 +267,23 @@ The UI is approved in `demo/` first, then a spec is written to `docs/v2/features
 
 ## Feature agenda
 
-| #   | Feature                                                   | Spec                                                         |
-| --- | --------------------------------------------------------- | ------------------------------------------------------------ |
-| 1   | App shell and navigation                                  | [01-app-shell.md](v2/features/01-app-shell.md)               |
-| 2   | Accounts and sign-up                                      | [02-accounts.md](v2/features/02-accounts.md)                 |
-| 3   | Rooms and membership (visibility, roles, invites, guests) | [03-rooms-membership.md](v2/features/03-rooms-membership.md) |
-| 4   | Room chat and DMs                                         | [04-chat-and-dms.md](v2/features/04-chat-and-dms.md)         |
-| 5   | Friends                                                   | [05-friends.md](v2/features/05-friends.md)                   |
-| 6   | The 3D room                                               | [06-3d-room.md](v2/features/06-3d-room.md)                   |
-| 7   | Map templates and the editor                              | [07-maps.md](v2/features/07-maps.md)                         |
-| 8   | Study tools                                               | [08-study-tools.md](v2/features/08-study-tools.md)           |
-| 9   | Activity framework                                        |                                                              |
-| 10  | Watch together, jukebox, photo mode                       |                                                              |
-| 11  | Pick a Side, whiteboard, drawing telephone                |                                                              |
-| 12  | Card games, Werewolf                                      |                                                              |
-| 13  | AI quizzes and flashcards                                 |                                                              |
-| 14  | Open rooms, drop-in rooms and moderation                  |                                                              |
-| 15  | Business and infra                                        |                                                              |
+| #   | Feature                                                   | Spec                                                             |
+| --- | --------------------------------------------------------- | ---------------------------------------------------------------- |
+| 1   | App shell and navigation                                  | [01-app-shell.md](v2/features/01-app-shell.md)                   |
+| 2   | Accounts and sign-up                                      | [02-accounts.md](v2/features/02-accounts.md)                     |
+| 3   | Rooms and membership (visibility, roles, invites, guests) | [03-rooms-membership.md](v2/features/03-rooms-membership.md)     |
+| 4   | Room chat and DMs                                         | [04-chat-and-dms.md](v2/features/04-chat-and-dms.md)             |
+| 5   | Friends                                                   | [05-friends.md](v2/features/05-friends.md)                       |
+| 6   | The 3D room                                               | [06-3d-room.md](v2/features/06-3d-room.md)                       |
+| 7   | Map templates and the editor                              | [07-maps.md](v2/features/07-maps.md)                             |
+| 8   | Study tools                                               | [08-study-tools.md](v2/features/08-study-tools.md)               |
+| 9   | Activity framework                                        | [09-activity-framework.md](v2/features/09-activity-framework.md) |
+| 10  | Watch together, jukebox, photo mode                       |                                                                  |
+| 11  | Pick a Side, whiteboard, drawing telephone                |                                                                  |
+| 12  | Card games, Werewolf                                      |                                                                  |
+| 13  | AI quizzes and flashcards                                 |                                                                  |
+| 14  | Open rooms, drop-in rooms and moderation                  |                                                                  |
+| 15  | Business and infra                                        |                                                                  |
 
 Feature 3 was "Servers" before the move to rooms.
 

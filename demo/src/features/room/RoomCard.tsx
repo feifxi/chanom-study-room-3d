@@ -67,7 +67,7 @@ export function RoomCard({
           <span className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
             <span className="size-2 flex-none rounded-full bg-online" />
             {map.emoji} {map.name} · {here} here
-            {room.quiet && <VolumeX className="size-3 flex-none" aria-label="Quiet room" />}
+            {!room.roomWideGames && <VolumeX className="size-3 flex-none" aria-label="No room-wide games" />}
             {guest && <span className="rounded-full bg-peach px-1.5 text-[10px] font-black text-peach-ink">guest</span>}
           </span>
         </span>

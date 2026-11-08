@@ -17,19 +17,19 @@ Try it: `pnpm --filter @study/demo demo:dev`, then:
 Every template has the **same standard kit**. Only the place, the props and the theme differ, so
 whichever map a room picks, every activity works there.
 
-| Kit piece     | Needs                       | Library              | Cat Café             | Starry Rooftop       |
-| ------------- | --------------------------- | -------------------- | -------------------- | -------------------- |
-| Study spots   | 12+ seats (Cosy), 24+ (Big) | tables, green lamps  | café tables, counter | picnic desks         |
-| Lounge        | a corner to hang out        | sofa by the shelves  | beanbags, cat tower  | campfire circle      |
-| Private zones | at least 2                  | reading nook, alcove | window booths        | tent, telescope deck |
-| Big screen    | watch together              | projector screen     | TV on the wall       | outdoor cinema sheet |
-| Jukebox       | room music                  | old radio            | jukebox              | boombox              |
-| Game table    | cards and board games       | chess table          | card table           | low table with cards |
-| Open floor    | 12 m²+ for Pick a Side      | the middle rug       | by the counter       | the open deck        |
-| Whiteboard    | draw together               | chalkboard           | menu board           | chalk wall           |
-| Buddy Machine | study buddies               | by the door          | by the till          | by the stairs        |
-| Nap spots     | where the cats sleep        | sofa cushions        | cat beds, cat tower  | hammocks             |
-| Spawn point   | where you walk in           | front door           | door with a bell     | stairwell door       |
+| Kit piece     | Needs                       | Library               | Cat Café             | Starry Rooftop       |
+| ------------- | --------------------------- | --------------------- | -------------------- | -------------------- |
+| Study spots   | 12+ seats (Cosy), 24+ (Big) | tables, green lamps   | café tables, counter | picnic desks         |
+| Lounge        | a corner to hang out        | sofa by the shelves   | beanbags, cat tower  | campfire circle      |
+| Private zones | at least 2                  | reading nook, alcove  | window booths        | tent, telescope deck |
+| Big screen    | watch together              | projector screen      | TV on the wall       | outdoor cinema sheet |
+| Jukebox       | room music                  | old radio             | jukebox              | boombox              |
+| Game table    | cards and board games       | round table, 4 stools | card table           | low table with cards |
+| Open floor    | 12 m²+ for Pick a Side      | the middle rug        | by the counter       | the open deck        |
+| Whiteboard    | draw together               | chalkboard            | menu board           | chalk wall           |
+| Buddy Machine | study buddies               | by the door           | by the till          | by the stairs        |
+| Nap spots     | where the cats sleep        | sofa cushions         | cat beds, cat tower  | hammocks             |
+| Spawn point   | where you walk in           | front door            | door with a bell     | stairwell door       |
 
 ## Templates
 

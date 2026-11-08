@@ -253,7 +253,11 @@ function MapAndCapacity({ room }: { room: PlaceRoom }) {
       <Toggles
         rows={[
           ['Allow guests', 'People with a guest link can walk in without an account', room.scene.allowGuests],
-          ['Quiet room', 'No room-wide games or jukebox. Good for studying.', room.scene.quiet],
+          [
+            'Room-wide games',
+            'Off: nobody can start games that invite the whole room. Tables, TV and the board still work.',
+            room.scene.roomWideGames,
+          ],
         ]}
       />
       <Button className="w-fit rounded-full font-extrabold" onClick={save}>
