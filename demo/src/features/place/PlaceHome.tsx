@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Bell, ChevronDown, MessageCircle, Pin, Play, Plus, Rocket, Search } from 'lucide-react';
+import { ArrowRight, Bell, ChevronDown, MessageCircle, Pin, Play, Plus, Rocket, Search, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { OpenRoomCard } from '@/components/app/OpenRoomCard';
 import { AvatarStack, UserAvatar } from '@/components/UserAvatar';
@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { useManyRooms } from '@/lib/demoCrowd';
 import { DROP_INS, MANY_ROOMS, MAPS, ME, OPEN_ROOMS, SERVERS, USERS, serverById, userById } from '@/lib/mock';
 import { chatHref, levelFor, placeRoom, walkInHref, type PlaceRoom } from './model';
+import { JOIN_REQUESTS } from './membership';
 import { RoomMenu } from './RoomMenu';
 import { Scene } from './Scene';
 
@@ -302,6 +303,12 @@ function RoomCard({ room, pinned, unread, menu }: { room: PlaceRoom; pinned: boo
           <Chip className={room.chat?.mention ? 'bg-primary text-primary-foreground' : undefined}>
             <MessageCircle className="size-3" /> {room.chat?.mention ? '@ you · ' : ''}
             {unread} new
+          </Chip>
+        )}
+        {/* Owners and mods of an Ask-to-join room see who's waiting (approve in Room settings → Members) */}
+        {room.myRole && room.server.visibility === 'request' && JOIN_REQUESTS.length > 0 && (
+          <Chip className="bg-lavender text-lavender-ink">
+            <UserCheck className="size-3" /> {JOIN_REQUESTS.length} asking to join
           </Chip>
         )}
         {level > 0 && (

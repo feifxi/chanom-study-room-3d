@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Users, VolumeX } from 'lucide-react';
-import { toast } from 'sonner';
+import { JoinRoomDialog } from '@/features/place/JoinRoomDialog';
 import { AvatarStack } from '@/components/UserAvatar';
 import { cn } from '@/lib/utils';
 import { MAPS, serverById, userById, type DropIn, type OpenRoom } from '@/lib/mock';
@@ -45,11 +46,18 @@ export function OpenRoomCard(props: Props) {
     );
   }
 
-  const o = props.room;
+  return <OpenCard room={props.room} />;
+}
+
+/** An open room you're not in yet opens its preview (rules, who's inside) before you join. */
+function OpenCard({ room: o }: { room: OpenRoom }) {
+  const [preview, setPreview] = useState(false);
+  const map = MAPS.find((m) => m.id === o.mapId)!;
+  const friends = (o.friendsInside ?? []).map(userById);
   const fill = o.inside / o.capacity;
   const full = o.inside >= o.capacity;
   const mine = serverById(o.id);
-  const action = full ? 'Full · notify me' : mine ? 'Walk in' : o.ask ? 'Ask to join' : 'Join & walk in';
+  const action = mine ? (full ? 'Full · notify me' : 'Walk in') : o.ask ? 'Ask to join' : full ? 'Join · full now' : 'Join & walk in';
   const body = (
     <>
       <Picture tint={map.tint} emoji={o.emoji} label="Open room" />
@@ -80,25 +88,18 @@ export function OpenRoomCard(props: Props) {
       </span>
     </>
   );
-  return mine && !full ? (
+  // Already a member: go to the room's page (its chat works even when the room is full)
+  return mine ? (
     <Link href={`/servers/${o.id}`} className={CARD}>
       {body}
     </Link>
   ) : (
-    <button
-      className={CARD}
-      onClick={() =>
-        toast.success(
-          full
-            ? `${o.name} is full. We’ll tell you when a spot opens.`
-            : o.ask
-              ? `Asked to join ${o.name}. Its mods will let you in.`
-              : `You joined ${o.name}. It’s on your Home now.`,
-        )
-      }
-    >
-      {body}
-    </button>
+    <>
+      <button className={CARD} onClick={() => setPreview(true)}>
+        {body}
+      </button>
+      <JoinRoomDialog room={o} open={preview} onOpenChange={setPreview} />
+    </>
   );
 }
 

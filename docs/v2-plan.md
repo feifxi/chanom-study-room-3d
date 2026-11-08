@@ -37,7 +37,13 @@ model is Gather's, kept simpler:
 
 ### Rooms
 
-- **Visibility:** private (invite only, the default), request to join, or public (listed). The owner can change it.
+- **Visibility:** private (invite only, the default), ask to join, or open (listed). The owner can change it.
+- **Members first, like Discord:** you join a room before walking in (Open: one "Join & walk in"
+  button; Ask to join: a mod approves). A preview shows the room and its rules first; the chat stays
+  hidden until you join. Drop-in rooms and guest passes are the exceptions.
+- **Roles:** Owner, Mod, Member, fixed (no custom roles). Invites: member links (7 days by default,
+  optional use limit) and 24-hour guest passes. Kick, ban (tied to the account) and time out.
+  Details: [03-rooms-membership.md](v2/features/03-rooms-membership.md).
 - **Guests:**
   - Membership needs an account.
   - A room can allow guests by an invite link or code; guest invites expire.
@@ -222,23 +228,23 @@ The UI is approved in `demo/` first, then a spec is written to `docs/v2/features
 
 ## Feature agenda
 
-| #   | Feature                                                   | Spec                                           |
-| --- | --------------------------------------------------------- | ---------------------------------------------- |
-| 1   | App shell and navigation                                  | [01-app-shell.md](v2/features/01-app-shell.md) |
-| 2   | Accounts and sign-up                                      | [02-accounts.md](v2/features/02-accounts.md)   |
-| 3   | Rooms and membership (visibility, roles, invites, guests) |                                                |
-| 4   | Room chat and DMs                                         |                                                |
-| 5   | Friends                                                   |                                                |
-| 6   | The 3D room                                               |                                                |
-| 7   | Map templates and the editor                              |                                                |
-| 8   | Study tools                                               |                                                |
-| 9   | Activity framework                                        |                                                |
-| 10  | Watch together, jukebox, photo mode                       |                                                |
-| 11  | Pick a Side, whiteboard, drawing telephone                |                                                |
-| 12  | Card games, Werewolf                                      |                                                |
-| 13  | AI quizzes and flashcards                                 |                                                |
-| 14  | Open rooms, drop-in rooms and moderation                  |                                                |
-| 15  | Business and infra                                        |                                                |
+| #   | Feature                                                   | Spec                                                         |
+| --- | --------------------------------------------------------- | ------------------------------------------------------------ |
+| 1   | App shell and navigation                                  | [01-app-shell.md](v2/features/01-app-shell.md)               |
+| 2   | Accounts and sign-up                                      | [02-accounts.md](v2/features/02-accounts.md)                 |
+| 3   | Rooms and membership (visibility, roles, invites, guests) | [03-rooms-membership.md](v2/features/03-rooms-membership.md) |
+| 4   | Room chat and DMs                                         |                                                              |
+| 5   | Friends                                                   |                                                              |
+| 6   | The 3D room                                               |                                                              |
+| 7   | Map templates and the editor                              |                                                              |
+| 8   | Study tools                                               |                                                              |
+| 9   | Activity framework                                        |                                                              |
+| 10  | Watch together, jukebox, photo mode                       |                                                              |
+| 11  | Pick a Side, whiteboard, drawing telephone                |                                                              |
+| 12  | Card games, Werewolf                                      |                                                              |
+| 13  | AI quizzes and flashcards                                 |                                                              |
+| 14  | Open rooms, drop-in rooms and moderation                  |                                                              |
+| 15  | Business and infra                                        |                                                              |
 
 Feature 3 was "Servers" before the move to rooms.
 

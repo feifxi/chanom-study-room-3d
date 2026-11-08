@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Check, Globe, Link2, Lock, Map as MapIcon, Rocket, ScrollText, Shield, UserCheck, Users } from 'lucide-react';
 import { toast } from 'sonner';
-import { UserAvatar } from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -11,8 +10,9 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { MAPS, userById, type Visibility } from '@/lib/mock';
+import { MAPS, type Visibility } from '@/lib/mock';
 import { BOOST_LEVELS, levelFor, type PlaceRoom } from './model';
+import { InvitesPanel, MembersPanel } from './RoomMembers';
 
 const TABS = [
   ['overview', 'Overview', ScrollText],
@@ -22,6 +22,9 @@ const TABS = [
   ['safety', 'Safety', Shield],
   ['boosts', 'Boosts', Rocket],
 ] as const;
+type TabId = (typeof TABS)[number][0];
+/** Mods manage people and safety; the room itself (name, map, visibility, deleting) is the owner's. */
+const MOD_TABS: TabId[] = ['members', 'invites', 'safety', 'boosts'];
 
 const VIS: { id: Visibility; icon: typeof Lock; title: string; text: string }[] = [
   { id: 'private', icon: Lock, title: 'Private', text: 'Invite only. Not listed anywhere.' },
@@ -39,14 +42,16 @@ export function RoomSettingsDialog({ room, tab, onClose }: { room: PlaceRoom; ta
 }
 
 function Body({ room, initial }: { room: PlaceRoom; initial: string }) {
-  const [current, setCurrent] = useState(initial);
+  const myRole = room.server.roles.me;
+  const tabs = TABS.filter(([id]) => myRole === 'Owner' || MOD_TABS.includes(id));
+  const [current, setCurrent] = useState(tabs.some((t) => t[0] === initial) ? initial : tabs[0]![0]);
   return (
     <DialogContent className="flex h-[min(680px,90dvh)] max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-3xl p-0 sm:max-w-4xl">
       <aside className="hidden w-52 flex-none flex-col gap-1 bg-muted/60 p-3 sm:flex">
         <p className="truncate px-2 pb-1 text-[11px] font-black tracking-wider text-muted-foreground uppercase">
           {room.emoji} {room.name}
         </p>
-        {TABS.map(([id, label, Icon]) => (
+        {tabs.map(([id, label, Icon]) => (
           <button
             key={id}
             onClick={() => setCurrent(id)}
@@ -64,7 +69,7 @@ function Body({ room, initial }: { room: PlaceRoom; initial: string }) {
         <DialogDescription className="sr-only">Room settings</DialogDescription>
         {/* Phones: no side list, so the tabs are chips */}
         <div className="mt-3 flex gap-1 overflow-x-auto sm:hidden">
-          {TABS.map(([id, label]) => (
+          {tabs.map(([id, label]) => (
             <button
               key={id}
               onClick={() => setCurrent(id)}
@@ -80,15 +85,18 @@ function Body({ room, initial }: { room: PlaceRoom; initial: string }) {
         <div className="mt-5">
           {current === 'overview' && <Overview room={room} />}
           {current === 'map' && <MapAndCapacity room={room} />}
-          {current === 'members' && <Members room={room} />}
+          {current === 'members' && <MembersPanel room={room} myRole={myRole} />}
           {current === 'boosts' && <Boosts room={room} />}
           {current === 'invites' && (
-            <Toggles
-              rows={[
-                ['Members can invite', 'Off: only owner and mods make invite links', true],
-                ['Guest links expire after 24 h', 'Guests see only this room and carry a guest badge', true],
-                ['Guests can use voice', 'Off: guests can listen and chat but not talk', false],
-              ]}
+            <InvitesPanel
+              toggles={
+                <Toggles
+                  rows={[
+                    ['Members can invite', 'Off: only the owner and mods make invite links', true],
+                    ['Guests can use voice', 'Off: guests with a 24-hour pass can listen and type in Bubbles, but not talk', false],
+                  ]}
+                />
+              }
             />
           )}
           {current === 'safety' && (
@@ -223,51 +231,6 @@ function MapAndCapacity({ room }: { room: PlaceRoom }) {
           ['Quiet room', 'No room-wide games or jukebox. Good for studying.', room.scene.quiet],
         ]}
       />
-    </div>
-  );
-}
-
-function Members({ room }: { room: PlaceRoom }) {
-  return (
-    <div className="flex flex-col gap-2">
-      {/* Members and capacity are two different limits; say so where people manage them */}
-      <div className="mb-2 grid gap-2 sm:grid-cols-2">
-        <p className="rounded-2xl bg-muted p-3 text-sm">
-          <span className="block text-lg font-black">
-            {room.server.memberCount}/{levelFor(room.boosts).members}
-          </span>
-          members. Members can read and write the Room chat any time, from anywhere. Boosts raise the limit (150 / 300 / 500 / 1,000).
-        </p>
-        <p className="rounded-2xl bg-muted p-3 text-sm">
-          <span className="block text-lg font-black">
-            {room.inside}/{room.capacity}
-          </span>
-          inside right now. When it’s full, members wait for a spot (and can ask to be told). The owner and mods always fit.
-        </p>
-      </div>
-      {room.server.members.map((id) => {
-        const u = userById(id);
-        const role = room.server.roles[id] ?? 'Member';
-        return (
-          <div key={id} className="flex items-center gap-3 rounded-2xl border p-2.5">
-            <UserAvatar user={u} size={34} presence />
-            <span className="flex-1 font-bold">{u.name}</span>
-            <span
-              className={cn(
-                'rounded-full px-2.5 py-0.5 text-xs font-bold',
-                role === 'Owner' ? 'bg-peach text-peach-ink' : role === 'Mod' ? 'bg-lavender text-lavender-ink' : 'bg-muted',
-              )}
-            >
-              {role}
-            </span>
-            {role !== 'Owner' && (
-              <Button size="sm" variant="ghost" className="rounded-full text-destructive">
-                Kick
-              </Button>
-            )}
-          </div>
-        );
-      })}
     </div>
   );
 }

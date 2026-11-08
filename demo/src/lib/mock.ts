@@ -225,7 +225,8 @@ export const SERVERS: Server[] = [
     visibility: 'request',
     members: ['me', 'ken', 'nam', 'pim'],
     memberCount: 64,
-    roles: { ken: 'Owner' },
+    // You're a mod here: shows the mod view of Room settings and the join-request badge
+    roles: { ken: 'Owner', me: 'Mod' },
     // Exam season: the free 25 are all inside, so it shows as full
     insideCount: 25,
     lastActive: 'yesterday',

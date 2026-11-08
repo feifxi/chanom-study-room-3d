@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import {
   Ban,
+  Clock,
   Flag,
   LocateFixed,
   MessageCircle,
@@ -28,11 +29,15 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { TIMEOUTS } from '@/features/place/membership';
 import { cn } from '@/lib/utils';
 import type { RoomPerson, RoomRole } from './RoomPeople';
 
@@ -41,7 +46,8 @@ import type { RoomPerson, RoomRole } from './RoomPeople';
  * mute them just for you, block, report). Owners and mods get a "Moderate" group in the same menu,
  * so managing people happens where you see them, not in a separate admin screen:
  * - a mod can act on members and guests; the owner on everyone but themselves
- * - mute for everyone, kick, ban; the owner can also make someone a mod
+ * - mute for everyone, time out (can't talk or type for a while), kick, ban; the owner can also
+ *   make someone a mod
  */
 export function PersonMenu({
   p,
@@ -138,6 +144,18 @@ export function PersonMenu({
                 >
                   <MicOff /> Mute for everyone
                 </DropdownMenuCheckboxItem>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <Clock /> Time out
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    {TIMEOUTS.map(([id, label]) => (
+                      <DropdownMenuItem key={id} onSelect={() => toast(`${p.name} can’t talk or type for ${label}`)}>
+                        {label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
                 {myRole === 'Owner' && !p.guest && (
                   <DropdownMenuItem
                     onSelect={() => {
