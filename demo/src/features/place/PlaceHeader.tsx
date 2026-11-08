@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Compass, Crown, House, LogOut, MessageCircle, Settings, ShoppingBag, Users } from 'lucide-react';
+import { BarChart3, Compass, Crown, House, LogOut, MessageCircle, Settings, ShoppingBag, Users } from 'lucide-react';
 import { SettingsDialog } from '@/components/app/SettingsDialog';
 import { Logo, LogoMark } from '@/components/Logo';
 import { UserAvatar } from '@/components/UserAvatar';
@@ -23,6 +23,7 @@ import { useQuests } from '@/lib/quests';
 const NAV = [
   { href: '/home', label: 'Home', icon: House },
   { href: '/home/friends', label: 'Friends', icon: Users, badge: FRIEND_REQUESTS.length },
+  { href: '/home/focus', label: 'Focus', icon: BarChart3 },
   { href: '/discover', label: 'Discover', icon: Compass },
   { href: '/home/shop', label: 'Shop', icon: ShoppingBag },
 ];

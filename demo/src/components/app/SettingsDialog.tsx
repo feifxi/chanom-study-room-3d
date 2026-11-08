@@ -18,6 +18,7 @@ import { CharacterEditor } from '@/features/avatar/CharacterEditor';
 import { AccountTab } from './AccountTab';
 import { cn } from '@/lib/utils';
 import { ME } from '@/lib/mock';
+import { useGlobalOptIn } from '@/lib/focus';
 
 const AvatarPreview = dynamic(() => import('@/features/avatar/AvatarPreview').then((m) => m.AvatarPreview), { ssr: false });
 
@@ -235,11 +236,26 @@ function Toggles({ tab }: { tab: Tab }) {
       <Row label="Appear offline" hint="Friends won’t see you’re online or which room you’re in" />
       <Row label="Friend requests from anyone" hint="Off: only people who share a room with you. Only friends can DM you." defaultChecked />
       <Row label="Show what I’m doing to friends" hint="“Focusing · Calculus”, “Playing Slave”" defaultChecked />
+      <GlobalRankRow />
       <Row label="Filter rude words in chats" defaultChecked />
       <Button variant="outline" className="w-fit rounded-full font-bold">
         Blocked people (0)
       </Button>
     </div>
+  );
+}
+
+/** The Everyone focus ranking lists you only while this is on (off by default under 18). */
+function GlobalRankRow() {
+  const [on, setOn] = useGlobalOptIn();
+  return (
+    <label className="flex items-center justify-between gap-4">
+      <span>
+        <span className="block text-sm font-bold">Show me on the Everyone focus ranking</span>
+        <span className="block text-xs text-muted-foreground">Name, character and focus minutes. Friends always see you.</span>
+      </span>
+      <Switch checked={on} onCheckedChange={setOn} />
+    </label>
   );
 }
 

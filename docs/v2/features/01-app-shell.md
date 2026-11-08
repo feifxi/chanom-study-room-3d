@@ -22,7 +22,7 @@ So the shell follows Gather instead:
 
 ### Home (`/home`)
 
-- **Slim header:** logo, Home / Friends / Discover / Shop, a Messages button (DMs in a popover with
+- **Slim header:** logo, Home / Friends / Focus / Discover / Shop, a Messages button (DMs in a popover with
   unread counts and "See all messages"), and your avatar menu (character & settings, shop with
   coins, Connecta Plus, sign out).
 - **"Friends out right now":** one chip per friend in a room. Tapping it walks you in.
@@ -97,7 +97,7 @@ Plus the **chat window**: Room chat or a DM opened large over the dimmed room (�
   - Invite friends, and Settings (members only)
   - **Your view** (only you see it): Battery saver. Moved here from My tools: set once, rarely touched.
   - **Leave room** at the bottom; goes to Home. Guests can expand the card too (Invite copies the link).
-- **My tools:** Study session (Pomodoro, to-do, Focus today), Music, Quests (🎯 today's three, plan "Business model"), How to play.
+- **My tools:** Study session (focus timer, to-do, this room today; feature 8), Music, Quests (🎯 today's three, plan "Business model"), How to play.
 - **Chat**, one panel with three tabs, so the room's main text is always one tap away:
   - **Bubbles** (first tab, the default): what people say out loud right now. It pops over their
     head and is gone when the room empties. In the room you're there to talk to whoever is around,

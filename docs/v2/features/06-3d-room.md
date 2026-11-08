@@ -69,6 +69,23 @@ Areas built into the map (a reading nook, a booth, a card table). The demo's lib
   the people list, and they see a "📢 Everyone hears you · Stop" bar at the top.
 - For "Werewolf starts in 5 minutes!" or a teacher's announcement (Gather's "spotlight").
 
+## Leaving a room
+
+Decided 2026-11-09, after a "My focus" link in the Study panel would have dropped people out of the room.
+
+- **Nothing inside a room navigates away silently.** Leaving costs you voice, your seat and a running
+  focus timer, so it should never happen by accident.
+- The **Leave** button (room card) is the only one-click way out.
+- Avoid links to other pages in the room HUD. Show the thing in a panel or overlay instead (as chats and
+  DMs do), or keep it on the 2D pages only.
+- When a link out is really needed (e.g. a guest's "Sign up"), it asks first: **"Leave {room}?"**,
+  "You'll stop hearing people nearby and lose your seat, and your focus timer stops (the minutes so far
+  still count)". **Stay** is the default button. Demo: `features/room/LeaveRoom.tsx` (`LeaveRoomLink`,
+  `useLeaveRoom().ask(href)`).
+- Closing or reloading the tab shows the browser's "Leave site?" prompt.
+- Not covered yet: the browser Back button. In the real app the room connection should live above the
+  routes, so Back keeps you connected (like browsing chats) instead of asking.
+
 ## What resets
 
 When the last person leaves: bubbles, who sat where, drawings and games. The room itself (name, map,

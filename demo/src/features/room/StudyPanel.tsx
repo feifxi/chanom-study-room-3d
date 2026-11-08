@@ -1,44 +1,41 @@
 'use client';
 
 import { useState } from 'react';
-import { ListChecks, Plus, Timer, Trophy } from 'lucide-react';
+import { ListChecks, Plus, Timer, Trophy, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { formatMinutes, TODO_LIMIT, useRoomToday, useTodos } from '@/lib/focus';
+import { ME } from '@/lib/mock';
 import { formatLeft, type usePomodoro } from './usePomodoro';
+import { LeaveRoomLink } from './LeaveRoom';
 
 type Tab = 'focus' | 'todo' | 'today';
-
-const RANKS = [
-  ['Jod', '2h 10m'],
-  ['Mai', '1h 32m'],
-  ['feifei (you)', '50m'],
-  ['Ploy', '15m'],
-];
 
 /**
  * Study session: your Pomodoro, to-do and today's focus ranking in one card, because they're all part
  * of studying. Music has its own toolbar button (you often want music without studying).
+ * The to-do list is your account's, the same in every room; guests get the timer only.
  */
 export function StudyPanel({
+  roomId,
+  guest = false,
   pomo,
   subject,
   onSubject,
   className,
 }: {
+  roomId: string;
+  guest?: boolean;
   pomo: ReturnType<typeof usePomodoro>;
   subject: string;
   onSubject: (s: string) => void;
   className?: string;
 }) {
   const [tab, setTab] = useState<Tab>('focus');
-  const [todos, setTodos] = useState([
-    { text: 'Read chapter 7', done: true },
-    { text: 'Calculus exercises 1–10', done: false },
-    { text: 'OS flashcards', done: false },
-  ]);
+  const { todos, left, full, add, toggle, remove, clearDone } = useTodos();
+  const ranks = useRoomToday(roomId);
   const [draft, setDraft] = useState('');
-  const left = todos.filter((t) => !t.done).length;
 
   return (
     <section className={cn('panel flex flex-col gap-3 p-3', className)} aria-label="Study session">
@@ -64,7 +61,7 @@ export function StudyPanel({
           >
             <Icon className="size-3.5" />
             {label}
-            {id === 'todo' && left > 0 && (
+            {id === 'todo' && !guest && left > 0 && (
               <span className="rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">{left}</span>
             )}
           </button>
@@ -134,47 +131,104 @@ export function StudyPanel({
         </div>
       )}
 
-      {tab === 'todo' && (
-        <div className="flex flex-col gap-2">
-          {todos.map((t, i) => (
-            <label key={i} className="flex items-center gap-2 rounded-xl px-1 py-1 text-sm font-semibold hover:bg-muted/60">
-              <Checkbox checked={t.done} onCheckedChange={(v) => setTodos(todos.map((x, j) => (j === i ? { ...x, done: !!v } : x)))} />
-              <span className={cn(t.done && 'text-muted-foreground line-through')}>{t.text}</span>
-            </label>
-          ))}
-          <form
-            className="flex gap-1"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (draft.trim()) setTodos([...todos, { text: draft.trim(), done: false }]);
-              setDraft('');
-            }}
-          >
-            <Input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Add a task" className="h-9 rounded-xl" />
-            <button className="grid size-9 flex-none place-items-center rounded-xl bg-primary text-primary-foreground" aria-label="Add">
-              <Plus className="size-4" />
-            </button>
-          </form>
-        </div>
-      )}
+      {tab === 'todo' &&
+        (guest ? (
+          <GuestNote what="a to-do list that follows you into every room" />
+        ) : (
+          <div className="flex flex-col gap-2">
+            {todos.length === 0 && <p className="px-1 text-sm text-muted-foreground">Nothing yet. What’s first?</p>}
+            <ul className="flex max-h-56 flex-col gap-0.5 overflow-y-auto">
+              {todos.map((t) => (
+                <li key={t.id} className="group flex items-center gap-2 rounded-xl px-1 py-1 text-sm font-semibold hover:bg-muted/60">
+                  <Checkbox id={`todo-${t.id}`} checked={t.done} onCheckedChange={() => toggle(t.id)} />
+                  <label
+                    htmlFor={`todo-${t.id}`}
+                    className={cn('min-w-0 flex-1 break-words', t.done && 'text-muted-foreground line-through')}
+                  >
+                    {t.text}
+                  </label>
+                  <button
+                    onClick={() => remove(t.id)}
+                    aria-label={`Delete ${t.text}`}
+                    className="grid size-6 place-items-center rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-card focus-visible:opacity-100"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <form
+              className="flex gap-1"
+              onSubmit={(e) => {
+                e.preventDefault();
+                add(draft);
+                setDraft('');
+              }}
+            >
+              <Input
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                maxLength={120}
+                disabled={full}
+                placeholder={full ? `Full (${TODO_LIMIT}). Clear some done ones` : 'Add a task'}
+                className="h-9 rounded-xl"
+              />
+              <button className="grid size-9 flex-none place-items-center rounded-xl bg-primary text-primary-foreground" aria-label="Add">
+                <Plus className="size-4" />
+              </button>
+            </form>
+            <div className="flex items-center justify-between px-1 text-[11px] text-muted-foreground">
+              <span>Saved to your account, in every room</span>
+              {todos.some((t) => t.done) && (
+                <button onClick={clearDone} className="font-bold hover:text-foreground">
+                  Clear done
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
       {tab === 'today' && (
         <div className="flex flex-col gap-2">
-          <p className="text-xs font-bold text-muted-foreground">Focus in this room today</p>
-          <ol className="flex flex-col gap-1">
-            {RANKS.map(([name, time], i) => (
-              <li
-                key={name}
-                className={cn('flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm', name!.includes('you') && 'bg-secondary font-bold')}
-              >
-                <span className="w-5 text-center">{['🥇', '🥈', '🥉'][i] ?? i + 1}</span>
-                <span className="flex-1">{name}</span>
-                <span className="font-mono text-xs text-muted-foreground">{time}</span>
-              </li>
-            ))}
-          </ol>
-          <p className="text-[11px] text-muted-foreground">Counts finished focus stretches of 1 minute or more. 🔥 5-day streak.</p>
+          <p className="px-1 text-xs font-bold text-muted-foreground">Focus in this room today</p>
+          {ranks.length === 0 ? (
+            <p className="px-1 text-sm text-muted-foreground">Nobody yet. Start a timer and you’re first.</p>
+          ) : (
+            <ol className="flex flex-col gap-1">
+              {ranks.map((r, i) => (
+                <li
+                  key={r.user.id}
+                  className={cn('flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm', r.user.id === ME.id && 'bg-secondary font-bold')}
+                >
+                  <span className="w-5 text-center">{['🥇', '🥈', '🥉'][i] ?? i + 1}</span>
+                  <span className="flex-1 truncate">
+                    {r.user.name}
+                    {r.user.id === ME.id && ' (you)'}
+                  </span>
+                  <span className="font-mono text-xs text-muted-foreground">{formatMinutes(r.minutes)}</span>
+                </li>
+              ))}
+            </ol>
+          )}
+          <p className="px-1 text-[11px] text-muted-foreground">
+            Counts focus rounds of 1 minute or more, here today. Your week and friends are on the Focus page.
+          </p>
         </div>
       )}
     </section>
+  );
+}
+
+/** Guests have no account, so nothing is saved for them. */
+function GuestNote({ what }: { what: string }) {
+  return (
+    <div className="flex flex-col items-center gap-2 rounded-2xl bg-muted p-4 text-center">
+      <p className="text-sm font-semibold">Sign up to keep {what}.</p>
+      <LeaveRoomLink
+        href="/login?from=guest"
+        className="rounded-full bg-primary px-4 py-1.5 text-xs font-extrabold text-primary-foreground"
+      >
+        Sign up, keep your character
+      </LeaveRoomLink>
+    </div>
   );
 }

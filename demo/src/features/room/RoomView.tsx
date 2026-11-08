@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Camera, HeadphoneOff, Headphones, Leaf, Megaphone, MessageCircle, Mic, MicOff, MonitorUp, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
@@ -38,6 +37,8 @@ import { ChatPanel, type RoomLine } from './ChatPanel';
 import { PeoplePill, RoomPeople, type RoomPerson, type RoomRole } from './RoomPeople';
 import { RoomTools } from './RoomTools';
 import { StudyPanel } from './StudyPanel';
+import { LeaveRoomGuard, LeaveRoomLink } from './LeaveRoom';
+import { logFocus } from '@/lib/focus';
 import { usePomodoro, type Phase } from './usePomodoro';
 import { RoomCard } from './RoomCard';
 
@@ -133,8 +134,10 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const canStage = !guest && (server.roles.me === 'Owner' || server.roles.me === 'Mod');
 
   const onPhase = useCallback(
-    (phase: Phase) => {
+    (phase: Phase, focusedMin: number) => {
       room.setStatus(phase === 'idle' ? 'idle' : phase, subjectRef.current);
+      // The server counts a focus round when it ends or is stopped (1+ minute)
+      logFocus(focusedMin, subjectRef.current);
       // A focus block ran to its end (focus → break): one finished session
       if (phase === 'break') questProgress('pomo-2');
     },
@@ -261,6 +264,8 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
 
   const study = (
     <StudyPanel
+      roomId={server.id}
+      guest={guest}
       pomo={pomo}
       subject={subject}
       onSubject={(s) => ((subjectRef.current = s), setSubject(s), pomo.phase === 'focus' && room.setStatus('focus', s))}
@@ -304,10 +309,12 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const toggleChat = () => (compact ? setSheet(true) : setChatOpen(!chatOpen));
   const chatPressed = compact ? sheet : chatOpen;
 
-  const leave = () => {
+  // The one real way out; links elsewhere in the room come through the LeaveRoomGuard dialog first
+  const leave = (href?: string) => {
+    if (pomo.phase === 'focus') pomo.stop();
     setConnection(null);
     music.pause();
-    router.push(guest ? '/' : '/home');
+    router.push(href ?? (guest ? '/' : '/home'));
   };
 
   const dock = (className?: string) => (
@@ -381,170 +388,175 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   );
 
   return (
-    <div
-      className="fixed inset-0 flex overflow-hidden transition-[background] duration-1000"
-      style={{ background: `linear-gradient(180deg, ${light.background[0]}, ${light.background[1]})` }}
-    >
-      {/* The 3D view */}
-      <div className="relative min-w-0 flex-1 overflow-hidden">
-        <RoomCanvas
-          room={room}
-          motion={motion}
-          board={board}
-          light={light}
-          quality={quality}
-          bubbles={bubbles}
-          findId={findId}
-          onHint={setHint}
-          driverRef={driverRef}
-          zoomRequest={zoomRequest}
-          onZoom={setZoom}
-        />
-        <LabelLayer
-          board={board}
-          ids={ids}
-          players={room.state.players}
-          localId="me"
-          bubbles={bubbles}
-          voice={{
-            speaking,
-            micEnabled: micIds,
-            deafened: new Set(realPeople.filter((p) => p.deafened).map((p) => p.id)),
-            sharing: sharing && seated ? new Set(['me']) : new Set(),
-            away: away ? new Set(['me']) : new Set(),
-            stage: stage ? new Set(['me']) : new Set(),
-          }}
-          clockOffset={0}
-          npcIds={npcIds}
-          npcs={room.state.npcs}
-          reactions={[]}
-        />
+    <LeaveRoomGuard roomName={server.name} focusing={pomo.phase === 'focus'} onLeave={leave}>
+      <div
+        className="fixed inset-0 flex overflow-hidden transition-[background] duration-1000"
+        style={{ background: `linear-gradient(180deg, ${light.background[0]}, ${light.background[1]})` }}
+      >
+        {/* The 3D view */}
+        <div className="relative min-w-0 flex-1 overflow-hidden">
+          <RoomCanvas
+            room={room}
+            motion={motion}
+            board={board}
+            light={light}
+            quality={quality}
+            bubbles={bubbles}
+            findId={findId}
+            onHint={setHint}
+            driverRef={driverRef}
+            zoomRequest={zoomRequest}
+            onZoom={setZoom}
+          />
+          <LabelLayer
+            board={board}
+            ids={ids}
+            players={room.state.players}
+            localId="me"
+            bubbles={bubbles}
+            voice={{
+              speaking,
+              micEnabled: micIds,
+              deafened: new Set(realPeople.filter((p) => p.deafened).map((p) => p.id)),
+              sharing: sharing && seated ? new Set(['me']) : new Set(),
+              away: away ? new Set(['me']) : new Set(),
+              stage: stage ? new Set(['me']) : new Set(),
+            }}
+            clockOffset={0}
+            npcIds={npcIds}
+            npcs={room.state.npcs}
+            reactions={[]}
+          />
 
-        {photo ? (
-          <PhotoMode roomName={roomDef.name} onClose={() => setPhoto(false)} />
-        ) : (
-          <div>
-            {/* Room card, top left: the room itself (invite, settings, your view, Leave) */}
-            <RoomCard
-              server={server}
-              room={roomDef}
-              here={people.length}
-              guest={guest}
-              view={view}
-              onLeave={leave}
-              className={cn('absolute top-3 left-3 z-30', compact && 'right-3')}
-            />
+          {photo ? (
+            <PhotoMode roomName={roomDef.name} onClose={() => setPhoto(false)} />
+          ) : (
+            <div>
+              {/* Room card, top left: the room itself (invite, settings, your view, Leave) */}
+              <RoomCard
+                server={server}
+                room={roomDef}
+                here={people.length}
+                guest={guest}
+                view={view}
+                onLeave={() => leave()}
+                className={cn('absolute top-3 left-3 z-30', compact && 'right-3')}
+              />
 
-            {/* Top right: who's here, folded into a pill of faces; guests get a way in */}
-            <div className={cn('absolute right-3 flex items-start gap-2', compact ? 'top-[80px]' : 'top-3')}>
-              {guest && (
-                <Link href="/login?from=guest" className="panel px-3 py-2 text-xs font-extrabold text-primary hover:bg-secondary">
-                  Join {server.name} ✨
-                </Link>
-              )}
-              {!compact && <PeoplePill {...peopleProps} />}
-            </div>
-
-            {/* My tools (left rail), and Chat at the bottom left */}
-            <RoomTools
-              study={study}
-              pomo={pomo}
-              music={music}
-              touch={touch}
-              className={cn('absolute left-3 z-20', compact ? 'top-[132px]' : 'top-[88px]')}
-            />
-            {!compact && chatOpen && <div className="absolute bottom-3 left-3">{chat}</div>}
-
-            <MapMove lookId={lookId} mapId={look.mapId} onArrive={arrive} />
-
-            {/* Top centre: you're in a private zone, or talking to everyone */}
-            {(zone || stage) && (
-              <div className="pointer-events-none absolute top-3 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1.5 max-sm:top-[136px]">
-                {stage && (
-                  <button
-                    onClick={() => setStage(false)}
-                    className="pointer-events-auto flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-sm font-extrabold text-primary-foreground shadow-soft"
+              {/* Top right: who's here, folded into a pill of faces; guests get a way in */}
+              <div className={cn('absolute right-3 flex items-start gap-2', compact ? 'top-[80px]' : 'top-3')}>
+                {guest && (
+                  <LeaveRoomLink
+                    href="/login?from=guest"
+                    className="panel px-3 py-2 text-xs font-extrabold text-primary hover:bg-secondary"
                   >
-                    📢 Everyone hears you · Stop
-                  </button>
+                    Join {server.name} ✨
+                  </LeaveRoomLink>
                 )}
-                {zone && (
-                  <span className="panel rounded-full px-3 py-1.5 text-xs font-bold whitespace-nowrap">
-                    🔒 {zone.emoji} {zone.name} · only people here can hear you
-                  </span>
-                )}
+                {!compact && <PeoplePill {...peopleProps} />}
               </div>
-            )}
 
-            {/* Above the dock: what you can do right here (sit, pet, and share your screen once seated) */}
-            {(hint || seated) && (
-              <div className="absolute bottom-[100px] left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap">
-                <button
-                  onClick={() => {
-                    driverRef.current?.press('KeyE');
-                    driverRef.current?.release('KeyE');
-                  }}
-                  className="panel rounded-full px-4 py-2 text-sm font-bold"
-                >
-                  {seated
-                    ? seatKind === 'sofa'
-                      ? `🛋️ Lounging · ${touch ? 'tap' : 'press E'} to get up`
-                      : `📖 At a desk · ${touch ? 'tap' : 'press E'} to stand up`
-                    : hint?.kind === 'seat'
-                      ? `${touch ? 'Tap' : 'Press E'} to sit`
-                      : hint?.kind === 'pet'
-                        ? `${touch ? 'Tap' : 'Press E'} to pet ${hint.name} 🐾`
-                        : `${touch ? 'Tap' : 'Press E'}: Buddy Machine`}
-                </button>
-                {seated && seatKind !== 'sofa' && !guest && !compact && (
+              {/* My tools (left rail), and Chat at the bottom left */}
+              <RoomTools
+                study={study}
+                pomo={pomo}
+                music={music}
+                touch={touch}
+                className={cn('absolute left-3 z-20', compact ? 'top-[132px]' : 'top-[88px]')}
+              />
+              {!compact && chatOpen && <div className="absolute bottom-3 left-3">{chat}</div>}
+
+              <MapMove lookId={lookId} mapId={look.mapId} onArrive={arrive} />
+
+              {/* Top centre: you're in a private zone, or talking to everyone */}
+              {(zone || stage) && (
+                <div className="pointer-events-none absolute top-3 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1.5 max-sm:top-[136px]">
+                  {stage && (
+                    <button
+                      onClick={() => setStage(false)}
+                      className="pointer-events-auto flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-sm font-extrabold text-primary-foreground shadow-soft"
+                    >
+                      📢 Everyone hears you · Stop
+                    </button>
+                  )}
+                  {zone && (
+                    <span className="panel rounded-full px-3 py-1.5 text-xs font-bold whitespace-nowrap">
+                      🔒 {zone.emoji} {zone.name} · only people here can hear you
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Above the dock: what you can do right here (sit, pet, and share your screen once seated) */}
+              {(hint || seated) && (
+                <div className="absolute bottom-[100px] left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap">
                   <button
                     onClick={() => {
-                      setSharing(!sharing);
-                      toast(sharing ? 'Stopped sharing' : 'Sharing your screen with your table 🖥️');
+                      driverRef.current?.press('KeyE');
+                      driverRef.current?.release('KeyE');
                     }}
-                    className={cn(
-                      'flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-extrabold shadow-soft',
-                      sharing ? 'bg-destructive text-white' : 'bg-primary text-primary-foreground hover:bg-primary-ink',
-                    )}
+                    className="panel rounded-full px-4 py-2 text-sm font-bold"
                   >
-                    <MonitorUp className="size-4" /> {sharing ? 'Stop sharing' : 'Share screen to table'}
+                    {seated
+                      ? seatKind === 'sofa'
+                        ? `🛋️ Lounging · ${touch ? 'tap' : 'press E'} to get up`
+                        : `📖 At a desk · ${touch ? 'tap' : 'press E'} to stand up`
+                      : hint?.kind === 'seat'
+                        ? `${touch ? 'Tap' : 'Press E'} to sit`
+                        : hint?.kind === 'pet'
+                          ? `${touch ? 'Tap' : 'Press E'} to pet ${hint.name} 🐾`
+                          : `${touch ? 'Tap' : 'Press E'}: Buddy Machine`}
                   </button>
-                )}
-              </div>
-            )}
+                  {seated && seatKind !== 'sofa' && !guest && !compact && (
+                    <button
+                      onClick={() => {
+                        setSharing(!sharing);
+                        toast(sharing ? 'Stopped sharing' : 'Sharing your screen with your table 🖥️');
+                      }}
+                      className={cn(
+                        'flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-extrabold shadow-soft',
+                        sharing ? 'bg-destructive text-white' : 'bg-primary text-primary-foreground hover:bg-primary-ink',
+                      )}
+                    >
+                      <MonitorUp className="size-4" /> {sharing ? 'Stop sharing' : 'Share screen to table'}
+                    </button>
+                  )}
+                </div>
+              )}
 
-            {activities && (
-              <div className="absolute bottom-[96px] left-1/2 z-20 -translate-x-1/2">
-                <ActivitiesPanel quiet={roomDef.quiet} onClose={() => setActivities(false)} />
-              </div>
-            )}
+              {activities && (
+                <div className="absolute bottom-[96px] left-1/2 z-20 -translate-x-1/2">
+                  <ActivitiesPanel quiet={roomDef.quiet} onClose={() => setActivities(false)} />
+                </div>
+              )}
 
-            {dock('absolute bottom-3 left-1/2 -translate-x-1/2')}
+              {dock('absolute bottom-3 left-1/2 -translate-x-1/2')}
 
-            {/* Bottom right: zoom (V1). Touch screens pinch, and the tablet joystick has this corner */}
-            {!touch && <ZoomControl percent={zoom} onZoom={(z) => (zoomRequest.current = z)} className="absolute right-3 bottom-3" />}
+              {/* Bottom right: zoom (V1). Touch screens pinch, and the tablet joystick has this corner */}
+              {!touch && <ZoomControl percent={zoom} onZoom={(z) => (zoomRequest.current = z)} className="absolute right-3 bottom-3" />}
 
-            {touch && (
-              <Joystick
-                onMove={(x, z) => driverRef.current?.setStick(x, z)}
-                className={cn('absolute', compact ? 'bottom-[84px] left-4' : 'right-6 bottom-6')}
-              />
-            )}
-          </div>
-        )}
+              {touch && (
+                <Joystick
+                  onMove={(x, z) => driverRef.current?.setStick(x, z)}
+                  className={cn('absolute', compact ? 'bottom-[84px] left-4' : 'right-6 bottom-6')}
+                />
+              )}
+            </div>
+          )}
+        </div>
+
+        <ChannelOverlay server={server} target={chatTarget} onClose={() => setChatTarget(null)} />
+
+        {/* Phones: people and chat share one sheet */}
+        <Sheet open={sheet} onOpenChange={setSheet}>
+          <SheetContent side="bottom" className="gap-2 rounded-t-3xl p-3">
+            <SheetTitle className="sr-only">People and chat</SheetTitle>
+            <RoomPeople {...peopleProps} className="h-[48dvh] max-h-none w-full rounded-none border-0 shadow-none" />
+            {chat}
+          </SheetContent>
+        </Sheet>
       </div>
-
-      <ChannelOverlay server={server} target={chatTarget} onClose={() => setChatTarget(null)} />
-
-      {/* Phones: people and chat share one sheet */}
-      <Sheet open={sheet} onOpenChange={setSheet}>
-        <SheetContent side="bottom" className="gap-2 rounded-t-3xl p-3">
-          <SheetTitle className="sr-only">People and chat</SheetTitle>
-          <RoomPeople {...peopleProps} className="h-[48dvh] max-h-none w-full rounded-none border-0 shadow-none" />
-          {chat}
-        </SheetContent>
-      </Sheet>
-    </div>
+    </LeaveRoomGuard>
   );
 }
 

@@ -131,7 +131,9 @@ Two kinds of room anyone can walk into, named so people know what they get:
 
 ### Study
 
-- Pomodoro, a to-do list, focus stats and the Focus today ranking in every room.
+- A personal focus timer (25/5, 50/10), a private to-do list saved to your account, "this room today"
+  in the Study panel, and a Focus page with your numbers and Friends / Everyone rankings (Everyone is
+  opt-in, off by default under 18). No streaks. Details: [08-study-tools.md](v2/features/08-study-tools.md).
 
 ### Activities
 
@@ -207,7 +209,7 @@ Discord's boosts plus Plus plus coins was too much for a cosy app of small group
   finished"). Nothing like "with a friend" or "3 different people". Each pays once a day, so faking
   one gains almost nothing.
 - **Shown** on the Shop page and in 3D under My tools → 🎯 (with "1/3"); a toast when one's done.
-- **Not in v1:** weekly bonus and streaks (a focus streak may come with study tools, feature 8).
+- **Not in v1:** weekly bonus and streaks (feature 8 decided: no focus streak either).
 - **Rules:** never sell power, no ads in rooms, never charge to join. Paid perks are things that cost
   us money to run (capacity, HD video, storage, AI) or are purely cosmetic. Free limits are set by real cost.
 
@@ -271,7 +273,7 @@ The UI is approved in `demo/` first, then a spec is written to `docs/v2/features
 | 5   | Friends                                                   | [05-friends.md](v2/features/05-friends.md)                   |
 | 6   | The 3D room                                               | [06-3d-room.md](v2/features/06-3d-room.md)                   |
 | 7   | Map templates and the editor                              | [07-maps.md](v2/features/07-maps.md)                         |
-| 8   | Study tools                                               |                                                              |
+| 8   | Study tools                                               | [08-study-tools.md](v2/features/08-study-tools.md)           |
 | 9   | Activity framework                                        |                                                              |
 | 10  | Watch together, jukebox, photo mode                       |                                                              |
 | 11  | Pick a Side, whiteboard, drawing telephone                |                                                              |
