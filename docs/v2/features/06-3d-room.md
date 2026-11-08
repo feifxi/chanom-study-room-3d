@@ -21,6 +21,10 @@ with client prediction (see the root `CLAUDE.md`).
 - Keys or the joystick take over at once. Clicking from a seat stands you up first.
 - Dragging still turns the camera: a click that moved more than a few pixels doesn't count.
 - If someone stands in the way, you stop instead of pushing forever.
+- **A click that closes a panel only closes it** (like menus everywhere): with a HUD panel open, the
+  first click on the room closes it and you don't move; the next click walks. Decided 2026-11-09.
+- **On by default on every device** (new players may not know WASD; phones need it). Turn it off in the
+  room card's "Your view" or Settings → Controls (which also lists the keys). Saved per browser.
 
 ## Proximity voice
 

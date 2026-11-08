@@ -6,6 +6,7 @@ import { QuestList } from '@/components/app/QuestList';
 import { useQuests } from '@/lib/quests';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { KEYS } from '@/lib/controls';
 import { MusicPanel } from '../music/MusicPanel';
 import { TRACKS } from '../music/tracks';
 import type { Music } from '../music/useMusic';
@@ -143,15 +144,9 @@ function ToolCard({ title, note, onClose, children }: { title: string; note?: st
   );
 }
 
-const KEYS: [string, string][] = [
-  ['WASD / arrows', 'Walk (Shift to run)'],
-  ['E', 'Sit or stand, pet a cat, use the Buddy Machine'],
-  ['Enter', 'Chat'],
-  ['Drag / scroll', 'Turn the camera / zoom'],
-];
-
 const TOUCH: [string, string][] = [
   ['Joystick', 'Walk'],
+  ['Tap the floor', 'Walk there'],
   ['Button', 'Sit, stand up, pet, open the machine'],
   ['Drag / pinch', 'Turn the camera / zoom'],
 ];

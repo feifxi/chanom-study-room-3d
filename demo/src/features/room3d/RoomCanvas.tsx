@@ -5,6 +5,8 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { ROOM, SPAWN } from '@study/shared';
+import { useClickToWalk } from '@/lib/controls';
+import { pressClosedPanel } from '../room/useDismiss';
 import { GachaMachine } from '../npc/GachaMachine';
 import { NpcAvatar } from '../npc/NpcAvatar';
 import { Avatar, type LocalMotion } from './Avatar';
@@ -90,12 +92,14 @@ export function RoomCanvas({ room, motion, board, light, quality, bubbles, findI
 }
 
 /**
- * Click or tap the floor to walk there. An invisible plane over the floor takes the click (furniture
+ * Click or tap the floor to walk there (unless turned off in Your view / Settings → Controls). A click
+ * that closes an open panel only closes it. An invisible plane over the floor takes the click (furniture
  * has no handlers, so clicks on it land here too and the path ends next to it). A drag turns the
  * camera instead, so clicks that moved more than a few pixels are ignored.
  */
 function ClickToWalk({ driverRef }: { driverRef: React.RefObject<LocalPlayerDriver | null> }) {
   const marker = useRef<THREE.Mesh>(null);
+  const [enabled] = useClickToWalk();
   useFrame((state) => {
     const dest = driverRef.current?.dest;
     if (!marker.current) return;
@@ -111,7 +115,7 @@ function ClickToWalk({ driverRef }: { driverRef: React.RefObject<LocalPlayerDriv
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, 0.02, 0]}
         onClick={(e) => {
-          if (e.delta > 6) return;
+          if (!enabled || e.delta > 6 || pressClosedPanel()) return;
           e.stopPropagation();
           driverRef.current?.goTo(e.point.x, e.point.z);
         }}

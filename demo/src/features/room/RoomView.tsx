@@ -2,7 +2,19 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Camera, HeadphoneOff, Headphones, Leaf, Megaphone, MessageCircle, Mic, MicOff, MonitorUp, Sparkles } from 'lucide-react';
+import {
+  Camera,
+  HeadphoneOff,
+  Headphones,
+  Leaf,
+  Megaphone,
+  MessageCircle,
+  Mic,
+  MicOff,
+  MonitorUp,
+  MousePointerClick,
+  Sparkles,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { SEAT_BY_ID, SPAWN } from '@study/shared';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
@@ -37,6 +49,7 @@ import { ChatPanel, type RoomLine } from './ChatPanel';
 import { PeoplePill, RoomPeople, type RoomPerson, type RoomRole } from './RoomPeople';
 import { RoomTools } from './RoomTools';
 import { StudyPanel } from './StudyPanel';
+import { useClickToWalk } from '@/lib/controls';
 import { LeaveRoomGuard, LeaveRoomLink } from './LeaveRoom';
 import { logFocus } from '@/lib/focus';
 import { usePomodoro, type Phase } from './usePomodoro';
@@ -370,6 +383,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
       <DockBtn icon={Sparkles} label="Activities" compact={compact} pressed={activities} onClick={() => setActivities(!activities)} />
     </nav>
   );
+  const [clickToWalk, setClickToWalk] = useClickToWalk();
   // Battery saver is the one thing that's yours alone: the time of day is the room's (owner's) choice
   const view = (
     <div className="flex flex-col gap-1.5">
@@ -383,6 +397,17 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
       >
         <Leaf className="size-3.5" /> Battery saver
         <span className="ml-auto">{saver ? 'On' : 'Off'}</span>
+      </button>
+      <button
+        onClick={() => setClickToWalk(!clickToWalk)}
+        aria-pressed={clickToWalk}
+        className={cn(
+          'flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-extrabold',
+          clickToWalk ? 'bg-mint text-mint-ink' : 'bg-card text-muted-foreground hover:text-foreground',
+        )}
+      >
+        <MousePointerClick className="size-3.5" /> Click to walk
+        <span className="ml-auto">{clickToWalk ? 'On' : 'Off'}</span>
       </button>
     </div>
   );

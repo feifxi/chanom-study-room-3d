@@ -4,7 +4,7 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { Bell, Crown, KeyRound, Mic, Palette, Shield, Shirt, User } from 'lucide-react';
+import { Bell, Crown, Gamepad2, KeyRound, Mic, Palette, Shield, Shirt, User } from 'lucide-react';
 import { toast } from 'sonner';
 import type { AvatarLook } from '@study/shared';
 import { PALETTES, usePalette } from '@/components/Providers';
@@ -19,6 +19,7 @@ import { AccountTab } from './AccountTab';
 import { cn } from '@/lib/utils';
 import { ME } from '@/lib/mock';
 import { useGlobalOptIn } from '@/lib/focus';
+import { KEYS, useClickToWalk } from '@/lib/controls';
 
 const AvatarPreview = dynamic(() => import('@/features/avatar/AvatarPreview').then((m) => m.AvatarPreview), { ssr: false });
 
@@ -27,6 +28,7 @@ const TABS = [
   ['character', 'My character', Shirt],
   ['appearance', 'Appearance', Palette],
   ['voice', 'Voice & sound', Mic],
+  ['controls', 'Controls', Gamepad2],
   ['notifications', 'Notifications', Bell],
   ['privacy', 'Privacy & safety', Shield],
   ['plus', 'Plus & billing', Crown],
@@ -67,6 +69,8 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
               <Appearance />
             ) : tab === 'voice' ? (
               <Voice />
+            ) : tab === 'controls' ? (
+              <Controls />
             ) : tab === 'plus' ? (
               <PlusTab />
             ) : tab === 'account' ? (
@@ -200,6 +204,37 @@ function Voice() {
       <Row label="Fade my music near shared audio" hint="Your lo-fi gets quieter near the jukebox or the TV." defaultChecked />
       <Row label="Lower music while people talk" defaultChecked />
       <Row label="Noise suppression" defaultChecked />
+    </div>
+  );
+}
+
+/** How you move. Click to walk is on by default everywhere; keys and the joystick always work. */
+function Controls() {
+  const [clickToWalk, setClickToWalk] = useClickToWalk();
+  return (
+    <div className="flex flex-col gap-6">
+      <label className="flex items-center justify-between gap-4">
+        <span>
+          <span className="block text-sm font-bold">Click to walk</span>
+          <span className="block text-xs text-muted-foreground">
+            Click or tap the floor to walk there. Keys and the joystick always work. A click that closes a panel never walks.
+          </span>
+        </span>
+        <Switch checked={clickToWalk} onCheckedChange={setClickToWalk} />
+      </label>
+      <section className="flex flex-col gap-2">
+        <p className="text-sm font-extrabold">Keys</p>
+        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
+          {KEYS.map(([k, what]) => (
+            <div key={k} className="contents">
+              <dt>
+                <kbd className="rounded-md border bg-muted px-1.5 py-0.5 font-mono text-xs">{k}</kbd>
+              </dt>
+              <dd className="text-muted-foreground">{what}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
     </div>
   );
 }
