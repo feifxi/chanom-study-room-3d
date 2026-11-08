@@ -141,14 +141,28 @@ export function LobbyCard({
   );
 }
 
-export function PlayStrip({ st, onLeave, onEnd, isHost }: { st: SpotState; onLeave: () => void; onEnd: () => void; isHost: boolean }) {
+export function PlayStrip({
+  st,
+  verb,
+  onLeave,
+  onEnd,
+  isHost,
+}: {
+  st: SpotState;
+  /** "playing" for games, "watching" for the big screen. */
+  verb: string;
+  onLeave: () => void;
+  onEnd: () => void;
+  isHost: boolean;
+}) {
   return (
     <div className="panel flex items-center gap-2 rounded-full py-1 pr-1 pl-3 text-xs font-extrabold whitespace-nowrap">
       <span>
         {st.game.emoji} {st.game.name}
       </span>
       <span className="font-semibold text-muted-foreground">
-        · {st.players.length} playing{st.nextRound.length > 0 && ` · ${st.nextRound.length} next round`}
+        · {st.players.length} {verb}
+        {st.nextRound.length > 0 && ` · ${st.nextRound.length} next round`}
       </span>
       {isHost && (
         <button onClick={onEnd} className="rounded-full px-2.5 py-1 hover:bg-muted">

@@ -5,7 +5,17 @@ import { useTheme } from 'next-themes';
 import { Monitor, Moon, Palette, Sun } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { CROWDS, goAwayNow, publishMapUpdate, setCrowd, setManyRooms, startPickASide, useCrowd, useManyRooms } from '@/lib/demoCrowd';
+import {
+  CROWDS,
+  goAwayNow,
+  publishMapUpdate,
+  setCrowd,
+  putOnVideo,
+  setManyRooms,
+  startPickASide,
+  useCrowd,
+  useManyRooms,
+} from '@/lib/demoCrowd';
 import { nudgeQuests } from '@/lib/quests';
 import { cn } from '@/lib/utils';
 import { PALETTES, usePalette } from './Providers';
@@ -111,6 +121,9 @@ export function DemoToolbar() {
         </button>
         <button onClick={nudgeQuests} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
           🎯 One step on every quest (skip the waiting)
+        </button>
+        <button onClick={putOnVideo} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
+          📺 Someone puts a video on the big screen (in a 3D room)
         </button>
         <button onClick={startPickASide} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
           🗳️ Someone starts Pick a Side (in a 3D room; invite card)

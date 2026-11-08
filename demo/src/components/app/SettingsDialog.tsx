@@ -201,7 +201,7 @@ function Voice() {
         <Label>Room sound volume</Label>
         <Slider defaultValue={[85]} max={100} />
       </div>
-      <Row label="Fade my music near shared audio" hint="Your lo-fi gets quieter near the jukebox or the TV." defaultChecked />
+      <Row label="Fade my music while I watch" hint="Your lo-fi gets quieter while you’re watching the big screen." defaultChecked />
       <Row label="Lower music while people talk" defaultChecked />
       <Row label="Noise suppression" defaultChecked />
     </div>

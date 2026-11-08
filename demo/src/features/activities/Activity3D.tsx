@@ -1,11 +1,11 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { CHAIR_BACK } from '../room3d/Avatar';
-import type { SpotState } from './hub';
-import { GAME_SEATS, GAME_TABLE, SPOTS, type SpotId } from './spots';
+import type { SpotState, WatchState } from './hub';
+import { GAME_SEATS, GAME_TABLE, SPOTS, TV, type SpotId } from './spots';
 
 /**
  * The round game table and its four stools (static, so they go inside the room's StaticBatch).
@@ -51,15 +51,83 @@ export function GameTable() {
   );
 }
 
+/** The big screen's frame on the left wall (static); the picture is ScreenSurface. */
+export function BigScreen() {
+  return (
+    <group position={[TV.x, TV.y, TV.z]}>
+      <mesh castShadow>
+        <boxGeometry args={[0.08, TV.height + 0.14, TV.width + 0.14]} />
+        <meshStandardMaterial color="#2b2430" roughness={0.6} />
+      </mesh>
+      {/* A low shelf with two little speakers under it */}
+      <mesh position={[0.2, -TV.height / 2 - 0.35, 0]} castShadow>
+        <boxGeometry args={[0.36, 0.06, TV.width * 0.8]} />
+        <meshStandardMaterial color="#8a5a3a" />
+      </mesh>
+      {[-1, 1].map((sz) => (
+        <mesh key={sz} position={[0.2, -TV.height / 2 - 0.22, sz * TV.width * 0.33]} castShadow>
+          <boxGeometry args={[0.2, 0.22, 0.16]} />
+          <meshStandardMaterial color="#4a3443" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+/**
+ * What passers-by see on the big screen: the video's thumbnail while something's on (the video
+ * itself plays in the watch panel), a soft glow when paused, dark when off.
+ */
+function ScreenSurface({ videoId, paused }: { videoId: string | null; paused: boolean }) {
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+  useEffect(() => {
+    if (!videoId) return;
+    let alive = true;
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin('anonymous');
+    loader.load(
+      `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+      (t) => {
+        t.colorSpace = THREE.SRGBColorSpace;
+        if (alive) setTexture(t);
+        else t.dispose();
+      },
+      undefined,
+      // No thumbnail (offline, blocked): the screen just glows
+      () => alive && setTexture(null),
+    );
+    return () => {
+      alive = false;
+      setTexture((old) => (old?.dispose(), null));
+    };
+  }, [videoId]);
+  const on = !!videoId;
+  return (
+    <mesh position={[TV.x + 0.045, TV.y, TV.z]} rotation={[0, Math.PI / 2, 0]} userData={{ dynamic: true }}>
+      <planeGeometry args={[TV.width, TV.height]} />
+      <meshStandardMaterial
+        key={texture ? 'pic' : 'plain'}
+        map={on ? texture : null}
+        color={on ? (texture ? (paused ? '#9a9a9a' : '#ffffff') : '#5a6fd6') : '#15131a'}
+        emissive={on ? '#ffffff' : '#000000'}
+        emissiveMap={on ? texture : null}
+        emissiveIntensity={on ? (paused ? 0.25 : 0.6) : 0}
+        roughness={0.4}
+      />
+    </mesh>
+  );
+}
+
 const RING_COLOR: Record<string, string> = { gathering: '#ffb3cf', playing: '#ff6fa8', results: '#ffd36e' };
 
 /**
  * What passers-by see of each activity (the "3D world" layer): a glowing ring around a spot that's
  * gathering or playing, cards on the game table mid-round, and Pick a Side's two halves on the floor.
  */
-export function ActivityLayer3D({ spots }: { spots: Record<SpotId, SpotState> }) {
+export function ActivityLayer3D({ spots, watch }: { spots: Record<SpotId, SpotState>; watch: WatchState }) {
   return (
     <>
+      <ScreenSurface videoId={watch.now?.id ?? null} paused={watch.paused} />
       {SPOTS.filter((s) => s.built && spots[s.id].phase !== 'free').map((s) => (
         <AreaRing key={s.id} x={s.area.x} z={s.area.z} r={s.area.r} phase={spots[s.id].phase} />
       ))}

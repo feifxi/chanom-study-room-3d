@@ -162,3 +162,9 @@ export const PICK_A_SIDE_EVENT = 'connecta-demo:pick-a-side';
 export function startPickASide() {
   window.dispatchEvent(new Event(PICK_A_SIDE_EVENT));
 }
+
+/** Demo: someone walks to the big screen and puts a video on (feature 10). */
+export const WATCH_EVENT = 'connecta-demo:watch';
+export function putOnVideo() {
+  window.dispatchEvent(new Event(WATCH_EVENT));
+}

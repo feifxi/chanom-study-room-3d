@@ -32,6 +32,9 @@ export const GAME_SEATS: Seat[] = [0, 1, 2, 3].map((i) => {
 
 export const isGameSeat = (seatId: string) => seatId.startsWith('game-');
 
+/** The big screen on the left wall, between the Buddy Machine and the reading nook, facing into the room. */
+export const TV = { x: -9.88, z: -0.1, width: 2.6, height: 1.46, y: 1.55 } as const;
+
 // Register the table with the shared seats and collisions once (module state survives hot reloads)
 if (!SEAT_BY_ID.has('game-0')) {
   SEATS.push(...GAME_SEATS);
@@ -39,7 +42,7 @@ if (!SEAT_BY_ID.has('game-0')) {
   OBSTACLES.push({ kind: 'circle', x: GAME_TABLE.x, z: GAME_TABLE.z, r: GAME_TABLE.r });
 }
 
-export type SpotId = 'cards' | 'floor' | 'tv' | 'board' | 'jukebox';
+export type SpotId = 'cards' | 'floor' | 'tv' | 'board';
 
 export interface Game {
   id: string;
@@ -106,22 +109,10 @@ export const SPOTS: Spot[] = [
     kind: 'drop-in',
     roomWide: false,
     games: [{ id: 'watch', name: 'Watch together', emoji: '📺', min: 1, max: 100 }],
-    area: { x: 0, z: -5, r: 2 },
-    built: false,
+    area: { x: TV.x + 1.9, z: TV.z, r: 1.7 },
+    built: true,
     feature: 10,
     tint: 'bg-sky',
-  },
-  {
-    id: 'jukebox',
-    name: 'Jukebox',
-    emoji: '📻',
-    kind: 'drop-in',
-    roomWide: false,
-    games: [{ id: 'jukebox', name: 'Jukebox', emoji: '📻', min: 1, max: 100 }],
-    area: { x: -8, z: 4, r: 2 },
-    built: false,
-    feature: 10,
-    tint: 'bg-peach',
   },
   {
     id: 'board',
@@ -130,7 +121,7 @@ export const SPOTS: Spot[] = [
     kind: 'drop-in',
     roomWide: false,
     games: [{ id: 'board', name: 'Whiteboard', emoji: '🎨', min: 1, max: 12 }],
-    area: { x: -9, z: 0, r: 1.5 },
+    area: { x: -8.6, z: -4.6, r: 1.4 },
     built: false,
     feature: 11,
     tint: 'bg-lavender',

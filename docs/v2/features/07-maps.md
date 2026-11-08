@@ -9,7 +9,7 @@ Try it: `pnpm --filter @study/demo demo:dev`, then:
 - http://localhost:3100/servers/chanom/rooms/library: room card (top left) → Settings → Map & look.
   Choose Always
   night and Save. The room changes live.
-- http://localhost:3100/admin/maps: the editor. The Cat Café draft is missing a jukebox and a
+- http://localhost:3100/admin/maps: the editor. The Cat Café draft is missing a big screen and a
   second private zone, so Publish is off until you add them.
 
 ## One rule: every map can do everything
@@ -23,7 +23,6 @@ whichever map a room picks, every activity works there.
 | Lounge        | a corner to hang out        | sofa by the shelves   | beanbags, cat tower  | campfire circle      |
 | Private zones | at least 2                  | reading nook, alcove  | window booths        | tent, telescope deck |
 | Big screen    | watch together              | projector screen      | TV on the wall       | outdoor cinema sheet |
-| Jukebox       | room music                  | old radio             | jukebox              | boombox              |
 | Game table    | cards and board games       | round table, 4 stools | card table           | low table with cards |
 | Open floor    | 12 m²+ for Pick a Side      | the middle rug        | by the counter       | the open deck        |
 | Whiteboard    | draw together               | chalkboard            | menu board           | chalk wall           |

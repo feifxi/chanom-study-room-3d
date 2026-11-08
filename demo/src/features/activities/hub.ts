@@ -73,8 +73,34 @@ export interface Invite {
   at: number;
 }
 
+/** A YouTube video on the big screen. */
+export interface Video {
+  id: string;
+  title: string;
+  by: string;
+}
+
+/**
+ * Watch together (feature 10): one timeline for everyone watching. The server keeps where the video
+ * was at `startedAt` (`offset`, seconds) and whether it's paused; each player seeks to match.
+ * Anyone watching can play, pause, seek, skip and add to the queue.
+ */
+export interface WatchState {
+  now: Video | null;
+  queue: Video[];
+  offset: number;
+  startedAt: number;
+  paused: boolean;
+}
+
+/** Nobody watching for this long: the screen switches off and the queue clears. */
+const EMPTY_SCREEN_MS = 30_000;
+
+export const watchPosition = (w: WatchState, now = Date.now()) => (w.paused ? w.offset : w.offset + (now - w.startedAt) / 1000);
+
 export class ActivityHub {
   readonly spots = Object.fromEntries(SPOTS.map((s) => [s.id, fresh(s)])) as Record<SpotId, SpotState>;
+  readonly watch: WatchState = { now: null, queue: [], offset: 0, startedAt: 0, paused: false };
   private listeners = new Set<() => void>();
   private snapshot = '';
   version = 0;
@@ -96,7 +122,7 @@ export class ActivityHub {
   getVersion = () => this.version;
 
   private changed() {
-    const snap = JSON.stringify(this.spots) + [...this.dismissed].join();
+    const snap = JSON.stringify(this.spots) + JSON.stringify(this.watch) + [...this.dismissed].join();
     if (snap === this.snapshot) return;
     this.snapshot = snap;
     this.version++;
@@ -123,6 +149,7 @@ export class ActivityHub {
     return SPOTS.find((s) => {
       const st = this.spots[s.id];
       if (st.phase === 'results') return st.results.includes(id) && this.inArea(s, id);
+      if (s.kind === 'drop-in') return st.phase === 'playing' && this.inArea(s, id);
       return st.phase !== 'free' && (st.players.includes(id) || st.nextRound.includes(id));
     });
   }
@@ -151,6 +178,15 @@ export class ActivityHub {
       // Pressed Leave but still standing there: forget it once they step out
       st.optedOut = st.optedOut.filter((id) => here.includes(id));
       const counted = here.filter((id) => !st.optedOut.includes(id));
+
+      // Drop-in (the big screen): whoever's in the area is in; no rounds, no lobby, no knock-outs
+      if (spot.kind === 'drop-in') {
+        if (st.phase !== 'playing') continue;
+        st.players = counted;
+        if (counted.length) st.since = now;
+        else if (now - st.since > EMPTY_SCREEN_MS) this.screenOff();
+        continue;
+      }
 
       if (st.phase === 'free') {
         // Sitting at a free table starts a lobby; standing spots need E (see start)
@@ -184,6 +220,58 @@ export class ActivityHub {
       }
     }
     this.changed();
+  }
+
+  // --- Watch together ---
+
+  /** Put a video on: plays now if the screen is off, otherwise joins the queue. */
+  putOn(video: Video, now = Date.now()) {
+    const st = this.spots.tv;
+    if (st.phase === 'free') Object.assign(st, fresh(spotById('tv')), { phase: 'playing', hostId: video.by, since: now });
+    if (this.watch.now) this.watch.queue.push(video);
+    else Object.assign(this.watch, { now: video, offset: 0, startedAt: now, paused: false });
+    this.changed();
+  }
+
+  setPaused(paused: boolean, now = Date.now()) {
+    const w = this.watch;
+    if (w.paused === paused) return;
+    Object.assign(w, { offset: watchPosition(w, now), startedAt: now, paused });
+    this.changed();
+  }
+
+  seek(seconds: number, now = Date.now()) {
+    Object.assign(this.watch, { offset: Math.max(0, seconds), startedAt: now });
+    this.changed();
+  }
+
+  /** Skip, or the video ended: next in the queue, or the screen goes quiet. */
+  next(now = Date.now()) {
+    const w = this.watch;
+    const up = w.queue.shift() ?? null;
+    Object.assign(w, { now: up, offset: 0, startedAt: now, paused: false });
+    if (!up) this.screenOff();
+    this.changed();
+  }
+
+  removeQueued(index: number) {
+    this.watch.queue.splice(index, 1);
+    this.changed();
+  }
+
+  private screenOff() {
+    Object.assign(this.watch, { now: null, queue: [], offset: 0, paused: false });
+    Object.assign(this.spots.tv, fresh(spotById('tv')));
+  }
+
+  /** Demo: someone walks to the big screen and puts something on. */
+  scriptWatch() {
+    if (this.watch.now) return;
+    const id = this.freePeople()[0];
+    if (!id) return;
+    const tv = spotById('tv');
+    this.room.sendTo(id, ringSpot(tv, 0));
+    this.later(2500, () => this.putOn({ id: 'lTRiuFIWV54', title: '1 A.M Study Session 📚 [lofi hip hop]', by: id }));
   }
 
   /** E at a standing spot: open a lobby there, with you as host. */
@@ -227,7 +315,7 @@ export class ActivityHub {
   leave(spotId: SpotId, id: string) {
     const spot = spotById(spotId);
     const st = this.spots[spotId];
-    if (st.phase === 'playing' && st.players.includes(id)) this.knockOut(st, id, 'left');
+    if (st.phase === 'playing' && st.players.includes(id) && spot.kind === 'rounds') this.knockOut(st, id, 'left');
     st.players = st.players.filter((x) => x !== id);
     st.nextRound = st.nextRound.filter((x) => x !== id);
     if (!st.optedOut.includes(id)) st.optedOut.push(id);

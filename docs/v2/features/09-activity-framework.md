@@ -28,7 +28,6 @@ time; different spots run at the same time (TV + a card game + Pick a Side).
 | Game table | card games (feature 12) | sit on a stool   | rounds  | no        |
 | Open floor | Pick a Side, AI quiz    | step in the ring | rounds  | yes       |
 | Big screen | watch together (10)     | step in the area | drop-in | no        |
-| Jukebox    | the room's music (10)   | step in the area | drop-in | no        |
 | Whiteboard | draw together (11)      | step in the area | drop-in | no        |
 
 - **Rounds:** people who arrive mid-round play the next one (until then they watch in 3D).

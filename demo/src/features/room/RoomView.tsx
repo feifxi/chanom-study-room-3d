@@ -14,6 +14,7 @@ import {
   MonitorUp,
   MousePointerClick,
   Sparkles,
+  X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SEAT_BY_ID, SPAWN } from '@study/shared';
@@ -48,7 +49,8 @@ import { ActivityLayer3D } from '../activities/Activity3D';
 import { AwayBanner, InviteStack, LobbyCard, NextRoundCard, PlayStrip, ResultsCard, type Who } from '../activities/ActivityHud';
 import { GamePlaceholder } from '../activities/GamePlaceholder';
 import { isGameSeat, spotById, type Spot } from '../activities/spots';
-import { PICK_A_SIDE_EVENT } from '@/lib/demoCrowd';
+import { PICK_A_SIDE_EVENT, WATCH_EVENT } from '@/lib/demoCrowd';
+import { AddVideo, WatchPanel } from '../activities/WatchPanel';
 import { ChannelOverlay, type ChatTarget } from './ChannelOverlay';
 import { PhotoMode } from './PhotoMode';
 import { ChatPanel, type RoomLine } from './ChatPanel';
@@ -138,11 +140,14 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     // Demo: someone starts Pick a Side a little after you arrive (or from the Demo tab)
     const t = setTimeout(() => hub.scriptPickASide(), 25_000);
     const onDemo = () => hub.scriptPickASide();
+    const onWatch = () => hub.scriptWatch();
     window.addEventListener(PICK_A_SIDE_EVENT, onDemo);
+    window.addEventListener(WATCH_EVENT, onWatch);
     return () => {
       clearInterval(id);
       clearTimeout(t);
       window.removeEventListener(PICK_A_SIDE_EVENT, onDemo);
+      window.removeEventListener(WATCH_EVENT, onWatch);
       hub.dispose();
     };
   }, [hub]);
@@ -193,7 +198,11 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     const id = setInterval(() => room.state.players.size > 1 && questProgress('room-30'), 60_000);
     return () => clearInterval(id);
   }, [room]);
-  const music = useMusic(speaking.size > 0);
+  // Your lo-fi fades while people talk, and while you're watching the big screen
+  const watchingTv = hub.mine('me')?.id === 'tv';
+  const music = useMusic(speaking.size > 0 || watchingTv);
+  const [watchMini, setWatchMini] = useState(false);
+  const [puttingOn, setPuttingOn] = useState(false);
 
   // Stay "connected" while browsing chats elsewhere, like a voice channel
   useEffect(() => {
@@ -318,6 +327,10 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     roomDef.roomWideGames &&
     hub.spots.floor.phase === 'free' &&
     Math.hypot(me.x - floor.area.x, me.z - floor.area.z) <= floor.area.r;
+  const tv = spotById('tv');
+  const atFreeTv = !seated && hub.spots.tv.phase === 'free' && Math.hypot(me.x - tv.area.x, me.z - tv.area.z) <= tv.area.r;
+  // Walked away from the screen with the "put something on" card open: close it
+  const showPutOn = puttingOn && atFreeTv;
 
   /** "Go there": run to a free seat (then sit yourself), or into the ring (being there is joining). */
   const goThere = (spot: Spot) => {
@@ -345,14 +358,16 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     }
   };
   useEffect(() => {
-    if (!atFreeFloor) return;
+    if (!atFreeFloor && !atFreeTv) return;
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement | null;
-      if (e.code === 'KeyE' && !e.repeat && !(el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA'))) hub.start('floor', 'me');
+      if (e.code !== 'KeyE' || e.repeat || (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA'))) return;
+      if (atFreeFloor) hub.start('floor', 'me');
+      else setPuttingOn(true);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [atFreeFloor, hub]);
+  }, [atFreeFloor, atFreeTv, hub]);
 
   const study = (
     <StudyPanel
@@ -519,27 +534,30 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
             zoomRequest={zoomRequest}
             onZoom={setZoom}
           >
-            <ActivityLayer3D spots={hub.spots} />
+            <ActivityLayer3D spots={hub.spots} watch={hub.watch} />
           </RoomCanvas>
-          <LabelLayer
-            board={board}
-            ids={ids}
-            players={room.state.players}
-            localId="me"
-            bubbles={bubbles}
-            voice={{
-              speaking,
-              micEnabled: micIds,
-              deafened: new Set(realPeople.filter((p) => p.deafened).map((p) => p.id)),
-              sharing: sharing && seated ? new Set(['me']) : new Set(),
-              away: away ? new Set(['me']) : new Set(),
-              stage: stage ? new Set(['me']) : new Set(),
-            }}
-            clockOffset={0}
-            npcIds={npcIds}
-            npcs={room.state.npcs}
-            reactions={[]}
-          />
+          {/* Photos never show names: labels hide in photo mode so the preview matches the photo */}
+          <div className={cn(photo && 'hidden')}>
+            <LabelLayer
+              board={board}
+              ids={ids}
+              players={room.state.players}
+              localId="me"
+              bubbles={bubbles}
+              voice={{
+                speaking,
+                micEnabled: micIds,
+                deafened: new Set(realPeople.filter((p) => p.deafened).map((p) => p.id)),
+                sharing: sharing && seated ? new Set(['me']) : new Set(),
+                away: away ? new Set(['me']) : new Set(),
+                stage: stage ? new Set(['me']) : new Set(),
+              }}
+              clockOffset={0}
+              npcIds={npcIds}
+              npcs={room.state.npcs}
+              reactions={[]}
+            />
+          </div>
 
           {photo ? (
             <PhotoMode roomName={roomDef.name} onClose={() => setPhoto(false)} />
@@ -602,18 +620,21 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                     <div className="pointer-events-auto flex flex-col items-center gap-1.5">
                       <PlayStrip
                         st={myState}
+                        verb={mySpot.kind === 'drop-in' ? 'watching' : 'playing'}
                         isHost={myState.hostId === 'me'}
                         onLeave={() => leaveActivity(mySpot)}
                         onEnd={() => hub.end(mySpot.id)}
                       />
                       {myState.awaySince.me && <AwayBanner since={myState.awaySince.me} now={now} />}
-                      <GamePlaceholder
-                        spot={mySpot}
-                        st={myState}
-                        now={now}
-                        onFinish={() => hub.finish(mySpot.id)}
-                        onSomeoneLeaves={() => hub.someoneLeaves(mySpot.id)}
-                      />
+                      {mySpot.kind === 'rounds' && (
+                        <GamePlaceholder
+                          spot={mySpot}
+                          st={myState}
+                          now={now}
+                          onFinish={() => hub.finish(mySpot.id)}
+                          onSomeoneLeaves={() => hub.someoneLeaves(mySpot.id)}
+                        />
+                      )}
                     </div>
                   )}
                   {stage && (
@@ -665,6 +686,61 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                   )}
                 </div>
               )}
+              {/* Watch together: the big panel under the strip, or a small player in the corner */}
+              {watchingTv && hub.watch.now && (
+                <div
+                  className={cn(
+                    'absolute z-20',
+                    watchMini ? 'right-3 bottom-[72px]' : 'top-[60px] left-1/2 -translate-x-1/2 max-sm:top-[180px]',
+                  )}
+                >
+                  <WatchPanel
+                    watch={hub.watch}
+                    who={(id) => who(id).name}
+                    mini={watchMini}
+                    onMini={setWatchMini}
+                    onPause={(p) => hub.setPaused(p)}
+                    onSeek={(sec) => hub.seek(sec)}
+                    onSkip={() => hub.next()}
+                    onEnded={(id) => hub.watch.now?.id === id && hub.next()}
+                    onAdd={(v) => hub.putOn({ ...v, by: 'me' })}
+                    onRemove={(i) => hub.removeQueued(i)}
+                  />
+                </div>
+              )}
+              {!mySpot && atFreeTv && (
+                <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2">
+                  {showPutOn ? (
+                    <div className="panel flex w-[360px] max-w-[calc(100vw-1.5rem)] flex-col gap-2 p-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">📺</span>
+                        <span className="flex-1 text-sm font-black">Put something on</span>
+                        <button
+                          onClick={() => setPuttingOn(false)}
+                          aria-label="Close"
+                          className="grid size-6 place-items-center rounded-full text-muted-foreground hover:bg-muted"
+                        >
+                          <X className="size-3.5" />
+                        </button>
+                      </div>
+                      <AddVideo
+                        onAdd={(v) => {
+                          hub.putOn({ ...v, by: 'me' });
+                          setPuttingOn(false);
+                          setWatchMini(false);
+                        }}
+                      />
+                      <p className="text-[11px] text-muted-foreground">
+                        Everyone in front of the screen watches in sync. YouTube only (Shorts too).
+                      </p>
+                    </div>
+                  ) : (
+                    <button onClick={() => setPuttingOn(true)} className="panel rounded-full px-4 py-2 text-sm font-bold whitespace-nowrap">
+                      {touch ? 'Tap' : 'Press E'} to put something on 📺
+                    </button>
+                  )}
+                </div>
+              )}
               {!mySpot && atFreeFloor && (
                 <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2 whitespace-nowrap">
                   <button onClick={() => hub.start('floor', 'me')} className="panel rounded-full px-4 py-2 text-sm font-bold">
@@ -672,7 +748,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                   </button>
                 </div>
               )}
-              {(hint || seated) && !atGameTable && !atFreeFloor && (
+              {(hint || seated) && !atGameTable && !atFreeFloor && !atFreeTv && (
                 <div className="absolute bottom-[100px] left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap">
                   <button
                     onClick={() => {
@@ -721,6 +797,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                   <ActivitiesPanel
                     states={hub.spots}
                     roomWideGames={roomDef.roomWideGames}
+                    watchTitle={hub.watch.now?.title}
                     hostName={(id) => who(id).name}
                     onGo={goThere}
                   />

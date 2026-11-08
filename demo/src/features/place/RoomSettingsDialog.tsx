@@ -196,8 +196,8 @@ function MapAndCapacity({ room }: { room: PlaceRoom }) {
           ))}
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          Every template has the same things to do (study spots, private zones, big screen, jukebox, games, whiteboard, Buddy Machine); only
-          the place and its look differ. Premium maps for rooms whose owner has Plus are on the way.
+          Every template has the same things to do (study spots, private zones, big screen, games, whiteboard, Buddy Machine); only the
+          place and its look differ. Premium maps for rooms whose owner has Plus are on the way.
         </p>
       </section>
 

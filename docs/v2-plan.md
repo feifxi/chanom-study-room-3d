@@ -66,7 +66,7 @@ model is Gather's, kept simpler:
 
 - **Who builds them:** only the platform admin, in a map editor. Users pick templates; they can't edit maps or upload models.
 - **What a map holds:** study areas, activity areas and private zones together. Every template has
-  the same **standard kit** (study spots, lounge, 2+ private zones, big screen, jukebox, game table,
+  the same **standard kit** (study spots, lounge, 2+ private zones, big screen, game table,
   open floor, whiteboard, Buddy Machine, nap spots, spawn point), so every activity works in every
   map; only the place, props and theme differ.
 - **Templates:** Cosy Library, Cat Café and Starry Rooftop at launch (more ideas in feature 7).
@@ -142,15 +142,16 @@ One flow for every activity: it lives at a map spot, you join by being there (si
 ring), the host calls everyone with one shared invite card and starts it, anyone can leave any time.
 Details: [09-activity-framework.md](v2/features/09-activity-framework.md).
 
-- **Watch together:**
-  - YouTube, maybe short-video platforms.
-  - Video plays in a big, clearly visible panel; the 3D TV is only the way in.
-- **Shared jukebox:** a royalty-free catalog. Personal lo-fi music stays as well. No music bot and no
-  "listen along"; YouTube music plays through the watch panel.
+- **Watch together:** YouTube links (Shorts too) at the Big screen; everyone in front of it watches in
+  sync in a big panel (shrinkable), anyone watching controls it, a shared queue, steady volume while
+  people talk. Details: [10-watch-and-photo.md](v2/features/10-watch-and-photo.md).
+- **No jukebox** (dropped 2026-11-09): music is personal lo-fi only. No music bot and no "listen
+  along"; YouTube music plays through the watch panel.
 - **Pick a Side:** answer by walking into one of 2 or 4 zones.
 - **Card games:** an Uno-like game and Slave. Werewolf, with more 3D than just sitting.
 - **Whiteboard.**
-- **Photo mode:** a dock button that takes photos anywhere, with an app-logo frame.
+- **Photo mode:** a dock button that takes photos anywhere, with an app-logo frame and a 3 s timer;
+  save, share to Room chat or copy. Connecta keeps no photos.
 - **A drawing-telephone game** (our own Gartic Phone–style game), with Normal and Knock-off modes.
 - **AI quizzes and flashcards.** No AI tutor or chatbot.
 - **Not now:** emotes, celebrations and other body-movement games. Campfire and sofa corners are map
@@ -278,7 +279,7 @@ The UI is approved in `demo/` first, then a spec is written to `docs/v2/features
 | 7   | Map templates and the editor                              | [07-maps.md](v2/features/07-maps.md)                             |
 | 8   | Study tools                                               | [08-study-tools.md](v2/features/08-study-tools.md)               |
 | 9   | Activity framework                                        | [09-activity-framework.md](v2/features/09-activity-framework.md) |
-| 10  | Watch together, jukebox, photo mode                       |                                                                  |
+| 10  | Watch together and photo mode                             | [10-watch-and-photo.md](v2/features/10-watch-and-photo.md)       |
 | 11  | Pick a Side, whiteboard, drawing telephone                |                                                                  |
 | 12  | Card games, Werewolf                                      |                                                                  |
 | 13  | AI quizzes and flashcards                                 |                                                                  |

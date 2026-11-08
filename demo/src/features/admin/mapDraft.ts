@@ -40,7 +40,6 @@ export const CATALOG: CatalogPiece[] = [
   },
   { kind: 'desk', name: 'Single desk', emoji: '🪑', w: 1.2, d: 0.8, kit: 'study', seats: 1, source: 'Kenney Furniture Kit (CC0)' },
   { kind: 'tv', name: 'Big screen', emoji: '📺', w: 2.4, d: 0.4, kit: 'screen', source: 'Kenney Furniture Kit (CC0)' },
-  { kind: 'jukebox', name: 'Jukebox', emoji: '🎵', w: 0.9, d: 0.7, kit: 'jukebox', source: 'Kenney Furniture Kit (CC0)' },
   { kind: 'game-table', name: 'Game table', emoji: '🃏', w: 1.6, d: 1.6, kit: 'games', source: 'Kenney Furniture Kit (CC0)' },
   { kind: 'whiteboard', name: 'Whiteboard', emoji: '🖍️', w: 1.8, d: 0.4, kit: 'whiteboard', source: 'Kenney Furniture Kit (CC0)' },
   { kind: 'beanbag', name: 'Beanbag', emoji: '🫘', w: 0.9, d: 0.9, kit: 'lounge', source: 'Quaternius Cosy Pack (CC0)' },
@@ -104,7 +103,6 @@ function fullLayout(): Draft {
       at('cat-bed', 2.2, 12.6),
       at('buddy', 18.6, 11.8),
       at('tv', 13.8, 2.6),
-      at('jukebox', 18.8, 6.2),
       at('game-table', 15.6, 9.4),
       at('whiteboard', 9.4, 0.2),
       at('spawn', 9.5, 12.8),
@@ -119,11 +117,11 @@ function fullLayout(): Draft {
   };
 }
 
-/** Each template's draft. The Cat Café draft is mid-edit: no jukebox yet and one booth short. */
+/** Each template's draft. The Cat Café draft is mid-edit: no big screen yet and one booth short. */
 export function initialDrafts(): Record<string, Draft> {
   const cafe = fullLayout();
   cafe.pieces = cafe.pieces
-    .filter((p) => p.kind !== 'jukebox')
+    .filter((p) => p.kind !== 'tv')
     .map((p) => (p.kind === 'study-table' ? { ...p, kind: 'cafe-table' } : p.kind === 'sofa' ? { ...p, kind: 'cat-tower' } : p));
   cafe.zones = cafe.zones
     .filter((z) => z.name !== 'Card corner')
