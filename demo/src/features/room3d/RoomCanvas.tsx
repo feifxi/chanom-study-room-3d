@@ -4,7 +4,7 @@ import { useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { SPAWN } from '@study/shared';
+import { ROOM, SPAWN } from '@study/shared';
 import { GachaMachine } from '../npc/GachaMachine';
 import { NpcAvatar } from '../npc/NpcAvatar';
 import { Avatar, type LocalMotion } from './Avatar';
@@ -18,6 +18,7 @@ import type { MockRoom } from './mockRoom';
 import type { Quality } from './quality';
 import type { Bubble } from './roomSession';
 import { StaticShadows } from './StaticShadows';
+import { ZONES } from './zones';
 import { ZOOM, ZoomBridge } from './ZoomControl';
 
 interface Props {
@@ -64,6 +65,8 @@ export function RoomCanvas({ room, motion, board, light, quality, bubbles, findI
       />
       <MockTicker room={room} />
       <LocalController room={room} motion={motion} onHint={onHint} onOpenMachine={() => {}} driverRef={driverRef} />
+      <ClickToWalk driverRef={driverRef} />
+      <ZoneMarks />
       <GachaMachine lastSummon={undefined} />
       {npcIds.map((id) => (
         <NpcAvatar key={id} id={id} npc={room.state.npcs.get(id)!} board={board} />
@@ -83,6 +86,66 @@ export function RoomCanvas({ room, motion, board, light, quality, bubbles, findI
       <LabelProjector board={board} />
       <ZoomBridge request={zoomRequest} onZoom={onZoom} />
     </Canvas>
+  );
+}
+
+/**
+ * Click or tap the floor to walk there. An invisible plane over the floor takes the click (furniture
+ * has no handlers, so clicks on it land here too and the path ends next to it). A drag turns the
+ * camera instead, so clicks that moved more than a few pixels are ignored.
+ */
+function ClickToWalk({ driverRef }: { driverRef: React.RefObject<LocalPlayerDriver | null> }) {
+  const marker = useRef<THREE.Mesh>(null);
+  useFrame((state) => {
+    const dest = driverRef.current?.dest;
+    if (!marker.current) return;
+    marker.current.visible = !!dest;
+    if (dest) {
+      marker.current.position.set(dest.x, 0.04, dest.z);
+      marker.current.scale.setScalar(1 + Math.sin(state.clock.elapsedTime * 6) * 0.1);
+    }
+  });
+  return (
+    <>
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0.02, 0]}
+        onClick={(e) => {
+          if (e.delta > 6) return;
+          e.stopPropagation();
+          driverRef.current?.goTo(e.point.x, e.point.z);
+        }}
+      >
+        <planeGeometry args={[ROOM.width, ROOM.depth]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
+      <mesh ref={marker} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
+        <ringGeometry args={[0.18, 0.3, 32]} />
+        <meshBasicMaterial color="#ff6fa8" transparent opacity={0.85} depthWrite={false} />
+      </mesh>
+    </>
+  );
+}
+
+/** Private zones: a soft tint and a dashed-looking edge on the floor, so you can see where they start. */
+function ZoneMarks() {
+  return (
+    <>
+      {ZONES.map((zn) => (
+        <group key={zn.id} position={[zn.x, 0.025, zn.z]} rotation={[-Math.PI / 2, 0, 0]}>
+          <mesh>
+            <circleGeometry args={[zn.r, 64]} />
+            <meshBasicMaterial color="#b9a2ff" transparent opacity={0.12} depthWrite={false} />
+          </mesh>
+          {Array.from({ length: 36 }, (_, i) => (
+            <mesh key={i} rotation={[0, 0, (i / 36) * Math.PI * 2]}>
+              <ringGeometry args={[zn.r - 0.06, zn.r, 4, 1, 0, (Math.PI * 2) / 72]} />
+              <meshBasicMaterial color="#8f6bff" transparent opacity={0.7} depthWrite={false} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+    </>
   );
 }
 

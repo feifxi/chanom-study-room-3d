@@ -8,6 +8,7 @@ import {
   SEAT_BY_ID,
   SIT_REACH,
   WALK_SPEED,
+  findPath,
   npcRadius,
   resolveCollisions,
   type PlayerView,
@@ -105,6 +106,13 @@ export class LocalPlayerDriver {
   private right = new THREE.Vector3();
   private move = new THREE.Vector3();
   private follow = new THREE.Vector3();
+  /** Click-to-walk: where we're heading (shown as a marker) and the waypoints left to get there. */
+  dest: { x: number; z: number } | null = null;
+  private path: { x: number; z: number }[] = [];
+  private needsPath = false;
+  private stuckFor = 0;
+  /** Any input at all (keys, stick, click): the away timer listens to this. */
+  lastInput = performance.now();
 
   constructor(
     private readonly room: StudyRoom,
@@ -113,6 +121,7 @@ export class LocalPlayerDriver {
 
   /** Handle a key press. Returns true when it opened the Buddy Machine. */
   press(code: string): 'openMachine' | void {
+    this.lastInput = performance.now();
     if (KEYS[code] || code.startsWith('Shift')) this.keys.add(code);
     if (code !== 'KeyE') return;
     const h = this.hint;
@@ -127,6 +136,25 @@ export class LocalPlayerDriver {
   /** The on-screen joystick moved (or was released, 0,0). Screen-relative, like the arrow keys. */
   setStick(x: number, z: number) {
     this.stick = { x, z };
+    if (x || z) this.lastInput = performance.now();
+  }
+
+  /**
+   * Click or tap the floor: walk there along a path around furniture (shared A*). Keys or the joystick
+   * take over at once. From a seat we stand up first and set off from the stand-up spot.
+   */
+  goTo(x: number, z: number) {
+    this.lastInput = performance.now();
+    this.dest = { x, z };
+    this.needsPath = true;
+    this.stuckFor = 0;
+    if (localPlayer(this.room)?.seatId) this.room.send('stand', {});
+  }
+
+  private stopPath() {
+    this.dest = null;
+    this.path = [];
+    this.needsPath = false;
   }
 
   release(code: string) {
@@ -205,9 +233,15 @@ export class LocalPlayerDriver {
   private walk(p: PlayerView, ix: number, iz: number, dt: number, camera: THREE.Camera) {
     const m = this.motion.current;
     this.followServer(p, dt);
+    if (ix || iz) this.stopPath();
+    else if (this.dest && this.needsPath) {
+      this.path = findPath({ x: m.x, z: m.z }, this.dest);
+      this.needsPath = false;
+      if (!this.path.length) this.stopPath();
+    }
     const steps = Math.max(1, Math.ceil(dt / MAX_STEP));
     let moving = false;
-    for (let i = 0; i < steps; i++) moving = this.step(ix, iz, dt / steps, camera);
+    for (let i = 0; i < steps; i++) moving = this.path.length ? this.stepAlongPath(dt / steps) : this.step(ix, iz, dt / steps, camera);
     m.moving = moving;
     this.sendMove(false);
   }
@@ -228,6 +262,32 @@ export class LocalPlayerDriver {
     const next = { x: m.x + move.x * speed * dt, z: m.z + move.z * speed * dt };
     resolveCollisions(next, this.obstaclesAround());
     Object.assign(m, { x: next.x, z: next.z, yaw: Math.atan2(move.x, move.z) });
+    return true;
+  }
+
+  /** One step toward the next waypoint (world space, walking speed). Gives up if something blocks us. */
+  private stepAlongPath(dt: number) {
+    const m = this.motion.current;
+    const target = this.path[0]!;
+    const dx = target.x - m.x;
+    const dz = target.z - m.z;
+    const d = Math.hypot(dx, dz);
+    const stepLen = WALK_SPEED * dt;
+    if (d <= Math.max(stepLen, 0.05)) {
+      this.path.shift();
+      if (!this.path.length) this.stopPath();
+      return this.path.length > 0;
+    }
+    const next = { x: m.x + (dx / d) * stepLen, z: m.z + (dz / d) * stepLen };
+    resolveCollisions(next, this.obstaclesAround());
+    const moved = Math.hypot(next.x - m.x, next.z - m.z);
+    // Someone standing in the way: stop after a moment instead of pushing forever
+    this.stuckFor = moved < stepLen * 0.3 ? this.stuckFor + dt : 0;
+    if (this.stuckFor > 0.6) {
+      this.stopPath();
+      return false;
+    }
+    Object.assign(m, { x: next.x, z: next.z, yaw: Math.atan2(dx, dz) });
     return true;
   }
 

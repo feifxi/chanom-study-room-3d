@@ -12,6 +12,10 @@ export interface StudyRoom {
 }
 
 export const BUBBLE_MS = 4500;
+/** Bubbles are short, out-loud lines: up to 120 characters. */
+export const BUBBLE_MAX = 120;
+/** How long a bubble stays over your head: about 6 s, a little longer for long lines (max 10 s). */
+export const bubbleMs = (text: string) => Math.min(10_000, 6000 + Math.max(0, text.length - 40) * 50);
 
 export interface Bubble {
   text: string;

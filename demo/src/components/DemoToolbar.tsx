@@ -5,7 +5,7 @@ import { useTheme } from 'next-themes';
 import { Monitor, Moon, Palette, Sun } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { CROWDS, setCrowd, setManyRooms, useCrowd, useManyRooms } from '@/lib/demoCrowd';
+import { CROWDS, goAwayNow, setCrowd, setManyRooms, useCrowd, useManyRooms } from '@/lib/demoCrowd';
 import { cn } from '@/lib/utils';
 import { PALETTES, usePalette } from './Providers';
 
@@ -103,6 +103,10 @@ export function DemoToolbar() {
             </button>
           ))}
         </div>
+
+        <button onClick={goAwayNow} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
+          💤 Go away now (in a 3D room; skips the 10 minutes)
+        </button>
 
         <Title>Your rooms on Home</Title>
         <div className="mb-3 grid grid-cols-2 gap-1.5">

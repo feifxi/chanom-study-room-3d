@@ -144,3 +144,9 @@ export function useManyRooms(): boolean {
     () => false,
   );
 }
+
+/** Demo: skip the 10-minute wait and mark yourself away right now (the room listens for this). */
+export const AWAY_EVENT = 'connecta-demo:away';
+export function goAwayNow() {
+  window.dispatchEvent(new Event(AWAY_EVENT));
+}

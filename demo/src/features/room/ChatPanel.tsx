@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ChevronLeft, Maximize2, X } from 'lucide-react';
 import { Composer } from '@/components/chat/Chat';
+import { BUBBLE_MAX } from '../room3d/roomSession';
 import { UserAvatar } from '@/components/UserAvatar';
 import { cn } from '@/lib/utils';
 import { DMS, channelMessages, userById, type Message, type Server } from '@/lib/mock';
@@ -34,6 +35,7 @@ export function ChatPanel({
   guest,
   lines,
   onSay,
+  onTyping,
   onExpand,
   onClose,
   className,
@@ -43,6 +45,8 @@ export function ChatPanel({
   guest?: boolean;
   lines: RoomLine[];
   onSay: (text: string) => void;
+  /** Typing a bubble shows dots over your head. */
+  onTyping?: (typing: boolean) => void;
   onExpand: (target: ChatTarget) => void;
   onClose?: () => void;
   className?: string;
@@ -146,7 +150,7 @@ export function ChatPanel({
               ),
             )}
           </div>
-          <Composer compact placeholder="Say something out loud" onSend={onSay} />
+          <Composer compact placeholder="Say something out loud" onSend={onSay} maxLength={BUBBLE_MAX} onTyping={onTyping} />
         </>
       )}
 

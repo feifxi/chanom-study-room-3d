@@ -117,6 +117,9 @@ Two kinds of room anyone can walk into, named so people know what they get:
     people nearby.
   - A room people list where clicking someone shows a path to them.
   - Private zones (tables or areas): yes. Ping/wave: no.
+  - Click to walk, stereo proximity voice (~12 nearest streamed), private zones (only people inside
+    hear each other; no locks), 120-character bubbles, away after 10 minutes (mic off), and "Talk to
+    everyone" for owner and mods. Details: [06-3d-room.md](v2/features/06-3d-room.md).
 
 ### Study
 
@@ -239,7 +242,7 @@ The UI is approved in `demo/` first, then a spec is written to `docs/v2/features
 | 3   | Rooms and membership (visibility, roles, invites, guests) | [03-rooms-membership.md](v2/features/03-rooms-membership.md) |
 | 4   | Room chat and DMs                                         | [04-chat-and-dms.md](v2/features/04-chat-and-dms.md)         |
 | 5   | Friends                                                   | [05-friends.md](v2/features/05-friends.md)                   |
-| 6   | The 3D room                                               |                                                              |
+| 6   | The 3D room                                               | [06-3d-room.md](v2/features/06-3d-room.md)                   |
 | 7   | Map templates and the editor                              |                                                              |
 | 8   | Study tools                                               |                                                              |
 | 9   | Activity framework                                        |                                                              |

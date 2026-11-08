@@ -53,7 +53,16 @@ interface LayerProps {
   players: Map<string, PlayerView>;
   localId: string;
   bubbles: Record<string, Bubble>;
-  voice: { speaking: Set<string>; micEnabled: Set<string>; sharing: Set<string>; deafened?: Set<string> };
+  voice: {
+    speaking: Set<string>;
+    micEnabled: Set<string>;
+    sharing: Set<string>;
+    deafened?: Set<string>;
+    /** No input for 10 minutes: 💤 and a faded label (mic is off too). */
+    away?: Set<string>;
+    /** Owner or mod talking to everyone: heard at full volume anywhere in the room. */
+    stage?: Set<string>;
+  };
   clockOffset: number;
   npcIds: string[];
   npcs: Map<string, NpcView> | undefined;
@@ -123,8 +132,10 @@ export function LabelLayer({ board, ids, players, localId, bubbles, voice, clock
             <div
               className={`rounded-lg px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-white shadow-sm ${
                 isLocal ? 'bg-primary' : 'bg-cocoa/85'
-              } ${voice.speaking.has(id) ? 'speaking' : ''}`}
+              } ${voice.speaking.has(id) ? 'speaking' : ''} ${voice.away?.has(id) ? 'opacity-55' : ''}`}
             >
+              {voice.stage?.has(id) && <span className="mr-1">📢</span>}
+              {voice.away?.has(id) && <span className="mr-1">💤</span>}
               {/* Deafened (can't hear the room), like Discord's crossed headphones, so nobody talks to them in vain */}
               {voice.deafened?.has(id) && (
                 <HeadphoneOff className="mr-1 inline size-3 -translate-y-px text-[#ffb3c4]" aria-label="Deafened" />

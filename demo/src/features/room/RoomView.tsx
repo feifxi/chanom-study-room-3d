@@ -3,14 +3,28 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Camera, Clock, HeadphoneOff, Headphones, Leaf, MessageCircle, Mic, MicOff, Moon, MonitorUp, Sparkles, Sun } from 'lucide-react';
+import {
+  Camera,
+  Clock,
+  HeadphoneOff,
+  Headphones,
+  Leaf,
+  Megaphone,
+  MessageCircle,
+  Mic,
+  MicOff,
+  Moon,
+  MonitorUp,
+  Sparkles,
+  Sun,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { SEAT_BY_ID, SPAWN } from '@study/shared';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { setConnection } from '@/lib/connection';
 import { DMS, ME, USERS, serverById } from '@/lib/mock';
-import { crowdPeople, useCrowd } from '@/lib/demoCrowd';
+import { AWAY_EVENT, crowdPeople, useCrowd } from '@/lib/demoCrowd';
 import { GUEST_LOOK, loadGuest } from '@/lib/guest';
 import { useCompactScreen, useTouchScreen, isTouchScreen } from '@/lib/screen';
 import { useNow } from '@/lib/time';
@@ -26,7 +40,8 @@ import { MockRoom, type MockPerson } from '../room3d/mockRoom';
 import { QUALITY } from '../room3d/quality';
 import { RoomCanvas } from '../room3d/RoomCanvas';
 import { ZoomControl } from '../room3d/ZoomControl';
-import { BUBBLE_MS, type Bubble } from '../room3d/roomSession';
+import { bubbleMs, type Bubble } from '../room3d/roomSession';
+import { zoneAt, type Zone } from '../room3d/zones';
 import { ActivitiesPanel } from './ActivitiesPanel';
 import { ChannelOverlay, type ChatTarget } from './ChannelOverlay';
 import { PhotoMode } from './PhotoMode';
@@ -55,6 +70,8 @@ const PRESETS: Record<string, Omit<MockPerson, 'id' | 'name' | 'look'>> = {
   bow: { seatId: 'sofa-0' },
 };
 const GUEST_COLOR = '#9c8aa0';
+/** No keys, clicks or moves for this long: you're away (💤, mic off). */
+const AWAY_MS = 10 * 60_000;
 
 /**
  * The room screen, five named parts:
@@ -116,6 +133,11 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const [subject, setSubject] = useState('');
   const subjectRef = useRef(subject);
   const [speaking, setSpeaking] = useState<Set<string>>(new Set());
+  const [zone, setZone] = useState<Zone | undefined>(undefined);
+  const [away, setAway] = useState(false);
+  // Talk to everyone (owner and mods): heard at full volume anywhere in the room
+  const [stage, setStage] = useState(false);
+  const canStage = !guest && (server.roles.me === 'Owner' || server.roles.me === 'Mod');
 
   const onPhase = useCallback((phase: Phase) => room.setStatus(phase === 'idle' ? 'idle' : phase, subjectRef.current), [room]);
   const pomo = usePomodoro(onPhase);
@@ -127,7 +149,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   }, [guest, serverId, roomDef.id, mic, deaf]);
 
   const say = useCallback((id: string, name: string, text: string) => {
-    setBubbles((b) => ({ ...b, [id]: { text, until: Date.now() + BUBBLE_MS } }));
+    setBubbles((b) => ({ ...b, [id]: { text, until: Date.now() + bubbleMs(text) } }));
     setLines((l) => [...l, { id: `${Date.now()}-${id}`, name, text }]);
   }, []);
 
@@ -143,6 +165,39 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     };
   }, [room, say]);
 
+  // Which private zone you're standing in, and whether you've gone quiet long enough to be away
+  useEffect(() => {
+    let lastDom = performance.now();
+    let forced = false;
+    const touched = () => {
+      lastDom = performance.now();
+      forced = false;
+    };
+    const forceAway = () => (forced = true);
+    const events = ['pointerdown', 'keydown', 'wheel'] as const;
+    events.forEach((e) => window.addEventListener(e, touched));
+    window.addEventListener(AWAY_EVENT, forceAway);
+    const timer = setInterval(() => {
+      const m = motion.current;
+      setZone(zoneAt(m.x, m.z));
+      const last = Math.max(lastDom, driverRef.current?.lastInput ?? 0);
+      const isAway = forced || performance.now() - last > AWAY_MS;
+      setAway((was) => {
+        if (isAway && !was) {
+          setMic(false);
+          setStage(false);
+          toast('💤 You’re away, so your mic is off. Move or press any key to come back.');
+        } else if (!isAway && was) toast('Welcome back ✨');
+        return isAway;
+      });
+    }, 500);
+    return () => {
+      clearInterval(timer);
+      events.forEach((e) => window.removeEventListener(e, touched));
+      window.removeEventListener(AWAY_EVENT, forceAway);
+    };
+  }, []);
+
   const ids = useMemo(() => [...room.state.players.keys()], [room]);
   const npcIds = useMemo(() => [...room.state.npcs.keys()], [room]);
   const me = room.state.players.get('me')!;
@@ -152,17 +207,21 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     const p = room.state.players.get(id)!;
     const isGuest = id.startsWith('guest') || (id === 'me' && guest);
     const status =
-      p.status === 'focus'
-        ? `📖 Focusing${p.subject ? ` · ${p.subject}` : ''} · ${Math.max(1, Math.round((now - p.focusSince) / 60_000))}m`
-        : p.status === 'break'
-          ? '☕ On a break'
-          : p.seatId
-            ? SEAT_BY_ID.get(p.seatId)?.kind === 'sofa'
-              ? '🛋️ On the sofa'
-              : '🪑 At a desk'
-            : p.moving
-              ? '🚶 Walking around'
-              : 'Hanging out';
+      id === 'me' && stage
+        ? '📢 Talking to everyone'
+        : id === 'me' && away
+          ? '💤 Away'
+          : p.status === 'focus'
+            ? `📖 Focusing${p.subject ? ` · ${p.subject}` : ''} · ${Math.max(1, Math.round((now - p.focusSince) / 60_000))}m`
+            : p.status === 'break'
+              ? '☕ On a break'
+              : p.seatId
+                ? SEAT_BY_ID.get(p.seatId)?.kind === 'sofa'
+                  ? '🛋️ On the sofa'
+                  : '🪑 At a desk'
+                : p.moving
+                  ? '🚶 Walking around'
+                  : 'Hanging out';
     return {
       id,
       name: p.name,
@@ -217,6 +276,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
       guest={guest}
       lines={lines}
       onSay={(text) => say('me', myName, text)}
+      onTyping={(t) => room.setTyping(t)}
       onExpand={(t) => {
         setSheet(false);
         setChatTarget(t);
@@ -265,6 +325,22 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
         {deaf ? <HeadphoneOff className="size-5" /> : <Headphones className="size-5" />}
         {!compact && (deaf ? 'Deafened' : 'Sound')}
       </button>
+      {canStage && (
+        <DockBtn
+          icon={Megaphone}
+          label="Everyone"
+          compact={compact}
+          pressed={stage}
+          onClick={() => {
+            if (!stage) {
+              setDeaf(false);
+              setMic(true);
+              toast('📢 Everyone in the room hears you now, wherever they are');
+            }
+            setStage(!stage);
+          }}
+        />
+      )}
       <DockBtn icon={MessageCircle} label="Chat" compact={compact} pressed={chatPressed} onClick={toggleChat} />
       <DockBtn icon={Camera} label="Photo" compact={compact} onClick={() => setPhoto(true)} />
       <DockBtn icon={Sparkles} label="Activities" compact={compact} pressed={activities} onClick={() => setActivities(!activities)} />
@@ -341,6 +417,8 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
             micEnabled: micIds,
             deafened: new Set(realPeople.filter((p) => p.deafened).map((p) => p.id)),
             sharing: sharing && seated ? new Set(['me']) : new Set(),
+            away: away ? new Set(['me']) : new Set(),
+            stage: stage ? new Set(['me']) : new Set(),
           }}
           clockOffset={0}
           npcIds={npcIds}
@@ -382,6 +460,25 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
               className={cn('absolute left-3 z-20', compact ? 'top-[132px]' : 'top-[88px]')}
             />
             {!compact && chatOpen && <div className="absolute bottom-3 left-3">{chat}</div>}
+
+            {/* Top centre: you're in a private zone, or talking to everyone */}
+            {(zone || stage) && (
+              <div className="pointer-events-none absolute top-3 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1.5 max-sm:top-[136px]">
+                {stage && (
+                  <button
+                    onClick={() => setStage(false)}
+                    className="pointer-events-auto flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-sm font-extrabold text-primary-foreground shadow-soft"
+                  >
+                    📢 Everyone hears you · Stop
+                  </button>
+                )}
+                {zone && (
+                  <span className="panel rounded-full px-3 py-1.5 text-xs font-bold whitespace-nowrap">
+                    🔒 {zone.emoji} {zone.name} · only people here can hear you
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Above the dock: what you can do right here (sit, pet, and share your screen once seated) */}
             {(hint || seated) && (

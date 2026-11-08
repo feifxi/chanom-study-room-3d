@@ -102,6 +102,11 @@ export class MockRoom implements StudyRoom {
     Object.assign(me, { status, subject, focusSince: status === 'focus' ? Date.now() : 0 });
   }
 
+  /** The typing dots over your head (sent while you type a bubble). */
+  setTyping(typing: boolean) {
+    this.state.players.get('me')!.typing = typing;
+  }
+
   private stand(me: PlayerView) {
     const seat = SEAT_BY_ID.get(me.seatId);
     if (!seat) return;

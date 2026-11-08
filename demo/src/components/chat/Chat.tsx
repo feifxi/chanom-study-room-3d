@@ -589,7 +589,19 @@ function FullComposer({
 }
 
 /** The small message box (the in-room chat panel): text and send only. */
-export function Composer({ placeholder, onSend, compact }: { placeholder: string; onSend: (text: string) => void; compact?: boolean }) {
+export function Composer({
+  placeholder,
+  onSend,
+  compact,
+  maxLength,
+  onTyping,
+}: {
+  placeholder: string;
+  onSend: (text: string) => void;
+  compact?: boolean;
+  maxLength?: number;
+  onTyping?: (typing: boolean) => void;
+}) {
   const [text, setText] = useState('');
   return (
     <form
@@ -602,11 +614,17 @@ export function Composer({ placeholder, onSend, compact }: { placeholder: string
         if (!text.trim()) return;
         onSend(text.trim());
         setText('');
+        onTyping?.(false);
       }}
     >
       <input
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        maxLength={maxLength}
+        onChange={(e) => {
+          setText(e.target.value);
+          onTyping?.(e.target.value.length > 0);
+        }}
+        onBlur={() => onTyping?.(false)}
         placeholder={placeholder}
         className="h-9 min-w-0 flex-1 bg-transparent px-2 text-sm outline-none"
         aria-label={placeholder}
