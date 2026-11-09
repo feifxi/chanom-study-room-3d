@@ -41,7 +41,8 @@ export function PlaceHeader() {
   const nav = viewer === 'guest' ? NAV.filter((n) => n.href === '/discover') : NAV;
   return (
     <header className="flex h-14 flex-none items-center gap-2 px-1 sm:gap-4 sm:px-2">
-      <Link href="/home" aria-label="Connecta home" className="flex-none">
+      {/* Guests have no Home (it needs an account), so the logo takes them to Discover */}
+      <Link href={viewer === 'guest' ? '/discover' : '/home'} aria-label="Connecta home" className="flex-none">
         <Logo className="hidden sm:flex" />
         <LogoMark className="sm:hidden" />
       </Link>

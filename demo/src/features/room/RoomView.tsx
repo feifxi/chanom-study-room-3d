@@ -512,7 +512,8 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     if (pomo.phase === 'focus') pomo.stop();
     setConnection(null);
     music.pause();
-    router.push(href ?? (guest ? '/' : '/home'));
+    // Guests have no Home: a Common room sends them back to Discover, an invite to the front page
+    router.push(href ?? (guest ? (common ? '/discover' : '/') : '/home'));
   };
 
   const dock = (className?: string) => (

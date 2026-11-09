@@ -90,6 +90,11 @@ export function GiftPlusDialog({ open, onOpenChange, to }: { open: boolean; onOp
           />
         </section>
 
+        <p className="-mb-1 rounded-2xl bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
+          {who.plus
+            ? `${who.name} already has Plus, so this adds ${months} month${months > 1 ? 's' : ''} on top: their next payment moves back by that much.`
+            : `${who.name} gets Plus right away, for ${months} month${months > 1 ? 's' : ''}. It doesn’t renew by itself.`}
+        </p>
         <Button
           className="rounded-full font-extrabold"
           onClick={() => {

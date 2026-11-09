@@ -55,6 +55,8 @@ export const USERS: Record<string, User> = {
     presence: 'focus',
     activity: '📖 Focusing · Kuy pawa',
     inRoom: { serverId: 'chanom', roomId: 'library' },
+    // Has Plus: gifting him shows how a gift stacks on top
+    plus: true,
   },
   ken: {
     id: 'ken',
