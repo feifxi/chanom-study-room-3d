@@ -42,6 +42,10 @@ interface Props {
   children?: React.ReactNode;
   /** Frames have been too slow for a while: time for battery saver. */
   onSlow?: () => void;
+  /** Bumps when you save a new look (Settings → My character): your character swaps live. */
+  myLookVersion?: number;
+  /** That look (JSON), so your character shows it straight away. */
+  myLook?: string;
 }
 
 /** The V1 library scene, driven by the mock room instead of the game server. */
@@ -59,6 +63,8 @@ export function RoomCanvas({
   onZoom,
   children,
   onSlow,
+  myLookVersion = 0,
+  myLook,
 }: Props) {
   const ids = useMemo(() => [...room.state.players.keys()], [room]);
   const npcIds = useMemo(() => [...room.state.npcs.keys()], [room]);
@@ -95,7 +101,10 @@ export function RoomCanvas({
       ))}
       {ids.map((id) => (
         <Avatar
-          key={id}
+          // A new look remounts your character (new rig) with a sparkle
+          key={id === room.sessionId ? `${id}:${myLookVersion}` : id}
+          sparkle={id === room.sessionId && myLookVersion > 0}
+          lookOverride={id === room.sessionId ? myLook : undefined}
           id={id}
           player={room.state.players.get(id)!}
           isLocal={id === room.sessionId}
@@ -114,7 +123,7 @@ export function RoomCanvas({
 }
 
 /**
- * Click or tap the floor to walk there (unless turned off in Your view / Settings → Controls). A click
+ * Click or tap the floor to walk there (unless turned off in the Room card's Your settings / Settings → Controls). A click
  * that closes an open panel only closes it. An invisible plane over the floor takes the click (furniture
  * has no handlers, so clicks on it land here too and the path ends next to it). A drag turns the
  * camera instead, so clicks that moved more than a few pixels are ignored.

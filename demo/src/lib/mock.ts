@@ -15,8 +15,11 @@ export interface User {
   activity?: string;
   /** Where they are, so friends can join them. */
   inRoom?: { serverId: string; roomId: string };
-  /** In a room you can't walk into (private, you're not a member): friends see it, but "Ask to join". */
-  inOtherRoom?: { name: string; emoji: string; map: string };
+  /**
+   * In a private room you're not a member of. Like Discord, you never learn which room (not its name,
+   * map or who else is there), only "in a private room", and you can ask your friend to bring you in.
+   */
+  inPrivateRoom?: boolean;
   /** For offline friends: "last seen 2h ago". */
   lastSeen?: string;
   plus?: boolean;
@@ -107,8 +110,9 @@ export const USERS: Record<string, User> = {
     handle: 'mookie',
     color: '#b07cc6',
     look: { hair: '#f7d6e6', outfit: '#7c5cff', accessory: 'headphones' },
-    presence: 'offline',
-    lastSeen: '3h ago',
+    presence: 'online',
+    activity: 'In a Common room',
+    inRoom: { serverId: 'public', roomId: 'cafe-2' },
   },
   earth: {
     id: 'earth',
@@ -118,8 +122,8 @@ export const USERS: Record<string, User> = {
     look: { hair: '#3a3446', outfit: '#2f7de1', accessory: 'glasses' },
     presence: 'online',
     activity: '🎸 Jamming',
-    // A private room of Earth's band that you're not in: the Friends page offers "Ask to join"
-    inOtherRoom: { name: 'Garage Band', emoji: '🎸', map: 'Starry Rooftop' },
+    // In a private room you're not in (his band's): you only see "a private room" and "Ask to join"
+    inPrivateRoom: true,
   },
 };
 
@@ -384,7 +388,7 @@ export const SERVERS: Server[] = [
       { id: 'rooftop', name: 'Rooftop', mapId: 'rooftop', capacity: 25, allowGuests: true, roomWideGames: true, people: [] },
       { id: 'cafe', name: 'Café', mapId: 'cafe', capacity: 25, allowGuests: true, roomWideGames: true, people: [] },
     ],
-    event: 'Drawing telephone · Sat 21:00',
+    event: 'Draw & Guess · Sat 21:00',
     lastActive: '3 days ago',
     idleDays: 3,
   },
@@ -612,66 +616,59 @@ export const SHOP: ShopItem[] = [
 export const COINS = 1240;
 
 /**
- * Drop-in rooms: run by Connecta from its templates, open to everyone, no members and no saved
- * chat. When one fills up, a new copy opens (#2, #3).
+ * Common rooms (were "drop-in rooms", renamed 2026-11-09): run by Connecta from its templates, open
+ * to everyone, guests included, with no members and no saved chat. When a copy fills, a new one
+ * opens (#2, #3). Nobody runs them, so they're safe for strangers by design (feature 14): text only,
+ * no voice, pictures, videos or screen share, slow mode, no clickable links, no Werewolf.
  */
-export const PUBLIC_ROOMS = [
-  {
-    id: 'silent-library-1',
-    name: 'Silent Library #1',
-    mapId: 'library',
-    people: 18,
-    capacity: 20,
-    roomWideGames: false,
-    vibe: 'Silent study',
-  },
-  {
-    id: 'silent-library-2',
-    name: 'Silent Library #2',
-    mapId: 'library',
-    people: 6,
-    capacity: 20,
-    roomWideGames: false,
-    vibe: 'Silent study',
-  },
-  { id: 'cafe-lounge-1', name: 'Cat Café #1', mapId: 'cafe', people: 11, capacity: 20, roomWideGames: true, vibe: 'Chill and chat' },
-  { id: 'rooftop-1', name: 'Starry Rooftop #1', mapId: 'rooftop', people: 3, capacity: 20, roomWideGames: true, vibe: 'Late night talks' },
+/** A copy's capacity: never more than this many inside. */
+export const COMMON_CAPACITY = 25;
+/** Seats kept free for people joining a friend: Walk in stops placing strangers at 25 − 5 = 20. */
+export const COMMON_FRIEND_SEATS = 5;
+const STRANGERS_UP_TO = COMMON_CAPACITY - COMMON_FRIEND_SEATS;
+
+export const COMMON_COPIES = [
+  { id: 'library-1', name: 'Library Common Room #1', mapId: 'library', people: 20, roomWideGames: false, vibe: 'Quiet study' },
+  { id: 'library-2', name: 'Library Common Room #2', mapId: 'library', people: 6, roomWideGames: false, vibe: 'Quiet study' },
+  { id: 'cafe-1', name: 'Cat Café Common Room #1', mapId: 'cafe', people: 17, roomWideGames: true, vibe: 'Chill and chat' },
+  { id: 'cafe-2', name: 'Cat Café Common Room #2', mapId: 'cafe', people: 11, roomWideGames: true, vibe: 'Chill and chat' },
+  { id: 'rooftop-1', name: 'Starry Rooftop Common Room #1', mapId: 'rooftop', people: 3, roomWideGames: true, vibe: 'Late night talks' },
 ];
 
 /**
- * Public rooms aren't in anyone's server: they're copies of platform templates. In the app they open
- * like a server with no chats, so the room screen can treat them the same way.
+ * Common room copies open like a room with no chats, so the room screen treats them the same way
+ * (the demo's stand-in; the port replaces it with a real template + copies model).
  */
 export const PUBLIC_SERVER: Server = {
   id: 'public',
-  name: 'Public rooms',
+  name: 'Common rooms',
   emoji: '🌏',
   tint: 'bg-sky',
   banner: 'from-[#dfeeff] via-[#e3f5ea] to-[#efe4ff]',
-  description: 'Open to everyone. Be kind.',
+  description: 'Run by Connecta, open to everyone. Text only. Be kind.',
   visibility: 'public',
   members: [],
   memberCount: 0,
   roles: {},
   channels: [],
-  rooms: PUBLIC_ROOMS.map((r) => ({
+  rooms: COMMON_COPIES.map((r) => ({
     id: r.id,
     name: r.name,
     mapId: r.mapId,
-    capacity: r.capacity,
+    capacity: COMMON_CAPACITY,
     allowGuests: true,
     roomWideGames: r.roomWideGames,
-    people: ['bow', 'pim'],
+    people: r.id === 'cafe-2' ? ['mook', 'pim'] : ['bow', 'pim'],
     happening: r.vibe,
   })),
 };
 
 /**
- * Drop-in rooms as people see them: one card per template, counting everyone across its copies.
- * Copies open and close on their own, so "how many are here" matters, not one copy's capacity.
- * Dropping in picks the copy with friends, or the one with the most space.
+ * Common rooms as people see them: one card per template, counting everyone across its copies.
+ * Drop in lands you in the copy with the most friends, otherwise the busiest one with space (busy
+ * feels alive). Joining a friend from Home or Friends lands in that friend's copy.
  */
-export interface DropIn {
+export interface CommonRoom {
   id: string;
   name: string;
   mapId: string;
@@ -680,48 +677,49 @@ export interface DropIn {
   /** Everyone across all copies right now. */
   here: number;
   copies: number;
-  /** The copy you'd land in. */
-  joinId: string;
   friendsInside?: string[];
 }
 
-export const DROP_INS: DropIn[] = [
+export const COMMON_ROOMS: CommonRoom[] = [
+  { id: 'library', name: 'Library', mapId: 'library', vibe: 'Quiet study · text only', roomWideGames: false, here: 142, copies: 8 },
   {
-    id: 'silent-library',
-    name: 'Silent Library',
-    mapId: 'library',
-    vibe: 'Silent study',
-    roomWideGames: true,
-    here: 142,
-    copies: 8,
-    joinId: 'silent-library-2',
-  },
-  {
-    id: 'cafe-lounge',
+    id: 'cafe',
     name: 'Cat Café',
     mapId: 'cafe',
-    vibe: 'Chill and chat',
+    vibe: 'Chill and chat · text only',
     roomWideGames: true,
     here: 57,
     copies: 3,
-    joinId: 'cafe-lounge-1',
-    friendsInside: ['bow'],
+    friendsInside: ['mook'],
   },
   {
-    id: 'night-rooftop',
+    id: 'rooftop',
     name: 'Starry Rooftop',
     mapId: 'rooftop',
-    vibe: 'Late night talks',
+    vibe: 'Late night talks · text only',
     roomWideGames: true,
     here: 3,
     copies: 1,
-    joinId: 'rooftop-1',
   },
 ];
 
+/** Which copy Walk in lands you in: your friends' copy (any free seat), else the busiest one still taking strangers. */
+export function commonCopyFor(mapId: string): string {
+  const copies = COMMON_COPIES.filter((c) => c.mapId === mapId);
+  const withFriend = PUBLIC_SERVER.rooms.find(
+    (r) =>
+      r.mapId === mapId &&
+      r.people.some((id) => FRIENDS.some((f) => f.id === id)) &&
+      copies.find((c) => c.id === r.id)!.people < COMMON_CAPACITY,
+  );
+  if (withFriend) return withFriend.id;
+  const open = copies.filter((c) => c.people < STRANGERS_UP_TO).sort((a, b) => b.people - a.people);
+  return (open[0] ?? copies[0]!).id;
+}
+
 /**
  * Open rooms: rooms people made and set to Open, so anyone can walk in (and join as a member).
- * Unlike drop-in rooms they have an owner, members and a saved chat, and one copy only: full is full.
+ * Unlike Common rooms they have an owner, members and a saved chat, and one copy only: full is full.
  */
 export interface OpenRoom {
   id: string;
@@ -733,7 +731,9 @@ export interface OpenRoom {
   members: number;
   inside: number;
   capacity: number;
+  /** From the fixed list (Overview → Tags and language), up to 3. */
   tags: string[];
+  language: string;
   blurb: string;
   /** Members must be approved ("Ask to join"); still listed so people can find it. */
   ask?: boolean;
@@ -751,7 +751,8 @@ export const OPEN_ROOMS: OpenRoom[] = [
     members: 230,
     inside: 41,
     capacity: 50,
-    tags: ['Games', 'Werewolf'],
+    tags: ['Games', 'Late night'],
+    language: 'Thai',
     blurb: 'Werewolf, cards and drawing games every weekend.',
     friendsInside: ['ploy'],
   },
@@ -765,7 +766,8 @@ export const OPEN_ROOMS: OpenRoom[] = [
     members: 980,
     inside: 96,
     capacity: 100,
-    tags: ['Study', 'Quiet'],
+    tags: ['Study'],
+    language: 'English',
     blurb: 'Silent study all day, group sprints every hour.',
   },
   {
@@ -778,7 +780,8 @@ export const OPEN_ROOMS: OpenRoom[] = [
     members: 920,
     inside: 50,
     capacity: 50,
-    tags: ['Anime', 'Watch party'],
+    tags: ['Anime', 'Chill'],
+    language: 'Thai',
     blurb: 'Weekly watch parties on the big TV.',
   },
   {
@@ -791,7 +794,8 @@ export const OPEN_ROOMS: OpenRoom[] = [
     members: 410,
     inside: 9,
     capacity: 25,
-    tags: ['Language', 'Voice'],
+    tags: ['Language exchange'],
+    language: 'English',
     blurb: 'Practise speaking in small tables.',
     ask: true,
   },

@@ -42,7 +42,7 @@ Hover (or long-press on phones) shows a small toolbar:
 - The real app compresses them on upload (WebP, longest side 2048 px, ~300 KB each) and keeps them as
   long as the message exists. Cost: 10,000 pictures ≈ 3 GB ≈ under $1 a month on S3.
 - No GIF picker in v1.
-- Drop-in rooms: guests can't send pictures (feature 2); everyone else can.
+- Common rooms: nobody sends pictures (text only, feature 14).
 
 ## Reading
 

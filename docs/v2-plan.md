@@ -5,8 +5,8 @@ communities hang out, study and play together. This file is the overview. Each f
 spec in `docs/v2/features/`, written after the feature has been discussed in detail and approved
 in the demo (`demo/`, `pnpm --filter @study/demo demo:dev`, port 3100).
 
-Status (2026-11-09): features 1–11 are decided and built in the demo; next is feature 12 (card
-games at the card table, Werewolf at its own table). The demo is frontend-only with mock data. Nothing is deployed.
+Status (2026-11-09): features 1–11 and 14 are decided and built in the demo; 13 (flashcards) was
+dropped; feature 12 (card games, Werewolf) is paused mid-discussion. The demo is frontend-only with mock data. Nothing is deployed.
 
 ## Why
 
@@ -30,7 +30,7 @@ model is Gather's, kept simpler:
   - Areas inside the map (study tables, a café corner, a card table, private zones) replace "rooms in a server".
 - **A room owns its people and rules:** members, roles (Owner, Mod, Member), invites, visibility, guests, safety settings.
 - **When it's full, it's full.** A private room never opens copies; the owner's Plus raises its capacity.
-  Drop-in rooms are the exception (see below).
+  Common rooms are the exception (see below).
 - **Chat outside 3D.** The permanent chat is readable and writable without entering 3D. Phones and
   slow devices use it that way; walking in is one tap.
 
@@ -41,7 +41,7 @@ model is Gather's, kept simpler:
 - **Visibility:** private (invite only, the default), ask to join, or open (listed). The owner can change it.
 - **Members first, like Discord:** you join a room before walking in (Open: one "Join & walk in"
   button; Ask to join: a mod approves). A preview shows the room and its rules first; the chat stays
-  hidden until you join. Drop-in rooms and guest passes are the exceptions.
+  hidden until you join. Common rooms and guest passes are the exceptions.
 - **Roles:** Owner, Mod, Member, fixed (no custom roles). Invites: member links (7 days by default,
   optional use limit) and 24-hour guest passes. Kick, ban (tied to the account) and time out.
   Details: [03-rooms-membership.md](v2/features/03-rooms-membership.md).
@@ -81,29 +81,32 @@ model is Gather's, kept simpler:
   banner, the same way.
 - **Changing a room's map** keeps the same room (link, chat, members) and applies at once, live.
 
-### Open rooms and drop-in rooms
+### Open rooms and Common rooms
 
-- **Drop-in rooms are fully open for accounts** (mic, images, screen share), like a public Discord
-  server. **Anonymous guests** can only listen and send text: no voice, images or screen share.
+Two kinds of room anyone can walk into, named so people know what they get. Details:
+[14-open-rooms-moderation.md](v2/features/14-open-rooms-moderation.md).
+
+- **Open room:** a normal room whose owner set "Who can join" to Open. It's listed in Discover and
+  on Home ("Open now"); anyone with an account can walk in and join as a member. It has an owner,
+  mods, members and a saved chat, keeps everything (voice, pictures, videos), and one copy only:
+  full is full. Fixed tags (up to 3) and a language help people find it.
+- **Common room** (was "drop-in room", before that "public room"): run by Connecta, one per template
+  (Library, Cat Café, Starry Rooftop), anyone welcome, guests too. No members and no saved chat.
+  A copy holds 25, with 5 seats kept for people joining a friend (strangers fill it to 20), then a new one opens ("Library Common Room #2"); Walk
+  in lands you with friends, otherwise in the busiest copy.
+- **Common rooms are safe for strangers by design** (decided 2026-11-09): nobody runs them, so for
+  everyone: **text only** (no voice, pictures, watch together or screen share), slow mode, links not
+  clickable, no Werewolf. Card games, Draw & Guess, Pick a Side and the whiteboard work.
 - **Same rooms for every age;** under-18s aren't matched into separate copies.
 - **Moderation is pluggable and cheap first.** Messages go through one `moderate()` step whose
   layers can each be switched on or off: a free word filter (e.g. `obscenity` plus our own list,
-  Thai included), limits (slow mode, link and message caps for new accounts), report → auto-mute
-  (e.g. 3 reports in 10 minutes mutes for 15 minutes and flags it for the admin), and the free
-  OpenAI Moderation API for images and smarter text (check it's still free when building). Paid AI
-  checks only if needed later.
-
-Two kinds of room anyone can walk into, named so people know what they get:
-
-- **Open room:** a normal room whose owner set "Who can join" to Open. It's listed in Discover and
-  on Home ("Open now"); anyone can walk in and join as a member. It has an owner, members and a
-  saved chat, and one copy only: full is full.
-- **Drop-in room** (was "public room"): run by Connecta from its templates, 2–3 types (one per map).
-  No members and no saved chat. When full, a new copy opens automatically ("Silent Library #2", ~20
-  people each), so it's never full: its card shows everyone across its copies ("142 here · 8 rooms
-  open"), and Drop in lands you in the copy with friends, or the one with the most space.
-- **Guests:** allowed with restrictions, and a guest/account indicator shows who's who.
-- Detailed design is deferred to feature 14.
+  Thai included), limits (slow mode, link caps), report thresholds (3 reports in 10 minutes → muted
+  15 minutes; in Common rooms, 5 reports in 30 minutes → out of Common rooms for an hour), and the
+  free OpenAI Moderation API for images and smarter text (check it's still free when building). Paid
+  AI checks only if needed later.
+- **The Connecta team** works from an admin site (`/admin`): overview and health, reports, users,
+  rooms, Common rooms, moderation, maps, audit log. Warnings, suspensions and bans are always by
+  hand, emailed with the reason (reply to appeal). No voice recording, ever.
 
 ### People and chat
 
@@ -157,10 +160,11 @@ Details: [09-activity-framework.md](v2/features/09-activity-framework.md).
   everyone leaves. Details: [11-party-games.md](v2/features/11-party-games.md#-whiteboard).
 - **Photo mode:** a dock button that takes photos anywhere, with an app-logo frame and a 3 s timer;
   save, share to Room chat or copy. Connecta keeps no photos.
-- **Drawing telephone** at a new Art corner (our own Gartic Phone–style game): Drawing telephone and
+- **Draw & Guess** at a new Art corner (our own Gartic Phone–style game): Draw & Guess and
   Copycat modes, the album plays on its own, no scores; the game is panel-only, the corner is decor.
-  Details: [11-party-games.md](v2/features/11-party-games.md#-drawing-telephone).
-- **AI quizzes** are AI decks in Pick a Side (feature 11). Flashcards later. No AI tutor or chatbot.
+  Details: [11-party-games.md](v2/features/11-party-games.md#-draw--guess).
+- **AI quizzes** are AI decks in Pick a Side (feature 11). **No flashcards** (dropped 2026-11-09). No AI
+  tutor or chatbot.
 - **Not now:** emotes, celebrations and other body-movement games. Campfire and sofa corners are map
   pieces, not features.
 
@@ -177,7 +181,7 @@ Details: [09-activity-framework.md](v2/features/09-activity-framework.md).
 - Sign in with Google, Discord or email (passwordless).
 - Settings can edit your character, using the same editor as sign-up.
 - **Names:** a unique @handle (adding friends, @mentions) plus a free display name shown in rooms.
-- **Guests first:** a guest picks a name and character and drops in (invite link or drop-in room).
+- **Guests first:** a guest picks a name and character and drops in (invite link or a Common room).
   An account is needed to join rooms as a member, add friends or DM; signing up keeps the guest's
   character.
 - **Age 13+.** The full birthday is stored; under 13 gets a friendly "come back later" screen.
@@ -189,17 +193,17 @@ Details: [09-activity-framework.md](v2/features/09-activity-framework.md).
 **One subscription, Connecta Plus** (decided 2026-11-09). Room boosts were dropped: copying
 Discord's boosts plus Plus plus coins was too much for a cosy app of small groups.
 
-|                               | Free        | Plus                  |
-| ----------------------------- | ----------- | --------------------- |
-| Rooms you own: people at once | 25          | 100 (Big maps)        |
-| Rooms you own: members        | 150         | 1,000                 |
-| Maps                          | basic       | + premium maps        |
-| Screen share                  | 720p        | 1080p                 |
-| Rooms you can make / join     | 10 / 100    | 30 / 200              |
-| Skins and pets                | base set    | + premium skins, pets |
-| Name tag and profile banner   | plain       | animated              |
-| Uploads                       | 10 MB       | 50 MB                 |
-| AI quizzes and flashcards     | a few a day | plenty                |
+|                               | Free     | Plus                  |
+| ----------------------------- | -------- | --------------------- |
+| Rooms you own: people at once | 25       | 100 (Big maps)        |
+| Rooms you own: members        | 150      | 1,000                 |
+| Maps                          | basic    | + premium maps        |
+| Screen share                  | 720p     | 1080p                 |
+| Rooms you can make / join     | 10 / 100 | 30 / 200              |
+| Skins and pets                | base set | + premium skins, pets |
+| Name tag and profile banner   | plain    | animated              |
+| Uploads                       | 10 MB    | 50 MB                 |
+| AI quiz decks                 | 3 a day  | 30 a day              |
 
 - **A room follows its owner's plan.** Everyone inside gets the room space and the maps; only the
   owner pays. Friends chip in by **gifting Plus**.
@@ -259,8 +263,10 @@ old names. Users never see them, but the real app must not inherit them. When po
 - [ ] **Routes:** `/servers/[id]` (the room's chat page) and `/servers/[id]/rooms/[roomId]` (3D)
       become something like `/r/[id]` and `/r/[id]/walk`. Update every `href` (`walkInHref`,
       `chatHref`, friend chips, DMs, invites).
-- [ ] **Drop-in rooms:** replace the `PUBLIC_SERVER` stand-in (a fake server holding the copies)
-      with a real drop-in model: a template, its copies, and "land me in the right copy".
+- [ ] **Common rooms:** replace the `PUBLIC_SERVER` stand-in (a fake server holding the copies)
+      with a real model: a template, its copies, and "land me in the right copy" (`commonCopyFor`).
+- [ ] **"View as"** (`lib/viewer.ts`, `roleIn`) is demo-only: roles come from the session and the
+      room's members.
 - [ ] **Folders and names:** `components/server/` (InviteDialog), `ServerFrame` in `AppFrame.tsx`,
       `serverById`, `serverId` params, `ChatTarget.kind: 'channel'`.
 - [ ] **Demo-only code to leave behind:** `DemoToolbar`, `lib/demoCrowd.ts` (crowd and 100 rooms),
@@ -278,23 +284,23 @@ The UI is approved in `demo/` first, then a spec is written to `docs/v2/features
 
 ## Feature agenda
 
-| #   | Feature                                                   | Spec                                                             |
-| --- | --------------------------------------------------------- | ---------------------------------------------------------------- |
-| 1   | App shell and navigation                                  | [01-app-shell.md](v2/features/01-app-shell.md)                   |
-| 2   | Accounts and sign-up                                      | [02-accounts.md](v2/features/02-accounts.md)                     |
-| 3   | Rooms and membership (visibility, roles, invites, guests) | [03-rooms-membership.md](v2/features/03-rooms-membership.md)     |
-| 4   | Room chat and DMs                                         | [04-chat-and-dms.md](v2/features/04-chat-and-dms.md)             |
-| 5   | Friends                                                   | [05-friends.md](v2/features/05-friends.md)                       |
-| 6   | The 3D room                                               | [06-3d-room.md](v2/features/06-3d-room.md)                       |
-| 7   | Map templates and the editor                              | [07-maps.md](v2/features/07-maps.md)                             |
-| 8   | Study tools                                               | [08-study-tools.md](v2/features/08-study-tools.md)               |
-| 9   | Activity framework                                        | [09-activity-framework.md](v2/features/09-activity-framework.md) |
-| 10  | Watch together and photo mode                             | [10-watch-and-photo.md](v2/features/10-watch-and-photo.md)       |
-| 11  | Pick a Side, whiteboard, drawing telephone (done)         | [11-party-games.md](v2/features/11-party-games.md)               |
-| 12  | Card games, Werewolf                                      |                                                                  |
-| 13  | AI flashcards (AI quiz decks are in 11)                   |                                                                  |
-| 14  | Open rooms, drop-in rooms and moderation                  |                                                                  |
-| 15  | Business and infra                                        |                                                                  |
+| #   | Feature                                                   | Spec                                                                   |
+| --- | --------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 1   | App shell and navigation                                  | [01-app-shell.md](v2/features/01-app-shell.md)                         |
+| 2   | Accounts and sign-up                                      | [02-accounts.md](v2/features/02-accounts.md)                           |
+| 3   | Rooms and membership (visibility, roles, invites, guests) | [03-rooms-membership.md](v2/features/03-rooms-membership.md)           |
+| 4   | Room chat and DMs                                         | [04-chat-and-dms.md](v2/features/04-chat-and-dms.md)                   |
+| 5   | Friends                                                   | [05-friends.md](v2/features/05-friends.md)                             |
+| 6   | The 3D room                                               | [06-3d-room.md](v2/features/06-3d-room.md)                             |
+| 7   | Map templates and the editor                              | [07-maps.md](v2/features/07-maps.md)                                   |
+| 8   | Study tools                                               | [08-study-tools.md](v2/features/08-study-tools.md)                     |
+| 9   | Activity framework                                        | [09-activity-framework.md](v2/features/09-activity-framework.md)       |
+| 10  | Watch together and photo mode                             | [10-watch-and-photo.md](v2/features/10-watch-and-photo.md)             |
+| 11  | Pick a Side, whiteboard, Draw & Guess (done)              | [11-party-games.md](v2/features/11-party-games.md)                     |
+| 12  | Card games, Werewolf                                      |                                                                        |
+| 13  | ~~AI flashcards~~ dropped (2026-11-09)                    |                                                                        |
+| 14  | Common rooms, open rooms and moderation (done)            | [14-open-rooms-moderation.md](v2/features/14-open-rooms-moderation.md) |
+| 15  | Business and infra                                        |                                                                        |
 
 Feature 3 was "Servers" before the move to rooms.
 

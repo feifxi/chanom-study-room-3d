@@ -6,6 +6,7 @@ import {
   Bell,
   CalendarHeart,
   CheckCheck,
+  Flag,
   Info,
   Link2,
   LogOut,
@@ -18,6 +19,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { ReportRoomDialog } from './ReportRoomDialog';
 import { InviteDialog } from '@/components/server/InviteDialog';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -35,7 +37,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { userById } from '@/lib/mock';
-import { chatHref, planOf, walkInHref, type PlaceRoom } from './model';
+import { chatHref, DEFAULT_RULES, planOf, walkInHref, type PlaceRoom } from './model';
 import { RoomSettingsDialog } from './RoomSettingsDialog';
 import { Scene } from './Scene';
 
@@ -64,6 +66,7 @@ export function RoomMenu({
   const [invite, setInvite] = useState(false);
   const [settings, setSettings] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false);
+  const [report, setReport] = useState(false);
   const [notify, setNotify] = useState('mentions');
   const canEdit = !!room.myRole;
 
@@ -118,6 +121,9 @@ export function RoomMenu({
           {room.myRole !== 'Owner' && (
             <>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => setReport(true)}>
+                <Flag /> Report room
+              </DropdownMenuItem>
               <DropdownMenuItem variant="destructive" onSelect={() => setLeaving(true)}>
                 <LogOut /> Leave room
               </DropdownMenuItem>
@@ -128,6 +134,7 @@ export function RoomMenu({
 
       <AboutRoomDialog room={room} open={about} onOpenChange={setAbout} onSettings={canEdit ? () => setSettings('overview') : undefined} />
       <InviteDialog server={room.server} open={invite} onOpenChange={setInvite} />
+      <ReportRoomDialog name={room.name} open={report} onOpenChange={setReport} />
       <RoomSettingsDialog room={room} tab={settings} onClose={() => setSettings(null)} />
       <Dialog open={leaving} onOpenChange={setLeaving}>
         <DialogContent className="max-w-[calc(100%-2rem)] rounded-3xl sm:max-w-sm">
@@ -169,11 +176,14 @@ export function AboutRoomDialog({
   open,
   onOpenChange,
   onSettings,
+  inRoom = false,
 }: {
   room: PlaceRoom;
   open: boolean;
   onOpenChange: (o: boolean) => void;
   onSettings?: () => void;
+  /** Opened from inside the 3D room: no Walk in or Chat (Chat would leave the room). */
+  inRoom?: boolean;
 }) {
   const s = room.server;
   const ownerId = Object.keys(s.roles).find((id) => s.roles[id] === 'Owner') ?? s.members[1] ?? 'me';
@@ -210,6 +220,10 @@ export function AboutRoomDialog({
               <CalendarHeart className="size-4" /> {s.event}
             </p>
           )}
+          <section className="rounded-2xl bg-muted/60 px-3 py-2.5">
+            <p className="text-[11px] font-black tracking-wider text-muted-foreground uppercase">Room rules</p>
+            <p className="mt-1 text-sm whitespace-pre-line">{DEFAULT_RULES}</p>
+          </section>
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
             {facts.map(([k, v]) => (
               <div key={k}>
@@ -219,7 +233,7 @@ export function AboutRoomDialog({
             ))}
           </dl>
           <div className="flex flex-wrap gap-2">
-            {room.full ? (
+            {inRoom ? null : room.full ? (
               <Button className="rounded-full font-extrabold" onClick={() => toast.success('We’ll tell you when a spot opens')}>
                 <Bell /> Full · tell me when there’s space
               </Button>
@@ -230,11 +244,13 @@ export function AboutRoomDialog({
                 </Link>
               </Button>
             )}
-            <Button asChild variant="outline" className="rounded-full font-extrabold">
-              <Link href={chatHref(room)}>
-                <MessageCircle /> Chat
-              </Link>
-            </Button>
+            {!inRoom && (
+              <Button asChild variant="outline" className="rounded-full font-extrabold">
+                <Link href={chatHref(room)}>
+                  <MessageCircle /> Chat
+                </Link>
+              </Button>
+            )}
             {onSettings && (
               <Button
                 variant="ghost"

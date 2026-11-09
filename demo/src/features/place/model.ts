@@ -1,4 +1,5 @@
 import { MAPS, type Channel, type MapTemplate, type Room, type Server } from '@/lib/mock';
+import { roleIn } from '@/lib/viewer';
 
 /**
  * Place layout's model (decided 2026-11-08): no servers, just rooms. A room has one map (from a
@@ -52,7 +53,7 @@ export function placeRoom(server: Server): PlaceRoom {
   const people = server.rooms.flatMap((r) => r.people);
   const capacity = planOf(ownerPlus).capacity;
   const inside = Math.max(people.length, server.insideCount ?? 0);
-  const role = server.roles.me;
+  const role = roleIn(server);
   return {
     id: server.id,
     name: server.name,
@@ -71,6 +72,9 @@ export function placeRoom(server: Server): PlaceRoom {
     capacity,
   };
 }
+
+/** The room's rules (Settings → Rules & safety): shown before joining and in About this room. */
+export const DEFAULT_RULES = '1. Be kind, no drama.\n2. Quiet at the study tables; chat in the lounge.\n3. No spam or selling.';
 
 export const walkInHref = (r: PlaceRoom) => `/servers/${r.id}/rooms/${r.scene.id}`;
 export const chatHref = (r: PlaceRoom) => `/servers/${r.id}`;

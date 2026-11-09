@@ -103,6 +103,7 @@ export function LobbyCard({
           {game.min === game.max ? game.min : `${game.min}–${Math.min(game.max, seats || game.max)}`} players
         </span>
       </div>
+      {game.blurb && <p className="-mt-1 text-[11px] text-muted-foreground">{game.blurb}</p>}
 
       {extra}
 

@@ -11,7 +11,7 @@ import { randomPrompt } from './content';
 import { REACTIONS, chainOf, sourceFor, stepKind, type Entry, type TelGame } from './game';
 
 /**
- * Drawing telephone happens entirely in this panel, like Gartic Phone: your turn (write, draw,
+ * Draw & Guess happens entirely in this panel, like Gartic Phone: your turn (write, draw,
  * describe, or copy from memory), then the album. The room and voice carry on around it.
  */
 export function TelephonePanel({
@@ -31,7 +31,7 @@ export function TelephonePanel({
     <section
       className="panel flex max-h-[calc(100dvh-170px)] max-w-[calc(100vw-1.5rem)] flex-col gap-2.5 p-3"
       style={{ width: 'min(860px, calc(100vw - 160px))' }}
-      aria-label={game.mode === 'tel' ? 'Drawing telephone' : 'Copycat'}
+      aria-label={game.mode === 'tel' ? 'Draw & Guess' : 'Copycat'}
     >
       {game.stage === 'turn' ? (
         <Turn key={game.step} hub={hub} game={game} st={st} now={now} />
@@ -67,7 +67,7 @@ function Turn({ hub, game, st, now }: { hub: ActivityHub; game: TelGame; st: Spo
   return (
     <>
       <div className="flex items-center gap-2">
-        <span className="text-sm font-black">{game.mode === 'tel' ? '✏️ Drawing telephone' : '🐱 Copycat'}</span>
+        <span className="text-sm font-black">{game.mode === 'tel' ? '✏️ Draw & Guess' : '🐱 Copycat'}</span>
         <span className="text-[11px] font-bold text-muted-foreground">
           Step {game.step + 1} of {game.steps} · {LABEL[kind]}
         </span>

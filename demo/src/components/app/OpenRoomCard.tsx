@@ -6,28 +6,30 @@ import { Users, VolumeX } from 'lucide-react';
 import { JoinRoomDialog } from '@/features/place/JoinRoomDialog';
 import { AvatarStack } from '@/components/UserAvatar';
 import { cn } from '@/lib/utils';
-import { MAPS, serverById, userById, type DropIn, type OpenRoom } from '@/lib/mock';
+import { commonCopyFor, MAPS, serverById, userById, type CommonRoom, type OpenRoom } from '@/lib/mock';
+import { useViewer } from '@/lib/viewer';
 
-type Props = { kind: 'open'; room: OpenRoom } | { kind: 'drop-in'; room: DropIn };
+type Props = { kind: 'open'; room: OpenRoom } | { kind: 'common'; room: CommonRoom };
 
 /**
  * A room anyone can walk into, on Home ("Open now") and in Discover. Two kinds, labelled so people
  * know what they're getting:
  * - **Open room**: someone made it and set it to Open. It has an owner, members and a saved chat;
  *   one copy only, so full is full: the card shows how full it is.
- * - **Drop-in room**: run by Connecta from a template. No members, no saved chat, and copies open
- *   as people come, so it's never full: the card counts everyone across its copies instead.
+ * - **Common room**: run by Connecta from a template, anyone welcome (guests too). Text only, no
+ *   members, no saved chat; copies open as people come, so it's never full: the card counts
+ *   everyone across its copies instead.
  */
 export function OpenRoomCard(props: Props) {
   const r = props.room;
   const map = MAPS.find((m) => m.id === r.mapId)!;
   const friends = (r.friendsInside ?? []).map(userById);
 
-  if (props.kind === 'drop-in') {
+  if (props.kind === 'common') {
     const d = props.room;
     return (
-      <Link href={`/servers/public/rooms/${d.joinId}`} className={CARD}>
-        <Picture tint={map.tint} emoji={map.emoji} label="Drop-in · by Connecta" dark />
+      <Link href={`/servers/public/rooms/${commonCopyFor(d.mapId)}`} className={CARD}>
+        <Picture tint={map.tint} emoji={map.emoji} label="Common room · by Connecta" dark />
         <p className="mt-2 flex items-center gap-1 font-black">
           <span className="truncate">{d.name}</span>
           {!d.roomWideGames && <VolumeX className="size-3.5 flex-none text-muted-foreground" aria-label="No room-wide games" />}
@@ -40,8 +42,8 @@ export function OpenRoomCard(props: Props) {
             · {d.copies} {d.copies === 1 ? 'room' : 'rooms'} open
           </span>
         </p>
-        <Friends friends={friends} fallback="You’ll land where there’s space" />
-        <span className={cn(BUTTON, 'bg-primary text-primary-foreground group-hover:bg-primary-ink')}>Drop in</span>
+        <Friends friends={friends} fallback="You’ll land in the liveliest copy" />
+        <span className={cn(BUTTON, 'bg-primary text-primary-foreground group-hover:bg-primary-ink')}>Walk in</span>
       </Link>
     );
   }
@@ -57,13 +59,28 @@ function OpenCard({ room: o }: { room: OpenRoom }) {
   const fill = o.inside / o.capacity;
   const full = o.inside >= o.capacity;
   const mine = serverById(o.id);
-  const action = mine ? (full ? 'Full · notify me' : 'Walk in') : o.ask ? 'Ask to join' : full ? 'Join · full now' : 'Join & walk in';
+  // Guests can look, but open rooms have members, and members need an account
+  const guest = useViewer() === 'guest';
+  const action = guest
+    ? 'Sign up to join'
+    : mine
+      ? full
+        ? 'Full · notify me'
+        : 'Walk in'
+      : o.ask
+        ? 'Ask to join'
+        : full
+          ? 'Join · full now'
+          : 'Join & walk in';
   const body = (
     <>
       <Picture tint={map.tint} emoji={o.emoji} label="Open room" />
       <p className="mt-2 truncate font-black">{o.name}</p>
       <p className="line-clamp-1 text-xs text-muted-foreground">
         {o.blurb} · by {o.owner}
+      </p>
+      <p className="mt-1 truncate text-[11px] font-bold text-muted-foreground">
+        {o.language} · {o.tags.join(', ')}
       </p>
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
         <div
@@ -88,6 +105,12 @@ function OpenCard({ room: o }: { room: OpenRoom }) {
       </span>
     </>
   );
+  if (guest)
+    return (
+      <Link href="/login" className={CARD}>
+        {body}
+      </Link>
+    );
   // Already a member: go to the room's page (its chat works even when the room is full)
   return mine ? (
     <Link href={`/servers/${o.id}`} className={CARD}>

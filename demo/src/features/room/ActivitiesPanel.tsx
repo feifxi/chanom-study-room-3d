@@ -14,9 +14,12 @@ export function ActivitiesPanel({
   watchTitle,
   hostName,
   onGo,
+  common = false,
 }: {
   states: Record<SpotId, SpotState>;
   roomWideGames: boolean;
+  /** A Common room: nobody runs it, so no videos (watch together) and no voice games (Werewolf). */
+  common?: boolean;
   /** What's on the big screen. */
   watchTitle?: string;
   hostName: (id: string) => string;
@@ -34,26 +37,29 @@ export function ActivitiesPanel({
       )}
       {listed(states).map((spot) => {
         const st = states[spot.id];
-        const off = spot.roomWide && !roomWideGames;
+        const notHere = common && NOT_IN_COMMON.includes(spot.id);
+        const off = notHere || (spot.roomWide && !roomWideGames);
         const live = st.phase === 'gathering' || st.phase === 'playing';
         const place = spot.name.toLowerCase();
         const status = !spot.built
           ? `Comes with feature ${spot.feature}`
-          : off
-            ? 'Off in this room'
-            : st.phase === 'gathering'
-              ? `${st.game.name} · ${st.players.length} in · ${hostName(st.hostId ?? '')} hosting`
-              : st.phase === 'playing' && spot.kind === 'drop-in'
-                ? `${watchTitle ?? 'Something’s on'} · ${st.players.length} watching`
-                : st.phase === 'playing'
-                  ? `${st.game.name} · ${st.players.length} playing`
-                  : st.phase === 'results'
-                    ? `${st.game.name} · just finished`
-                    : spot.seats
-                      ? `At the ${place} · sit down to start`
-                      : spot.kind === 'drop-in'
-                        ? `At the ${place} · press E to watch`
-                        : `At the ${place} · press E to start`;
+          : notHere
+            ? 'Not in Common rooms: they’re text only'
+            : off
+              ? 'Off in this room'
+              : st.phase === 'gathering'
+                ? `${st.game.name} · ${st.players.length} in · ${hostName(st.hostId ?? '')} hosting`
+                : st.phase === 'playing' && spot.kind === 'drop-in'
+                  ? `${watchTitle ?? 'Something’s on'} · ${st.players.length} watching`
+                  : st.phase === 'playing'
+                    ? `${st.game.name} · ${st.players.length} playing`
+                    : st.phase === 'results'
+                      ? `${st.game.name} · just finished`
+                      : spot.seats
+                        ? `At the ${place} · sit down to start`
+                        : spot.kind === 'drop-in'
+                          ? `At the ${place} · press E to watch`
+                          : `At the ${place} · press E to start`;
         return (
           <div
             key={spot.id}
@@ -92,6 +98,9 @@ export function ActivitiesPanel({
     </div>
   );
 }
+
+/** Common rooms are text only with strangers: videos and the talking game stay in rooms someone runs. */
+const NOT_IN_COMMON: SpotId[] = ['tv', 'werewolf'];
 
 /** The list's order (the user's pick): the most inviting first. */
 const ORDER: SpotId[] = ['tv', 'cards', 'werewolf', 'art', 'floor'];

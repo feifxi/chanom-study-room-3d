@@ -8,6 +8,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } fr
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { DMS, channelMessages, userById, type Server } from '@/lib/mock';
+import { roleIn } from '@/lib/viewer';
 
 /** What the big chat panel shows: one of the server's chats, or a DM. */
 export interface ChatTarget {
@@ -125,7 +126,7 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
             initial={base}
             unread={unread}
             members={friend ? ['me', friend.id] : server.members}
-            moderator={!friend && !!server.roles.me}
+            moderator={!friend && !!roleIn(server)}
             placeholder={friend ? `Message ${friend.name}` : 'Message the room'}
             locked={
               friend && dm?.unfriended ? (

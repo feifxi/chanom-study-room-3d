@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart3, Compass, Crown, House, LogOut, MessageCircle, Settings, ShoppingBag, Users } from 'lucide-react';
+import { BarChart3, Compass, Crown, House, LogOut, MessageCircle, Settings, ShieldCheck, ShoppingBag, Users } from 'lucide-react';
 import { SettingsDialog } from '@/components/app/SettingsDialog';
+import { Inbox } from './Inbox';
 import { Logo, LogoMark } from '@/components/Logo';
 import { UserAvatar } from '@/components/UserAvatar';
 import {
@@ -19,6 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { DMS, FRIEND_REQUESTS, ME, userById } from '@/lib/mock';
 import { useQuests } from '@/lib/quests';
+import { useViewer } from '@/lib/viewer';
 
 const NAV = [
   { href: '/home', label: 'Home', icon: House },
@@ -34,6 +36,9 @@ const NAV = [
  */
 export function PlaceHeader() {
   const path = usePathname();
+  const viewer = useViewer();
+  // Guests only reach Discover (Common rooms take anyone); everything else needs an account
+  const nav = viewer === 'guest' ? NAV.filter((n) => n.href === '/discover') : NAV;
   return (
     <header className="flex h-14 flex-none items-center gap-2 px-1 sm:gap-4 sm:px-2">
       <Link href="/home" aria-label="Connecta home" className="flex-none">
@@ -41,7 +46,7 @@ export function PlaceHeader() {
         <LogoMark className="sm:hidden" />
       </Link>
       <nav className="flex min-w-0 items-center gap-1 overflow-x-auto [scrollbar-width:none]" aria-label="App">
-        {NAV.map((n) => {
+        {nav.map((n) => {
           const active = n.href === '/home' ? path === '/home' : path.startsWith(n.href);
           return (
             <Link
@@ -64,8 +69,17 @@ export function PlaceHeader() {
         })}
       </nav>
       <div className="ml-auto flex flex-none items-center gap-2">
-        <Messages />
-        <Me />
+        {viewer === 'guest' ? (
+          <Link href="/login" className="rounded-full bg-primary px-4 py-2 text-sm font-extrabold text-primary-foreground">
+            Sign up
+          </Link>
+        ) : (
+          <>
+            <Inbox />
+            <Messages />
+            <Me team={viewer === 'admin'} />
+          </>
+        )}
       </div>
     </header>
   );
@@ -126,7 +140,7 @@ function Messages() {
   );
 }
 
-function Me() {
+function Me({ team }: { team: boolean }) {
   const [settings, setSettings] = useState(false);
   const { coins } = useQuests();
   return (
@@ -159,6 +173,13 @@ function Me() {
               <Crown /> Connecta Plus
             </Link>
           </DropdownMenuItem>
+          {team && (
+            <DropdownMenuItem asChild>
+              <Link href="/admin">
+                <ShieldCheck /> Admin site <span className="ml-auto text-[10px] font-black text-muted-foreground">TEAM</span>
+              </Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
             <Link href="/login">

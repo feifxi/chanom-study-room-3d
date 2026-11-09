@@ -9,9 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { MAP_SIZES, MAPS, type Visibility } from '@/lib/mock';
-import { planOf, type PlaceRoom } from './model';
+import { DEFAULT_RULES, planOf, type PlaceRoom } from './model';
 import { SizePicker, TemplateCard } from './MapPickers';
 import { InvitesPanel, MembersPanel } from './RoomMembers';
 import { mapById, ROOM_TIMES, saveLook, toThumbnail, useRoomLook, type RoomLook } from './roomLook';
@@ -22,10 +23,18 @@ const TABS = [
   ['map', 'Map & look', MapIcon],
   ['members', 'Members & roles', Users],
   ['invites', 'Invites', Link2],
-  ['safety', 'Safety', Shield],
+  ['safety', 'Rules & safety', Shield],
 ] as const;
 type TabId = (typeof TABS)[number][0];
-/** Mods manage people and safety; the room itself (name, map, visibility, deleting) is the owner's. */
+/**
+ * Where each setting lives (settings audit, 2026-11-09):
+ * - Overview: what the room is and who it's for (name, picture, description, tags, who can join, how many at once)
+ * - Map & look: only the place itself (template, size, time of day)
+ * - Invites: links, and who may use them (guests)
+ * - Rules & safety: the rules people read, and what's allowed inside (filters, room-wide games)
+ *
+ * Mods manage people, invites and rules; the room itself (name, map, visibility, deleting) is the owner's.
+ */
 const MOD_TABS: TabId[] = ['members', 'invites', 'safety'];
 
 const VIS: { id: Visibility; icon: typeof Lock; title: string; text: string }[] = [
@@ -44,15 +53,20 @@ export function RoomSettingsDialog({ room, tab, onClose }: { room: PlaceRoom; ta
 }
 
 function Body({ room, initial }: { room: PlaceRoom; initial: string }) {
-  const myRole = room.server.roles.me;
-  const tabs = TABS.filter(([id]) => myRole === 'Owner' || MOD_TABS.includes(id));
+  const myRole = room.myRole;
+  // Members never get here (they see About this room instead); the guard keeps it that way
+  const tabs = TABS.filter(([id]) => myRole === 'Owner' || (myRole === 'Mod' && MOD_TABS.includes(id)));
   const [current, setCurrent] = useState(tabs.some((t) => t[0] === initial) ? initial : tabs[0]![0]);
   return (
     <DialogContent className="flex h-[min(680px,90dvh)] max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-3xl p-0 sm:max-w-4xl">
       <aside className="hidden w-52 flex-none flex-col gap-1 bg-muted/60 p-3 sm:flex">
-        <p className="truncate px-2 pb-1 text-[11px] font-black tracking-wider text-muted-foreground uppercase">
-          {room.emoji} {room.name}
-        </p>
+        <div className="px-2 pb-2">
+          <p className="text-[11px] font-black tracking-wider text-muted-foreground uppercase">Room settings</p>
+          <p className="truncate text-sm font-black">
+            {room.emoji} {room.name}
+          </p>
+          <p className="text-[11px] text-muted-foreground">Changes the room for everyone</p>
+        </div>
         {tabs.map(([id, label, Icon]) => (
           <button
             key={id}
@@ -68,7 +82,7 @@ function Body({ room, initial }: { room: PlaceRoom; initial: string }) {
       </aside>
       <div className="min-w-0 flex-1 overflow-y-auto p-6">
         <DialogTitle className="text-xl font-black">{TABS.find((t) => t[0] === current)?.[1]}</DialogTitle>
-        <DialogDescription className="sr-only">Room settings</DialogDescription>
+        <DialogDescription className="sr-only">Room settings: changes the room for everyone</DialogDescription>
         {/* Phones: no side list, so the tabs are chips */}
         <div className="mt-3 flex gap-1 overflow-x-auto sm:hidden">
           {tabs.map(([id, label]) => (
@@ -86,7 +100,7 @@ function Body({ room, initial }: { room: PlaceRoom; initial: string }) {
         </div>
         <div className="mt-5">
           {current === 'overview' && <Overview room={room} />}
-          {current === 'map' && <MapAndCapacity room={room} />}
+          {current === 'map' && <MapAndLook room={room} />}
           {current === 'members' && <MembersPanel room={room} myRole={myRole} />}
           {current === 'invites' && (
             <InvitesPanel
@@ -94,30 +108,38 @@ function Body({ room, initial }: { room: PlaceRoom; initial: string }) {
                 <Toggles
                   rows={[
                     ['Members can invite', 'Off: only the owner and mods make invite links', true],
+                    ['Allow guests', 'Guest passes let people walk in for 24 hours without an account', room.scene.allowGuests],
                     ['Guests can use voice', 'Off: guests with a 24-hour pass can listen and type in Bubbles, but not talk', false],
                   ]}
                 />
               }
             />
           )}
-          {current === 'safety' && (
-            <Toggles
-              rows={[
-                ['Filter rude words', 'In the room chat and the bubbles', true],
-                ['Slow mode', 'One message every 5 seconds', false],
-                ['New members wait 10 minutes to talk', '', false],
-                ['Show rules before joining', '', true],
-              ]}
-            />
-          )}
+          {current === 'safety' && <RulesAndSafety room={room} />}
         </div>
       </div>
     </DialogContent>
   );
 }
 
+const TAGS = ['Study', 'Chill', 'Games', 'Language exchange', 'Music', 'Art', 'Anime', 'Late night'];
+const LANGUAGES = ['Thai', 'English', 'Japanese', 'Korean', 'Chinese', 'Mixed'];
+
 function Overview({ room }: { room: PlaceRoom }) {
   const [vis, setVis] = useState(room.server.visibility);
+  const saved = useRoomLook(room.id, room.map.id);
+  const [thumb, setThumb] = useState(saved.thumb);
+  // A fixed list, up to 3: free-text tags only get spammed (feature 14)
+  const [tags, setTags] = useState<string[]>(['Study', 'Chill']);
+  const [lang, setLang] = useState('Thai');
+  const max = Math.min(planOf(room.ownerPlus).capacity, MAP_SIZES.find((s) => s.id === saved.size)!.upTo);
+  const listed = vis !== 'private';
+  const toggleTag = (t: string) =>
+    setTags((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : cur.length < 3 ? [...cur, t] : (toast('Up to 3 tags'), cur)));
+  const save = () => {
+    if (!saveLook(room.id, { ...saved, thumb })) return toast.error('Couldn’t save that. Try a smaller picture.');
+    toast.success('Saved');
+  };
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-4">
@@ -131,6 +153,7 @@ function Overview({ room }: { room: PlaceRoom }) {
         <Label htmlFor="rd">Description</Label>
         <Input id="rd" defaultValue={room.description} className="rounded-xl" />
       </div>
+      <ThumbnailPicker roomId={room.id} mapId={saved.mapId} thumb={thumb} onChange={setThumb} />
       <div>
         <p className="mb-2 text-sm font-extrabold">Who can join</p>
         <div className="grid gap-2 sm:grid-cols-3">
@@ -147,7 +170,39 @@ function Overview({ room }: { room: PlaceRoom }) {
           ))}
         </div>
       </div>
-      <Button className="w-fit rounded-full font-extrabold" onClick={() => toast.success('Saved')}>
+      <section className="flex flex-col gap-3">
+        <div>
+          <p className="text-sm font-extrabold">Tags and language</p>
+          <p className="text-xs text-muted-foreground">
+            {listed ? 'How people find the room in Discover.' : 'Used in Discover once the room is listed (Ask to join or Open).'}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {TAGS.map((t) => (
+            <Chip key={t} on={tags.includes(t)} onClick={() => toggleTag(t)}>
+              {t}
+            </Chip>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="mr-1 text-xs font-bold text-muted-foreground">Language</span>
+          {LANGUAGES.map((l) => (
+            <Chip key={l} on={lang === l} onClick={() => setLang(l)}>
+              {l}
+            </Chip>
+          ))}
+        </div>
+      </section>
+      <div className="flex flex-col gap-2">
+        <Label>
+          People at once · <span className="font-mono">{max}</span>
+        </Label>
+        <Slider key={max} defaultValue={[max]} min={2} max={max} />
+        <p className="text-xs text-muted-foreground">
+          Free: 25 · Plus: 50 on a Cosy map, 100 on a Big one (the size is in Map & look). When it’s full, it’s full.
+        </p>
+      </div>
+      <Button className="w-fit rounded-full font-extrabold" onClick={save}>
         Save changes
       </Button>
       {room.myRole === 'Owner' && (
@@ -172,11 +227,10 @@ function Overview({ room }: { room: PlaceRoom }) {
   );
 }
 
-function MapAndCapacity({ room }: { room: PlaceRoom }) {
+function MapAndLook({ room }: { room: PlaceRoom }) {
   const saved = useRoomLook(room.id, room.map.id);
   const [look, setLook] = useState(saved);
   const set = (patch: Partial<RoomLook>) => setLook((l) => ({ ...l, ...patch }));
-  const max = Math.min(planOf(room.ownerPlus).capacity, MAP_SIZES.find((s) => s.id === look.size)!.upTo);
   const someoneInside = room.people.length > 0;
   const mapChanged = look.mapId !== saved.mapId || look.size !== saved.size;
 
@@ -241,25 +295,6 @@ function MapAndCapacity({ room }: { room: PlaceRoom }) {
         </p>
       </section>
 
-      <ThumbnailPicker roomId={room.id} look={look} onChange={(thumb) => set({ thumb })} />
-
-      <div className="flex flex-col gap-2">
-        <Label>
-          People at once · <span className="font-mono">{max}</span>
-        </Label>
-        <Slider key={max} defaultValue={[max]} min={2} max={max} />
-        <p className="text-xs text-muted-foreground">Free: 25 · Plus: 50 on a Cosy map, 100 on a Big one. When it’s full, it’s full.</p>
-      </div>
-      <Toggles
-        rows={[
-          ['Allow guests', 'People with a guest link can walk in without an account', room.scene.allowGuests],
-          [
-            'Room-wide games',
-            'Off: nobody can start games that invite the whole room. Tables, TV and the board still work.',
-            room.scene.roomWideGames,
-          ],
-        ]}
-      />
       <Button className="w-fit rounded-full font-extrabold" onClick={save}>
         {mapChanged && someoneInside ? 'Save and move everyone' : 'Save changes'}
       </Button>
@@ -268,7 +303,17 @@ function MapAndCapacity({ room }: { room: PlaceRoom }) {
 }
 
 /** The room's picture on Home, Discover and invites: the owner's own, or the map's. */
-function ThumbnailPicker({ roomId, look, onChange }: { roomId: string; look: RoomLook; onChange: (thumb?: string) => void }) {
+function ThumbnailPicker({
+  roomId,
+  mapId,
+  thumb,
+  onChange,
+}: {
+  roomId: string;
+  mapId: string;
+  thumb?: string;
+  onChange: (thumb?: string) => void;
+}) {
   const [busy, setBusy] = useState(false);
   const pick = async (file?: File) => {
     if (!file) return;
@@ -287,19 +332,19 @@ function ThumbnailPicker({ roomId, look, onChange }: { roomId: string; look: Roo
       <p className="mb-2 text-sm font-extrabold">Thumbnail</p>
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative isolate aspect-video w-48 overflow-hidden rounded-2xl">
-          {look.thumb ? (
+          {thumb ? (
             // eslint-disable-next-line @next/next/no-img-element -- a data URL preview
-            <img src={look.thumb} alt="Room thumbnail" className="absolute inset-0 size-full object-cover" />
+            <img src={thumb} alt="Room thumbnail" className="absolute inset-0 size-full object-cover" />
           ) : (
-            <Scene roomId={`preview:${roomId}`} mapId={look.mapId} emojiClass="right-3 bottom-2 text-4xl" />
+            <Scene roomId={`preview:${roomId}`} mapId={mapId} emojiClass="right-3 bottom-2 text-4xl" />
           )}
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="w-fit cursor-pointer rounded-full border bg-card px-4 py-1.5 text-sm font-extrabold hover:bg-muted">
-            {busy ? 'Loading…' : look.thumb ? 'Change picture' : 'Upload a picture'}
+            {busy ? 'Loading…' : thumb ? 'Change picture' : 'Upload a picture'}
             <input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(e) => pick(e.target.files?.[0])} />
           </label>
-          {look.thumb && (
+          {thumb && (
             <button
               type="button"
               onClick={() => onChange(undefined)}
@@ -314,6 +359,50 @@ function ThumbnailPicker({ roomId, look, onChange }: { roomId: string; look: Roo
         </div>
       </div>
     </section>
+  );
+}
+
+/** The rules people read before joining (and in About this room), plus what's allowed inside. */
+function RulesAndSafety({ room }: { room: PlaceRoom }) {
+  return (
+    <div className="flex flex-col gap-6">
+      <section className="flex flex-col gap-2">
+        <Label htmlFor="rules">Room rules</Label>
+        <Textarea id="rules" rows={4} maxLength={1000} defaultValue={DEFAULT_RULES} className="rounded-xl" />
+        <Button variant="secondary" className="w-fit rounded-full font-bold" onClick={() => toast.success('Rules saved')}>
+          Save rules
+        </Button>
+      </section>
+      <Toggles
+        rows={[
+          ['Show rules before joining', 'New members tick “I’ll follow the rules” before they’re in', true],
+          ['Filter rude words', 'In the room chat and the bubbles', true],
+          ['Slow mode', 'One message every 5 seconds', false],
+          ['New members wait 10 minutes to talk', '', false],
+          [
+            'Room-wide games',
+            'Off: nobody can start games that invite the whole room (Pick a Side). Tables, the TV and the board still work.',
+            room.scene.roomWideGames,
+          ],
+        ]}
+      />
+    </div>
+  );
+}
+
+function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      className={cn(
+        'rounded-full border px-3 py-1 text-xs font-bold',
+        on ? 'border-primary bg-secondary text-secondary-foreground' : 'hover:bg-muted',
+      )}
+    >
+      {children}
+    </button>
   );
 }
 

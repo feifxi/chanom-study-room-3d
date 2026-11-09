@@ -20,14 +20,15 @@ import {
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { FRIEND_REQUESTS, FRIENDS, ME, SENT_REQUESTS, SERVERS, USERS, serverById, userById, type User } from '@/lib/mock';
+import { roleIn } from '@/lib/viewer';
 
 /** Requests you can send a day, against spam. */
 const DAILY_REQUESTS = 20;
 
 /**
  * Friends, sorted by "who can I go hang out with":
- * - **Out in rooms**: friends inside a room right now, one card per room with Join (or "Ask to join"
- *   when it's a room you can't walk into)
+ * - **Out in rooms**: friends inside a room right now, one card per room with Join. A private room
+ *   you're not in is never named (like Discord): "A private room", one card per friend, "Ask to join"
  * - **Online** (not in a room), then **Offline**
  * Add friend (exact @handle or your friend link) and Requests (incoming / sent) are dialogs.
  * Declining, ignoring and removing are silent.
@@ -48,22 +49,26 @@ export default function FriendsPage() {
       if (!s || !r) continue;
       const card = rooms.get(s.id) ?? {
         key: s.id,
-        title: `${s.emoji} ${s.name}`,
-        sub: r.name,
+        // A Common room copy is its own place: name the copy, not the template group
+        title: s.id === 'public' ? `🌏 ${r.name}` : `${s.emoji} ${s.name}`,
+        sub: s.id === 'public' ? 'Common room · text only' : r.name,
         people: [],
         href: `/servers/${s.id}/rooms/${r.id}`,
       };
       card.people.push(u);
       rooms.set(s.id, card);
-    } else if (u.inOtherRoom) {
-      const o = u.inOtherRoom;
-      const card = rooms.get(o.name) ?? { key: o.name, title: `${o.emoji} ${o.name}`, sub: `${o.map} · private`, people: [] };
-      card.people.push(u);
-      rooms.set(o.name, card);
+    } else if (u.inPrivateRoom) {
+      // One card per friend: grouping would tell you which friends are together in there
+      rooms.set(`private:${u.id}`, {
+        key: `private:${u.id}`,
+        title: '🔒 A private room',
+        sub: 'You’re not a member, so it stays private',
+        people: [u],
+      });
     }
   }
-  const out = friends.filter((u) => u.inRoom || u.inOtherRoom);
-  const online = friends.filter((u) => !u.inRoom && !u.inOtherRoom && u.presence !== 'offline');
+  const out = friends.filter((u) => u.inRoom || u.inPrivateRoom);
+  const online = friends.filter((u) => !u.inRoom && !u.inPrivateRoom && u.presence !== 'offline');
   const offline = friends.filter((u) => u.presence === 'offline');
   const remove = (u: User, block: boolean) => {
     setFriends((all) => all.filter((x) => x.id !== u.id));
@@ -167,7 +172,7 @@ function Section({ title, count, children }: { title: string; count: number; chi
 
 function People({ people, onRemove }: { people: User[]; onRemove: (u: User, block: boolean) => void }) {
   if (!people.length) return null;
-  const myRooms = SERVERS.filter((s) => s.roles.me || s.visibility !== 'private');
+  const myRooms = SERVERS.filter((s) => roleIn(s) || s.visibility !== 'private');
   return (
     <div className="flex flex-col divide-y rounded-3xl border bg-card">
       {people.map((u) => (

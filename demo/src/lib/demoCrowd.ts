@@ -169,7 +169,7 @@ export function drawOnBoard() {
   window.dispatchEvent(new Event(BOARD_EVENT));
 }
 
-/** Demo: someone starts drawing telephone at the art corner and calls everyone (feature 11). */
+/** Demo: someone starts Draw & Guess at the art corner and calls everyone (feature 11). */
 export const TELEPHONE_EVENT = 'connecta-demo:telephone';
 export function startTelephone() {
   window.dispatchEvent(new Event(TELEPHONE_EVENT));

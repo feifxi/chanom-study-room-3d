@@ -25,20 +25,27 @@ interface Props {
   bubble?: Bubble;
   board: LabelBoard;
   detail?: CharacterDetail;
+  /** Just changed outfit: a short sparkle burst as the new look appears. */
+  sparkle?: boolean;
+  /** Your just-saved look, ahead of the synced state catching up. */
+  lookOverride?: string;
 }
 
 const HAPPY = /[!🎉🚀👍✨❤♪]/u;
 /** How far behind the seat spot the chair sits (matches Library's SeatProps). */
 export const CHAIR_BACK = 0.06;
 
-export function Avatar({ id, player, isLocal, local, bubble, board, detail = 'full' }: Props) {
-  const rig = useMemo(() => new CharacterRig(sanitizeLook(safeParse(player.look)), detail), [player.look, detail]);
+export function Avatar({ id, player, isLocal, local, bubble, board, detail = 'full', sparkle = false, lookOverride }: Props) {
+  const lookJson = lookOverride ?? player.look;
+  const rig = useMemo(() => new CharacterRig(sanitizeLook(safeParse(lookJson)), detail), [lookJson, detail]);
   useEffect(() => () => rig.dispose(), [rig]);
 
   const root = useRef<THREE.Group>(null);
   const pos = useRef(new THREE.Vector3(player.x, 0, player.z));
   const last = useRef(new THREE.Vector3(player.x, 0, player.z));
   const anchor = useMemo(() => new THREE.Vector3(), []);
+  const burst = useRef<THREE.Group>(null);
+  const burstStart = useRef<number | null>(null);
 
   useEffect(() => {
     board.anchors.set(id, anchor);
@@ -49,6 +56,19 @@ export function Avatar({ id, player, isLocal, local, bubble, board, detail = 'fu
 
   useFrame((state, dt) => {
     const t = state.clock.elapsedTime;
+    if (burst.current) {
+      burstStart.current ??= t;
+      const k = (t - burstStart.current) / SPARKLE_S;
+      burst.current.visible = k < 1;
+      if (k < 1) {
+        burst.current.rotation.y = k * 2;
+        burst.current.children.forEach((c, i) => {
+          const a = (i / SPARKS) * Math.PI * 2;
+          c.position.set(Math.sin(a) * (0.3 + k * 0.6), 0.4 + k * 1.1 + (i % 2) * 0.25, Math.cos(a) * (0.3 + k * 0.6));
+          c.scale.setScalar(0.09 * (1 - k));
+        });
+      }
+    }
     let yaw = player.yaw;
     if (isLocal && local?.current) {
       pos.current.set(local.current.x, 0, local.current.z);
@@ -88,6 +108,16 @@ export function Avatar({ id, player, isLocal, local, bubble, board, detail = 'fu
     <group ref={root}>
       <BlobShadow />
       <primitive object={rig.group} />
+      {sparkle && (
+        <group ref={burst}>
+          {Array.from({ length: SPARKS }, (_, i) => (
+            <mesh key={i}>
+              <octahedronGeometry args={[1, 0]} />
+              <meshBasicMaterial color={i % 2 ? '#ffd166' : '#ff6fa8'} />
+            </mesh>
+          ))}
+        </group>
+      )}
       {isLocal && (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
           <ringGeometry args={[0.45, 0.56, 40]} />
@@ -97,6 +127,9 @@ export function Avatar({ id, player, isLocal, local, bubble, board, detail = 'fu
     </group>
   );
 }
+
+const SPARKS = 10;
+const SPARKLE_S = 0.9;
 
 function safeParse(json: string): unknown {
   try {

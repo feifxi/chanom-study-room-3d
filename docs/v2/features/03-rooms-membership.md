@@ -9,16 +9,16 @@ open rooms to preview and join.
 
 ## You're a member before you walk in
 
-Like Discord, you join a room before you can be inside it. The exceptions are drop-in rooms
+Like Discord, you join a room before you can be inside it. The exceptions are Common rooms
 (platform-run, no membership) and guest passes.
 
-| Room                   | How you get in                                                           |
-| ---------------------- | ------------------------------------------------------------------------ |
-| **Private** (default)  | A member invite link only. Not listed.                                   |
-| **Ask to join**        | Listed in Discover. Ask with an optional note → a mod lets you in.       |
-| **Open**               | Listed. One button, **Join & walk in**: you become a member and walk in. |
-| **Drop-in** (platform) | No membership; anyone walks in (guests: listen and type).                |
-| **Guest pass**         | Walk into that one room for 24 hours without an account.                 |
+| Room                  | How you get in                                                           |
+| --------------------- | ------------------------------------------------------------------------ |
+| **Private** (default) | A member invite link only. Not listed.                                   |
+| **Ask to join**       | Listed in Discover. Ask with an optional note → a mod lets you in.       |
+| **Open**              | Listed. One button, **Join & walk in**: you become a member and walk in. |
+| **Common** (platform) | No membership; anyone walks in, guests too. Text only (feature 14).      |
+| **Guest pass**        | Walk into that one room for 24 hours without an account.                 |
 
 **Preview before joining** (our version of Discord's server preview): tapping an Open or Ask-to-join
 room opens its card: map, description, owner, inside/capacity, members, tags, friends inside, and

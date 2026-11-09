@@ -19,6 +19,7 @@ import { AccountTab } from './AccountTab';
 import { cn } from '@/lib/utils';
 import { ME } from '@/lib/mock';
 import { useGlobalOptIn } from '@/lib/focus';
+import { getMyLook, saveMyLook, useMyLook } from '@/lib/myLook';
 import { KEYS, useClickToWalk, useHideInvitesWhileFocusing } from '@/lib/controls';
 
 const AvatarPreview = dynamic(() => import('@/features/avatar/AvatarPreview').then((m) => m.AvatarPreview), { ssr: false });
@@ -35,15 +36,28 @@ const TABS = [
   ['account', 'Account', KeyRound],
 ] as const;
 type Tab = (typeof TABS)[number][0];
+export type SettingsTab = Tab;
 
 /** User settings: one dialog with a tab list, like most chat apps, in the cosy style. */
-export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
-  const [tab, setTab] = useState<Tab>('profile');
+export function SettingsDialog({
+  open,
+  onOpenChange,
+  initialTab = 'profile',
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  /** Inside a room it opens on Voice & sound, the thing people look for there. */
+  initialTab?: SettingsTab;
+}) {
+  const [tab, setTab] = useState<Tab>(initialTab);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex h-[min(640px,90dvh)] max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-3xl p-0 sm:max-w-3xl">
         <aside className="hidden w-52 flex-none flex-col gap-1 bg-muted/60 p-3 sm:flex">
-          <p className="px-2 pb-1 text-[11px] font-black tracking-wider text-muted-foreground uppercase">Settings</p>
+          <div className="px-2 pb-2">
+            <p className="text-[11px] font-black tracking-wider text-muted-foreground uppercase">Your settings</p>
+            <p className="text-[11px] text-muted-foreground">Only you, in every room</p>
+          </div>
           {TABS.map(([id, label, Icon]) => (
             <button
               key={id}
@@ -86,10 +100,11 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 }
 
 function Profile({ onEditCharacter }: { onEditCharacter: () => void }) {
+  const myLook = useMyLook();
   return (
     <div className="flex flex-col gap-5 sm:flex-row">
       <div className="h-56 w-40 flex-none overflow-hidden rounded-3xl bg-gradient-to-b from-lavender to-peach">
-        <AvatarPreview look={ME.look} />
+        <AvatarPreview look={myLook.look} />
       </div>
       <div className="flex flex-1 flex-col gap-3">
         <div className="flex flex-col gap-1.5">
@@ -115,7 +130,7 @@ function Profile({ onEditCharacter }: { onEditCharacter: () => void }) {
 
 /** Same editor as sign-up, plus what you own from the shop. Saving changes how you look in every room. */
 function Character() {
-  const [look, setLook] = useState<AvatarLook>(ME.look);
+  const [look, setLook] = useState<AvatarLook>(getMyLook);
   return (
     <div className="flex flex-col gap-5">
       <CharacterEditor look={look} onChange={setLook} previewClassName="h-64 w-44" />
@@ -132,7 +147,14 @@ function Character() {
           </Link>
         </div>
       </section>
-      <Button className="w-fit rounded-full font-extrabold" onClick={() => toast.success('Looking good! Saved for every room ✨')}>
+      <Button
+        className="w-fit rounded-full font-extrabold"
+        onClick={() => {
+          const r = saveMyLook(look);
+          if (r.ok) toast.success('Looking good! ✨ Everyone in the room sees it now');
+          else toast(`One more sec: you can change again in ${r.waitS} s`);
+        }}
+      >
         Save my look
       </Button>
     </div>
@@ -184,7 +206,6 @@ function Appearance() {
           ))}
         </div>
       </section>
-      <Row label="Bouncy animations" hint="Characters hop when they walk. Turn off for reduced motion." defaultChecked />
       <Row label="Battery saver in rooms" hint="30 fps and no shadows. On by default on phones." />
     </div>
   );
@@ -270,7 +291,7 @@ function Toggles({ tab }: { tab: Tab }) {
   return (
     <div className="flex flex-col gap-5">
       <Row label="Appear offline" hint="Friends won’t see you’re online or which room you’re in" />
-      <Row label="Friend requests from anyone" hint="Off: only people who share a room with you. Only friends can DM you." defaultChecked />
+      <FriendRequestsRow />
       <Row label="Show what I’m doing to friends" hint="“Focusing · Calculus”, “Playing Slave”" defaultChecked />
       <GlobalRankRow />
       <Row label="Filter rude words in chats" defaultChecked />
@@ -278,6 +299,41 @@ function Toggles({ tab }: { tab: Tab }) {
         Blocked people (0)
       </Button>
     </div>
+  );
+}
+
+/**
+ * Who may send you a friend request (feature 5: by @handle, friend link or a room's people list).
+ * Plain choices instead of an on/off whose "off" needed explaining. DMs are friends-only either way.
+ */
+function FriendRequestsRow() {
+  const [who, setWho] = useState<'anyone' | 'rooms' | 'nobody'>('anyone');
+  const options = [
+    ['anyone', 'Anyone', 'Anyone with your @handle or friend link, or who meets you in a room'],
+    ['rooms', 'People from my rooms', 'Members of rooms you’re in, and people inside the same room as you right now'],
+    ['nobody', 'Nobody', 'No one can send you one. You can still add people yourself'],
+  ] as const;
+  return (
+    <section className="flex flex-col gap-2">
+      <span>
+        <span className="block text-sm font-bold">Who can send me friend requests</span>
+        <span className="block text-xs text-muted-foreground">Only friends can message you, whichever you pick.</span>
+      </span>
+      <div className="grid gap-2 sm:grid-cols-3">
+        {options.map(([id, title, text]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setWho(id)}
+            aria-pressed={who === id}
+            className={cn('rounded-2xl border-2 p-2.5 text-left', who === id ? 'border-primary bg-secondary/40' : 'border-border')}
+          >
+            <span className="block text-sm font-extrabold">{title}</span>
+            <span className="block text-[11px] text-muted-foreground">{text}</span>
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
 

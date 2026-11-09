@@ -124,7 +124,7 @@ export class ActivityHub {
   /** Pick a Side: the deck the host picked in the lobby, and the game while it runs (and its results). */
   floorDeck: Deck = BUILT_IN[0]!;
   side: SideGame | null = null;
-  /** Drawing telephone at the art corner, and what you have so far this turn (sent as is when time runs out). */
+  /** Draw & Guess at the art corner, and what you have so far this turn (sent as is when time runs out). */
   tel: TelGame | null = null;
   telDraft: { text: string; strokes: Stroke[] } = { text: '', strokes: [] };
   private listeners = new Set<() => void>();
@@ -308,7 +308,7 @@ export class ActivityHub {
     Object.assign(this.spots.tv, fresh(spotById('tv')));
   }
 
-  // --- Drawing telephone (feature 11) ---
+  // --- Draw & Guess (feature 11) ---
 
   private telStart(now: number) {
     const st = this.spots.art;

@@ -19,11 +19,13 @@ import { toast } from 'sonner';
 import { SEAT_BY_ID, SPAWN } from '@study/shared';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { SettingsDialog, type SettingsTab } from '@/components/app/SettingsDialog';
 import { setConnection } from '@/lib/connection';
 import { DMS, ME, USERS, serverById } from '@/lib/mock';
 import { AWAY_EVENT, crowdPeople, useCrowd } from '@/lib/demoCrowd';
 import { questProgress } from '@/lib/quests';
 import { GUEST_LOOK, loadGuest } from '@/lib/guest';
+import { getMyLook, useMyLook } from '@/lib/myLook';
 import { useCompactScreen, useTouchScreen, isTouchScreen } from '@/lib/screen';
 import { useNow } from '@/lib/time';
 import { cn } from '@/lib/utils';
@@ -71,6 +73,7 @@ import { LeaveRoomGuard, LeaveRoomLink } from './LeaveRoom';
 import { logFocus } from '@/lib/focus';
 import { usePomodoro, type Phase } from './usePomodoro';
 import { RoomCard } from './RoomCard';
+import { isGuestViewer, isTeam, roleIn } from '@/lib/viewer';
 
 /** Scripted crowd: where each mock person sits or walks. */
 const PRESETS: Record<string, Omit<MockPerson, 'id' | 'name' | 'look'>> = {
@@ -106,8 +109,16 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const router = useRouter();
   const server = serverById(serverId)!;
   const roomDef = server.rooms.find((r) => r.id === roomId) ?? server.rooms[0]!;
-  const guest = guestName !== null;
-  const myName = guest ? guestName || 'Guest' : ME.name;
+  // `?guest=Name` from the invite page, or the Demo tab's "View as: Guest"
+  const [guestAs] = useState(() => guestName ?? (isGuestViewer() ? (loadGuest()?.name ?? 'Guest') : null));
+  const guest = guestAs !== null;
+  // Common rooms are safe for strangers by design (feature 14): text only, for everyone
+  const common = server.id === 'public';
+  // "View as" (Demo tab) changes your role; switching remounts the room, so reading it once is enough
+  const [myRole] = useState<RoomRole | undefined>(() =>
+    guestAs !== null ? undefined : server.id === 'public' ? (isTeam() ? 'Team' : undefined) : roleIn(server),
+  );
+  const myName = guest ? guestAs || 'Guest' : ME.name;
 
   // Demo only: fill the room up to a crowd of 50 or 100, in 3D and in the people list
   const crowd = useCrowd();
@@ -123,8 +134,15 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
       });
     // A guest walks in with the character they picked on the invite page (client-only, so storage is safe here)
     const extra = crowd ? crowdPeople(Math.max(0, crowd - people.length - 1)) : [];
-    return new MockRoom({ name: myName, look: guest ? (loadGuest()?.look ?? GUEST_LOOK) : ME.look }, people, extra);
+    return new MockRoom({ name: myName, look: guest ? (loadGuest()?.look ?? GUEST_LOOK) : getMyLook() }, people, extra);
   }, [roomDef, guest, myName, crowd]);
+
+  // A look saved in Settings → My character swaps your character live for everyone (no rejoin)
+  const myLook = useMyLook();
+  useEffect(() => {
+    const me = room.state.players.get('me');
+    if (me && !guest && myLook.version > 0) me.look = JSON.stringify(myLook.look);
+  }, [room, guest, myLook]);
 
   const motion = useRef<LocalMotion>({ x: SPAWN.x, z: SPAWN.z, yaw: 0, moving: false });
   const driverRef = useRef<LocalPlayerDriver | null>(null);
@@ -132,13 +150,16 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const zoomRequest = useRef<number | null>(null);
   const [zoom, setZoom] = useState(100);
   const board = useMemo(() => new LabelBoard(), []);
-  // The owner sets the room's look and time of day for everyone (feature 7); drop-ins use the defaults
+  // The owner sets the room's look and time of day for everyone (feature 7); Common rooms use the defaults
   const lookId = server.id === 'public' ? `public:${roomDef.id}` : server.id;
   const look = useRoomLook(lookId, roomDef.mapId);
   // After a live map change everyone stands up (seats belong to the old map); the demo has only one 3D map
   const arrive = useCallback(() => room.send('stand', {}), [room]);
   const light = useDayLight(look.time === 'clock' ? 'auto' : look.time);
   const [saver, setSaver] = useState(isTouchScreen);
+  // Your own settings, opened from the Room card's Your settings; null = closed
+  const [mySettings, setMySettings] = useState<SettingsTab | null>(null);
+  const lastSaid = useRef(0);
   const perfOn = usePerfOverlay();
   // A device that can't keep up switches itself to battery saver, once, and says so
   const goSaver = useCallback(() => {
@@ -198,7 +219,8 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const [away, setAway] = useState(false);
   // Talk to everyone (owner and mods): heard at full volume anywhere in the room
   const [stage, setStage] = useState(false);
-  const canStage = !guest && (server.roles.me === 'Owner' || server.roles.me === 'Mod');
+  // Talk to everyone and the other Room tools are for a room's owner and mods (Common rooms have no voice)
+  const canStage = myRole === 'Owner' || myRole === 'Mod';
 
   const onPhase = useCallback(
     (phase: Phase, focusedMin: number) => {
@@ -372,7 +394,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     hub.spots.floor.phase === 'free' &&
     Math.hypot(me.x - floor.area.x, me.z - floor.area.z) <= floor.area.r;
   const tv = spotById('tv');
-  const atFreeTv = !seated && hub.spots.tv.phase === 'free' && Math.hypot(me.x - tv.area.x, me.z - tv.area.z) <= tv.area.r;
+  const atFreeTv = !common && !seated && hub.spots.tv.phase === 'free' && Math.hypot(me.x - tv.area.x, me.z - tv.area.z) <= tv.area.r;
   const boardSpot = spotById('board');
   const atFreeBoard =
     !seated && hub.spots.board.phase === 'free' && Math.hypot(me.x - boardSpot.area.x, me.z - boardSpot.area.z) <= boardSpot.area.r;
@@ -453,8 +475,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     roomName,
     findId,
     onFind: find,
-    myRole: (guest ? undefined : server.roles.me === 'Owner' ? 'Owner' : server.roles.me === 'Mod' ? 'Mod' : undefined) as
-      RoomRole | undefined,
+    myRole,
     onMessage: (p: RoomPerson) => {
       setSheet(false);
       const dm = DMS.find((d) => d.with === p.id);
@@ -467,7 +488,12 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
       server={server}
       guest={guest}
       lines={lines}
-      onSay={(text) => say('me', myName, text)}
+      onSay={(text) => {
+        // Common rooms: slow mode for everyone (one bubble every 3 s), since nobody's there to moderate
+        if (common && Date.now() - lastSaid.current < 3000) return toast('Slow mode: one bubble every 3 seconds');
+        lastSaid.current = Date.now();
+        say('me', myName, text);
+      }}
       onTyping={(t) => room.setTyping(t)}
       onExpand={(t) => {
         setSheet(false);
@@ -496,7 +522,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
           <span>
             <button
               onClick={() => (deaf ? (setDeaf(false), setMic(true)) : setMic(!mic))}
-              disabled={guest}
+              disabled={guest || common}
               aria-pressed={mic && !deaf}
               className={cn('dock-btn', compact && 'min-w-0 px-3', mic && !deaf ? '!bg-[#2f8f62]' : '!bg-[#7a3442]')}
             >
@@ -505,7 +531,11 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
             </button>
           </span>
         </TooltipTrigger>
-        {guest && <TooltipContent>Guests can’t use voice in this room</TooltipContent>}
+        {common ? (
+          <TooltipContent>Common rooms are text only: no voice, pictures or videos</TooltipContent>
+        ) : (
+          guest && <TooltipContent>Guests can’t use voice in this room</TooltipContent>
+        )}
       </Tooltip>
       <button
         onClick={() => {
@@ -588,6 +618,8 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
         <div className="relative min-w-0 flex-1 overflow-hidden">
           <RoomCanvas
             room={room}
+            myLookVersion={guest ? 0 : myLook.version}
+            myLook={guest || !myLook.version ? undefined : JSON.stringify(myLook.look)}
             motion={motion}
             board={board}
             light={light}
@@ -636,6 +668,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                 here={people.length}
                 guest={guest}
                 view={view}
+                onMySettings={guest ? undefined : setMySettings}
                 onLeave={() => leave()}
                 className={cn('absolute top-3 left-3 z-30', compact && 'right-3')}
               />
@@ -675,6 +708,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                 touch={touch}
                 className={cn('absolute left-3 z-20', compact ? 'top-[132px]' : 'top-[88px]')}
               />
+              {mySettings && <SettingsDialog open onOpenChange={(o) => !o && setMySettings(null)} initialTab={mySettings} />}
               {!compact && chatOpen && <div className="absolute bottom-3 left-3">{chat}</div>}
 
               <MapMove lookId={lookId} mapId={look.mapId} onArrive={arrive} />
@@ -905,7 +939,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                           ? `${touch ? 'Tap' : 'Press E'} to pet ${hint.name} 🐾`
                           : `${touch ? 'Tap' : 'Press E'}: Buddy Machine`}
                   </button>
-                  {seated && seatKind !== 'sofa' && !guest && !compact && (
+                  {seated && seatKind !== 'sofa' && !guest && !common && !compact && (
                     <button
                       onClick={() => {
                         setSharing(!sharing);
@@ -927,6 +961,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                   <ActivitiesPanel
                     states={hub.spots}
                     roomWideGames={roomDef.roomWideGames}
+                    common={common}
                     watchTitle={hub.watch.now?.title}
                     hostName={(id) => who(id).name}
                     onGo={goThere}

@@ -22,6 +22,7 @@ import { nudgeQuests } from '@/lib/quests';
 import { cn } from '@/lib/utils';
 import { setPerfOverlay, usePerfOverlay } from '@/features/room3d/perf';
 import { PALETTES, usePalette } from './Providers';
+import { setViewer, useViewer, VIEWERS } from '@/lib/viewer';
 
 const PAGES = [
   ['Landing', '/'],
@@ -34,9 +35,9 @@ const PAGES = [
   ['Discover', '/discover'],
   ['Room chat (outside 3D)', '/servers/chanom'],
   ['3D room', '/servers/chanom/rooms/library'],
-  ['Public room', '/servers/public/rooms/cafe-lounge-1'],
+  ['Common room', '/servers/public/rooms/cafe-2'],
   ['Invite (guest)', '/invite/cafe-chanom'],
-  ['Map editor (admin)', '/admin/maps'],
+  ['Admin', '/admin'],
 ] as const;
 
 /** Demo-only chrome: theme, palette, a crowd for the 3D room, 100 rooms on Home, and a jump to any page. Not part of the app design. */
@@ -57,6 +58,7 @@ export function DemoToolbar() {
         </button>
       </PopoverTrigger>
       <PopoverContent side="left" className="max-h-[92dvh] w-80 overflow-y-auto rounded-2xl p-3">
+        <ViewAs />
         <Title>Theme</Title>
         <div className="mb-3 grid grid-cols-3 gap-1.5">
           {(
@@ -136,7 +138,7 @@ export function DemoToolbar() {
           🗳️ Someone starts Pick a Side (in a 3D room; invite card)
         </button>
         <button onClick={startTelephone} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
-          ✏️ Someone starts drawing telephone (art corner; invite card)
+          ✏️ Someone starts Draw & Guess (art corner; invite card)
         </button>
         <button onClick={publishMapUpdate} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
           🛠️ Team publishes a map update (in a 3D room; 60 s heads-up)
@@ -173,6 +175,34 @@ export function DemoToolbar() {
         </div>
       </PopoverContent>
     </Popover>
+  );
+}
+
+/** Who you are: every role's buttons, menus and settings without editing the mock data. */
+function ViewAs() {
+  const viewer = useViewer();
+  const current = VIEWERS.find((v) => v.id === viewer)!;
+  return (
+    <>
+      <Title>View as · {current.label}</Title>
+      <div className="mb-1 grid grid-cols-3 gap-1.5">
+        {VIEWERS.map((v) => (
+          <button
+            key={v.id}
+            onClick={() => setViewer(v.id)}
+            aria-pressed={viewer === v.id}
+            className={cn(
+              'flex flex-col items-center gap-0.5 rounded-xl border p-1.5 text-[11px] leading-tight font-bold',
+              viewer === v.id ? 'border-primary bg-secondary text-secondary-foreground' : 'hover:bg-muted',
+            )}
+          >
+            <span className="text-base">{v.emoji}</span>
+            {v.label}
+          </button>
+        ))}
+      </div>
+      <p className="mb-3 text-[11px] text-muted-foreground">{current.hint}</p>
+    </>
   );
 }
 

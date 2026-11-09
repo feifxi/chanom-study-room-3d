@@ -34,7 +34,7 @@ export const isGameSeat = (seatId: string) => seatId.startsWith('game-');
 
 /**
  * The art corner, back right: a splattered rug with easels around it and a big gallery easel at the
- * back that shows drawing telephone's reveal to the whole room.
+ * back that shows Draw & Guess's reveal to the whole room.
  */
 export const ART = { x: 8.2, z: -1.4, r: 1.45 } as const;
 export const GALLERY = { x: 7.55, z: -3.45, yaw: Math.PI / 4, width: 1.5, height: 0.86, y: 1.35 } as const;
@@ -67,6 +67,8 @@ export interface Game {
   emoji: string;
   min: number;
   max: number;
+  /** One line under the game's name when the name alone could mislead. */
+  blurb?: string;
 }
 
 export interface Spot {
@@ -172,13 +174,13 @@ export const SPOTS: Spot[] = [
   {
     id: 'art',
     name: 'Art corner',
-    activity: 'Drawing telephone',
+    activity: 'Draw & Guess',
     emoji: '🖌️',
     kind: 'rounds',
     roomWide: false,
     games: [
-      { id: 'tel', name: 'Drawing telephone', emoji: '✏️', min: 3, max: 10 },
-      { id: 'copycat', name: 'Copycat', emoji: '🐱', min: 3, max: 10 },
+      { id: 'tel', name: 'Draw & Guess', emoji: '✏️', min: 3, max: 10, blurb: 'Pass it along and see how it ends up' },
+      { id: 'copycat', name: 'Copycat', emoji: '🐱', min: 3, max: 10, blurb: 'Redraw it from memory, pass it along' },
     ],
     area: { x: ART.x, z: ART.z, r: ART.r },
     built: true,

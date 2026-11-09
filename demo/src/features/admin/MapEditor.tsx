@@ -175,7 +175,7 @@ export function MapEditor() {
   const sources = [...new Set(CATALOG.map((c) => c.source))];
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
+    <div className="flex min-h-full flex-col bg-background">
       <header className="flex flex-wrap items-center gap-3 border-b bg-card px-4 py-3">
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 text-[11px] font-black tracking-wider text-muted-foreground uppercase">

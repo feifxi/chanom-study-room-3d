@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ReportRoomDialog } from './ReportRoomDialog';
 import { Check, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { AvatarStack } from '@/components/UserAvatar';
@@ -26,6 +27,7 @@ export function JoinRoomDialog({ room, open, onOpenChange }: { room: OpenRoom; o
   const full = room.inside >= room.capacity;
   const [note, setNote] = useState('');
   const [asked, setAsked] = useState(false);
+  const [report, setReport] = useState(false);
 
   const join = () => {
     onOpenChange(false);
@@ -111,10 +113,14 @@ export function JoinRoomDialog({ room, open, onOpenChange }: { room: OpenRoom; o
             </Button>
           )}
           <p className="text-center text-xs text-muted-foreground">
-            Members see the room chat and find it on Home. You can leave any time from its “…” menu.
+            Members see the room chat and find it on Home. You can leave any time from its “…” menu.{' '}
+            <button type="button" onClick={() => setReport(true)} className="font-bold hover:text-foreground hover:underline">
+              Report room
+            </button>
           </p>
         </div>
       </DialogContent>
+      <ReportRoomDialog name={room.name} open={report} onOpenChange={setReport} />
     </Dialog>
   );
 }

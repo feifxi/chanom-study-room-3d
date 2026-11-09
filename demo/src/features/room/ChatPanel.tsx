@@ -26,7 +26,7 @@ type Tab = 'room' | 'bubbles' | 'dms';
  *   is around, so the live conversation comes first.
  * - **Room chat**: the room's saved chat (the same one as the Chat page outside 3D). Its unread
  *   count, and an @ when someone mentions you, stay on the tab so it's never missed.
- *   Public rooms have no saved chat, so no tab.
+ *   Common rooms have no saved chat, so no tab.
  * - **Messages**: your DMs, readable without leaving the room.
  * Photos show inline, like a chat bubble on the web; tap one (or ⤢) for the big chat window.
  */

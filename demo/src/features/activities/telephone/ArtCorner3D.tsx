@@ -4,7 +4,7 @@ import { ART, EASELS, GALLERY } from '../spots';
 
 /**
  * The art corner's furniture (feature 11): a paint-splatter rug, three easels facing it, a paint
- * cart and a gallery easel with a picture on it. Static on purpose: drawing telephone happens in the
+ * cart and a gallery easel with a picture on it. Static on purpose: Draw & Guess happens in the
  * panel, like Gartic Phone, so nothing here changes during a game (and it all merges into the
  * library's static batch).
  */

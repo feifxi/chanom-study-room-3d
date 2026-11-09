@@ -85,4 +85,4 @@ done_at, position)`, REST CRUD from the web app; a nightly job removes done item
 
 - Shared or joined timers, room sessions, custom lengths, auto cycles.
 - Streaks, badges, focus goals.
-- AI quizzes and flashcards (feature 13).
+- Flashcards: dropped (2026-11-09). AI quizzes are AI decks in Pick a Side (feature 11).

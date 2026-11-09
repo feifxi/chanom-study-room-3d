@@ -7,7 +7,8 @@ import { cn } from '@/lib/utils';
 import { PersonMenu, RoleChip } from './PersonMenu';
 import { useDismiss } from './useDismiss';
 
-export type RoomRole = 'Owner' | 'Mod';
+/** Team: a Connecta team account in a Common room, where nobody else has powers. */
+export type RoomRole = 'Owner' | 'Mod' | 'Team';
 
 export interface RoomPerson {
   id: string;

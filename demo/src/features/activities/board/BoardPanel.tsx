@@ -94,7 +94,7 @@ export function downloadPng(png: Blob, filename: string) {
 
 /**
  * A drawing surface with the board's tools under it: colours, sizes, eraser, undo (your own last
- * stroke, also Ctrl/Cmd+Z) and clear (asks first). The whiteboard and drawing telephone share it.
+ * stroke, also Ctrl/Cmd+Z) and clear (asks first). The whiteboard and Draw & Guess share it.
  */
 export function DrawingPad({
   board,

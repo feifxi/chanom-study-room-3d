@@ -25,6 +25,12 @@ So the shell follows Gather instead:
 - **Slim header:** logo, Home / Friends / Focus / Discover / Shop, a Messages button (DMs in a popover with
   unread counts and "See all messages"), and your avatar menu (character & settings, shop with
   coins, Connecta Plus, sign out).
+- **🔔 Inbox** (decided 2026-11-09), next to Messages: a popover with an unread badge, All / Unread,
+  "Mark all read"; each item opens what it's about and items are kept 30 days. What lands there:
+  friend requests and Ask to join replies, your join request approved, join requests for rooms you
+  mod, @mentions in room chats, space in a full room ("Full · notify me"), events starting, and
+  Connecta team actions on your account. **Not** DMs (Messages has its own badge) and **not** "a
+  friend walked in" (feature 5). Inside a room the same things arrive as toasts; the inbox keeps them.
 - **"Friends out right now":** one chip per friend in a room. Tapping it walks you in.
 - **Your rooms** = the rooms you own **and** the rooms you're a member of, in one list.
   - **Order:** pinned first, then rooms where something is happening (people inside, unread), then the rest.
@@ -44,9 +50,9 @@ So the shell follows Gather instead:
   and Leave room (members; owners transfer or delete in Settings).
 - **About this room:** a quick card with everything: picture, description, next event, map, who can
   join, members, inside now, owner, mods, plan and your role, plus Walk in / Chat / Settings.
-- **"Open now":** two open rooms you're not in (friends inside first) and two drop-in rooms, with
+- **"Open now":** two open rooms you're not in (friends inside first) and two Common rooms, with
   "See all in Discover". Home suggests; Discover is the full list with search and tags.
-- **Open room cards** show how full the room is (`41/50`, members). **Drop-in cards** show everyone
+- **Open room cards** show how full the room is (`41/50`, members). **Common room cards** show everyone
   across its copies instead (`142 here · 8 rooms open`), since copies open as people come.
 
 ### Messages (`/home/messages`)
@@ -62,7 +68,8 @@ So the shell follows Gather instead:
 
 - **Open rooms:** made by people and set to Open (owner, members, saved chat, one copy: full is
   full). Search and tags. Buttons: Walk in (you're a member), Join & walk in, Ask to join, or Full.
-- **Drop-in rooms:** run by Connecta from templates. No members, no saved chat; a new copy opens when one fills.
+- **Common rooms** (first): run by Connecta from templates, anyone welcome, text only. No members, no saved chat; a new copy
+  opens when one fills. Details: [14-open-rooms-moderation.md](14-open-rooms-moderation.md).
 
 ### A room's chat, outside 3D (the room's URL)
 
@@ -78,14 +85,14 @@ So the shell follows Gather instead:
 
 The HUD has five named parts. Each owns one kind of thing, so it's always clear where to look:
 
-| Part          | Where         | What it holds                                                               |
-| ------------- | ------------- | --------------------------------------------------------------------------- |
-| **Room card** | top left      | the room itself: name, map, who's here; Invite, Settings, Your view, Leave  |
-| **My tools**  | left rail     | your own things: Study session, Music, Quests, How to play                  |
-| **Chat**      | bottom left   | all text: Room chat, Bubbles, Messages                                      |
-| **People**    | top right     | who's here, and what you can do with each person                            |
-| **Zoom**      | bottom right  | − 100% + (not on touch screens)                                             |
-| **Dock**      | bottom centre | your voice and actions: Mic, Sound, Chat, Photo, Activities; 🛡️ Room (mods) |
+| Part          | Where         | What it holds                                                                  |
+| ------------- | ------------- | ------------------------------------------------------------------------------ |
+| **Room card** | top left      | the room itself: name, map, who's here; Invite, Settings, Your settings, Leave |
+| **My tools**  | left rail     | your own things: Study session, Music, Quests, How to play                     |
+| **Chat**      | bottom left   | all text: Room chat, Bubbles, Messages                                         |
+| **People**    | top right     | who's here, and what you can do with each person                               |
+| **Zoom**      | bottom right  | − 100% + (not on touch screens)                                                |
+| **Dock**      | bottom centre | your voice and actions: Mic, Sound, Chat, Photo, Activities; 🛡️ Room (mods)    |
 
 Plus the **chat window**: Room chat or a DM opened large over the dimmed room (⤢ in Chat).
 
@@ -99,8 +106,11 @@ Plus the **chat window**: Room chat or a DM opened large over the dimmed room (�
   from a panel don't close it.
 - **Room card** (300px). Like Gather there's no back button: you're in the room or you've left it.
   Expanded:
-  - Invite friends, and Settings (members only)
-  - **Your view** (only you see it): Battery saver. Moved here from My tools: set once, rarely touched.
+  - The expanded card has two parts so owners never mix them up: **This room** (for everyone: Invite,
+    Room settings for owner and mods, About & rules for members) and **Your settings** (only you; was
+    "Your view"): shortcuts to My look, Voice & sound, Notifications and Privacy, Battery saver, Click
+    to walk, and "All your settings". The two dialogs say it too: "Room settings · Changes the room for
+    everyone" and "Your settings · Only you, in every room".
   - **Leave room** at the bottom; goes to Home. Guests can expand the card too (Invite copies the link).
 - **My tools:** Study session (focus timer, to-do, this room today; feature 8), Music, Quests (🎯 today's three, plan "Business model"), How to play.
 - **Chat**, one panel with three tabs, so the room's main text is always one tap away:
@@ -108,7 +118,7 @@ Plus the **chat window**: Room chat or a DM opened large over the dimmed room (�
     head and is gone when the room empties. In the room you're there to talk to whoever is around,
     so the live conversation comes first.
   - **Room chat**: the room's saved chat, the same one as the Chat page outside 3D. Its unread count
-    stays on the tab, with an @ when someone mentions you. Drop-in rooms have no saved chat, so no tab.
+    stays on the tab, with an @ when someone mentions you. Common rooms have no saved chat, so no tab.
   - **Messages**: your DMs; open one to read and reply inside the panel.
   - **Emoji in every tab; pictures in Room chat and Messages** (pick with 🖼️ or paste, up to 4 a
     message, like Messenger; small previews above the box). Bubbles are text and emoji only.
@@ -187,6 +197,8 @@ delete), Map & look, Members & roles, Invites, Safety.
   periodic snapshot of each room is a later nice-to-have.
 - **Capacity is enforced by Colyseus** at join time (`maxClients` from the owner's plan and the map size).
 - **Switching maps** is live (feature 7, "Live map changes").
+- **Inbox:** a `notifications(id, user_id, kind, payload jsonb, created_at, read_at)` table, written
+  by the API and pushed live through the gateway; rows older than 30 days are deleted nightly.
 
 ## Open questions
 

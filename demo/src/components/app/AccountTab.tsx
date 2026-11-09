@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ME, SERVERS, userById } from '@/lib/mock';
+import { roleIn } from '@/lib/viewer';
 
 /** Days between "Delete account" and the account really going: sign in before then to keep it. */
 export const DELETE_GRACE_DAYS = 7;
@@ -79,7 +80,7 @@ export function AccountTab() {
 }
 
 function ConfirmDelete({ onCancel, onDone }: { onCancel: () => void; onDone: () => void }) {
-  const owned = SERVERS.filter((s) => s.roles.me === 'Owner');
+  const owned = SERVERS.filter((s) => roleIn(s) === 'Owner');
   const shared = owned.filter((s) => s.members.length > 1);
   const solo = owned.filter((s) => s.members.length <= 1);
   // Mods are the natural next owners, so they're offered first

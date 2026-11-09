@@ -69,7 +69,7 @@ export function PersonMenu({
   const [requested, setRequested] = useState(false);
   const [confirm, setConfirm] = useState<'kick' | 'ban' | 'block' | null>(null);
   const [report, setReport] = useState(false);
-  const canModerate = myRole === 'Owner' ? role !== 'Owner' : myRole === 'Mod' ? !role : false;
+  const canModerate = myRole === 'Team' || (myRole === 'Owner' ? role !== 'Owner' : myRole === 'Mod' ? !role : false);
 
   return (
     <>
@@ -128,7 +128,44 @@ export function PersonMenu({
             </DropdownMenuCheckboxItem>
           </DropdownMenuGroup>
 
-          {canModerate && (
+          {myRole === 'Team' && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="px-2 text-[11px] font-black tracking-wider text-muted-foreground uppercase">
+                Connecta team · Common room
+              </DropdownMenuLabel>
+              <DropdownMenuGroup>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <Clock /> Time out
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    {TIMEOUTS.map(([id, label]) => (
+                      <DropdownMenuItem key={id} onSelect={() => toast(`${p.name} can’t type for ${label}`)}>
+                        {label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onSelect={() => {
+                    onRemove();
+                    toast(`${p.name} is out of Common rooms for 1 hour. It’s in the audit log.`);
+                  }}
+                >
+                  <UserMinus /> Remove from Common rooms (1 h)
+                </DropdownMenuItem>
+                {!p.guest && (
+                  <DropdownMenuItem onSelect={() => window.open('/admin/users', '_blank')}>
+                    <ShieldCheck /> Open in the admin site
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuGroup>
+            </>
+          )}
+
+          {canModerate && myRole !== 'Team' && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuLabel className="px-2 text-[11px] font-black tracking-wider text-muted-foreground uppercase">
@@ -209,10 +246,10 @@ export function RoleChip({ role }: { role: RoomRole }) {
     <span
       className={cn(
         'flex-none rounded-full px-1.5 text-[10px] font-black',
-        role === 'Owner' ? 'bg-lavender text-lavender-ink' : 'bg-sky text-sky-ink',
+        role === 'Owner' ? 'bg-lavender text-lavender-ink' : role === 'Team' ? 'bg-mint text-mint-ink' : 'bg-sky text-sky-ink',
       )}
     >
-      {role === 'Owner' ? 'owner' : 'mod'}
+      {role === 'Owner' ? 'owner' : role === 'Team' ? 'Connecta team' : 'mod'}
     </span>
   );
 }

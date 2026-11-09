@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useManyRooms } from '@/lib/demoCrowd';
-import { DROP_INS, MANY_ROOMS, MAPS, ME, OPEN_ROOMS, SERVERS, USERS, serverById, userById } from '@/lib/mock';
+import { COMMON_ROOMS, MANY_ROOMS, MAPS, ME, OPEN_ROOMS, SERVERS, USERS, serverById, userById } from '@/lib/mock';
 import { chatHref, placeRoom, walkInHref, type PlaceRoom } from './model';
 import { SizePicker, TemplateCard } from './MapPickers';
 import { JOIN_REQUESTS } from './membership';
@@ -85,7 +85,7 @@ export function PlaceHome() {
     />
   );
 
-  // Open rooms you're not in yet, ones with friends inside first; then two of Connecta's drop-in rooms
+  // Open rooms you're not in yet, ones with friends inside first; then two of Connecta's Common rooms
   const open = OPEN_ROOMS.filter((r) => !serverById(r.id))
     .sort((a, b) => (b.friendsInside?.length ?? 0) - (a.friendsInside?.length ?? 0))
     .slice(0, 2);
@@ -261,8 +261,8 @@ export function PlaceHome() {
           {open.map((r) => (
             <OpenRoomCard key={r.id} kind="open" room={r} />
           ))}
-          {DROP_INS.slice(0, 2).map((r) => (
-            <OpenRoomCard key={r.id} kind="drop-in" room={r} />
+          {COMMON_ROOMS.slice(0, 2).map((r) => (
+            <OpenRoomCard key={r.id} kind="common" room={r} />
           ))}
         </div>
       </section>

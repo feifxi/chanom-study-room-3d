@@ -1,6 +1,6 @@
-# 11. Pick a Side, whiteboard, drawing telephone
+# 11. Pick a Side, whiteboard, Draw & Guess
 
-Status: done (2026-11-09). Pick a Side, the whiteboard (a free zone) and drawing telephone are
+Status: done (2026-11-09). Pick a Side, the whiteboard (a free zone) and Draw & Guess are
 decided and built in the demo. Overview: [`docs/v2-plan.md`](../../v2-plan.md). The shared activity flow (lobby, host, invites,
 leaving): [`09-activity-framework.md`](09-activity-framework.md).
 
@@ -11,8 +11,8 @@ Try it: `pnpm --filter @study/demo demo:dev` → http://localhost:3100/servers/c
 - Demo tab → **Someone starts Pick a Side**: someone else hosts (a different mode each time).
 - Walk to the whiteboard (left wall), press **E**, draw. Demo tab → **Someone draws on the
   whiteboard**: watch a cat appear on the wall, live.
-- Activities → Drawing telephone → **Go there**, press **E**, pick Drawing telephone or Copycat, 📣 **Call
-  everyone**, **Start**. Demo tab → **Someone starts drawing telephone**: join from the invite card
+- Activities → Draw & Guess → **Go there**, press **E**, pick Draw & Guess or Copycat, 📣 **Call
+  everyone**, **Start**. Demo tab → **Someone starts Draw & Guess**: join from the invite card
   (the scripted players alternate the two modes).
 
 ## 🗳️ Pick a Side
@@ -106,7 +106,7 @@ and the Buddy Machine), the same flow as the big screen.
 - **Tools:** pen, 6 colours, 3 sizes, eraser, **undo** (your own last stroke, Ctrl/Cmd+Z), **clear**
   (anyone at the board; asks "Clear the whole board for everyone?").
 - **Save as image** (PNG) and **Share to Room chat**, like photo mode. No gallery.
-- No text boxes, stickers or shapes for now: a pure drawing board. Drawing telephone reuses this
+- No text boxes, stickers or shapes for now: a pure drawing board. Draw & Guess reuses this
   canvas and its tools.
 
 ### Backend notes
@@ -117,19 +117,21 @@ and the Buddy Machine), the same flow as the big screen.
 - The client batches points per animation frame; the 3D wall redraws at most 10 times a second.
 - Cost: nothing stored; sharing is a normal Room chat image upload.
 
-## ✏️ Drawing telephone
+## ✏️ Draw & Guess
 
 Our own Gartic Phone–style game at a new **Art corner** spot (rounds, 3–10 players). The whiteboard
 stays free drawing; the art corner is where the game is. Two modes, picked by the host in the lobby:
 
-- **Drawing telephone:** write a prompt → the next person draws it → the next describes the drawing →
+- **Draw & Guess:** write a prompt → the next person draws it → the next describes the drawing →
   the next draws that → … Watching "a cat in bubble tea" become "a sad potato" is the fun.
 - **Copycat:** draw anything → the next person sees it for 8 s and redraws it from memory → … No
   writing.
 
-**Names** (decided 2026-11-09): the game is older than Gartic Phone (the paper game Telephone
-Pictionary, the board game Telestrations), so we use the generic name **Drawing telephone** and our
-own mode name **Copycat** (Gartic Phone calls it Knock-off). Never use Gartic Phone or Telestrations
+**Names** (decided 2026-11-09, renamed the same day): the game is older than Gartic Phone (the paper
+game Telephone Pictionary, the board game Telestrations). It was "Draw & Guess", but
+"telephone" means little to most people, so it's **Draw & Guess**, with the line "Pass it along and
+see how it ends up" so nobody expects one drawer and everyone guessing. Our own mode name is
+**Copycat** (Gartic Phone calls it Knock-off). Never use Gartic Phone or Telestrations
 in the app.
 
 ### How it works

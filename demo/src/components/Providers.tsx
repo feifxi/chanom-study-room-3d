@@ -1,9 +1,10 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, Fragment, useContext, useEffect, useState, type ReactNode } from 'react';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { loadViewer, useViewer } from '@/lib/viewer';
 
 export const PALETTES = [
   { id: 'strawberry', label: 'Strawberry milk', swatch: '#df6392' },
@@ -46,6 +47,10 @@ export function Providers({ children }: { children: ReactNode }) {
     document.documentElement.dataset.palette = palette;
   }, [palette]);
 
+  // Demo "View as": switching who you are remounts the page, like signing in as someone else
+  const viewer = useViewer();
+  useEffect(loadViewer, []);
+
   const setPalette = (p: Palette) => {
     setPaletteState(p);
     try {
@@ -59,7 +64,7 @@ export function Providers({ children }: { children: ReactNode }) {
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
       <PaletteContext.Provider value={{ palette, setPalette }}>
         <TooltipProvider delayDuration={200}>
-          {children}
+          <Fragment key={viewer}>{children}</Fragment>
           <Toaster position="top-center" />
         </TooltipProvider>
       </PaletteContext.Provider>

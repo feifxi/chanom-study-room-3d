@@ -14,7 +14,7 @@ Try it: `pnpm --filter @study/demo demo:dev` → http://localhost:3100/servers/c
 
 ## The idea
 
-One flow for every activity (watch together, cards, Werewolf, Pick a Side, drawing telephone,
+One flow for every activity (watch together, cards, Werewolf, Pick a Side, Draw & Guess,
 quizzes).
 Joining, starting, inviting, leaving and ending work the same everywhere; only what happens _during_
 the game differs, and each game designs that in its own feature (10–13).
@@ -28,15 +28,15 @@ The Activities list names each one by **what you do** ("Pick a Side", "Watch tog
 place under it ("At the open floor · press E to start"), so nobody has to guess what an "art corner"
 is (decided 2026-11-09).
 
-| In the list       | Spot (place)   | Joining          | Kind    | Room-wide |
-| ----------------- | -------------- | ---------------- | ------- | --------- |
-| Card games (12)   | Card table     | sit on a stool   | rounds  | no        |
-| Werewolf (12)     | Werewolf table | sit at the table | rounds  | no        |
-| Pick a Side (11)  | Open floor     | step in the ring | rounds  | yes       |
-| Watch together    | Big screen     | step in the area | drop-in | no        |
-| Drawing telephone | Art corner     | step in the ring | rounds  | no        |
+| In the list      | Spot (place)   | Joining          | Kind    | Room-wide |
+| ---------------- | -------------- | ---------------- | ------- | --------- |
+| Card games (12)  | Card table     | sit on a stool   | rounds  | no        |
+| Werewolf (12)    | Werewolf table | sit at the table | rounds  | no        |
+| Pick a Side (11) | Open floor     | step in the ring | rounds  | yes       |
+| Watch together   | Big screen     | step in the area | drop-in | no        |
+| Draw & Guess     | Art corner     | step in the ring | rounds  | no        |
 
-- **List order** (2026-11-09): Watch together, Card games, Werewolf, Drawing telephone, Pick a
+- **List order** (2026-11-09): Watch together, Card games, Werewolf, Draw & Guess, Pick a
   Side (the most inviting first). A lobby you can join floats to the top, then anything live.
 - **Werewolf gets its own table** (user's idea, 2026-11-09), apart from the card table, so a werewolf
   night and a card game can run at once. Designed in feature 12; the demo lists it as coming.
@@ -82,7 +82,7 @@ is (decided 2026-11-09).
 - **Out of the area for 30 s** (walked off, connection dropped) also counts as leaving; a banner shows
   "Come back to stay in the game · 0:24". One rule for both, which matters on phones.
 - **Leaving mid-round = you're out** (a loss). When only one player is left, they win.
-- Each game says what "out" means for it (Werewolf: you die; drawing telephone: your turn is skipped).
+- Each game says what "out" means for it (Werewolf: you die; Draw & Guess: your turn is skipped).
 - **Turn-based games:** a turn timer; missing 2 turns in a row puts you out, so nobody stalls a game.
 - **No spectator mode** and no bots: you watch by standing nearby, because every spot shows its game
   in 3D.

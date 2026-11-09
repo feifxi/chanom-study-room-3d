@@ -1,10 +1,10 @@
 import type { Stroke } from '../board/board';
 
 /**
- * Drawing telephone at the art corner (feature 11). Everyone plays at once; each player starts a
+ * Draw & Guess at the art corner (feature 11). Everyone plays at once; each player starts a
  * chain, and every step each chain moves to the next player.
  *
- * - **Drawing telephone** (`tel`): write a prompt → draw the prompt you got → describe the drawing you
+ * - **Draw & Guess** (`tel`): write a prompt → draw the prompt you got → describe the drawing you
  *   got → draw that → … Watching "a cat in bubble tea" become "a sad potato" is the fun.
  * - **Copycat** (`copycat`): draw anything → the next person sees it for 8 s and redraws it from
  *   memory → … No writing at all.

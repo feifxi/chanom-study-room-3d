@@ -7,14 +7,14 @@ http://localhost:3100/invite/abc for the guest path.
 
 ## Who can do what
 
-|                                 | Guest (no account)                | Account                 |
-| ------------------------------- | --------------------------------- | ----------------------- |
-| Walk into a room                | by invite link, or a drop-in room | yes                     |
-| Bubbles (text over heads)       | yes                               | yes                     |
-| Voice, photos, screen share     | no (listen only)                  | yes                     |
-| Room chat (saved), DMs, friends | no                                | yes (DMs: friends only) |
-| Be a member of a room, make one | no                                | yes                     |
-| Badge                           | "guest" next to the name          | none                    |
+|                                 | Guest (no account)               | Account                 |
+| ------------------------------- | -------------------------------- | ----------------------- |
+| Walk into a room                | by invite link, or a Common room | yes                     |
+| Bubbles (text over heads)       | yes                              | yes                     |
+| Voice, photos, screen share     | no (listen only)                 | yes                     |
+| Room chat (saved), DMs, friends | no                               | yes (DMs: friends only) |
+| Be a member of a room, make one | no                               | yes                     |
+| Badge                           | "guest" next to the name         | none                    |
 
 Guest invites expire (the demo says 23 hours). The 13+ rule applies to accounts; a guest enters no
 birthday (they can't DM, add friends or talk).
@@ -59,8 +59,9 @@ birthday (they can't DM, add friends or talk).
 - **How you sign in:** linked Google / Discord / email, with Connect for the others.
 - **Birthday:** shown only to you.
 - **@handle** (in My profile): change it once every 30 days.
-- **Privacy & safety:** "Appear offline", friend requests from anyone (off: only people who share
-  a room), and a note that only friends can DM you.
+- **Privacy & safety:** "Appear offline", **who can send me friend requests** (Anyone;
+  People from my rooms = members of rooms you're in and people inside the same room as you right now;
+  or Nobody, though you can still add people yourself), and a note that only friends can DM you.
 
 ### Deleting an account
 
@@ -82,7 +83,7 @@ Like Discord's, but shorter:
 
 ## Under 18
 
-Nothing extra so far. Friends-only DMs and private presence apply to everyone, and drop-in rooms
+Nothing extra so far. Friends-only DMs and private presence apply to everyone, and Common rooms
 are the same for every age. Every age-dependent rule still goes through one `can(user, action)`
 check, so a rule can be added later in one place.
 

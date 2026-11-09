@@ -30,8 +30,9 @@ Try it: `pnpm --filter @study/demo demo:dev` → http://localhost:3100/home/frie
   shows how many are waiting.
 - **Silent:** ignoring, declining and removing a friend tell nobody; the sender just sees "Pending".
 - Requests **expire after 30 days**. At most **20 sent a day**.
-- Who can send you one: anyone with your @handle or link, or (Privacy switch off) only people who
-  share a room with you.
+- Who can send you one (Privacy & safety, three choices): **Anyone** (your @handle, friend link, or a
+  room you're both in), or **People from my rooms** (members of rooms you're in, and people inside the
+  same room as you right now), or **Nobody** (you can still send requests yourself).
 - **Limit: 1,000 friends**, like Discord.
 
 ## The Friends page
@@ -40,8 +41,12 @@ Sorted by "who can I go hang out with", not A–Z:
 
 1. **Out in rooms:** friends inside a room right now, **one card per room** (3 friends in the same
    room = one card) with each friend's activity and a button:
-   - **Join** when you can walk in anyway: you're a member, it's Open, or it's a drop-in room.
-   - **Ask to join Earth** when you can't (a private room you're not in). Earth gets a DM card
+   - **Join** when you can walk in anyway: you're a member, it's Open, or it's a Common room (you land in your friend's copy).
+   - **Ask to join Earth** when you can't (a private room you're not in). **A private room you're
+     not in is never named** (decided 2026-11-09, like Discord): the card says "🔒 A private room",
+     with no name, map or who else is there, and one card per friend so it doesn't show who's
+     together. Listed rooms (Ask to join, Open) are named, since anyone can find them in Discover.
+     Earth gets a DM card
      "feifei wants to join you · Send invite / Not now"; Send invite gives you a 24-hour guest pass, or
      a member invite if Earth is allowed to make one.
 2. **Online** (not in a room) and 3. **Offline** ("Last seen 3h ago"), each with 💬 and "…" (Invite
