@@ -78,17 +78,21 @@ So the shell follows Gather instead:
 
 The HUD has five named parts. Each owns one kind of thing, so it's always clear where to look:
 
-| Part          | Where         | What it holds                                                              |
-| ------------- | ------------- | -------------------------------------------------------------------------- |
-| **Room card** | top left      | the room itself: name, map, who's here; Invite, Settings, Your view, Leave |
-| **My tools**  | left rail     | your own things: Study session, Music, Quests, How to play                 |
-| **Chat**      | bottom left   | all text: Room chat, Bubbles, Messages                                     |
-| **People**    | top right     | who's here, and what you can do with each person                           |
-| **Zoom**      | bottom right  | − 100% + (not on touch screens)                                            |
-| **Dock**      | bottom centre | your voice and actions: Mic, Sound, Chat, Photo, Activities                |
+| Part          | Where         | What it holds                                                               |
+| ------------- | ------------- | --------------------------------------------------------------------------- |
+| **Room card** | top left      | the room itself: name, map, who's here; Invite, Settings, Your view, Leave  |
+| **My tools**  | left rail     | your own things: Study session, Music, Quests, How to play                  |
+| **Chat**      | bottom left   | all text: Room chat, Bubbles, Messages                                      |
+| **People**    | top right     | who's here, and what you can do with each person                            |
+| **Zoom**      | bottom right  | − 100% + (not on touch screens)                                             |
+| **Dock**      | bottom centre | your voice and actions: Mic, Sound, Chat, Photo, Activities; 🛡️ Room (mods) |
 
 Plus the **chat window**: Room chat or a DM opened large over the dimmed room (⤢ in Chat).
 
+- **The dock stays short** (decided 2026-11-09): only what most people use every session (Mic,
+  Sound, Chat, Photo, Activities). Owner and mod powers go under **🛡️ Room** (Room tools) at the end,
+  which members never see: today Talk to everyone; later mute all, spotlight, switch map. When
+  occasional tools come, they go in a **⋯ More** button, not new dock buttons. No user pinning.
 - **Every HUD panel closes when you press anywhere else** or hit Escape (room card, people, my
   tools). Chat stays open; the Chat button in the dock shows or hides it. Menus and dialogs opened
   from a panel don't close it.
@@ -105,6 +109,8 @@ Plus the **chat window**: Room chat or a DM opened large over the dimmed room (�
   - **Room chat**: the room's saved chat, the same one as the Chat page outside 3D. Its unread count
     stays on the tab, with an @ when someone mentions you. Drop-in rooms have no saved chat, so no tab.
   - **Messages**: your DMs; open one to read and reply inside the panel.
+  - **Emoji in every tab; pictures in Room chat and Messages** (pick with 🖼️ or paste, up to 4 a
+    message, like Messenger; small previews above the box). Bubbles are text and emoji only.
   - Unread counts sit on the tabs. Photos show inline in the small panel (like a chat bubble on the
     web); tapping one, or ⤢, opens Room chat or the DM in the big chat window.
 - **People:** a pill of faces with the count; whoever is talking shows first.

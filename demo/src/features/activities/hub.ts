@@ -468,7 +468,7 @@ export class ActivityHub {
     };
     go(host, 0);
     this.start('art', host);
-    this.pickGame('art', this.scriptedTel++ % 2 ? 'knock' : 'tel');
+    this.pickGame('art', this.scriptedTel++ % 2 ? 'copycat' : 'tel');
     this.call('art', host);
     rest.slice(0, 2).forEach((id, i) => this.later(2500 + i * 2000, () => go(id, i + 1)));
     const startedAt = Date.now();

@@ -32,7 +32,7 @@ export function ActivitiesPanel({
           Room-wide games are off in this room. Tables, the big screen and the art corner still work.
         </p>
       )}
-      {SPOTS.filter((s) => !s.freeZone).map((spot) => {
+      {listed(states).map((spot) => {
         const st = states[spot.id];
         const off = spot.roomWide && !roomWideGames;
         const live = st.phase === 'gathering' || st.phase === 'playing';
@@ -91,4 +91,19 @@ export function ActivitiesPanel({
       })}
     </div>
   );
+}
+
+/** The list's order (the user's pick): the most inviting first. */
+const ORDER: SpotId[] = ['tv', 'cards', 'werewolf', 'art', 'floor'];
+
+/**
+ * A lobby you can join floats to the top, then anything live; the rest keep their fixed order. The
+ * whiteboard is a free zone: not listed.
+ */
+function listed(states: Record<SpotId, SpotState>) {
+  const rank = (spot: Spot) => {
+    const phase = spot.built ? states[spot.id].phase : 'free';
+    return phase === 'gathering' ? 0 : phase === 'free' ? 2 : 1;
+  };
+  return SPOTS.filter((s) => !s.freeZone).sort((a, b) => rank(a) - rank(b) || ORDER.indexOf(a.id) - ORDER.indexOf(b.id));
 }

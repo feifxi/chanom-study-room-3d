@@ -158,7 +158,7 @@ Details: [09-activity-framework.md](v2/features/09-activity-framework.md).
 - **Photo mode:** a dock button that takes photos anywhere, with an app-logo frame and a 3 s timer;
   save, share to Room chat or copy. Connecta keeps no photos.
 - **Drawing telephone** at a new Art corner (our own Gartic Phone–style game): Drawing telephone and
-  Knock-off modes, the album plays on its own, no scores; the game is panel-only, the corner is decor.
+  Copycat modes, the album plays on its own, no scores; the game is panel-only, the corner is decor.
   Details: [11-party-games.md](v2/features/11-party-games.md#-drawing-telephone).
 - **AI quizzes** are AI decks in Pick a Side (feature 11). Flashcards later. No AI tutor or chatbot.
 - **Not now:** emotes, celebrations and other body-movement games. Campfire and sofa corners are map

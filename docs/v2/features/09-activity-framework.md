@@ -36,6 +36,8 @@ is (decided 2026-11-09).
 | Watch together    | Big screen     | step in the area | drop-in | no        |
 | Drawing telephone | Art corner     | step in the ring | rounds  | no        |
 
+- **List order** (2026-11-09): Watch together, Card games, Werewolf, Drawing telephone, Pick a
+  Side (the most inviting first). A lobby you can join floats to the top, then anything live.
 - **Werewolf gets its own table** (user's idea, 2026-11-09), apart from the card table, so a werewolf
   night and a card game can run at once. Designed in feature 12; the demo lists it as coming.
 - **The whiteboard is a free zone, not an activity** (like the Buddy Machine): it isn't in the list,

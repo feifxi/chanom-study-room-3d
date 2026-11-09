@@ -48,7 +48,8 @@ Areas built into the map (a reading nook, a booth, a card table). The demo's lib
 
 ## Bubbles
 
-- Up to **120 characters**.
+- Up to **120 characters**. **Emoji** from the 🙂 button in the box; there's no separate emotes tool
+  (decided 2026-11-09).
 - Over your head for **about 6 seconds**, longer for long lines (up to 10 s), then only in the Bubbles tab.
 - **Typing dots** over your head while you type one.
 - Reach the whole room, except inside a private zone (stays in the zone). Gone when the room empties.
@@ -65,7 +66,8 @@ Areas built into the map (a reading nook, a booth, a card table). The demo's lib
 
 ## Talk to everyone
 
-- **Owner and mods** get an **Everyone** (📢) button in the dock.
+- **Owner and mods** find it under **🛡️ Room** (Room tools) at the end of the dock: an admin tool
+  for announcements. Members never see the button (decided 2026-11-09).
 - While it's on, everyone in the room hears them at full volume wherever they stand, even inside
   private zones. Turning it on turns the mic on.
 - While on, the dock button turns **pink with a pulsing ring and reads "On air"** (not just the

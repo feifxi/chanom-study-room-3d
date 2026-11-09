@@ -1,6 +1,6 @@
 import { COLORS, SIZES } from '../board/board';
 
-/** 🎲 ideas for the first prompt (and for Knock-off's first drawing). */
+/** 🎲 ideas for the first prompt (and for Copycat's first drawing). */
 export const PROMPTS = [
   'a cat stuck in a bubble tea',
   'a sleepy dragon doing homework',

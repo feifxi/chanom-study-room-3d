@@ -60,8 +60,11 @@ export function ChatPanel({
   const [seenLines, setSeenLines] = useState(lines.length);
   const look = (k: string) => setSeen((s) => new Set(s).add(k));
 
-  const send = (k: string) => (text: string) =>
-    setSent((s) => ({ ...s, [k]: [...(s[k] ?? []), { id: `${Date.now()}`, author: 'me', at: 'Now', text }] }));
+  const send = (k: string) => (text: string, images: string[]) =>
+    setSent((s) => ({
+      ...s,
+      [k]: [...(s[k] ?? []), { id: `${Date.now()}`, author: 'me', at: 'Now', text, images: images.length ? images : undefined }],
+    }));
   const dm = DMS.find((d) => d.id === dmId);
   const dmUnread = DMS.reduce((n, d) => n + (seen.has(`dm:${d.id}`) ? 0 : (d.unread ?? 0)), 0);
 
@@ -130,7 +133,7 @@ export function ChatPanel({
             messages={[...channelMessages(server.id, roomChat.id), ...(sent.room ?? [])]}
             onOpen={() => onExpand({ kind: 'channel', id: roomChat.id })}
           />
-          <Composer compact placeholder="Message the room" onSend={send('room')} />
+          <Composer compact pictures placeholder="Message the room" onSend={send('room')} />
         </>
       )}
 
@@ -166,7 +169,7 @@ export function ChatPanel({
               {userById(dm.with).name}
             </button>
             <Thread messages={[...dm.messages, ...(sent[`dm:${dm.id}`] ?? [])]} onOpen={() => onExpand({ kind: 'dm', id: dm.id })} />
-            <Composer compact placeholder={`Message ${userById(dm.with).name}`} onSend={send(`dm:${dm.id}`)} />
+            <Composer compact pictures placeholder={`Message ${userById(dm.with).name}`} onSend={send(`dm:${dm.id}`)} />
           </>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
@@ -221,7 +224,22 @@ function Thread({ messages, onOpen }: { messages: Message[]; onOpen: () => void 
                   </span>{' '}
                   <span className="text-[10px] text-muted-foreground">{m.at.replace('Today ', '')}</span>
                 </p>
-                <p>{m.text}</p>
+                {m.text && <p>{m.text}</p>}
+                {m.images && (
+                  <div className={cn('mt-1 grid w-44 max-w-full gap-1', m.images.length > 1 && 'grid-cols-2')}>
+                    {m.images.map((src) => (
+                      <button
+                        key={src}
+                        onClick={onOpen}
+                        aria-label="Open photo"
+                        className="overflow-hidden rounded-xl border hover:opacity-90"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element -- local object URLs in the demo */}
+                        <img src={src} alt="" className="aspect-square w-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {/* Same placeholder photo as the big chat, just smaller */}
                 {m.image && (
                   <button

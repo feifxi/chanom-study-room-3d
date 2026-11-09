@@ -7,7 +7,6 @@ import {
   HeadphoneOff,
   Headphones,
   Leaf,
-  Megaphone,
   MessageCircle,
   Mic,
   MicOff,
@@ -46,6 +45,7 @@ import { ZoomControl } from '../room3d/ZoomControl';
 import { bubbleMs, type Bubble } from '../room3d/roomSession';
 import { zoneAt, type Zone } from '../room3d/zones';
 import { ActivitiesPanel } from './ActivitiesPanel';
+import { RoomAdmin } from './RoomAdmin';
 import { ActivityHub, type SpotState } from '../activities/hub';
 import { ActivityLayer3D } from '../activities/Activity3D';
 import { AwayBanner, InviteStack, LobbyCard, NextRoundCard, PlayStrip, ResultsCard, type Who } from '../activities/ActivityHud';
@@ -519,24 +519,6 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
         {deaf ? <HeadphoneOff className="size-5" /> : <Headphones className="size-5" />}
         {!compact && (deaf ? 'Deafened' : 'Sound')}
       </button>
-      {canStage && (
-        <button
-          onClick={() => {
-            if (!stage) {
-              setDeaf(false);
-              setMic(true);
-              toast('📢 Everyone in the room hears you now, wherever they are');
-            }
-            setStage(!stage);
-          }}
-          aria-pressed={stage}
-          aria-label={stage ? 'Stop talking to everyone' : 'Talk to everyone'}
-          className={cn('dock-btn', compact && 'min-w-0 px-3', stage && 'dock-btn-live')}
-        >
-          <Megaphone className="size-5" />
-          {!compact && (stage ? 'On air' : 'Everyone')}
-        </button>
-      )}
       <DockBtn icon={MessageCircle} label="Chat" compact={compact} pressed={chatPressed} onClick={toggleChat} />
       <DockBtn icon={Camera} label="Photo" compact={compact} onClick={() => setPhoto(true)} />
       <DockBtn
@@ -547,6 +529,24 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
         dot={anyLive}
         onClick={() => setActivities(!activities)}
       />
+      {/* Owner and mods only: their tools stay off everyone else's dock */}
+      {canStage && (
+        <>
+          <span className="mx-0.5 h-7 w-px bg-white/20" />
+          <RoomAdmin
+            compact={compact}
+            onAir={stage}
+            onToggleAir={() => {
+              if (!stage) {
+                setDeaf(false);
+                setMic(true);
+                toast('📢 Everyone in the room hears you now, wherever they are');
+              }
+              setStage(!stage);
+            }}
+          />
+        </>
+      )}
     </nav>
   );
   const [clickToWalk, setClickToWalk] = useClickToWalk();

@@ -11,7 +11,7 @@ Try it: `pnpm --filter @study/demo demo:dev` → http://localhost:3100/servers/c
 - Demo tab → **Someone starts Pick a Side**: someone else hosts (a different mode each time).
 - Walk to the whiteboard (left wall), press **E**, draw. Demo tab → **Someone draws on the
   whiteboard**: watch a cat appear on the wall, live.
-- Activities → Drawing telephone → **Go there**, press **E**, pick Drawing telephone or Knock-off, 📣 **Call
+- Activities → Drawing telephone → **Go there**, press **E**, pick Drawing telephone or Copycat, 📣 **Call
   everyone**, **Start**. Demo tab → **Someone starts drawing telephone**: join from the invite card
   (the scripted players alternate the two modes).
 
@@ -124,15 +124,20 @@ stays free drawing; the art corner is where the game is. Two modes, picked by th
 
 - **Drawing telephone:** write a prompt → the next person draws it → the next describes the drawing →
   the next draws that → … Watching "a cat in bubble tea" become "a sad potato" is the fun.
-- **Knock-off:** draw anything → the next person sees it for 8 s and redraws it from memory → … No
+- **Copycat:** draw anything → the next person sees it for 8 s and redraws it from memory → … No
   writing.
+
+**Names** (decided 2026-11-09): the game is older than Gartic Phone (the paper game Telephone
+Pictionary, the board game Telestrations), so we use the generic name **Drawing telephone** and our
+own mode name **Copycat** (Gartic Phone calls it Knock-off). Never use Gartic Phone or Telestrations
+in the app.
 
 ### How it works
 
 - Everyone plays at once. Each player starts a **chain**; every step, each chain moves on to the next
   player. **Chain length = players, capped at 8** steps (with more players, not everyone sees every
   chain).
-- **Timers:** write 30 s, draw 60 s, describe 30 s; Knock-off's copy step is 8 s to look + 45 s to
+- **Timers:** write 30 s, draw 60 s, describe 30 s; Copycat's copy step is 8 s to look + 45 s to
   draw. The step ends early when everyone has pressed **Done**.
 - **Prompts:** your own, or 🎲 for a random one.
 - **Time runs out = what you have is sent** (half a drawing, half a sentence). Sending nothing counts

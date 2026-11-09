@@ -31,7 +31,7 @@ export function TelephonePanel({
     <section
       className="panel flex max-h-[calc(100dvh-170px)] max-w-[calc(100vw-1.5rem)] flex-col gap-2.5 p-3"
       style={{ width: 'min(860px, calc(100vw - 160px))' }}
-      aria-label={game.mode === 'tel' ? 'Drawing telephone' : 'Knock-off'}
+      aria-label={game.mode === 'tel' ? 'Drawing telephone' : 'Copycat'}
     >
       {game.stage === 'turn' ? (
         <Turn key={game.step} hub={hub} game={game} st={st} now={now} />
@@ -67,7 +67,7 @@ function Turn({ hub, game, st, now }: { hub: ActivityHub; game: TelGame; st: Spo
   return (
     <>
       <div className="flex items-center gap-2">
-        <span className="text-sm font-black">{game.mode === 'tel' ? '✏️ Drawing telephone' : '🪞 Knock-off'}</span>
+        <span className="text-sm font-black">{game.mode === 'tel' ? '✏️ Drawing telephone' : '🐱 Copycat'}</span>
         <span className="text-[11px] font-bold text-muted-foreground">
           Step {game.step + 1} of {game.steps} · {LABEL[kind]}
         </span>
@@ -135,7 +135,7 @@ function Turn({ hub, game, st, now }: { hub: ActivityHub; game: TelGame; st: Spo
   );
 }
 
-/** Knock-off's first drawing: a fixed idea per round, so it doesn't change while you draw. */
+/** Copycat's first drawing: a fixed idea per round, so it doesn't change while you draw. */
 const firstIdea = (g: TelGame) => ['a cat in a box', 'a house on a hill', 'a happy sun', 'a fish', 'a flower'][g.order.length % 5];
 
 function TextTurn({

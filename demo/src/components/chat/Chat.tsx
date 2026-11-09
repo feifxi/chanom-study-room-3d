@@ -388,6 +388,16 @@ function EmojiPicker({ onPick, children }: { onPick: (emoji: string) => void; ch
   );
 }
 
+/** Pictures picked or pasted into a message box: images only, size and count capped (with a toast). */
+function takeImages(list: FileList | File[] | null, have: number): string[] {
+  if (!list?.length) return [];
+  const ok = [...list].filter((f) => f.type.startsWith('image/') && f.size <= MAX_IMAGE_MB * 1024 * 1024);
+  if (ok.length < list.length) toast(`Pictures only, up to ${MAX_IMAGE_MB} MB each`);
+  const room = MAX_IMAGES - have;
+  if (ok.length > room) toast(`Up to ${MAX_IMAGES} pictures a message`);
+  return ok.slice(0, Math.max(0, room)).map((f) => URL.createObjectURL(f));
+}
+
 function highlight(text: string) {
   return text.split(/(@[\w.]*\w)/g).map((part, i) =>
     part.startsWith('@') ? (
@@ -445,14 +455,7 @@ function FullComposer({
     input.current?.focus();
   };
 
-  const addFiles = (list: FileList | null) => {
-    if (!list) return;
-    const ok = [...list].filter((f) => f.type.startsWith('image/') && f.size <= MAX_IMAGE_MB * 1024 * 1024);
-    if (ok.length < list.length) toast(`Pictures only, up to ${MAX_IMAGE_MB} MB each`);
-    const room = MAX_IMAGES - images.length;
-    if (ok.length > room) toast(`Up to ${MAX_IMAGES} pictures a message`);
-    setImages((all) => [...all, ...ok.slice(0, room).map((f) => URL.createObjectURL(f))]);
-  };
+  const addFiles = (list: FileList | null) => setImages((all) => [...all, ...takeImages(list, all.length)]);
 
   return (
     <div className="relative">
@@ -588,50 +591,123 @@ function FullComposer({
   );
 }
 
-/** The small message box (the in-room chat panel): text and send only. */
+/**
+ * The small message box (the in-room chat panel): text, emoji, and optionally pictures (pick or
+ * paste, like Messenger), shown as small previews above the line.
+ */
 export function Composer({
   placeholder,
   onSend,
   compact,
   maxLength,
   onTyping,
+  pictures,
 }: {
   placeholder: string;
-  onSend: (text: string) => void;
+  onSend: (text: string, images: string[]) => void;
   compact?: boolean;
   maxLength?: number;
   onTyping?: (typing: boolean) => void;
+  /** Allow pictures (saved chats); Bubbles are text and emoji only. */
+  pictures?: boolean;
 }) {
   const [text, setText] = useState('');
+  const [images, setImages] = useState<string[]>([]);
+  const files = useRef<HTMLInputElement>(null);
+  const input = useRef<HTMLInputElement>(null);
+  const add = (list: FileList | File[] | null) => setImages((all) => [...all, ...takeImages(list, all.length)]);
   return (
     <form
-      className={cn(
-        'flex items-center gap-1 rounded-2xl border bg-card p-1.5 shadow-sm focus-within:border-primary',
-        compact && 'rounded-xl p-1',
-      )}
+      className={cn('flex flex-col rounded-2xl border bg-card p-1.5 shadow-sm focus-within:border-primary', compact && 'rounded-xl p-1')}
       onSubmit={(e) => {
         e.preventDefault();
-        if (!text.trim()) return;
-        onSend(text.trim());
+        if (!text.trim() && !images.length) return;
+        onSend(text.trim(), images);
         setText('');
+        setImages([]);
         onTyping?.(false);
       }}
     >
-      <input
-        value={text}
-        maxLength={maxLength}
-        onChange={(e) => {
-          setText(e.target.value);
-          onTyping?.(e.target.value.length > 0);
-        }}
-        onBlur={() => onTyping?.(false)}
-        placeholder={placeholder}
-        className="h-9 min-w-0 flex-1 bg-transparent px-2 text-sm outline-none"
-        aria-label={placeholder}
-      />
-      <Button type="submit" size="icon" className="rounded-xl" aria-label="Send">
-        <Send />
-      </Button>
+      {images.length > 0 && (
+        <div className="flex items-end gap-1.5 px-1 pt-1 pb-1.5">
+          {images.map((src) => (
+            <span key={src} className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element -- local object URLs in the demo */}
+              <img src={src} alt="" className="size-12 rounded-lg object-cover" />
+              <button
+                type="button"
+                onClick={() => setImages((all) => all.filter((x) => x !== src))}
+                className="absolute -top-1.5 -right-1.5 grid size-4.5 place-items-center rounded-full bg-foreground text-background"
+                aria-label="Remove picture"
+              >
+                <X className="size-3" />
+              </button>
+            </span>
+          ))}
+          <span className="text-[10px] text-muted-foreground">
+            {images.length}/{MAX_IMAGES}
+          </span>
+        </div>
+      )}
+      <div className="flex items-center gap-0.5">
+        {pictures && (
+          <>
+            <input
+              ref={files}
+              type="file"
+              accept="image/*"
+              multiple
+              hidden
+              onChange={(e) => {
+                add(e.target.files);
+                e.target.value = '';
+              }}
+            />
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="size-8 rounded-lg text-muted-foreground"
+              aria-label="Add pictures"
+              disabled={images.length >= MAX_IMAGES}
+              onClick={() => files.current?.click()}
+            >
+              <ImagePlus />
+            </Button>
+          </>
+        )}
+        <input
+          ref={input}
+          value={text}
+          maxLength={maxLength}
+          onChange={(e) => {
+            setText(e.target.value);
+            onTyping?.(e.target.value.length > 0);
+          }}
+          onPaste={(e) => {
+            if (!pictures || !e.clipboardData.files.length) return;
+            e.preventDefault();
+            add([...e.clipboardData.files]);
+          }}
+          onBlur={() => onTyping?.(false)}
+          placeholder={placeholder}
+          className="h-9 min-w-0 flex-1 bg-transparent px-2 text-sm outline-none"
+          aria-label={placeholder}
+        />
+        <EmojiPicker
+          onPick={(e) => {
+            setText((t) => (maxLength ? (t + e).slice(0, maxLength) : t + e));
+            input.current?.focus();
+          }}
+        >
+          <Button type="button" size="icon" variant="ghost" className="size-8 rounded-lg text-muted-foreground" aria-label="Emoji">
+            <Smile />
+          </Button>
+        </EmojiPicker>
+        <Button type="submit" size="icon" className="rounded-xl" aria-label="Send">
+          <Send />
+        </Button>
+      </div>
     </form>
   );
 }

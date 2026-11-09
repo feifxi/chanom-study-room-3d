@@ -178,7 +178,7 @@ export const SPOTS: Spot[] = [
     roomWide: false,
     games: [
       { id: 'tel', name: 'Drawing telephone', emoji: '✏️', min: 3, max: 10 },
-      { id: 'knock', name: 'Knock-off', emoji: '🪞', min: 3, max: 10 },
+      { id: 'copycat', name: 'Copycat', emoji: '🐱', min: 3, max: 10 },
     ],
     area: { x: ART.x, z: ART.z, r: ART.r },
     built: true,

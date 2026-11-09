@@ -6,7 +6,7 @@ import type { Stroke } from '../board/board';
  *
  * - **Drawing telephone** (`tel`): write a prompt → draw the prompt you got → describe the drawing you
  *   got → draw that → … Watching "a cat in bubble tea" become "a sad potato" is the fun.
- * - **Knock-off** (`knock`): draw anything → the next person sees it for 8 s and redraws it from
+ * - **Copycat** (`copycat`): draw anything → the next person sees it for 8 s and redraws it from
  *   memory → … No writing at all.
  *
  * The time runs out = what you have so far is sent. Two empty turns in a row (or leaving) = out; your
@@ -14,7 +14,7 @@ import type { Stroke } from '../board/board';
  * can pause it or skip to the next chain. No scores: it's for laughs.
  */
 
-export type TelMode = 'tel' | 'knock';
+export type TelMode = 'tel' | 'copycat';
 export type StepKind = 'write' | 'draw' | 'describe' | 'copy';
 
 export interface Entry {
@@ -36,7 +36,7 @@ export interface TelGame {
   step: number;
   stage: 'turn' | 'reveal' | 'done';
   until: number;
-  /** Knock-off: the drawing to copy shows until then. */
+  /** Copycat: the drawing to copy shows until then. */
   lookUntil: number;
   chains: Entry[][];
   sent: Record<string, boolean>;
@@ -56,7 +56,7 @@ export const REACTIONS = ['😂', '😍', '😮', '👏'];
 const GAP = { text: 2_500, drawing: 4_000, chain: 2_500 };
 
 export function stepKind(mode: TelMode, step: number): StepKind {
-  if (mode === 'knock') return step === 0 ? 'draw' : 'copy';
+  if (mode === 'copycat') return step === 0 ? 'draw' : 'copy';
   return step === 0 ? 'write' : step % 2 === 1 ? 'draw' : 'describe';
 }
 
