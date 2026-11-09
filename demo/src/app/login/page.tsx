@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, ArrowRight, AtSign, Check, Mail, Sprout } from 'lucide-react';
 import type { AvatarLook } from '@study/shared';
-import { Logo } from '@/components/Logo';
+import { RoomShot, SplitScreen } from '@/components/app/SplitScreen';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -62,198 +62,220 @@ function LoginFlow() {
   };
 
   return (
-    <div className="grid min-h-dvh place-items-center px-4 py-10">
-      <div className="w-full max-w-md">
-        <Link href="/" className="mb-6 flex justify-center">
-          <Logo />
-        </Link>
-        <div className="rounded-[2rem] border bg-card p-6 shadow-soft sm:p-8">
-          {step === 'method' && (
-            <div className="flex flex-col gap-5">
-              <div className="text-center">
-                <h1 className="text-2xl font-black tracking-[-0.03em]">Welcome in ✨</h1>
-                <p className="mt-1 text-sm text-muted-foreground">Sign in or make an account. It takes a minute.</p>
-              </div>
-              <div className="flex flex-col gap-2.5">
-                <Button variant="outline" className="h-12 rounded-2xl text-base font-bold" onClick={() => setStep('age')}>
-                  <GoogleIcon /> Continue with Google
-                </Button>
-                <Button
-                  className="h-12 rounded-2xl bg-[#5865f2] text-base font-bold text-white hover:bg-[#4752c4]"
-                  onClick={() => setStep('age')}
-                >
-                  <DiscordIcon /> Continue with Discord
-                </Button>
-              </div>
-              <div className="flex items-center gap-3 text-xs font-bold text-muted-foreground">
-                <span className="h-px flex-1 bg-border" /> or with email <span className="h-px flex-1 bg-border" />
-              </div>
-              <form
-                className="flex flex-col gap-2"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setStep('code');
-                }}
+    <SplitScreen aside={<LoginAside />}>
+      <div className="rounded-[2rem] border bg-card p-6 shadow-soft sm:p-8">
+        {step === 'method' && (
+          <div className="flex flex-col gap-5">
+            <div className="text-center">
+              <h1 className="text-2xl font-black tracking-[-0.03em]">Welcome in ✨</h1>
+              <p className="mt-1 text-sm text-muted-foreground">Sign in or make an account. It takes a minute.</p>
+            </div>
+            <div className="flex flex-col gap-2.5">
+              <Button variant="outline" className="h-12 rounded-2xl text-base font-bold" onClick={() => setStep('age')}>
+                <GoogleIcon /> Continue with Google
+              </Button>
+              <Button
+                className="h-12 rounded-2xl bg-[#5865f2] text-base font-bold text-white hover:bg-[#4752c4]"
+                onClick={() => setStep('age')}
               >
-                <Label htmlFor="email" className="sr-only">
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-12 rounded-2xl"
-                />
-                <Button type="submit" variant="secondary" className="h-12 rounded-2xl text-base font-bold">
-                  <Mail /> Email me a code
-                </Button>
-              </form>
-              <p className="text-center text-xs text-muted-foreground">
-                No passwords. By continuing you agree to the rules and privacy policy.
+                <DiscordIcon /> Continue with Discord
+              </Button>
+            </div>
+            <div className="flex items-center gap-3 text-xs font-bold text-muted-foreground">
+              <span className="h-px flex-1 bg-border" /> or with email <span className="h-px flex-1 bg-border" />
+            </div>
+            <form
+              className="flex flex-col gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                setStep('code');
+              }}
+            >
+              <Label htmlFor="email" className="sr-only">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                required
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-12 rounded-2xl"
+              />
+              <Button type="submit" variant="secondary" className="h-12 rounded-2xl text-base font-bold">
+                <Mail /> Email me a code
+              </Button>
+            </form>
+            <p className="text-center text-xs text-muted-foreground">
+              No passwords. By continuing you agree to the rules and privacy policy.
+            </p>
+          </div>
+        )}
+
+        {step === 'code' && (
+          <form
+            className="flex flex-col gap-5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              setStep('age');
+            }}
+          >
+            <BackButton onClick={() => setStep('method')} />
+            <div>
+              <h1 className="text-2xl font-black tracking-[-0.03em]">Check your email</h1>
+              <p className="mt-1 text-sm text-muted-foreground">We sent a 6-digit code to {email || 'your email'}.</p>
+            </div>
+            <Input
+              autoFocus
+              inputMode="numeric"
+              maxLength={6}
+              defaultValue="482913"
+              className="h-14 rounded-2xl text-center font-mono text-2xl tracking-[0.5em]"
+              aria-label="Code"
+            />
+            <Button type="submit" className="h-12 rounded-2xl text-base font-extrabold">
+              Continue <ArrowRight />
+            </Button>
+          </form>
+        )}
+
+        {step === 'age' && (
+          <form
+            className="flex flex-col gap-5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (tooYoung) lockAge(LOADED_AT);
+              if (tooYoung || ageLocked(LOADED_AT)) setStep('too-young');
+              else toCharacter();
+            }}
+          >
+            <BackButton onClick={() => setStep('method')} />
+            <div>
+              <h1 className="text-2xl font-black tracking-[-0.03em]">When’s your birthday? 🎂</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Connecta is for people {MIN_AGE} and older. We don’t show this to anyone.
               </p>
             </div>
-          )}
+            <Input
+              type="date"
+              value={birth}
+              onChange={(e) => setBirth(e.target.value)}
+              className="h-12 rounded-2xl"
+              aria-label="Date of birth"
+            />
+            <Button type="submit" className="h-12 rounded-2xl text-base font-extrabold">
+              Continue <ArrowRight />
+            </Button>
+          </form>
+        )}
 
-          {step === 'code' && (
-            <form
-              className="flex flex-col gap-5"
-              onSubmit={(e) => {
-                e.preventDefault();
+        {step === 'too-young' && (
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="grid size-16 place-items-center rounded-full bg-mint text-mint-ink">
+              <Sprout className="size-8" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-black tracking-[-0.03em]">Come back when you’re {MIN_AGE}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Connecta is for people {MIN_AGE} and older. We’ll keep a cosy spot for you until then 🌱
+              </p>
+            </div>
+            <Button asChild variant="outline" className="h-11 rounded-2xl px-6 font-bold">
+              <Link href="/">Back to the start</Link>
+            </Button>
+            {/* Demo only: the lock would otherwise stop you trying the flow again for a day */}
+            <button
+              type="button"
+              onClick={() => {
+                clearAgeLock();
                 setStep('age');
               }}
+              className="text-xs font-bold text-muted-foreground underline underline-offset-2"
             >
-              <BackButton onClick={() => setStep('method')} />
-              <div>
-                <h1 className="text-2xl font-black tracking-[-0.03em]">Check your email</h1>
-                <p className="mt-1 text-sm text-muted-foreground">We sent a 6-digit code to {email || 'your email'}.</p>
-              </div>
-              <Input
-                autoFocus
-                inputMode="numeric"
-                maxLength={6}
-                defaultValue="482913"
-                className="h-14 rounded-2xl text-center font-mono text-2xl tracking-[0.5em]"
-                aria-label="Code"
-              />
-              <Button type="submit" className="h-12 rounded-2xl text-base font-extrabold">
-                Continue <ArrowRight />
-              </Button>
-            </form>
-          )}
+              Demo: clear the age lock
+            </button>
+          </div>
+        )}
 
-          {step === 'age' && (
-            <form
-              className="flex flex-col gap-5"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (tooYoung) lockAge(LOADED_AT);
-                if (tooYoung || ageLocked(LOADED_AT)) setStep('too-young');
-                else toCharacter();
-              }}
-            >
-              <BackButton onClick={() => setStep('method')} />
-              <div>
-                <h1 className="text-2xl font-black tracking-[-0.03em]">When’s your birthday? 🎂</h1>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Connecta is for people {MIN_AGE} and older. We don’t show this to anyone.
-                </p>
-              </div>
-              <Input
-                type="date"
-                value={birth}
-                onChange={(e) => setBirth(e.target.value)}
-                className="h-12 rounded-2xl"
-                aria-label="Date of birth"
-              />
-              <Button type="submit" className="h-12 rounded-2xl text-base font-extrabold">
-                Continue <ArrowRight />
-              </Button>
-            </form>
-          )}
-
-          {step === 'too-young' && (
-            <div className="flex flex-col items-center gap-4 text-center">
-              <div className="grid size-16 place-items-center rounded-full bg-mint text-mint-ink">
-                <Sprout className="size-8" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-black tracking-[-0.03em]">Come back when you’re {MIN_AGE}</h1>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Connecta is for people {MIN_AGE} and older. We’ll keep a cosy spot for you until then 🌱
-                </p>
-              </div>
-              <Button asChild variant="outline" className="h-11 rounded-2xl px-6 font-bold">
-                <Link href="/">Back to the start</Link>
-              </Button>
-              {/* Demo only: the lock would otherwise stop you trying the flow again for a day */}
-              <button
-                type="button"
-                onClick={() => {
-                  clearAgeLock();
-                  setStep('age');
-                }}
-                className="text-xs font-bold text-muted-foreground underline underline-offset-2"
-              >
-                Demo: clear the age lock
-              </button>
+        {step === 'character' && (
+          <form
+            className="flex flex-col gap-5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!check.ok) return;
+              clearGuest();
+              router.push('/home');
+            }}
+          >
+            <BackButton onClick={() => setStep('age')} />
+            <div>
+              <h1 className="text-2xl font-black tracking-[-0.03em]">{keptLook ? 'Keep your character?' : 'Make your character'}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {keptLook
+                  ? 'It’s the one you walked around with as a guest. Change anything you like.'
+                  : 'This is you in every room. You can change it any time.'}
+              </p>
             </div>
-          )}
-
-          {step === 'character' && (
-            <form
-              className="flex flex-col gap-5"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!check.ok) return;
-                clearGuest();
-                router.push('/home');
-              }}
-            >
-              <BackButton onClick={() => setStep('age')} />
-              <div>
-                <h1 className="text-2xl font-black tracking-[-0.03em]">{keptLook ? 'Keep your character?' : 'Make your character'}</h1>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {keptLook
-                    ? 'It’s the one you walked around with as a guest. Change anything you like.'
-                    : 'This is you in every room. You can change it any time.'}
-                </p>
+            <CharacterEditor look={look} onChange={setLook}>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="name" className="text-xs font-bold text-muted-foreground">
+                  Display name
+                </Label>
+                <Input
+                  id="name"
+                  value={name}
+                  maxLength={16}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (!handleEdited) setHandle(handleFrom(e.target.value));
+                  }}
+                  className="rounded-xl"
+                />
               </div>
-              <CharacterEditor look={look} onChange={setLook}>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="name" className="text-xs font-bold text-muted-foreground">
-                    Display name
-                  </Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    maxLength={16}
-                    onChange={(e) => {
-                      setName(e.target.value);
-                      if (!handleEdited) setHandle(handleFrom(e.target.value));
-                    }}
-                    className="rounded-xl"
-                  />
-                </div>
-              </CharacterEditor>
-              <HandleField
-                handle={handle}
-                check={check}
-                onChange={(h) => {
-                  setHandle(h);
-                  setHandleEdited(true);
-                }}
-              />
-              <Button type="submit" disabled={!check.ok} className="h-12 rounded-2xl text-base font-extrabold">
-                Let’s go <ArrowRight />
-              </Button>
-            </form>
-          )}
-        </div>
+            </CharacterEditor>
+            <HandleField
+              handle={handle}
+              check={check}
+              onChange={(h) => {
+                setHandle(h);
+                setHandleEdited(true);
+              }}
+            />
+            <Button type="submit" disabled={!check.ok} className="h-12 rounded-2xl text-base font-extrabold">
+              Let’s go <ArrowRight />
+            </Button>
+          </form>
+        )}
       </div>
-    </div>
+    </SplitScreen>
+  );
+}
+
+/** Wide screens: where you're about to be, so signing in feels like walking somewhere. */
+function LoginAside() {
+  return (
+    <>
+      <div>
+        <p className="text-sm font-black tracking-wider text-primary uppercase">Connecta</p>
+        <h2 className="mt-2 text-5xl leading-[1.02] font-black tracking-[-0.04em] text-balance">
+          Your friends are <span className="text-primary">waiting</span> 🛋️
+        </h2>
+        <p className="mt-3 max-w-md text-lg">A cosy 3D room for your people. Walk over to talk, play a game, or just be there.</p>
+      </div>
+      <RoomShot
+        chips={[
+          { text: <>🍅 Mai · focusing 25m</>, className: '-top-4 -left-4 rotate-[-4deg]' },
+          { text: <>💬 “come sit with us!”</>, className: '-right-4 bottom-10 rotate-[3deg]' },
+        ]}
+      />
+      <p className="flex flex-wrap gap-x-5 gap-y-1 text-sm font-bold">
+        <span>✓ Free</span>
+        <span>✓ No download</span>
+        <span>✓ No passwords</span>
+        <span>✓ 13+</span>
+      </p>
+    </>
   );
 }
 
