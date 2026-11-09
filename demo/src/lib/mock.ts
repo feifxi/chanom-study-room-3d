@@ -508,6 +508,8 @@ export interface Message {
   replyTo?: string;
   edited?: boolean;
   system?: boolean;
+  /** A Plus gift (feature 15): shown as a gift card. */
+  gift?: { months: number; note?: string };
 }
 
 export const CHANNEL_MESSAGES: Record<string, Message[]> = {
@@ -558,6 +560,7 @@ export const DMS: Dm[] = [
       { id: '1', author: 'me', at: '09:12', text: 'are you studying today?' },
       { id: '2', author: 'mai', at: '09:14', text: 'yes!! come to the library, the cat is here 🐱' },
       { id: '3', author: 'mai', at: '09:14', text: 'bring your calculus notes' },
+      { id: '4', author: 'mai', at: '09:15', text: '', gift: { months: 1, note: 'for the Big map, thanks for hosting 🫶' } },
     ],
   },
   {

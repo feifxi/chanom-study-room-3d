@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Flag, Gauge, Home, LayoutTemplate, Lock, Map as MapIcon, ScrollText, ShieldAlert, Users, Warehouse } from 'lucide-react';
+import { Banknote, Flag, Gauge, Home, LayoutTemplate, Lock, Map as MapIcon, ScrollText, ShieldAlert, Users, Warehouse } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { setViewer, useViewer } from '@/lib/viewer';
 import { REPORTS } from './adminData';
@@ -13,6 +13,7 @@ const NAV = [
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/rooms', label: 'Rooms', icon: Warehouse },
   { href: '/admin/common', label: 'Common rooms', icon: LayoutTemplate },
+  { href: '/admin/money', label: 'Money', icon: Banknote },
   { href: '/admin/moderation', label: 'Moderation', icon: ShieldAlert },
   { href: '/admin/maps', label: 'Maps', icon: MapIcon },
   { href: '/admin/audit', label: 'Audit log', icon: ScrollText },

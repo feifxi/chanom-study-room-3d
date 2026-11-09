@@ -228,7 +228,8 @@ Discord's boosts plus Plus plus coins was too much for a cosy app of small group
 - **Rules:** never sell power, no ads in rooms, never charge to join. Paid perks are things that cost
   us money to run (capacity, HD video, storage, AI) or are purely cosmetic. Free limits are set by real cost.
 
-Prices are not set yet.
+**Prices** (decided 2026-11-10): ฿89 a month or ฿890 a year; PromptPay packs ฿249 / 3 months and
+฿890 / 12 months; Stripe, gifts, team-only refunds. Details: [15-business-infra.md](v2/features/15-business-infra.md).
 
 ## Engineering
 
@@ -238,7 +239,7 @@ Prices are not set yet.
   - Database: Prisma (replacing Drizzle).
   - Realtime: Colyseus for 3D rooms, self-hosted LiveKit for media, a NestJS WebSocket gateway for chat, DMs, presence and notifications.
   - Redis between instances.
-  - Caddy on a single host; an ALB replaces it at scale.
+  - Caddy on a single host (V1's design, kept; no load balancer or autoscaling for now).
 - **Data:** start fresh. V1 data is not carried over.
 - **Demo-first:**
   - New screens are built in `demo/` with mock data before backend work.
@@ -249,8 +250,7 @@ Prices are not set yet.
 - **Infra:**
   - Local development until the user says deploy.
   - Then AWS (credits), Azure later (team credits).
-  - Self-managed, startup-grade practice on a small budget: containers, Postgres, Redis, S3-style storage behind an interface.
-  - Watch the cost traps: NAT gateway, ALB baseline, Multi-AZ.
+  - **V1's architecture plus only what V2 needs** (decided 2026-11-10): one app server with Docker Compose and Caddy, RDS, plus a gateway and Redis containers, S3 + CloudFront, SES, Stripe, and **monitoring on its own server** (SRE practice). About $3 a day while running. Details: [15-business-infra.md](v2/features/15-business-infra.md).
 
 ## Porting the demo to `apps/web`: don't forget
 
@@ -300,10 +300,10 @@ The UI is approved in `demo/` first, then a spec is written to `docs/v2/features
 | 12  | Card games, Werewolf                                      |                                                                        |
 | 13  | ~~AI flashcards~~ dropped (2026-11-09)                    |                                                                        |
 | 14  | Common rooms, open rooms and moderation (done)            | [14-open-rooms-moderation.md](v2/features/14-open-rooms-moderation.md) |
-| 15  | Business and infra                                        |                                                                        |
+| 15  | Business and infra (done)                                 | [15-business-infra.md](v2/features/15-business-infra.md)               |
 
 Feature 3 was "Servers" before the move to rooms.
 
 ## Open questions
 
-- **Unsettled:** prices, Plus limits, and the domain and trademark for "Connecta".
+- **Unsettled:** Plus limits after the playtest measures real costs, and the domain and trademark for "Connecta".

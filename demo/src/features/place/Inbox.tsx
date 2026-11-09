@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { AtSign, Bell, CalendarHeart, CheckCheck, DoorOpen, ShieldAlert, UserCheck, UserPlus, type LucideIcon } from 'lucide-react';
+import { AtSign, Bell, CalendarHeart, CheckCheck, DoorOpen, Gift, ShieldAlert, UserCheck, UserPlus, type LucideIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { UserAvatar } from '@/components/UserAvatar';
 import { cn } from '@/lib/utils';
 import { userById } from '@/lib/mock';
 
-type Kind = 'friend' | 'room' | 'mention' | 'space' | 'event' | 'team';
+type Kind = 'friend' | 'room' | 'mention' | 'space' | 'event' | 'team' | 'gift';
 
 interface Note {
   id: string;
@@ -28,10 +28,20 @@ const ICON: Record<Kind, [LucideIcon, string]> = {
   space: [DoorOpen, 'bg-mint text-mint-ink'],
   event: [CalendarHeart, 'bg-peach text-peach-ink'],
   team: [ShieldAlert, 'bg-destructive/15 text-destructive'],
+  gift: [Gift, 'bg-secondary text-secondary-foreground'],
 };
 
 /** Demo inbox: one of each kind, newest first. Kept 30 days in the real app. */
 const NOTES: Note[] = [
+  {
+    id: 'n0',
+    kind: 'gift',
+    from: 'mai',
+    text: '**Mai** gifted you 1 month of Plus 🎁',
+    at: '2m',
+    href: '/home/messages/mai',
+    unread: true,
+  },
   {
     id: 'n1',
     kind: 'mention',
@@ -86,7 +96,7 @@ function Rich({ text }: { text: string }) {
  * The inbox (🔔 in the header): everything that happened for you while you were elsewhere. Friend
  * requests and accepted asks, join requests (yours approved, or new ones for rooms you mod),
  * @mentions in room chats, space in a full room, events starting, and team actions on your account.
- * Not DMs (Messages has its own badge) and not "a friend walked in" (decided: no pings for that).
+ * Plus gifts (also a card in the DM). Not DMs (Messages has its own badge) and not "a friend walked in" (decided: no pings for that).
  * Inside a room the same things arrive as toasts, and the inbox keeps them for later.
  */
 export function Inbox() {

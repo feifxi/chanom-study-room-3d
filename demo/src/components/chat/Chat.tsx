@@ -253,6 +253,7 @@ function Row({
             </p>
           )
         )}
+        {m.gift && <GiftCard from={m.author === 'me' ? 'You' : u.name} gift={m.gift} />}
         {m.image && (
           <div
             className="mt-2 aspect-[4/3] w-64 max-w-full overflow-hidden rounded-2xl border bg-[url('/screenshot.png')] bg-[length:240%] bg-[position:35%_35%]"
@@ -736,6 +737,21 @@ export function DmLocked({ name, state, onAction }: { name: string; state: 'unfr
       <Button size="sm" variant={state === 'unfriended' ? 'default' : 'outline'} className="rounded-full font-bold" onClick={onAction}>
         {state === 'unfriended' ? 'Add friend' : 'Unblock'}
       </Button>
+    </div>
+  );
+}
+
+/** A Plus gift in a DM (feature 15). The months are already added; the card just says so. */
+function GiftCard({ from, gift }: { from: string; gift: { months: number; note?: string } }) {
+  return (
+    <div className="mt-1 flex w-72 max-w-full flex-col gap-1 rounded-2xl bg-gradient-to-br from-secondary via-peach to-lavender p-4">
+      <p className="text-2xl">🎁</p>
+      <p className="font-black">
+        {from} gifted {from === 'You' ? '' : 'you '}
+        {gift.months} month{gift.months > 1 && 's'} of Plus ✨
+      </p>
+      {gift.note && <p className="text-sm italic">“{gift.note}”</p>}
+      <p className="text-xs text-muted-foreground">Added to your Plus. Your rooms grow while it lasts.</p>
     </div>
   );
 }

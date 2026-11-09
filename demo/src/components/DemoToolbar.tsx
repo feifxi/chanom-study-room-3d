@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { setPerfOverlay, usePerfOverlay } from '@/features/room3d/perf';
 import { PALETTES, usePalette } from './Providers';
 import { setViewer, useViewer, VIEWERS } from '@/lib/viewer';
+import { setPlusState, usePlus, type PlusState } from '@/lib/plus';
 
 const PAGES = [
   ['Landing', '/'],
@@ -32,12 +33,14 @@ const PAGES = [
   ['DM with Mai', '/home/messages/mai'],
   ['Shop', '/home/shop'],
   ['Connecta Plus', '/home/plus'],
+  ['Checkout (fake Stripe)', '/checkout?offer=monthly'],
   ['Discover', '/discover'],
   ['Room chat (outside 3D)', '/servers/chanom'],
   ['3D room', '/servers/chanom/rooms/library'],
   ['Common room', '/servers/public/rooms/cafe-2'],
   ['Invite (guest)', '/invite/cafe-chanom'],
   ['Admin', '/admin'],
+  ['Admin · Money', '/admin/money'],
 ] as const;
 
 /** Demo-only chrome: theme, palette, a crowd for the 3D room, 100 rooms on Home, and a jump to any page. Not part of the app design. */
@@ -144,6 +147,8 @@ export function DemoToolbar() {
           🛠️ Team publishes a map update (in a 3D room; 60 s heads-up)
         </button>
 
+        <PlusSwitch />
+
         <Title>Your rooms on Home</Title>
         <div className="mb-3 grid grid-cols-2 gap-1.5">
           {([false, true] as const).map((on) => (
@@ -221,5 +226,37 @@ function PerfToggle() {
     >
       📈 Performance overlay {on ? 'on' : 'off'}
     </button>
+  );
+}
+
+const PLUS_STATES: [PlusState, string][] = [
+  ['active', 'Plus'],
+  ['cancelled', 'Cancelled'],
+  ['grace', 'Ended · grace'],
+  ['free', 'Free'],
+];
+
+/** Your Plus state (feature 15): see the ending banner, grace and the Free Plus page without waiting. */
+function PlusSwitch() {
+  const plus = usePlus();
+  return (
+    <>
+      <Title>Your Plus</Title>
+      <div className="mb-3 grid grid-cols-2 gap-1.5">
+        {PLUS_STATES.map(([id, label]) => (
+          <button
+            key={id}
+            onClick={() => setPlusState(id)}
+            aria-pressed={plus.state === id}
+            className={cn(
+              'rounded-xl border p-2 text-xs font-bold',
+              plus.state === id ? 'border-primary bg-secondary text-secondary-foreground' : 'hover:bg-muted',
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </>
   );
 }

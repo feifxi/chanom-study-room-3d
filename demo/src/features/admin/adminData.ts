@@ -450,3 +450,94 @@ export const AUDIT: AuditEntry[] = [
 ];
 
 export const WORDS = ['(slur 1)', '(slur 2)', '(swear 1)', '(swear 2)', '(Thai swear 1)', '(Thai swear 2)', '(Thai swear 3)', 'robux-free'];
+
+// --- Money (feature 15) ---
+
+export const MONEY_STATS: Stat[] = [
+  { label: 'Monthly revenue (MRR)', value: '฿34,950', note: 'before Stripe fees · +4% on October' },
+  { label: 'Plus subscribers', value: '412', note: '+6 this week · 2.9% of monthly users' },
+  { label: 'Stripe fees', value: '≈ ฿5,100', note: '15% on monthly cards, 5% yearly, 2% PromptPay' },
+  { label: 'Server bill', value: '≈ ฿2,800', note: '≈ $80 a month while running' },
+  { label: 'Gifts this month', value: '23', note: '41 months of Plus' },
+  { label: 'Failed payments', value: '5', note: 'Stripe is retrying', tone: 'warn' },
+];
+
+/** How the 412 pay. Monthly revenue counts a yearly plan or a pack as its price spread over its months. */
+export const PLAN_MIX = [
+  { plan: 'Monthly · card', people: 268, mrr: 23852 },
+  { plan: 'Yearly · card', people: 96, mrr: 7120 },
+  { plan: 'PromptPay packs', people: 48, mrr: 3978 },
+];
+
+export type PaymentStatus = 'paid' | 'retrying' | 'failed' | 'refunded';
+
+export interface Payment {
+  id: string;
+  at: string;
+  who: string;
+  what: string;
+  method: 'card' | 'promptpay';
+  amount: number;
+  status: PaymentStatus;
+  note?: string;
+}
+
+export const PAYMENTS: Payment[] = [
+  { id: 'p9', at: 'Today 14:02', who: 'feifei', what: 'Plus · Monthly (renewal)', method: 'card', amount: 89, status: 'paid' },
+  { id: 'p8', at: 'Today 13:40', who: 'maimai', what: 'Gift for feifei · 1 month', method: 'promptpay', amount: 89, status: 'paid' },
+  {
+    id: 'p7',
+    at: 'Today 11:15',
+    who: 'tonkla_',
+    what: 'Plus · Monthly (renewal)',
+    method: 'card',
+    amount: 89,
+    status: 'paid',
+    note: 'Also charged at 11:14: a double charge',
+  },
+  { id: 'p6', at: 'Today 11:14', who: 'tonkla_', what: 'Plus · Monthly (renewal)', method: 'card', amount: 89, status: 'paid' },
+  {
+    id: 'p5',
+    at: 'Today 09:30',
+    who: 'jod.p',
+    what: 'Plus · Yearly (renewal)',
+    method: 'card',
+    amount: 890,
+    status: 'paid',
+    note: 'Asked us: forgot to cancel',
+  },
+  { id: 'p4', at: 'Yesterday', who: 'ploy.s', what: 'Plus · 3 months', method: 'promptpay', amount: 249, status: 'paid' },
+  {
+    id: 'p3',
+    at: 'Yesterday',
+    who: 'nam_w',
+    what: 'Plus · Monthly (renewal)',
+    method: 'card',
+    amount: 89,
+    status: 'retrying',
+    note: 'Card declined · try 2 of 4',
+  },
+  {
+    id: 'p2',
+    at: '6 Nov',
+    who: 'earth.k',
+    what: 'Plus · Monthly (renewal)',
+    method: 'card',
+    amount: 89,
+    status: 'failed',
+    note: 'All 4 tries failed · grace started',
+  },
+  {
+    id: 'p1',
+    at: '5 Nov',
+    who: 'bowie',
+    what: 'Plus · Monthly',
+    method: 'card',
+    amount: 89,
+    status: 'refunded',
+    note: 'Bug: charged before sign-up finished',
+  },
+];
+
+/** The refund reasons the team picks from (feature 15: refunds only for real mistakes). */
+export const REFUND_REASONS = ['Charged twice', 'Renewed by mistake (within 48 h)', 'A bug on our side', 'Something else'];

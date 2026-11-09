@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Check, Copy, MessageCircle, MoreHorizontal, UserPlus, X } from 'lucide-react';
+import { Check, Copy, Gift, MessageCircle, MoreHorizontal, UserPlus, X } from 'lucide-react';
+import { GiftPlusDialog } from '@/components/app/GiftPlusDialog';
 import { toast } from 'sonner';
 import { UserAvatar } from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
@@ -173,8 +174,11 @@ function Section({ title, count, children }: { title: string; count: number; chi
 function People({ people, onRemove }: { people: User[]; onRemove: (u: User, block: boolean) => void }) {
   if (!people.length) return null;
   const myRooms = SERVERS.filter((s) => roleIn(s) || s.visibility !== 'private');
+  const [giftTo, setGiftTo] = useState<string>();
+  const [gifting, setGifting] = useState(false);
   return (
     <div className="flex flex-col divide-y rounded-3xl border bg-card">
+      <GiftPlusDialog key={giftTo} to={giftTo} open={gifting} onOpenChange={setGifting} />
       {people.map((u) => (
         <div key={u.id} className="flex items-center gap-3 p-3">
           <UserAvatar user={u} size={40} presence />
@@ -208,6 +212,14 @@ function People({ people, onRemove }: { people: User[]; onRemove: (u: User, bloc
                   ))}
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
+              <DropdownMenuItem
+                onSelect={() => {
+                  setGiftTo(u.id);
+                  setGifting(true);
+                }}
+              >
+                <Gift /> Gift Plus
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => onRemove(u, false)}>Remove friend</DropdownMenuItem>
               <DropdownMenuItem variant="destructive" onSelect={() => onRemove(u, true)}>

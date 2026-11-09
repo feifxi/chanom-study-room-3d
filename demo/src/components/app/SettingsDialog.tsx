@@ -16,6 +16,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { CharacterEditor } from '@/features/avatar/CharacterEditor';
 import { AccountTab } from './AccountTab';
+import { PlusBillingTab } from './PlusBillingTab';
 import { cn } from '@/lib/utils';
 import { ME } from '@/lib/mock';
 import { useGlobalOptIn } from '@/lib/focus';
@@ -86,7 +87,7 @@ export function SettingsDialog({
             ) : tab === 'controls' ? (
               <Controls />
             ) : tab === 'plus' ? (
-              <PlusTab />
+              <PlusBillingTab />
             ) : tab === 'account' ? (
               <AccountTab />
             ) : (
@@ -256,24 +257,6 @@ function Controls() {
           ))}
         </dl>
       </section>
-    </div>
-  );
-}
-
-function PlusTab() {
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="rounded-3xl bg-gradient-to-br from-secondary via-peach to-lavender p-5">
-        <p className="text-sm font-bold text-muted-foreground">Your plan</p>
-        <p className="text-2xl font-black">Connecta Plus ✨</p>
-        <p className="mt-1 text-sm">Renews on 7 Dec 2026 · ฿99 / month</p>
-      </div>
-      <p className="text-sm text-muted-foreground">
-        Rooms you own follow your plan: Chanom Friends fits 100 people at once and can use Big and premium maps.
-      </p>
-      <Button asChild className="w-fit rounded-full font-bold">
-        <Link href="/home/plus">Manage Plus</Link>
-      </Button>
     </div>
   );
 }

@@ -16,6 +16,7 @@ import { COMMON_ROOMS, MANY_ROOMS, MAPS, ME, OPEN_ROOMS, SERVERS, USERS, serverB
 import { chatHref, placeRoom, walkInHref, type PlaceRoom } from './model';
 import { SizePicker, TemplateCard } from './MapPickers';
 import { JOIN_REQUESTS } from './membership';
+import { PlusEndingBanner } from './PlusEndingBanner';
 import { RoomMenu } from './RoomMenu';
 import { Scene } from './Scene';
 
@@ -96,6 +97,7 @@ export function PlaceHome() {
         <p className="text-sm font-bold text-muted-foreground">Saturday evening 🌙</p>
         <h1 className="text-3xl font-black tracking-[-0.03em]">Where to tonight, {ME.name}?</h1>
       </header>
+      <PlusEndingBanner />
 
       {out.length > 0 && (
         <section>
