@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
+import { perfMeter } from './perf';
 import { SlowFrameDetector } from './quality';
 
 /**
@@ -26,7 +27,9 @@ export function FrameDriver({ fps, onSlow }: { fps: number; onSlow?: () => void 
         onSlow?.();
       }
       last = t;
+      const start = performance.now();
       advance(t / 1000); // R3F wants seconds; rAF gives milliseconds (ms made everything run 1000x fast)
+      perfMeter.frame(t, performance.now() - start);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);

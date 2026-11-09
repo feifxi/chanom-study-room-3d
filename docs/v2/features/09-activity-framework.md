@@ -26,7 +26,7 @@ time; different spots run at the same time (TV + a card game + Pick a Side).
 | Spot       | Activities              | Joining          | Kind    | Room-wide |
 | ---------- | ----------------------- | ---------------- | ------- | --------- |
 | Game table | card games (feature 12) | sit on a stool   | rounds  | no        |
-| Open floor | Pick a Side, AI quiz    | step in the ring | rounds  | yes       |
+| Open floor | Pick a Side (11)        | step in the ring | rounds  | yes       |
 | Big screen | watch together (10)     | step in the area | drop-in | no        |
 | Whiteboard | draw together (11)      | step in the area | drop-in | no        |
 
@@ -90,7 +90,7 @@ time; different spots run at the same time (TV + a card game + Pick a Side).
 ## Room-wide games (room setting)
 
 - Room settings → **Room-wide games** (On/Off; replaces "Quiet room"). Off: nobody can start games that
-  use the whole room (Pick a Side, AI quiz). Tables, the TV and the board still work.
+  use the whole room (Pick a Side). Tables, the TV and the board still work.
 - Anyone can start a room-wide game when it's on, like Discord activities; people choose to join.
 
 ## How an activity shows on screen (each game designs its own mix)

@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { Crown, LogOut, Megaphone, Play, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GRACE_MS, INVITE_MS, type Invite, type SpotState } from './hub';
@@ -43,6 +44,7 @@ export function LobbyCard({
   onCall,
   onStart,
   onLeave,
+  extra,
 }: {
   spot: Spot;
   st: SpotState;
@@ -50,6 +52,8 @@ export function LobbyCard({
   now: number;
   isHost: boolean;
   onPickGame: (id: string) => void;
+  /** The game's own lobby settings (Pick a Side: the deck). */
+  extra?: ReactNode;
   onCall: () => void;
   onStart: () => void;
   onLeave: () => void;
@@ -99,6 +103,8 @@ export function LobbyCard({
           {game.min === game.max ? game.min : `${game.min}–${Math.min(game.max, seats || game.max)}`} players
         </span>
       </div>
+
+      {extra}
 
       {isHost ? (
         <div className="flex items-center gap-1.5">
@@ -195,6 +201,9 @@ export function ResultsCard({
   now,
   onAgain,
   onLeave,
+  title,
+  detail,
+  medals = true,
 }: {
   st: SpotState;
   who: (id: string) => Who;
@@ -202,21 +211,27 @@ export function ResultsCard({
   now: number;
   onAgain: () => void;
   onLeave: () => void;
+  /** Games with their own headline ("Jod and Mai tie!", or no winner at all). */
+  title?: string;
+  /** A short line per player, e.g. "7 right". */
+  detail?: (id: string) => string;
+  medals?: boolean;
 }) {
   return (
     <section className="panel flex w-[340px] max-w-[calc(100vw-1.5rem)] flex-col gap-2 p-3" aria-label="Results">
       <p className="text-center text-sm font-black">
-        {st.game.emoji} {st.game.name} · {st.results[0] === 'me' ? 'You won! 🎉' : `${who(st.results[0] ?? '').name} won!`}
+        {title ?? `${st.game.emoji} ${st.game.name} · ${st.results[0] === 'me' ? 'You won! 🎉' : `${who(st.results[0] ?? '').name} won!`}`}
       </p>
       <ol className="flex flex-col gap-1">
         {st.results.map((id, i) => (
           <li key={id} className={cn('flex items-center gap-2 rounded-xl px-2 py-1 text-sm', id === 'me' && 'bg-secondary font-bold')}>
-            <span className="w-5 text-center">{['🥇', '🥈', '🥉'][i] ?? i + 1}</span>
+            {medals && <span className="w-5 text-center">{['🥇', '🥈', '🥉'][i] ?? i + 1}</span>}
             <Face who={who(id)} size={22} />
             <span className="flex-1 truncate">
               {who(id).name}
               {id === 'me' && ' (you)'}
             </span>
+            {detail && <span className="text-xs text-muted-foreground">{detail(id)}</span>}
           </li>
         ))}
       </ol>

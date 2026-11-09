@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { sanitizeLook, type PlayerView } from '@study/shared';
-import { CharacterRig } from '../avatar/character';
+import { CharacterRig, type CharacterDetail } from '../avatar/character';
 import type { LabelBoard } from './labels';
 import type { Bubble } from './roomSession';
 import { BlobShadow } from './BlobShadow';
@@ -24,14 +24,15 @@ interface Props {
   local?: React.RefObject<LocalMotion>;
   bubble?: Bubble;
   board: LabelBoard;
+  detail?: CharacterDetail;
 }
 
 const HAPPY = /[!🎉🚀👍✨❤♪]/u;
 /** How far behind the seat spot the chair sits (matches Library's SeatProps). */
 export const CHAIR_BACK = 0.06;
 
-export function Avatar({ id, player, isLocal, local, bubble, board }: Props) {
-  const rig = useMemo(() => new CharacterRig(sanitizeLook(safeParse(player.look))), [player.look]);
+export function Avatar({ id, player, isLocal, local, bubble, board, detail = 'full' }: Props) {
+  const rig = useMemo(() => new CharacterRig(sanitizeLook(safeParse(player.look)), detail), [player.look, detail]);
   useEffect(() => () => rig.dispose(), [rig]);
 
   const root = useRef<THREE.Group>(null);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import type { CharacterDetail } from '../avatar/character';
 
 /**
  * Rendering quality. "auto" starts smooth and drops to battery saver by itself if the device can't
@@ -14,11 +15,13 @@ export interface Quality {
   dpr: number;
   fps: number;
   shadows: boolean;
+  /** Battery saver builds characters with fewer segments (about a third of the triangles). */
+  characters: CharacterDetail;
 }
 
 export const QUALITY: Record<QualityTier, Quality> = {
-  smooth: { dpr: 1.5, fps: 60, shadows: true },
-  saver: { dpr: 1, fps: 30, shadows: false },
+  smooth: { dpr: 1.5, fps: 60, shadows: true, characters: 'full' },
+  saver: { dpr: 1, fps: 30, shadows: false, characters: 'low' },
 };
 
 const KEY = 'connecta:quality';

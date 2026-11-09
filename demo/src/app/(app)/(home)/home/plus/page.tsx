@@ -28,7 +28,7 @@ const ROWS: { group: string; rows: [string, string | boolean, string | boolean][
     group: 'Study',
     rows: [
       ['Pomodoro, to-do and lo-fi music', true, true],
-      ['AI quizzes and flashcards', 'a few a day', 'plenty'],
+      ['AI question decks (Pick a Side)', '3 a day', '30 a day'],
     ],
   },
 ];

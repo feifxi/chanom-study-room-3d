@@ -40,14 +40,21 @@ import type { LocalPlayerDriver } from '../room3d/LocalPlayerDriver';
 import { MockRoom, type MockPerson } from '../room3d/mockRoom';
 import { QUALITY } from '../room3d/quality';
 import { RoomCanvas } from '../room3d/RoomCanvas';
+import { usePerfOverlay } from '../room3d/perf';
+import { PerfOverlay } from '../room3d/PerfOverlay';
 import { ZoomControl } from '../room3d/ZoomControl';
 import { bubbleMs, type Bubble } from '../room3d/roomSession';
 import { zoneAt, type Zone } from '../room3d/zones';
 import { ActivitiesPanel } from './ActivitiesPanel';
-import { ActivityHub } from '../activities/hub';
+import { ActivityHub, type SpotState } from '../activities/hub';
 import { ActivityLayer3D } from '../activities/Activity3D';
 import { AwayBanner, InviteStack, LobbyCard, NextRoundCard, PlayStrip, ResultsCard, type Who } from '../activities/ActivityHud';
 import { GamePlaceholder } from '../activities/GamePlaceholder';
+import type { SideGame } from '../activities/pickASide/game';
+import { DeckPicker } from '../activities/pickASide/DeckPicker';
+import { deckKindFor } from '../activities/pickASide/decks';
+import { sidesFor, zoneAt as sideZoneAt } from '../activities/pickASide/game';
+import { SideHud, list } from '../activities/pickASide/SideHud';
 import { isGameSeat, spotById, type Spot } from '../activities/spots';
 import { PICK_A_SIDE_EVENT, WATCH_EVENT } from '@/lib/demoCrowd';
 import { AddVideo, WatchPanel } from '../activities/WatchPanel';
@@ -100,9 +107,11 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const guest = guestName !== null;
   const myName = guest ? guestName || 'Guest' : ME.name;
 
+  // Demo only: fill the room up to a crowd of 50 or 100, in 3D and in the people list
+  const crowd = useCrowd();
   const room = useMemo(() => {
-    const crowd = roomDef.people.length ? roomDef.people : ['ploy', 'ken'];
-    const people: MockPerson[] = crowd.map((id) => ({ id, name: USERS[id]!.name, look: USERS[id]!.look, ...PRESETS[id] }));
+    const regulars = roomDef.people.length ? roomDef.people : ['ploy', 'ken'];
+    const people: MockPerson[] = regulars.map((id) => ({ id, name: USERS[id]!.name, look: USERS[id]!.look, ...PRESETS[id] }));
     if (roomDef.allowGuests && !guest)
       people.push({
         id: 'guest-mint',
@@ -111,8 +120,9 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
         at: { x: -6.8, z: 5.6 },
       });
     // A guest walks in with the character they picked on the invite page (client-only, so storage is safe here)
-    return new MockRoom({ name: myName, look: guest ? (loadGuest()?.look ?? GUEST_LOOK) : ME.look }, people);
-  }, [roomDef, guest, myName]);
+    const extra = crowd ? crowdPeople(Math.max(0, crowd - people.length - 1)) : [];
+    return new MockRoom({ name: myName, look: guest ? (loadGuest()?.look ?? GUEST_LOOK) : ME.look }, people, extra);
+  }, [roomDef, guest, myName, crowd]);
 
   const motion = useRef<LocalMotion>({ x: SPAWN.x, z: SPAWN.z, yaw: 0, moving: false });
   const driverRef = useRef<LocalPlayerDriver | null>(null);
@@ -127,6 +137,12 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const arrive = useCallback(() => room.send('stand', {}), [room]);
   const light = useDayLight(look.time === 'clock' ? 'auto' : look.time);
   const [saver, setSaver] = useState(isTouchScreen);
+  const perfOn = usePerfOverlay();
+  // A device that can't keep up switches itself to battery saver, once, and says so
+  const goSaver = useCallback(() => {
+    setSaver(true);
+    toast('🍃 Switched to battery saver to keep things smooth. You can turn it off in the room card.');
+  }, []);
   const quality = QUALITY[saver ? 'saver' : 'smooth'];
   const compact = useCompactScreen();
   const touch = useTouchScreen();
@@ -135,6 +151,8 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   // Activities (feature 9): one framework for every game; the demo's hub plays the server
   const hub = useMemo(() => new ActivityHub(room, roomDef.roomWideGames, (text) => toast(text)), [room, roomDef.roomWideGames]);
   useSyncExternalStore(hub.subscribe, hub.getVersion, hub.getVersion);
+  // Pick a Side's timer and "you're on B" need more than once a second
+  const sideNow = useNow(hub.side && hub.spots.floor.phase === 'playing' ? 250 : 5000);
   useEffect(() => {
     const id = setInterval(() => hub.tick(Date.now()), 250);
     // Demo: someone starts Pick a Side a little after you arrive (or from the Demo tab)
@@ -264,42 +282,43 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const ids = useMemo(() => [...room.state.players.keys()], [room]);
   const npcIds = useMemo(() => [...room.state.npcs.keys()], [room]);
   const me = room.state.players.get('me')!;
-  // Demo only: fill the list and the pill up to a crowd of 50 or 100 (the 3D scene stays as is)
-  const crowd = useCrowd();
-  const realPeople: RoomPerson[] = ids.map((id) => {
-    const p = room.state.players.get(id)!;
-    const isGuest = id.startsWith('guest') || (id === 'me' && guest);
-    const status =
-      id === 'me' && stage
-        ? '📢 Talking to everyone'
-        : id === 'me' && away
-          ? '💤 Away'
-          : p.status === 'focus'
-            ? `📖 Focusing${p.subject ? ` · ${p.subject}` : ''} · ${Math.max(1, Math.round((now - p.focusSince) / 60_000))}m`
-            : p.status === 'break'
-              ? '☕ On a break'
-              : p.seatId
-                ? SEAT_BY_ID.get(p.seatId)?.kind === 'sofa'
-                  ? '🛋️ On the sofa'
-                  : '🪑 At a desk'
-                : p.moving
-                  ? '🚶 Walking around'
-                  : 'Hanging out';
-    return {
-      id,
-      name: p.name,
-      color: id === 'me' ? (guest ? GUEST_COLOR : ME.color) : (USERS[id]?.color ?? GUEST_COLOR),
-      status,
-      guest: isGuest,
-      you: id === 'me',
-      friend: id !== 'me' && !!USERS[id],
-      // Literals, not the value from server.roles: React Compiler would treat the list as aliasing the server
-      role: server.roles[id] === 'Owner' ? 'Owner' : server.roles[id] === 'Mod' ? 'Mod' : undefined,
-      micOn: id === 'me' ? mic && !deaf : id === 'mai' || speaking.has(id),
-      deafened: id === 'me' ? deaf : id === 'jod',
-      speaking: speaking.has(id),
-    };
-  });
+  // The demo crowd's list rows come from crowdPeople (statuses, mics); their avatars walk in 3D
+  const realPeople: RoomPerson[] = ids
+    .filter((id) => !id.startsWith('crowd-'))
+    .map((id) => {
+      const p = room.state.players.get(id)!;
+      const isGuest = id.startsWith('guest') || (id === 'me' && guest);
+      const status =
+        id === 'me' && stage
+          ? '📢 Talking to everyone'
+          : id === 'me' && away
+            ? '💤 Away'
+            : p.status === 'focus'
+              ? `📖 Focusing${p.subject ? ` · ${p.subject}` : ''} · ${Math.max(1, Math.round((now - p.focusSince) / 60_000))}m`
+              : p.status === 'break'
+                ? '☕ On a break'
+                : p.seatId
+                  ? SEAT_BY_ID.get(p.seatId)?.kind === 'sofa'
+                    ? '🛋️ On the sofa'
+                    : '🪑 At a desk'
+                  : p.moving
+                    ? '🚶 Walking around'
+                    : 'Hanging out';
+      return {
+        id,
+        name: p.name,
+        color: id === 'me' ? (guest ? GUEST_COLOR : ME.color) : (USERS[id]?.color ?? GUEST_COLOR),
+        status,
+        guest: isGuest,
+        you: id === 'me',
+        friend: id !== 'me' && !!USERS[id],
+        // Literals, not the value from server.roles: React Compiler would treat the list as aliasing the server
+        role: server.roles[id] === 'Owner' ? 'Owner' : server.roles[id] === 'Mod' ? 'Mod' : undefined,
+        micOn: id === 'me' ? mic && !deaf : id === 'mai' || speaking.has(id),
+        deafened: id === 'me' ? deaf : id === 'jod',
+        speaking: speaking.has(id),
+      };
+    });
 
   const people = crowd ? [...realPeople, ...crowdPeople(Math.max(0, crowd - realPeople.length))] : realPeople;
   const roomName = server.id === 'public' ? roomDef.name : server.name;
@@ -317,6 +336,20 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   };
   const mySpot = hub.mine('me');
   const myState = mySpot ? hub.spots[mySpot.id] : undefined;
+  // In the round, or knocked out and watching from the spot
+  const inGame = !!myState && myState.phase === 'playing' && (myState.players.includes('me') || myState.out.includes('me'));
+  const side = hub.side;
+  const sideZone = (x: number, z: number) => (side ? sideZoneAt(spotById('floor').area, sidesFor(side.mode), x, z) : null);
+  const sideCounts = side
+    ? Array.from(
+        { length: sidesFor(side.mode) },
+        (_, i) =>
+          hub.spots.floor.players.filter((id) => {
+            const p = room.state.players.get(id);
+            return p && sideZone(p.x, p.z) === i;
+          }).length,
+      )
+    : [];
   const [hideInvites] = useHideInvitesWhileFocusing();
   const invites = hideInvites && pomo.phase === 'focus' ? [] : hub.invites(now);
   const anyLive = Object.values(hub.spots).some((st) => st.phase === 'gathering' || st.phase === 'playing');
@@ -533,8 +566,9 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
             driverRef={driverRef}
             zoomRequest={zoomRequest}
             onZoom={setZoom}
+            onSlow={saver ? undefined : goSaver}
           >
-            <ActivityLayer3D spots={hub.spots} watch={hub.watch} />
+            <ActivityLayer3D spots={hub.spots} watch={hub.watch} side={hub.side} />
           </RoomCanvas>
           {/* Photos never show names: labels hide in photo mode so the preview matches the photo */}
           <div className={cn(photo && 'hidden')}>
@@ -613,10 +647,16 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
 
               <MapMove lookId={lookId} mapId={look.mapId} onArrive={arrive} />
 
+              {perfOn && (
+                <div className={cn('pointer-events-none absolute left-[84px] z-30', compact ? 'top-[132px]' : 'top-[88px]')}>
+                  <PerfOverlay fpsCap={quality.fps} mode={saver ? 'battery saver' : 'smooth'} />
+                </div>
+              )}
+
               {/* Top centre: you're in a private zone, or talking to everyone */}
-              {(zone || stage || (mySpot && myState?.phase === 'playing' && myState.players.includes('me'))) && (
+              {(zone || stage || inGame) && (
                 <div className="pointer-events-none absolute top-3 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-1.5 max-sm:top-[136px]">
-                  {mySpot && myState?.phase === 'playing' && myState.players.includes('me') && (
+                  {mySpot && myState && inGame && (
                     <div className="pointer-events-auto flex flex-col items-center gap-1.5">
                       <PlayStrip
                         st={myState}
@@ -626,11 +666,20 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                         onEnd={() => hub.end(mySpot.id)}
                       />
                       {myState.awaySince.me && <AwayBanner since={myState.awaySince.me} now={now} />}
-                      {mySpot.kind === 'rounds' && (
+                      {mySpot.id === 'floor' && side && (
+                        <SideHud
+                          game={side}
+                          st={myState}
+                          myZone={sideZone(me.x, me.z)}
+                          liveCounts={sideCounts}
+                          name={(id) => who(id).name}
+                          now={sideNow}
+                        />
+                      )}
+                      {mySpot.id === 'cards' && (
                         <GamePlaceholder
                           spot={mySpot}
                           st={myState}
-                          now={now}
                           onFinish={() => hub.finish(mySpot.id)}
                           onSomeoneLeaves={() => hub.someoneLeaves(mySpot.id)}
                         />
@@ -655,7 +704,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
 
               {/* Above the dock: what you can do right here (sit, pet, and share your screen once seated) */}
               {/* Above the dock: your activity's lobby, results or "next round" card (the same for every game) */}
-              {mySpot && myState && (myState.phase !== 'playing' || !myState.players.includes('me')) && (
+              {mySpot && myState && !inGame && (
                 <div className="absolute bottom-[100px] left-1/2 z-20 -translate-x-1/2">
                   {myState.phase === 'gathering' ? (
                     <LobbyCard
@@ -665,6 +714,16 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                       now={now}
                       isHost={myState.hostId === 'me'}
                       onPickGame={(g) => hub.pickGame(mySpot.id, g)}
+                      extra={
+                        mySpot.id === 'floor' &&
+                        (myState.hostId === 'me' ? (
+                          <DeckPicker deck={hub.floorDeck} kind={deckKindFor(myState.game.id)} onPick={(d) => hub.pickDeck(d)} />
+                        ) : (
+                          <p className="truncate px-1 text-xs font-bold">
+                            <span className="text-muted-foreground">Deck</span> {hub.floorDeck.emoji} {hub.floorDeck.name}
+                          </p>
+                        ))
+                      }
                       onCall={() => {
                         hub.call(mySpot.id, 'me');
                         toast(`📣 Everyone in ${roomDef.name} got an invite`);
@@ -676,6 +735,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                     <ResultsCard
                       st={myState}
                       who={who}
+                      {...(mySpot.id === 'floor' && side ? sideResults(side, myState, (id) => who(id).name) : {})}
                       isHost={myState.hostId === 'me'}
                       now={now}
                       onAgain={() => hub.begin(mySpot.id)}
@@ -744,7 +804,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
               {!mySpot && atFreeFloor && (
                 <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2 whitespace-nowrap">
                   <button onClick={() => hub.start('floor', 'me')} className="panel rounded-full px-4 py-2 text-sm font-bold">
-                    {touch ? 'Tap' : 'Press E'} to start a game on the {floor.name.toLowerCase()} 🗳️
+                    {touch ? 'Tap' : 'Press E'} to start Pick a Side 🗳️
                   </button>
                 </div>
               )}
@@ -865,4 +925,27 @@ function DockBtn({
       {!compact && label}
     </button>
   );
+}
+
+/** Pick a Side's results: who agreed with you (Would you rather), scores (Quiz), who's left standing. */
+function sideResults(g: SideGame, st: SpotState, name: (id: string) => string) {
+  const names = (ids: string[]) => list(ids.map((id) => (id === 'me' ? 'You' : name(id))));
+  if (g.mode === 'wyr') {
+    const best = Object.entries(g.agree).sort(([, a], [, b]) => b - a)[0];
+    return {
+      title: `🤔 Would you rather · that’s a wrap!${best ? ` ${name(best[0])} thinks most like you` : ''}`,
+      medals: false,
+      detail: (id: string) => (id === 'me' ? '' : `with you ${g.agree[id] ?? 0}×`),
+    };
+  }
+  const n = g.winners.length;
+  const title =
+    g.mode === 'quiz'
+      ? `🧠 ${n > 1 ? `${names(g.winners)} tie!` : `${names(g.winners)} won!`}`
+      : `💀 ${n > 1 ? `${names(g.winners)} made it to the end!` : `${names(g.winners)} ${g.winners[0] === 'me' ? 'are' : 'is'} the last one standing!`}`;
+  return {
+    title,
+    medals: true,
+    detail: (id: string) => (st.out.includes(id) && g.mode === 'last' ? 'out' : `${g.scores[id] ?? 0} right`),
+  };
 }

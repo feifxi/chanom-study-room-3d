@@ -255,7 +255,7 @@ export interface Room {
   mapId: string;
   capacity: number;
   allowGuests: boolean;
-  /** Can anyone start games that invite the whole room (Pick a Side, AI quiz)? Tables, TV and board always work. */
+  /** Can anyone start games that invite the whole room (Pick a Side)? Tables, TV and board always work. */
   roomWideGames: boolean;
   /** Who's inside right now. */
   people: string[];

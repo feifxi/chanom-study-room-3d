@@ -5,7 +5,9 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { CHAIR_BACK } from '../room3d/Avatar';
 import type { SpotState, WatchState } from './hub';
-import { GAME_SEATS, GAME_TABLE, SPOTS, TV, type SpotId } from './spots';
+import { SideZones } from './pickASide/Side3D';
+import type { SideGame } from './pickASide/game';
+import { GAME_SEATS, GAME_TABLE, SPOTS, TV, spotById, type SpotId } from './spots';
 
 /**
  * The round game table and its four stools (static, so they go inside the room's StaticBatch).
@@ -122,9 +124,9 @@ const RING_COLOR: Record<string, string> = { gathering: '#ffb3cf', playing: '#ff
 
 /**
  * What passers-by see of each activity (the "3D world" layer): a glowing ring around a spot that's
- * gathering or playing, cards on the game table mid-round, and Pick a Side's two halves on the floor.
+ * gathering or playing, cards on the game table mid-round, and Pick a Side's zones on the floor.
  */
-export function ActivityLayer3D({ spots, watch }: { spots: Record<SpotId, SpotState>; watch: WatchState }) {
+export function ActivityLayer3D({ spots, watch, side }: { spots: Record<SpotId, SpotState>; watch: WatchState; side: SideGame | null }) {
   return (
     <>
       <ScreenSurface videoId={watch.now?.id ?? null} paused={watch.paused} />
@@ -132,7 +134,7 @@ export function ActivityLayer3D({ spots, watch }: { spots: Record<SpotId, SpotSt
         <AreaRing key={s.id} x={s.area.x} z={s.area.z} r={s.area.r} phase={spots[s.id].phase} />
       ))}
       {spots.cards.phase === 'playing' && <TableCards players={spots.cards.players.length + spots.cards.out.length} />}
-      {spots.floor.phase === 'playing' && <Sides />}
+      {spots.floor.phase === 'playing' && side && side.stage !== 'done' && <SideZones game={side} area={spotById('floor').area} />}
     </>
   );
 }
@@ -169,23 +171,6 @@ function TableCards({ players }: { players: number }) {
           <meshStandardMaterial color={c.color} side={THREE.DoubleSide} />
         </mesh>
       ))}
-    </group>
-  );
-}
-
-/** Pick a Side's placeholder: two coloured halves inside the ring (feature 11 designs the real one). */
-function Sides() {
-  const s = SPOTS.find((x) => x.id === 'floor')!;
-  return (
-    <group position={[s.area.x, 0.025, s.area.z]} rotation={[-Math.PI / 2, 0, 0]}>
-      <mesh userData={{ dynamic: true }}>
-        <circleGeometry args={[s.area.r - 0.12, 48, Math.PI / 2, Math.PI]} />
-        <meshBasicMaterial color="#7ab8ff" transparent opacity={0.45} depthWrite={false} />
-      </mesh>
-      <mesh userData={{ dynamic: true }}>
-        <circleGeometry args={[s.area.r - 0.12, 48, -Math.PI / 2, Math.PI]} />
-        <meshBasicMaterial color="#ff8fb8" transparent opacity={0.45} depthWrite={false} />
-      </mesh>
     </group>
   );
 }

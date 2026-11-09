@@ -5,6 +5,8 @@ import {
   STARTER_CAT,
   WALK_SPEED,
   findPath,
+  randomLook,
+  randomWalkable,
   type AvatarLook,
   type NpcView,
   type PlayerView,
@@ -71,7 +73,12 @@ export class MockRoom implements StudyRoom {
   /** One-off walks the demo scripts send people on (to a spot), ending in a seat or standing. */
   private trips = new Map<string, { path: { x: number; z: number }[]; seatId?: string }>();
 
-  constructor(me: { name: string; look: AvatarLook }, people: MockPerson[]) {
+  constructor(
+    me: { name: string; look: AvatarLook },
+    people: MockPerson[],
+    /** Demo crowd (50/100 people) to see how the 3D room copes: two in three wander, the rest stand around. */
+    crowd: { id: string; name: string }[] = [],
+  ) {
     this.state.players.set('me', player({ name: me.name, look: JSON.stringify(me.look), x: SPAWN.x, z: SPAWN.z }));
     const now = Date.now();
     for (const p of people) {
@@ -93,6 +100,16 @@ export class MockRoom implements StudyRoom {
       );
       if (p.path) this.walkers.set(p.id, { path: p.path, next: 1 });
     }
+    crowd.forEach((c, i) => {
+      const start = randomWalkable(Math.random);
+      this.state.players.set(c.id, player({ name: c.name, look: JSON.stringify(randomLook()), x: start.x, z: start.z, yaw: i }));
+      if (i % 3 === 0) return;
+      // A loop through two random places, along real paths
+      const a = randomWalkable(Math.random);
+      const b = randomWalkable(Math.random);
+      const path = [start, ...findPath(start, a), ...findPath(a, b), ...findPath(b, start)];
+      this.walkers.set(c.id, { path, next: 1 });
+    });
     this.state.npcs.set('mochi', cat('Mochi', 'calico', NAP_SPOTS[0]!.x, NAP_SPOTS[0]!.z, NAP_SPOTS[0]!.y, 'nap'));
     this.state.npcs.set('tofu', cat('Tofu', 'orange', STARTER_CAT.x, STARTER_CAT.z, 0, 'idle'));
   }

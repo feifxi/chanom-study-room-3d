@@ -94,10 +94,12 @@ export const SPOTS: Spot[] = [
     kind: 'rounds',
     roomWide: true,
     games: [
-      { id: 'pick', name: 'Pick a Side', emoji: '🗳️', min: 2, max: 50 },
-      { id: 'quiz', name: 'AI quiz', emoji: '🧠', min: 2, max: 50 },
+      { id: 'wyr', name: 'Would you rather', emoji: '🤔', min: 2, max: 50 },
+      { id: 'quiz', name: 'Quiz', emoji: '🧠', min: 2, max: 50 },
+      { id: 'last', name: 'Last one standing', emoji: '💀', min: 2, max: 50 },
     ],
-    area: { x: -2.6, z: 5.0, r: 1.5 },
+    // Big enough for four zones with a few people in each
+    area: { x: -2.5, z: 4.85, r: 1.75 },
     built: true,
     feature: 11,
     tint: 'bg-secondary',

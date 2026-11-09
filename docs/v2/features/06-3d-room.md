@@ -90,6 +90,57 @@ Decided 2026-11-09, after a "My focus" link in the Study panel would have droppe
 - Not covered yet: the browser Back button. In the real app the room connection should live above the
   routes, so Back keeps you connected (like browsing chats) instead of asking.
 
+## Performance
+
+Decided 2026-11-09: performance is checked now, while features are added, not at the end.
+
+**Budget per frame** (`demo/src/features/room3d/perf.ts`): the map's share plus each person's.
+
+| Per frame  | Map's share | Each person                   |
+| ---------- | ----------- | ----------------------------- |
+| Draw calls | 120         | 6                             |
+| Triangles  | 150k        | 20k (battery saver: about 4k) |
+| Textures   | 32          | 1 (bone data)                 |
+| Our JS     | 8 ms total  |                               |
+| Shaders    | 40 total    |                               |
+
+**Done in the demo:**
+
+- **Characters are merged into skinned meshes** (`avatar/skin.ts`): the ~80 small parts become about
+  4 meshes per person (toon, plain, see-through, outline), with colours stored per vertex and the
+  moving parts as bones. Same look and animation. 100 people: draw calls 3,530 → ~480, our JS per
+  frame 17 ms → 2.6 ms. Everyone shares the same 4 materials.
+- **Battery saver builds lower-detail characters** (half the segments): 100 people drop from ~1.46M
+  to ~0.42M triangles, with outlines still lined up. Battery saver also caps at 30 fps, 1× pixels, no
+  shadows; it's on by default on touch screens.
+- **Slow devices switch themselves to battery saver** once, with a toast ("…turn it off in the room
+  card").
+- **Performance overlay** (Demo tab → 📈, or `?perf`): fps, our JS per frame, worst frame, draw
+  calls, triangles, textures, shaders, against the budget; red when over.
+- **The Demo tab's crowd (50 / 100) now walks around in 3D**, so the overlay shows a real full room.
+- **`pnpm --filter @study/demo demo:perf`**: loads the room with 0, 50 and 100 extra people, smooth and
+  battery saver, and fails when a frame goes over budget (fps is printed but not checked: a headless
+  browser says little about a phone).
+
+Measured on a Mac in headless Chrome (2026-11-09):
+
+| Mode          | People | fps | JS ms | Draw calls | Triangles |
+| ------------- | ------ | --- | ----- | ---------- | --------- |
+| Smooth        | 6      | 58  | 1.8   | 135        | 90k       |
+| Smooth        | 102    | 50  | 2.6   | 479        | 1,463k    |
+| Battery saver | 102    | 30  | 3.3   | 502        | 421k      |
+
+**Next, with the real maps** (each one is checked against the budget):
+
+- **Baked lighting** for the map's furniture (light maps), so phones need no live shadows; time of
+  day becomes a tint. The biggest win left.
+- **Instanced props** (chairs, books, plants drawn once each) and compressed assets (meshopt models,
+  KTX2 textures).
+- **Full detail for the ~30 people nearest you**, lower detail beyond; name labels only nearby.
+- **The map editor's budget check**: publishing renders the map headless and reads its draw calls
+  and triangles, like the standard-kit check. Over budget, Publish stays off.
+- Test on a mid-range Android phone before launch.
+
 ## What resets
 
 When the last person leaves: bubbles, who sat where, drawings and games. The room itself (name, map,

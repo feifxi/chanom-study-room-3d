@@ -18,6 +18,7 @@ import {
 } from '@/lib/demoCrowd';
 import { nudgeQuests } from '@/lib/quests';
 import { cn } from '@/lib/utils';
+import { setPerfOverlay, usePerfOverlay } from '@/features/room3d/perf';
 import { PALETTES, usePalette } from './Providers';
 
 const PAGES = [
@@ -116,6 +117,7 @@ export function DemoToolbar() {
           ))}
         </div>
 
+        <PerfToggle />
         <button onClick={goAwayNow} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
           💤 Go away now (in a 3D room; skips the 10 minutes)
         </button>
@@ -168,4 +170,18 @@ export function DemoToolbar() {
 
 function Title({ children }: { children: React.ReactNode }) {
   return <p className="mb-1.5 text-[11px] font-black tracking-wider text-muted-foreground uppercase">{children}</p>;
+}
+
+/** The room's performance overlay: fps, frame time, draw calls and triangles against the budget. */
+function PerfToggle() {
+  const on = usePerfOverlay();
+  return (
+    <button
+      onClick={() => setPerfOverlay(!on)}
+      aria-pressed={on}
+      className={cn('mb-3 w-full rounded-xl border p-2 text-xs font-bold', on ? 'border-primary bg-secondary' : 'hover:bg-muted')}
+    >
+      📈 Performance overlay {on ? 'on' : 'off'}
+    </button>
+  );
 }

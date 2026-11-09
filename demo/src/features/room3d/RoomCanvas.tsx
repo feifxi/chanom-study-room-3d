@@ -13,6 +13,7 @@ import { Avatar, type LocalMotion } from './Avatar';
 import type { DayLight } from './dayCycle';
 import { FrameDriver } from './FrameDriver';
 import { LabelProjector, type LabelBoard } from './labels';
+import { perfMeter } from './perf';
 import { Library } from './Library';
 import { LocalController, type Hint } from './LocalController';
 import type { LocalPlayerDriver } from './LocalPlayerDriver';
@@ -39,6 +40,8 @@ interface Props {
   onZoom: (percent: number) => void;
   /** Extra 3D layers from features (activities). */
   children?: React.ReactNode;
+  /** Frames have been too slow for a while: time for battery saver. */
+  onSlow?: () => void;
 }
 
 /** The V1 library scene, driven by the mock room instead of the game server. */
@@ -55,6 +58,7 @@ export function RoomCanvas({
   zoomRequest,
   onZoom,
   children,
+  onSlow,
 }: Props) {
   const ids = useMemo(() => [...room.state.players.keys()], [room]);
   const npcIds = useMemo(() => [...room.state.npcs.keys()], [room]);
@@ -67,7 +71,7 @@ export function RoomCanvas({
       camera={{ position: [SPAWN.x + 20, 18, SPAWN.z + 20], zoom: ZOOM.start, near: 0.1, far: 200 }}
       gl={{ preserveDrawingBuffer: true }}
     >
-      <FrameDriver fps={quality.fps} />
+      <FrameDriver fps={quality.fps} onSlow={onSlow} />
       <StaticShadows lightKey={`${light.sunPosition.join(',')}|${light.sunIntensity.toFixed(2)}|${quality.shadows}`} />
       <Library light={light} shadows={quality.shadows} />
       <OrbitControls
@@ -98,10 +102,12 @@ export function RoomCanvas({
           local={motion}
           bubble={bubbles[id]}
           board={board}
+          detail={quality.characters}
         />
       ))}
       {findId && <FindMarker room={room} motion={motion} targetId={findId} />}
       <LabelProjector board={board} />
+      <PerfProbe board={board} avatars={ids.length + npcIds.length} />
       <ZoomBridge request={zoomRequest} onZoom={onZoom} />
     </Canvas>
   );
@@ -211,4 +217,10 @@ function FindMarker({ room, motion, targetId }: { room: MockRoom; motion: React.
       </group>
     </>
   );
+}
+
+/** After the frame is drawn (LabelProjector renders at priority 1): what the GPU was asked to do. */
+function PerfProbe({ board, avatars }: { board: LabelBoard; avatars: number }) {
+  useFrame(({ gl }) => perfMeter.rendered(gl, avatars, board.labels.size), 2);
+  return null;
 }

@@ -1,4 +1,6 @@
 import type { MockRoom } from '../room3d/mockRoom';
+import { BUILT_IN, deckKindFor, type Deck } from './pickASide/decks';
+import { ASK_MS, REVEAL_MS, newGame, sidesFor, zoneAt, zoneCenter, type SideGame, type SideMode } from './pickASide/game';
 import { SPOTS, spotById, type Game, type Spot, type SpotId } from './spots';
 
 /**
@@ -101,6 +103,9 @@ export const watchPosition = (w: WatchState, now = Date.now()) => (w.paused ? w.
 export class ActivityHub {
   readonly spots = Object.fromEntries(SPOTS.map((s) => [s.id, fresh(s)])) as Record<SpotId, SpotState>;
   readonly watch: WatchState = { now: null, queue: [], offset: 0, startedAt: 0, paused: false };
+  /** Pick a Side: the deck the host picked in the lobby, and the game while it runs (and its results). */
+  floorDeck: Deck = BUILT_IN[0]!;
+  side: SideGame | null = null;
   private listeners = new Set<() => void>();
   private snapshot = '';
   version = 0;
@@ -108,6 +113,7 @@ export class ActivityHub {
   private timers: ReturnType<typeof setTimeout>[] = [];
   /** Where scripted people were sitting before a game, so they can go back. */
   private home = new Map<string, string>();
+  private scripted = 0;
   constructor(
     private readonly room: MockRoom,
     readonly roomWideGames: boolean,
@@ -122,7 +128,8 @@ export class ActivityHub {
   getVersion = () => this.version;
 
   private changed() {
-    const snap = JSON.stringify(this.spots) + JSON.stringify(this.watch) + [...this.dismissed].join();
+    const snap =
+      JSON.stringify(this.spots) + JSON.stringify(this.watch) + JSON.stringify(this.side) + this.floorDeck.id + [...this.dismissed].join();
     if (snap === this.snapshot) return;
     this.snapshot = snap;
     this.version++;
@@ -150,6 +157,7 @@ export class ActivityHub {
       const st = this.spots[s.id];
       if (st.phase === 'results') return st.results.includes(id) && this.inArea(s, id);
       if (s.kind === 'drop-in') return st.phase === 'playing' && this.inArea(s, id);
+      if (st.phase === 'playing' && st.out.includes(id)) return this.inArea(s, id);
       return st.phase !== 'free' && (st.players.includes(id) || st.nextRound.includes(id));
     });
   }
@@ -200,9 +208,10 @@ export class ActivityHub {
         if (!hostThere && !starterWalking) st.hostId = st.players[0] ?? null;
         if (!st.players.length && !starterWalking) Object.assign(st, fresh(spot));
         else if (st.startsAt && now >= st.startsAt) {
-          if (st.players.length >= st.game.min)
+          if (st.players.length >= st.game.min) {
             Object.assign(st, { phase: 'playing', since: now, startsAt: 0, out: [], awaySince: {}, invite: null });
-          else st.startsAt = 0;
+            if (spot.id === 'floor') this.sideStart(now);
+          } else st.startsAt = 0;
         }
       } else if (st.phase === 'playing') {
         for (const id of [...st.players]) {
@@ -212,7 +221,10 @@ export class ActivityHub {
         }
         st.nextRound = counted.filter((id) => !st.players.includes(id) && !st.out.includes(id));
         if (st.hostId && !st.players.includes(st.hostId)) st.hostId = st.players[0] ?? null;
-        if (st.players.length <= 1) this.finish(spot.id, st.players);
+        if (spot.id === 'floor') this.sideTick(now, spot, st);
+        // Pick a Side ends itself after the reveal, so the last answer still shows
+        const sideRunning = spot.id === 'floor' && this.side && this.side.stage !== 'done';
+        if (st.phase === 'playing' && !sideRunning && st.players.length <= 1) this.finish(spot.id, st.players);
       } else if (st.phase === 'results' && now >= st.resultsUntil) {
         Object.assign(st, { phase: 'gathering', players: counted, results: [], out: [], nextRound: [], since: now });
         if (!counted.length) Object.assign(st, fresh(spot));
@@ -287,7 +299,83 @@ export class ActivityHub {
   pickGame(spotId: SpotId, gameId: string) {
     const st = this.spots[spotId];
     st.game = spotById(spotId).games.find((g) => g.id === gameId) ?? st.game;
+    // Would you rather needs an opinion deck, the quizzes a quiz deck
+    if (spotId === 'floor' && this.floorDeck.kind !== deckKindFor(gameId))
+      this.floorDeck = BUILT_IN.find((d) => d.kind === deckKindFor(gameId))!;
     this.changed();
+  }
+
+  /** The host picks Pick a Side's deck (built in, their own, or AI-made: the host's client sends it). */
+  pickDeck(deck: Deck) {
+    this.floorDeck = deck;
+    this.changed();
+  }
+
+  // --- Pick a Side (feature 11) ---
+
+  private sideStart(now: number) {
+    this.side = newGame(this.spots.floor.game.id as SideMode, this.floorDeck, now);
+    this.scriptAnswers();
+  }
+
+  /** Lock the answers when the timer ends, show the reveal, then the next question (or the results). */
+  private sideTick(now: number, spot: Spot, st: SpotState) {
+    const g = this.side;
+    if (!g || g.stage === 'done' || now < g.until) return;
+    if (g.stage === 'ask') {
+      const q = g.questions[g.i]!;
+      g.answers = {};
+      for (const id of st.players) {
+        const p = this.room.state.players.get(id);
+        g.answers[id] = p && !st.awaySince[id] ? zoneAt(spot.area, sidesFor(g.mode), p.x, p.z) : null;
+      }
+      if (g.mode === 'wyr') {
+        const mine = g.answers.me;
+        if (mine != null) for (const id of st.players) if (id !== 'me' && g.answers[id] === mine) g.agree[id] = (g.agree[id] ?? 0) + 1;
+      } else {
+        const right = st.players.filter((id) => g.answers[id] === q.right);
+        for (const id of right) g.scores[id] = (g.scores[id] ?? 0) + 1;
+        g.everyoneWrong = g.mode === 'last' && right.length === 0;
+        if (g.mode === 'last' && right.length)
+          for (const id of st.players.filter((x) => !right.includes(x))) {
+            this.knockOut(st, id, 'wrong');
+            // Scripted people step to the edge to watch
+            if (id !== 'me') this.room.sendTo(id, edgeSpot(spot, id));
+          }
+      }
+      Object.assign(g, { stage: 'reveal', until: now + REVEAL_MS });
+      return;
+    }
+    // Reveal over: the next question, unless that was the last one (or only one is left standing)
+    if (g.i + 1 >= g.questions.length || st.players.length <= 1) {
+      const score = (id: string) => g.scores[id] ?? 0;
+      const standing = g.mode === 'quiz' ? [...st.players].sort((a, b) => score(b) - score(a)) : [...st.players];
+      const top = standing[0] ? score(standing[0]) : 0;
+      g.winners = g.mode === 'wyr' ? [] : g.mode === 'quiz' ? standing.filter((id) => score(id) === top) : standing;
+      g.stage = 'done';
+      this.finish('floor', standing);
+      return;
+    }
+    Object.assign(g, { i: g.i + 1, stage: 'ask', until: now + ASK_MS[g.mode], answers: {}, everyoneWrong: false });
+    this.scriptAnswers();
+  }
+
+  /** Demo: the others walk to a zone at different moments (quizzes: right about two times in three). */
+  private scriptAnswers() {
+    const g = this.side;
+    if (!g) return;
+    const spot = spotById('floor');
+    const i = g.i;
+    const q = g.questions[i]!;
+    const sides = sidesFor(g.mode);
+    for (const id of this.spots.floor.players) {
+      if (id === 'me') continue;
+      const pick = g.mode !== 'wyr' && Math.random() < 0.68 ? q.right! : Math.floor(Math.random() * sides);
+      this.later(1200 + Math.random() * (ASK_MS[g.mode] - 4500), () => {
+        if (this.side !== g || g.i !== i || g.stage !== 'ask' || !this.spots.floor.players.includes(id)) return;
+        this.room.sendTo(id, zoneCenter(spot.area, sides, pick, 0.5));
+      });
+    }
   }
 
   /** The host's 📣: one invite card to everyone in the room. */
@@ -307,6 +395,7 @@ export class ActivityHub {
   /** The host ends the round early: back to the lobby, no winner. */
   end(spotId: SpotId, now = Date.now()) {
     const st = this.spots[spotId];
+    if (spotId === 'floor') this.side = null;
     Object.assign(st, { phase: 'gathering', out: [], nextRound: [], awaySince: {}, since: now });
     this.changed();
   }
@@ -345,11 +434,12 @@ export class ActivityHub {
     if (other) this.leave(spotId, other);
   }
 
-  private knockOut(st: SpotState, id: string, why: 'left' | 'away') {
+  private knockOut(st: SpotState, id: string, why: 'left' | 'away' | 'wrong') {
     st.players = st.players.filter((x) => x !== id);
     if (!st.out.includes(id)) st.out.push(id);
     delete st.awaySince[id];
-    if (id === 'me') this.onNews(why === 'away' ? 'You were away from the game for 30 s, so you’re out' : 'You left the game');
+    if (id === 'me' && why !== 'wrong')
+      this.onNews(why === 'away' ? 'You were away from the game for 30 s, so you’re out' : 'You left the game');
   }
 
   // --- Demo scripts: other people answering invites and starting games ---
@@ -396,6 +486,11 @@ export class ActivityHub {
     };
     go(host, 0);
     this.start('floor', host);
+    // A different mode each time the demo runs it, with a deck to match
+    const mode = (['wyr', 'quiz', 'last'] as const)[this.scripted++ % 3]!;
+    this.pickGame('floor', mode);
+    const decks = BUILT_IN.filter((d) => d.kind === deckKindFor(mode));
+    this.pickDeck(decks[Math.floor(Math.random() * decks.length)]!);
     this.call('floor', host);
     if (friend) this.later(2500, () => go(friend, 1));
     const startedAt = Date.now();
@@ -405,12 +500,7 @@ export class ActivityHub {
       const ready = st.players.length >= st.game.min;
       if (ready && (st.players.includes('me') || Date.now() - startedAt > 30_000)) {
         clearInterval(wait);
-        this.later(4000, () => {
-          if (this.spots.floor.phase !== 'gathering') return;
-          this.begin('floor');
-          // A Pick a Side question lasts about 15 s in the placeholder
-          this.later(COUNTDOWN_MS + 15_000, () => this.spots.floor.phase === 'playing' && this.finish('floor'));
-        });
+        this.later(4000, () => this.spots.floor.phase === 'gathering' && this.begin('floor'));
       }
     }, 500);
     this.timers.push(wait as unknown as ReturnType<typeof setTimeout>);
@@ -425,6 +515,12 @@ export class ActivityHub {
       this.home.delete(id);
     }
   }
+}
+
+/** Just outside the ring, where people knocked out stand and watch. */
+function edgeSpot(spot: Spot, id: string) {
+  const a = 2.2 + (id.charCodeAt(0) % 5) * 0.5;
+  return { x: spot.area.x + Math.sin(a) * (spot.area.r + 0.6), z: spot.area.z + Math.cos(a) * (spot.area.r + 0.6) };
 }
 
 /** A place inside a spot's ring for the i-th person to stand. */

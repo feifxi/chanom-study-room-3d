@@ -6,7 +6,8 @@
   "scripts": {
     "demo:dev": "next dev -p 3100",
     "demo:typecheck": "next typegen && tsc --noEmit",
-    "demo:lint": "eslint --max-warnings 0"
+    "demo:lint": "eslint --max-warnings 0",
+    "demo:perf": "node scripts/perf-check.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

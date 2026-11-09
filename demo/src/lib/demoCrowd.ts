@@ -3,8 +3,8 @@
 import { useSyncExternalStore } from 'react';
 
 /**
- * Demo-only: pretend a room is crowded (50 or 100 people) to see how the people panel copes. Only
- * the people list and its pill get the extra people; the 3D scene keeps its few avatars.
+ * Demo-only: fill a room with 50 or 100 people to see how the people panel and the 3D room cope.
+ * They walk around in 3D (two in three wander) and fill the people list.
  */
 export const CROWDS = [0, 50, 100] as const;
 export type Crowd = (typeof CROWDS)[number];

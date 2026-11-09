@@ -1,9 +1,12 @@
 import * as THREE from 'three';
 import type { AvatarLook } from '@study/shared';
+import { show, skinCharacter } from './skin';
 
 /*
  * Anime moe chibi characters, built from Three.js primitives.
  * Cel shading (3-step toon gradient) with inverted-hull ink outlines.
+ * Built from parts for readability, then merged into a few skinned meshes (skin.ts) so a full room
+ * stays cheap to draw.
  */
 
 const HEAD_Y = 1.1;
@@ -56,7 +59,15 @@ function mesh(
   return m;
 }
 
-const sphere = (r: number, w = 20, h = 14) => new THREE.SphereGeometry(r, w, h);
+const sphere = (r: number, w = 20, h = 14) => new THREE.SphereGeometry(r, q(w), q(h));
+
+/**
+ * Character detail: "low" (battery saver, phones) builds every round part with about half the
+ * segments, roughly a third of the triangles. Outlines use the same shapes, so they still line up.
+ */
+export type CharacterDetail = 'full' | 'low';
+let segments = 1;
+const q = (n: number) => Math.max(3, Math.round(n * segments));
 const flat = { shadow: false };
 
 function cone(
@@ -76,7 +87,7 @@ function cone(
   pivot.position.set(x, y, z);
   pivot.rotation.set(rx, ry, rz, 'YXZ');
   parent.add(pivot);
-  mesh(pivot, new THREE.ConeGeometry(r, h, 10), mat, 0, 0, 0, { outline: 0.06 }).scale.z = flatten;
+  mesh(pivot, new THREE.ConeGeometry(r, h, q(10)), mat, 0, 0, 0, { outline: 0.06 }).scale.z = flatten;
   return pivot;
 }
 
@@ -92,9 +103,9 @@ function buildEye(head: THREE.Object3D, side: number, irisColor: string) {
   mesh(eye, sphere(0.05), new THREE.MeshBasicMaterial({ color: light }), 0, -0.065, 0.018, flat).scale.set(0.85, 0.55, 0.3);
   mesh(eye, sphere(0.034, 10, 8), white, -side * 0.03, 0.05, 0.032, flat);
   mesh(eye, sphere(0.016, 8, 6), white, side * 0.03, -0.06, 0.032, flat);
-  const lash = mesh(eye, new THREE.CapsuleGeometry(0.02, 0.15, 4, 8), toon(INK), 0, 0.125, 0.01, flat);
+  const lash = mesh(eye, new THREE.CapsuleGeometry(0.02, 0.15, q(4), q(8)), toon(INK), 0, 0.125, 0.01, flat);
   lash.rotation.z = Math.PI / 2 - side * 0.15;
-  const flick = mesh(eye, new THREE.ConeGeometry(0.022, 0.07, 6), toon(INK), side * 0.1, 0.12, 0.01, flat);
+  const flick = mesh(eye, new THREE.ConeGeometry(0.022, 0.07, q(6)), toon(INK), side * 0.1, 0.12, 0.01, flat);
   flick.rotation.z = -side * 1.1;
   return eye;
 }
@@ -114,7 +125,7 @@ const ACCESSORIES: Partial<Record<AvatarLook['accessory'], Accessory>> = {
     bow.rotation.set(0.2, 0.3, -0.5);
     head.add(bow);
     for (const s of [-1, 1]) {
-      const loop = mesh(bow, new THREE.ConeGeometry(0.12, 0.22, 16), mat, s * 0.12, 0, 0, { outline: 0.08 });
+      const loop = mesh(bow, new THREE.ConeGeometry(0.12, 0.22, q(16)), mat, s * 0.12, 0, 0, { outline: 0.08 });
       loop.rotation.z = (s * Math.PI) / 2;
       loop.scale.z = 0.5;
     }
@@ -123,9 +134,9 @@ const ACCESSORIES: Partial<Record<AvatarLook['accessory'], Accessory>> = {
   glasses(head) {
     const mat = toon('#3a3550');
     for (const s of [-1, 1]) {
-      mesh(head, new THREE.TorusGeometry(0.115, 0.013, 8, 28), mat, s * 0.16, -0.04, 0.44, flat).rotation.y = s * 0.38;
+      mesh(head, new THREE.TorusGeometry(0.115, 0.013, q(8), q(28)), mat, s * 0.16, -0.04, 0.44, flat).rotation.y = s * 0.38;
     }
-    mesh(head, new THREE.CylinderGeometry(0.009, 0.009, 0.09, 6), mat, 0, -0.02, 0.46, flat).rotation.z = Math.PI / 2;
+    mesh(head, new THREE.CylinderGeometry(0.009, 0.009, 0.09, q(6)), mat, 0, -0.02, 0.46, flat).rotation.z = Math.PI / 2;
   },
   catEars(head, look) {
     for (const s of [-1, 1]) {
@@ -133,19 +144,19 @@ const ACCESSORIES: Partial<Record<AvatarLook['accessory'], Accessory>> = {
       ear.position.set(s * 0.27, 0.38, -0.02);
       ear.rotation.z = -s * 0.45;
       head.add(ear);
-      mesh(ear, new THREE.ConeGeometry(0.15, 0.28, 16), toon(look.hair), 0, 0, 0, { outline: 0.07 });
-      mesh(ear, new THREE.ConeGeometry(0.085, 0.17, 16), toon('#ffb3c8'), 0, -0.02, 0.06).scale.z = 0.5;
+      mesh(ear, new THREE.ConeGeometry(0.15, 0.28, q(16)), toon(look.hair), 0, 0, 0, { outline: 0.07 });
+      mesh(ear, new THREE.ConeGeometry(0.085, 0.17, q(16)), toon('#ffb3c8'), 0, -0.02, 0.06).scale.z = 0.5;
     }
   },
   headphones(head, look) {
-    mesh(head, new THREE.TorusGeometry(0.5, 0.038, 10, 32, Math.PI), toon('#3a3f52'), 0, 0.02, 0, { outline: 0.02 });
+    mesh(head, new THREE.TorusGeometry(0.5, 0.038, q(10), q(32), Math.PI), toon('#3a3f52'), 0, 0.02, 0, { outline: 0.02 });
     for (const s of [-1, 1]) {
-      mesh(head, new THREE.CylinderGeometry(0.12, 0.12, 0.1, 20), toon(look.outfit), s * 0.48, 0, 0, { outline: 0.08 }).rotation.z =
+      mesh(head, new THREE.CylinderGeometry(0.12, 0.12, 0.1, q(20)), toon(look.outfit), s * 0.48, 0, 0, { outline: 0.08 }).rotation.z =
         Math.PI / 2;
     }
   },
   ahoge(head, look, sway) {
-    const strand = mesh(head, new THREE.TorusGeometry(0.11, 0.024, 8, 20, Math.PI * 1.3), toon(look.hair), 0.02, 0.58, 0.02);
+    const strand = mesh(head, new THREE.TorusGeometry(0.11, 0.024, q(8), q(20), Math.PI * 1.3), toon(look.hair), 0.02, 0.58, 0.02);
     strand.rotation.set(0, Math.PI / 2, 0.4);
     sway.push(strand);
   },
@@ -194,8 +205,11 @@ export class CharacterRig {
   private sway: THREE.Object3D[] = [];
   private phase = Math.random() * 10;
   private blinkIn = 1 + Math.random() * 3;
+  private skinned: THREE.SkinnedMesh[] = [];
 
-  constructor(lookInput: AvatarLook) {
+  constructor(lookInput: AvatarLook, detail: CharacterDetail = 'full') {
+    // Read by the shape helpers while this constructor builds (construction is synchronous)
+    segments = detail === 'low' ? 0.5 : 1;
     const look = resolve(lookInput);
     this.group.add(this.body);
     const skin = toon(SKIN);
@@ -205,22 +219,22 @@ export class CharacterRig {
     const b = this.body;
 
     // Sailor-style outfit
-    mesh(b, new THREE.CylinderGeometry(0.15, 0.25, 0.24, 20), outfit, 0, 0.3, 0, { outline: 0.05 });
-    mesh(b, new THREE.CapsuleGeometry(0.16, 0.14, 6, 16), toon('#ffffff'), 0, 0.5, 0, { outline: 0.05 });
-    mesh(b, new THREE.CylinderGeometry(0.17, 0.23, 0.07, 20), outfit, 0, 0.63, -0.01, { outline: 0.05 });
+    mesh(b, new THREE.CylinderGeometry(0.15, 0.25, 0.24, q(20)), outfit, 0, 0.3, 0, { outline: 0.05 });
+    mesh(b, new THREE.CapsuleGeometry(0.16, 0.14, q(6), q(16)), toon('#ffffff'), 0, 0.5, 0, { outline: 0.05 });
+    mesh(b, new THREE.CylinderGeometry(0.17, 0.23, 0.07, q(20)), outfit, 0, 0.63, -0.01, { outline: 0.05 });
     const tie = new THREE.Group();
     tie.position.set(0, 0.56, 0.16);
     b.add(tie);
     for (const s of [-1, 1]) {
-      mesh(tie, new THREE.ConeGeometry(0.05, 0.1, 10), trim, s * 0.05, 0, 0, { outline: 0.1 }).rotation.z = (s * Math.PI) / 2;
-      mesh(tie, new THREE.ConeGeometry(0.03, 0.1, 8), trim, s * 0.025, -0.06, 0).rotation.z = Math.PI + s * 0.3;
+      mesh(tie, new THREE.ConeGeometry(0.05, 0.1, q(10)), trim, s * 0.05, 0, 0, { outline: 0.1 }).rotation.z = (s * Math.PI) / 2;
+      mesh(tie, new THREE.ConeGeometry(0.03, 0.1, q(8)), trim, s * 0.025, -0.06, 0).rotation.z = Math.PI + s * 0.3;
     }
     // Each leg hangs from a hip pivot so it can swing forward when seated
     this.legs = [-1, 1].map((s) => {
       const hip = new THREE.Group();
       hip.position.set(s * 0.08, HIP_Y, 0);
       b.add(hip);
-      mesh(hip, new THREE.CapsuleGeometry(0.045, 0.08, 4, 8), skin, 0, -0.07, 0);
+      mesh(hip, new THREE.CapsuleGeometry(0.045, 0.08, q(4), q(8)), skin, 0, -0.07, 0);
       mesh(hip, sphere(0.07), toon('#4a4560'), 0, -0.17, 0.03, { outline: 0.1 }).scale.set(1, 0.7, 1.35);
       return hip;
     });
@@ -231,8 +245,8 @@ export class CharacterRig {
     b.add(this.head);
     const h = this.head;
     mesh(h, sphere(R, 32, 24), skin, 0, 0, 0, { outline: 0.035 });
-    mesh(h, new THREE.SphereGeometry(R + 0.035, 32, 16, 0, Math.PI * 2, 0, 1.25), hair, 0, 0, 0, { outline: 0.04 });
-    mesh(h, new THREE.SphereGeometry(R + 0.05, 32, 16, Math.PI, Math.PI, 0, 2.35), hair, 0, 0, 0, { outline: 0.04 });
+    mesh(h, new THREE.SphereGeometry(R + 0.035, q(32), q(16), 0, Math.PI * 2, 0, 1.25), hair, 0, 0, 0, { outline: 0.04 });
+    mesh(h, new THREE.SphereGeometry(R + 0.05, q(32), q(16), Math.PI, Math.PI, 0, 2.35), hair, 0, 0, 0, { outline: 0.04 });
     for (let i = -3; i <= 3; i++) {
       const a = i * 0.24;
       const edge = Math.abs(i) === 3;
@@ -244,7 +258,7 @@ export class CharacterRig {
     for (const s of [-1, 1]) this.sway.push(cone(h, 0.09, 0.5, hair, s * 0.4, -0.16, 0.14, Math.PI - 0.15, s * 0.5, -s * 0.08, 0.5));
     const shine = mesh(
       h,
-      new THREE.TorusGeometry(0.405, 0.016, 6, 40),
+      new THREE.TorusGeometry(0.405, 0.016, q(6), q(40)),
       new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.5 }),
       0,
       0.26,
@@ -256,7 +270,7 @@ export class CharacterRig {
     // Face
     this.eyes = [-1, 1].map((s) => buildEye(h, s, look.eyes));
     this.happyEyes = [-1, 1].map((s) => {
-      const arc = mesh(h, new THREE.TorusGeometry(0.065, 0.018, 6, 14, Math.PI), toon(INK), s * 0.16, -0.05, 0.415, flat);
+      const arc = mesh(h, new THREE.TorusGeometry(0.065, 0.018, q(6), q(14), Math.PI), toon(INK), s * 0.16, -0.05, 0.415, flat);
       arc.rotation.y = s * 0.38;
       arc.visible = false;
       return arc;
@@ -270,9 +284,9 @@ export class CharacterRig {
       h.add(cheek);
       mesh(cheek, sphere(0.065, 12, 8), blush, 0, 0, 0, flat).scale.set(1.25, 0.6, 0.25);
       for (const dx of [-0.03, 0, 0.03])
-        mesh(cheek, new THREE.CapsuleGeometry(0.006, 0.035, 2, 4), blushLine, dx, 0, 0.02, flat).rotation.z = 0.5;
+        mesh(cheek, new THREE.CapsuleGeometry(0.006, 0.035, q(2), q(4)), blushLine, dx, 0, 0.02, flat).rotation.z = 0.5;
     }
-    this.smile = mesh(h, new THREE.TorusGeometry(0.03, 0.009, 6, 12, Math.PI), toon(INK), 0, -0.18, 0.41, flat);
+    this.smile = mesh(h, new THREE.TorusGeometry(0.03, 0.009, q(6), q(12), Math.PI), toon(INK), 0, -0.18, 0.41, flat);
     this.smile.rotation.z = Math.PI;
     this.mouthOpen = mesh(h, sphere(0.04, 12, 8), toon('#c2415e'), 0, -0.19, 0.405, flat);
     this.mouthOpen.scale.set(1, 0.85, 0.4);
@@ -280,6 +294,15 @@ export class CharacterRig {
 
     ACCESSORIES[look.accessory]?.(h, look, this.sway);
     for (const part of this.sway) part.userData.base = part.rotation.clone();
+
+    this.skinned = skinCharacter(
+      this.group,
+      [this.body, ...this.legs, ...this.hands, this.head, ...this.eyes, ...this.happyEyes, this.smile, this.mouthOpen, ...this.sway],
+      getGradientMap(),
+      OUTLINE,
+    );
+    this.happyEyes.forEach((e) => show(e, false));
+    show(this.mouthOpen, false);
   }
 
   /** Current extra height from sitting (for placing labels above the head). */
@@ -324,14 +347,13 @@ export class CharacterRig {
     if (this.blinkIn < -0.12) this.blinkIn = 2 + Math.random() * 3;
     const eyeY = this.blinkIn < 0 ? 0.12 : 1;
     this.eyes.forEach((eye, i) => {
-      eye.scale.y = eyeY;
-      eye.visible = !pose.happy;
-      this.happyEyes[i]!.visible = pose.happy;
+      show(eye, !pose.happy, eyeY);
+      show(this.happyEyes[i]!, pose.happy);
     });
 
     const talking = pose.talking && Math.sin(t * 16) > 0;
-    this.mouthOpen.visible = talking;
-    this.smile.visible = !talking;
+    show(this.mouthOpen, talking);
+    show(this.smile, !talking);
 
     const swing = pose.walking ? Math.sin(t * 10) * 0.18 : Math.sin(t * 1.6 + this.phase) * 0.05;
     for (const part of this.sway) {
@@ -341,12 +363,11 @@ export class CharacterRig {
     }
   }
 
+  /** The merged meshes' geometry is this character's own; the materials are shared by everyone. */
   dispose() {
-    this.group.traverse((o) => {
-      if (o instanceof THREE.Mesh) {
-        o.geometry.dispose();
-        if (o.material !== OUTLINE) (o.material as THREE.Material).dispose();
-      }
-    });
+    for (const m of this.skinned) {
+      m.geometry.dispose();
+      m.skeleton.dispose();
+    }
   }
 }

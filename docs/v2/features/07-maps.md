@@ -41,6 +41,12 @@ whichever map a room picks, every activity works there.
 **Ideas for later** (same kit, added when there's time): 🌿 Greenhouse, 🥐 Bakery Kitchen,
 🍊 Kotatsu House, 🏖️ Beach Hut, 🚀 Space Station.
 
+**Every map keeps every activity, the library too** (decided 2026-11-09). A "study-only library" was
+considered and dropped: the library stays fully functional. The activities are built in the library
+for now; its size, layout and props get reworked later so the new spots (game table, big screen,
+open floor, whiteboard) fit its cosy look. **Cat Café and Starry Rooftop are the next maps built**, no
+new templates. Every map must fit the performance budget ([06-3d-room.md](06-3d-room.md#performance)).
+
 ## Sizes
 
 - **Cosy:** 20 × 14 m, up to **50** people. Every room starts here.
@@ -125,3 +131,33 @@ or Demo tab → "Team publishes a map update".
   and runs moderation.
 - **Kit check:** the same function runs in the editor and on the server's publish endpoint, so a
   broken map can't go live.
+
+## Art pipeline: code now, Blender later
+
+Decided 2026-11-09: props and characters stay **built in code** for fast development. The move to
+**Blender models** happens when the user is ready; nothing waits on it.
+
+- **Why Blender later:** performance depends on what reaches the GPU (draw calls, triangles,
+  materials, textures), not on where a shape came from. But an authored model needs far fewer
+  triangles for the same look (a chibi in ~3–5k vs ~19k built from spheres), arrives as one mesh with
+  one material, and can have its **lighting baked** into the texture, the biggest win left for phones.
+  The cost is download size, so assets are compressed.
+- **The rule:** static and artistic things come from Blender (map shells, furniture, characters, hair,
+  accessories, the editor's catalog). Things that change at runtime or show game state stay in code
+  (activity rings, Pick a Side zones, the TV picture, cards, the whiteboard surface, placeholders).
+- **Maps:** one compressed GLB per map with baked lighting. Interactive pieces are named in Blender
+  (`seat_12`, `spot_tv`, `zone_nook`) and the code reads seats, spots and zones from those names, so
+  the map file and the standard-kit check come from the model.
+- **Characters:** one interface (`update(dt, pose)`, `group`, `labelHeight`, `dispose`) with two
+  versions, today's code-built one and a Blender one, so the switch doesn't touch the room code. One
+  rigged body; hair and accessories on the head bone; colours from a small palette texture so they
+  stay customisable; walk, sit, idle and talk as animation clips.
+- **Pipeline:** Blender → glTF → `gltf-transform` (meshopt, KTX2, prune) → `gltfjsx` typed components →
+  load behind a loading screen → `demo:perf` checks the frame budget, plus a size budget (a map about
+  2–3 MB, a character about 200–300 KB).
+- **Order:** maps first (Cat Café proves the pipeline, then the library's rework), characters second
+  (they need the customisation system designed).
+- What the popular three.js games do (Bruno Simon's portfolio, Messenger by Abeto, Krunker): few draw
+  calls, shared materials, one skinned mesh per character, fake shadows, baked lighting, instancing,
+  compressed assets, LOD. We have the first four; the rest come with the real maps
+  ([06-3d-room.md](06-3d-room.md#performance)).
