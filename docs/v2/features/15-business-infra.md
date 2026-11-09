@@ -5,13 +5,13 @@ Status: decided (2026-11-10). Overview: [`docs/v2-plan.md`](../../v2-plan.md). W
 
 ## Prices
 
-**Connecta Plus: ฿89 a month or ฿890 a year** (two months free). Outside Thailand: $2.99 / $29.
+**Connecta Plus: ฿89 a month or ฿890 a year** (two months free, ≈ ฿74 a month). Outside Thailand: $2.99 / $29.
 
 How we got there (redo it with real numbers after the playtest):
 
 - **Floor, the fees:** Stripe takes about 3.65% + ฿10 per card payment and 1.65% for PromptPay
   (check current rates). The fixed ฿10 is what hurts: below about ฿69 a month, fees eat more than
-  15%. From ฿89 we keep about ฿76 a month by card, ฿71 on yearly, ฿88 on PromptPay packs. VAT only
+  15%. From ฿89 we keep about ฿76 a month by card, ฿71 a month on yearly by card, and about ฿87 by PromptPay. VAT only
   starts above ฿1.8M a year.
 - **Cost of a user:** almost all bandwidth. A free user (about 5 h of voice a month) costs about
   ฿1–2; a Plus owner (bigger rooms, 1080p sharing) about ฿15–25. Measure both in the playtest.
@@ -23,9 +23,14 @@ How we got there (redo it with real numbers after the playtest):
 
 ## Paying (Stripe)
 
-- **Card:** monthly or yearly, renews by itself.
-- **PromptPay:** can't renew, so it buys fixed packs: **3 months ฿249, 12 months ฿890**. Good for
-  students without cards.
+**Two plans, any way to pay** (decided 2026-11-10; replaced "card plans plus PromptPay packs", which
+looked like different products). How you pay is picked on the payment page:
+
+- **Card:** renews by itself on the date.
+- **PromptPay:** nobody can take money from PromptPay without you scanning, so it **renews by
+  reminder**: 3 days before the date you get a new QR in the Inbox and by email (Stripe can send an
+  invoice payable by PromptPay; check this for Thai accounts). Don't pay and Plus just ends, then the
+  7-day grace, the same as a card that fails. Switch to a card any time to make it automatic.
 - **Stripe's hosted Checkout:** we never see card details. Our page → Stripe → back to Connecta.
   Stripe sends receipts. Web only (no app store, no 30% cut).
 - **Gift Plus:** a friend's "…" → Gift Plus → 1, 3 or 12 months, a note, card or PromptPay. They get
@@ -43,10 +48,14 @@ How we got there (redo it with real numbers after the playtest):
 
 Real Stripe (test mode first) comes with the backend; the demo fakes it:
 
-- **Connecta Plus page** (`/home/plus`): your status, **Get Plus / Change plan** with the four ways
-  to buy (Monthly and Yearly by card, 3 and 12 months by PromptPay) → **Continue to payment**.
+- **Connecta Plus page** (`/home/plus`), laid out like Discord Nitro, Spotify and Duolingo's pages:
+  a hero with your own character and Plus chips; the perks as picture cards (25 vs 100 people as
+  dots, premium maps, skins and pets, 720p → 1080p, the animated name tag, 30 AI decks, 50 MB); two
+  plan cards with **Yearly** marked "2 months free"; Gift Plus; "Compare Free and Plus" folded away;
+  a short FAQ (friends don't need Plus, PromptPay, what happens if it ends, cancel, refunds); and the
+  promises (never pay to win, no ads in rooms, joining is free, cancel any time).
 - **Payment page** (`/checkout`): a stand-in for Stripe's hosted page with a "Demo" strip: card
-  (test number filled in) or a PromptPay QR (gifts can use either), Pay → done → back to Connecta.
+  (test number filled in) or a PromptPay QR for every plan and gift, Pay → done → back to Connecta.
 - **Settings → Plus & billing:** plan and date, Cancel Plus (with what happens next), Turn renewal
   back on, the card, receipts, gifts you sent, "charged by mistake? reply to the receipt email".
 - **Gift Plus:** Friends → a friend's "…" → Gift Plus, or the Plus page. Mai's DM shows a received

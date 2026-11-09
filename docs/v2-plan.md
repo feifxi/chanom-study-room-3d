@@ -228,8 +228,8 @@ Discord's boosts plus Plus plus coins was too much for a cosy app of small group
 - **Rules:** never sell power, no ads in rooms, never charge to join. Paid perks are things that cost
   us money to run (capacity, HD video, storage, AI) or are purely cosmetic. Free limits are set by real cost.
 
-**Prices** (decided 2026-11-10): ฿89 a month or ฿890 a year; PromptPay packs ฿249 / 3 months and
-฿890 / 12 months; Stripe, gifts, team-only refunds. Details: [15-business-infra.md](v2/features/15-business-infra.md).
+**Prices** (decided 2026-11-10): ฿89 a month or ฿890 a year, by card (renews by itself) or PromptPay
+(renews by reminder); Stripe, gifts, team-only refunds. Details: [15-business-infra.md](v2/features/15-business-infra.md).
 
 ## Engineering
 

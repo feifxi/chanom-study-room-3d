@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { userById } from '@/lib/mock';
-import { GIFTS, OFFERS, sendGift, subscribe, type OfferId } from '@/lib/plus';
+import { GIFTS, PLUS_PLANS, REMIND_DAYS, sendGift, subscribe, type PayMethod, type PlanId } from '@/lib/plus';
 
 export default function CheckoutPage() {
   return (
@@ -23,28 +23,29 @@ export default function CheckoutPage() {
 /**
  * Demo stand-in for Stripe's hosted Checkout (feature 15). The real app never shows a card form of
  * its own: "Continue to payment" opens Stripe's page, Stripe sends you back, and a webhook turns
- * Plus on. Plans renew by card only; PromptPay can't renew, so it buys packs; gifts take either.
+ * Plus on. Every plan and gift takes card or PromptPay; a PromptPay plan renews by reminder (a QR
+ * before the date) since nobody can charge PromptPay without you.
  */
 function Checkout() {
   const router = useRouter();
   const params = useSearchParams();
   const giftTo = params.get('gift');
-  const offerId = (params.get('offer') ?? 'monthly') as OfferId;
-  const offer = OFFERS[offerId] ?? OFFERS.monthly;
+  const planId: PlanId = params.get('plan') === 'yearly' ? 'yearly' : 'monthly';
+  const plan = PLUS_PLANS[planId];
   const giftMonths = Number(params.get('months') ?? 1);
   const gift = giftTo ? (GIFTS.find((g) => g.months === giftMonths) ?? GIFTS[0]) : null;
   const friend = giftTo ? userById(giftTo) : null;
-  const methods: ('card' | 'promptpay')[] = gift ? ['card', 'promptpay'] : [offer.method];
-  const [method, setMethod] = useState(methods[0]!);
+  const methods: PayMethod[] = ['card', 'promptpay'];
+  const [method, setMethod] = useState<PayMethod>(params.get('method') === 'promptpay' ? 'promptpay' : 'card');
   const [step, setStep] = useState<'pay' | 'paying' | 'done'>('pay');
-  const price = gift ? gift.price : offer.price;
+  const price = gift ? gift.price : plan.price;
 
   const pay = () => {
     setStep('paying');
     setTimeout(() => {
       setStep('done');
       if (gift && friend) sendGift(friend.name, gift.months, gift.price, method);
-      else subscribe(offerId);
+      else subscribe(planId, method);
       setTimeout(() => {
         if (gift && friend) {
           toast.success(`Gift sent to ${friend.name} 🎁 They’ll find it in their DMs and Inbox.`);
@@ -82,17 +83,15 @@ function Checkout() {
             </div>
           ) : (
             <div>
-              <p className="text-sm font-bold text-muted-foreground">Connecta Plus · {offer.label}</p>
+              <p className="text-sm font-bold text-muted-foreground">Connecta Plus · {plan.label}</p>
               <p className="text-4xl font-black">
-                ฿{offer.price}
-                <span className="text-base font-bold text-muted-foreground">
-                  {offer.method === 'card' ? (offer.months === 12 ? ' a year' : ' a month') : ` for ${offer.months} months`}
-                </span>
+                ฿{plan.price}
+                <span className="text-base font-bold text-muted-foreground"> {plan.per}</span>
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                {offer.method === 'card'
+                {method === 'card'
                   ? 'Renews by itself. Cancel any time in Settings → Plus & billing.'
-                  : 'Paid once with PromptPay. It doesn’t renew: buy another pack when it ends.'}
+                  : `Renews by reminder: ${REMIND_DAYS} days before the date you get a new QR in your Inbox and email. Don’t pay and Plus just ends.`}
               </p>
             </div>
           )}
@@ -117,24 +116,22 @@ function Checkout() {
                 <Input id="co-email" defaultValue="feifei@example.com" className="rounded-xl" />
               </div>
 
-              {methods.length > 1 && (
-                <div className="grid grid-cols-2 gap-2">
-                  {methods.map((m) => (
-                    <button
-                      key={m}
-                      onClick={() => setMethod(m)}
-                      aria-pressed={method === m}
-                      className={cn(
-                        'flex items-center justify-center gap-1.5 rounded-2xl border-2 p-2.5 text-sm font-extrabold',
-                        method === m ? 'border-primary bg-secondary/60' : 'border-transparent bg-muted/60 hover:border-border',
-                      )}
-                    >
-                      {m === 'card' ? <CreditCard className="size-4" /> : <QrCode className="size-4" />}
-                      {m === 'card' ? 'Card' : 'PromptPay'}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div className="grid grid-cols-2 gap-2">
+                {methods.map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setMethod(m)}
+                    aria-pressed={method === m}
+                    className={cn(
+                      'flex items-center justify-center gap-1.5 rounded-2xl border-2 p-2.5 text-sm font-extrabold',
+                      method === m ? 'border-primary bg-secondary/60' : 'border-transparent bg-muted/60 hover:border-border',
+                    )}
+                  >
+                    {m === 'card' ? <CreditCard className="size-4" /> : <QrCode className="size-4" />}
+                    {m === 'card' ? 'Card' : 'PromptPay'}
+                  </button>
+                ))}
+              </div>
 
               {method === 'card' ? (
                 <div className="flex flex-col gap-1.5">

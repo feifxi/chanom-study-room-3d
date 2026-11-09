@@ -454,19 +454,20 @@ export const WORDS = ['(slur 1)', '(slur 2)', '(swear 1)', '(swear 2)', '(Thai s
 // --- Money (feature 15) ---
 
 export const MONEY_STATS: Stat[] = [
-  { label: 'Monthly revenue (MRR)', value: '฿34,950', note: 'before Stripe fees · +4% on October' },
+  { label: 'Monthly revenue (MRR)', value: '฿35,244', note: 'before Stripe fees · +4% on October' },
   { label: 'Plus subscribers', value: '412', note: '+6 this week · 2.9% of monthly users' },
-  { label: 'Stripe fees', value: '≈ ฿5,100', note: '15% on monthly cards, 5% yearly, 2% PromptPay' },
+  { label: 'Stripe fees', value: '≈ ฿5,100', note: '15% on monthly cards, 5% on yearly cards, 2% on PromptPay' },
   { label: 'Server bill', value: '≈ ฿2,800', note: '≈ $80 a month while running' },
   { label: 'Gifts this month', value: '23', note: '41 months of Plus' },
   { label: 'Failed payments', value: '5', note: 'Stripe is retrying', tone: 'warn' },
 ];
 
-/** How the 412 pay. Monthly revenue counts a yearly plan or a pack as its price spread over its months. */
+/** How the 412 pay. Monthly revenue counts a yearly plan as its price spread over 12 months. */
 export const PLAN_MIX = [
-  { plan: 'Monthly · card', people: 268, mrr: 23852 },
-  { plan: 'Yearly · card', people: 96, mrr: 7120 },
-  { plan: 'PromptPay packs', people: 48, mrr: 3978 },
+  { plan: 'Monthly · card', people: 231, mrr: 20559 },
+  { plan: 'Monthly · PromptPay', people: 85, mrr: 7565 },
+  { plan: 'Yearly · card', people: 70, mrr: 5192 },
+  { plan: 'Yearly · PromptPay', people: 26, mrr: 1928 },
 ];
 
 export type PaymentStatus = 'paid' | 'retrying' | 'failed' | 'refunded';
@@ -506,7 +507,7 @@ export const PAYMENTS: Payment[] = [
     status: 'paid',
     note: 'Asked us: forgot to cancel',
   },
-  { id: 'p4', at: 'Yesterday', who: 'ploy.s', what: 'Plus · 3 months', method: 'promptpay', amount: 249, status: 'paid' },
+  { id: 'p4', at: 'Yesterday', who: 'ploy.s', what: 'Plus · Monthly (renewal by QR)', method: 'promptpay', amount: 89, status: 'paid' },
   {
     id: 'p3',
     at: 'Yesterday',

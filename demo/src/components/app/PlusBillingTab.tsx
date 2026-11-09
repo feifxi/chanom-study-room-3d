@@ -6,7 +6,7 @@ import { CreditCard, Gift, QrCode, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { cancelPlus, OFFERS, resumePlus, usePlus } from '@/lib/plus';
+import { cancelPlus, PLUS_PLANS, REMIND_DAYS, resumePlus, usePlus } from '@/lib/plus';
 
 /**
  * Settings → Plus & billing (feature 15): your plan and its date, how you pay, cancel or turn renewal
@@ -16,13 +16,13 @@ import { cancelPlus, OFFERS, resumePlus, usePlus } from '@/lib/plus';
 export function PlusBillingTab() {
   const plus = usePlus();
   const [confirm, setConfirm] = useState(false);
-  const offer = OFFERS[plus.offer];
-  const card = offer.method === 'card';
+  const offer = PLUS_PLANS[plus.plan];
+  const card = plus.method === 'card';
 
   const headline = {
     active: card
-      ? `Renews on ${plus.date} · ฿${offer.price} ${offer.months === 12 ? 'a year' : 'a month'}`
-      : `Until ${plus.date} · PromptPay pack`,
+      ? `Renews on ${plus.date} · ฿${offer.price} ${offer.per}`
+      : `Next payment ${plus.date} · ฿${offer.price} ${offer.per}. We’ll send a QR ${REMIND_DAYS} days before.`,
     cancelled: `Ends on ${plus.date}. It won’t renew.`,
     grace: `Ended. Your rooms keep Plus space and maps for ${plus.graceLeft} more days.`,
     free: 'You’re on Free.',
@@ -42,7 +42,7 @@ export function PlusBillingTab() {
         </p>
         <p className="mt-1 text-sm">{headline}</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          {plus.state === 'active' && card && !confirm && (
+          {plus.state === 'active' && !confirm && (
             <Button variant="outline" size="sm" className="rounded-full bg-card/70 font-bold" onClick={() => setConfirm(true)}>
               Cancel Plus
             </Button>
@@ -67,8 +67,9 @@ export function PlusBillingTab() {
           <div className="mt-3 rounded-2xl bg-card p-3 text-sm">
             <p className="font-black">Cancel Plus?</p>
             <p className="text-muted-foreground">
-              You keep Plus until {plus.date}. After that your rooms keep their space for 7 more days, then go back to 25 at once and Big or
-              premium maps switch to their basic version. Nothing is deleted.
+              You keep Plus until {plus.date}
+              {card ? '' : ' and we stop sending payment QRs'}. After that your rooms keep their space for 7 more days, then go back to 25
+              at once and Big or premium maps switch to their basic version. Nothing is deleted.
             </p>
             <div className="mt-2 flex gap-2">
               <Button
@@ -97,19 +98,17 @@ export function PlusBillingTab() {
           <span className="min-w-0 flex-1 text-sm">
             <span className="block font-bold">{card ? 'Visa ···· 4242' : 'PromptPay'}</span>
             <span className="text-xs text-muted-foreground">
-              {card ? 'Change it on the payment page (Stripe)' : 'Packs don’t renew: buy another when it ends'}
+              {card ? 'Charged by itself on the date' : 'You scan a QR each time; switch to a card to make it automatic'}
             </span>
           </span>
-          {card && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full font-bold"
-              onClick={() => toast('Demo: opens Stripe’s billing page to change the card')}
-            >
-              Change
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full font-bold"
+            onClick={() => toast('Demo: opens Stripe’s billing page to change how you pay')}
+          >
+            Change
+          </Button>
         </section>
       )}
 

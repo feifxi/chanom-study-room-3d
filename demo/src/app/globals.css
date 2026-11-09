@@ -560,3 +560,22 @@
     width: 100%;
   }
 }
+
+/* Plus's animated name tag (feature 15): a pastel gradient sliding through the letters */
+.shimmer {
+  background: linear-gradient(90deg, #ffd1e6, #c9b8ff, #a8e6ff, #ffe7a8, #ffd1e6) 0 0 / 200% 100% repeat-x;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+@keyframes shimmer {
+  to {
+    background-position: 200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none;
+  }
+}

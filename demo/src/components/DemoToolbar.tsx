@@ -33,7 +33,7 @@ const PAGES = [
   ['DM with Mai', '/home/messages/mai'],
   ['Shop', '/home/shop'],
   ['Connecta Plus', '/home/plus'],
-  ['Checkout (fake Stripe)', '/checkout?offer=monthly'],
+  ['Checkout (fake Stripe)', '/checkout?plan=yearly'],
   ['Discover', '/discover'],
   ['Room chat (outside 3D)', '/servers/chanom'],
   ['3D room', '/servers/chanom/rooms/library'],

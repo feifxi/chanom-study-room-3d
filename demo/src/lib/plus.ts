@@ -7,21 +7,26 @@ import { useSyncExternalStore } from 'react';
  * hosted Checkout and learns the result from a webhook; here the fake checkout page calls `subscribe`.
  *
  * States, switchable from the Demo tab:
- * - `active`: Plus, renewing (card) or running to the end of a PromptPay pack
+ * - `active`: Plus, renewing by card, or by a PromptPay reminder
  * - `cancelled`: still Plus until the end of the paid period, then grace
  * - `grace`: Plus ended; your rooms keep Plus space and maps for 7 days, then go back to Free
  * - `free`: never had it, or grace is over
  */
 export type PlusState = 'active' | 'cancelled' | 'grace' | 'free';
 
-/** What you can buy. Cards renew; PromptPay can't, so it buys fixed packs (decided 2026-11-10). */
-export const OFFERS = {
-  monthly: { label: 'Monthly', price: 89, months: 1, method: 'card', note: '฿89 a month, renews by itself' },
-  yearly: { label: 'Yearly', price: 890, months: 12, method: 'card', note: '฿890 a year: two months free' },
-  pack3: { label: '3 months', price: 249, months: 3, method: 'promptpay', note: 'Pay once with PromptPay, no renewal' },
-  pack12: { label: '12 months', price: 890, months: 12, method: 'promptpay', note: 'Pay once with PromptPay, no renewal' },
+/**
+ * Two plans, any way to pay (decided 2026-11-10). A card renews by itself; PromptPay can't be charged
+ * without you, so it renews by reminder: a QR in your Inbox and email a few days before the date, and
+ * if you don't pay, Plus ends and the grace starts, same as a failed card.
+ */
+export const PLUS_PLANS = {
+  monthly: { label: 'Monthly', price: 89, months: 1, per: 'a month' },
+  yearly: { label: 'Yearly', price: 890, months: 12, per: 'a year' },
 } as const;
-export type OfferId = keyof typeof OFFERS;
+export type PlanId = keyof typeof PLUS_PLANS;
+export type PayMethod = 'card' | 'promptpay';
+/** Days before the date that a PromptPay renewal reminder goes out. */
+export const REMIND_DAYS = 3;
 
 /** Gifts are one-off, so any method works. */
 export const GIFTS = [
@@ -35,12 +40,13 @@ export interface Receipt {
   at: string;
   what: string;
   amount: number;
-  method: 'card' | 'promptpay';
+  method: PayMethod;
 }
 
 export interface Billing {
   state: PlusState;
-  offer: OfferId;
+  plan: PlanId;
+  method: PayMethod;
   /** "Renews 7 Dec 2026", "Ends 13 Nov 2026"… */
   date: string;
   /** Days of grace left (state `grace`). */
@@ -52,7 +58,8 @@ export interface Billing {
 const EVENT = 'connecta-demo:plus';
 let state: Billing = {
   state: 'active',
-  offer: 'monthly',
+  plan: 'monthly',
+  method: 'card',
   date: '7 Dec 2026',
   graceLeft: 7,
   receipts: [
@@ -82,13 +89,14 @@ export const usePlus = () =>
 const today = '10 Nov 2026';
 
 /** After checkout succeeds (the webhook, in the real app). */
-export function subscribe(offer: OfferId) {
-  const o = OFFERS[offer];
+export function subscribe(plan: PlanId, method: PayMethod) {
+  const o = PLUS_PLANS[plan];
   set({
     state: 'active',
-    offer,
-    date: o.months === 12 ? '10 Nov 2027' : o.months === 3 ? '10 Feb 2027' : '10 Dec 2026',
-    receipts: [{ id: `r${Date.now()}`, at: today, what: `Plus · ${o.label}`, amount: o.price, method: o.method }, ...state.receipts],
+    plan,
+    method,
+    date: o.months === 12 ? '10 Nov 2027' : '10 Dec 2026',
+    receipts: [{ id: `r${Date.now()}`, at: today, what: `Plus · ${o.label}`, amount: o.price, method }, ...state.receipts],
   });
 }
 
