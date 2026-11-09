@@ -1,6 +1,7 @@
 # 11. Pick a Side, whiteboard, drawing telephone
 
-Status: Pick a Side, the whiteboard and drawing telephone decided (2026-11-09). Overview: [`docs/v2-plan.md`](../../v2-plan.md). The shared activity flow (lobby, host, invites,
+Status: done (2026-11-09). Pick a Side, the whiteboard (a free zone) and drawing telephone are
+decided and built in the demo. Overview: [`docs/v2-plan.md`](../../v2-plan.md). The shared activity flow (lobby, host, invites,
 leaving): [`09-activity-framework.md`](09-activity-framework.md).
 
 Try it: `pnpm --filter @study/demo demo:dev` → http://localhost:3100/servers/chanom/rooms/library.

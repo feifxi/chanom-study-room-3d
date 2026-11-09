@@ -5,7 +5,8 @@ communities hang out, study and play together. This file is the overview. Each f
 spec in `docs/v2/features/`, written after the feature has been discussed in detail and approved
 in the demo (`demo/`, `pnpm --filter @study/demo demo:dev`, port 3100).
 
-Status (2026-11-08): planning. Feature 1 (app shell) is decided. The demo is frontend-only with mock data. Nothing is deployed.
+Status (2026-11-09): features 1–11 are decided and built in the demo; next is feature 12 (card
+games at the card table, Werewolf at its own table). The demo is frontend-only with mock data. Nothing is deployed.
 
 ## Why
 
@@ -289,7 +290,7 @@ The UI is approved in `demo/` first, then a spec is written to `docs/v2/features
 | 8   | Study tools                                               | [08-study-tools.md](v2/features/08-study-tools.md)               |
 | 9   | Activity framework                                        | [09-activity-framework.md](v2/features/09-activity-framework.md) |
 | 10  | Watch together and photo mode                             | [10-watch-and-photo.md](v2/features/10-watch-and-photo.md)       |
-| 11  | Pick a Side, whiteboard, drawing telephone                | [11-party-games.md](v2/features/11-party-games.md)               |
+| 11  | Pick a Side, whiteboard, drawing telephone (done)         | [11-party-games.md](v2/features/11-party-games.md)               |
 | 12  | Card games, Werewolf                                      |                                                                  |
 | 13  | AI flashcards (AI quiz decks are in 11)                   |                                                                  |
 | 14  | Open rooms, drop-in rooms and moderation                  |                                                                  |
