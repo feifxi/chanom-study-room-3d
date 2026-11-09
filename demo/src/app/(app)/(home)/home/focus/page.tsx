@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { UserAvatar } from '@/components/UserAvatar';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
@@ -14,7 +15,7 @@ import {
   type RankPeriod,
   type RankScope,
 } from '@/lib/focus';
-import { ME } from '@/lib/mock';
+import { commonCopyFor, ME } from '@/lib/mock';
 
 /**
  * My focus: your own numbers (only you see them) and the rankings. No streaks, on purpose: a missed
@@ -24,10 +25,7 @@ export default function FocusPage() {
   const me = useMyFocus();
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-5 sm:p-8">
-      <div>
-        <h1 className="text-3xl font-black tracking-[-0.03em]">My focus</h1>
-        <p className="text-sm text-muted-foreground">Time on your focus timer, in any room. Your numbers are only yours.</p>
-      </div>
+      <FocusHero week={me.week} />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <div className="flex flex-col gap-6">
           <section className="panel flex flex-col gap-4 p-5" aria-label="My numbers">
@@ -43,6 +41,38 @@ export default function FocusPage() {
         <Rankings />
       </div>
     </div>
+  );
+}
+
+/**
+ * The week at a glance, said kindly: how much you did, where that puts you among friends, and a way
+ * back into a study room. Never "you broke your streak" (there are no streaks).
+ */
+function FocusHero({ week }: { week: number }) {
+  const { rows, me } = useRanking('friends', 'week');
+  const ahead = me && me.rank > 1 ? rows[me.rank - 2] : null;
+  return (
+    <section className="relative grid items-center gap-6 overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-peach via-secondary to-lavender p-6 sm:p-8 md:grid-cols-[1fr_auto]">
+      <span className="pointer-events-none absolute -right-4 -bottom-8 text-[9rem] opacity-20">🍅</span>
+      <div>
+        <p className="text-xs font-black tracking-wider uppercase">My focus · this week</p>
+        <p className="mt-1 font-mono text-5xl font-black tracking-tight sm:text-6xl">{formatMinutes(week)}</p>
+        <p className="mt-2 max-w-md text-sm">
+          {me?.rank === 1
+            ? 'You’re first among your friends this week 🏆'
+            : ahead && me
+              ? `#${me.rank} among friends. ${formatMinutes(ahead.minutes - me.minutes)} behind ${ahead.user.name}, nice and close.`
+              : 'Every minute on your timer counts, in any room.'}
+        </p>
+        <p className="mt-1 text-xs opacity-75">Your numbers are only yours. Friends see the weekly ranking.</p>
+      </div>
+      <Link
+        href={`/servers/public/rooms/${commonCopyFor('library')}`}
+        className="relative flex items-center gap-2 rounded-full bg-card px-5 py-3 text-sm font-extrabold shadow-md hover:bg-muted"
+      >
+        📚 Study in the Library
+      </Link>
+    </section>
   );
 }
 

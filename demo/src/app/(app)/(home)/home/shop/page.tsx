@@ -43,6 +43,7 @@ export default function ShopPage() {
   const { coins } = useQuests();
   const look = { ...ME.look, ...(trying ? TRY_ON[trying.id] : {}) };
   const items = SHOP.filter((i) => cat === 'all' || i.category === cat);
+  const duck = SHOP.find((i) => i.id === 'pet-duck')!;
 
   const buy = (item: ShopItem) => {
     if (!spendCoins(item.price)) return toast.error('Not enough coins yet. Today’s quests earn more.');
@@ -94,16 +95,35 @@ export default function ShopPage() {
       </aside>
 
       <section className="min-w-0 flex-1 overflow-y-auto p-5">
-        <div className="mb-5 flex items-center gap-4 overflow-hidden rounded-3xl bg-gradient-to-r from-mint to-sky p-5">
-          <span className="text-5xl">🐥</span>
-          <div className="flex-1">
-            <p className="text-xs font-black tracking-wider text-mint-ink uppercase">New this week</p>
-            <p className="text-xl font-black">Pet Duckling</p>
-            <p className="text-sm text-muted-foreground">Waddles after you in every room. Quacks when you finish a Pomodoro.</p>
+        {/* Featured: big, like a game's item shop, so the new thing feels like an event */}
+        <div className="relative mb-6 grid items-center gap-4 overflow-hidden rounded-[2rem] bg-gradient-to-br from-mint via-sky to-lavender p-6 sm:grid-cols-[1fr_auto] sm:p-8">
+          <div className="flex flex-col items-start gap-2">
+            <span className="rounded-full bg-card/80 px-3 py-1 text-xs font-black tracking-wider text-mint-ink uppercase">
+              ✨ New this week
+            </span>
+            <p className="text-4xl font-black tracking-[-0.03em]">Pet Duckling</p>
+            <p className="max-w-sm text-sm">Waddles after you in every room. Quacks when you finish a Pomodoro.</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="flex items-center gap-1 rounded-full bg-card px-3 py-1.5 text-sm font-black">
+                <Coins className="size-4 text-gold" /> {duck.price}
+              </span>
+              <Button className="rounded-full font-extrabold" onClick={() => setTrying(duck)}>
+                Try it on
+              </Button>
+              {!owned.has(duck.id) && (
+                <Button variant="secondary" className="rounded-full bg-card font-extrabold" onClick={() => buy(duck)}>
+                  Buy
+                </Button>
+              )}
+            </div>
           </div>
-          <Button className="rounded-full font-extrabold" onClick={() => setTrying(SHOP.find((i) => i.id === 'pet-duck')!)}>
-            Try it
-          </Button>
+          <div className="relative mx-auto grid size-40 place-items-center sm:size-48">
+            <span className="absolute inset-0 rounded-full bg-card/50" />
+            <span className="absolute inset-5 rounded-full bg-card/60" />
+            <span className="relative animate-[hop_1.6s_ease-in-out_infinite] text-8xl">🐥</span>
+            <span className="absolute top-2 right-4 text-xl">✨</span>
+            <span className="absolute bottom-6 left-2 text-lg">✨</span>
+          </div>
         </div>
         <Tabs value={cat} onValueChange={(v) => setCat(v as ShopCategory | 'all')}>
           <TabsList className="h-10 flex-wrap rounded-2xl">
@@ -122,12 +142,19 @@ export default function ShopPage() {
                 key={item.id}
                 onClick={() => setTrying(item)}
                 className={cn(
-                  'group flex flex-col overflow-hidden rounded-3xl border bg-background/60 text-left transition-shadow hover:shadow-soft',
+                  'group flex flex-col overflow-hidden rounded-3xl border bg-card text-left transition hover:-translate-y-0.5 hover:shadow-soft',
                   trying?.id === item.id && 'ring-[3px] ring-primary',
                 )}
               >
-                <span className={cn('relative grid h-28 place-items-center text-5xl', item.tint)}>
-                  <span className="transition-transform group-hover:-translate-y-1">{item.emoji}</span>
+                <span
+                  className={cn(
+                    'relative grid h-32 place-items-center bg-[radial-gradient(circle,rgb(255_255_255/0.55)_1.5px,transparent_1.5px)] bg-[length:14px_14px] text-6xl',
+                    item.tint,
+                  )}
+                >
+                  <span className="drop-shadow-md transition-transform group-hover:-translate-y-1.5 group-hover:scale-110">
+                    {item.emoji}
+                  </span>
                   {item.isNew && (
                     <span className="absolute top-2 left-2 rounded-full bg-primary px-2 text-[10px] font-black text-primary-foreground">
                       NEW
