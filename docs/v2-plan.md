@@ -149,9 +149,10 @@ Details: [09-activity-framework.md](v2/features/09-activity-framework.md).
   along"; YouTube music plays through the watch panel.
 - **Pick a Side:** answer by walking into one of 2 or 4 zones. Three modes (Would you rather, Quiz,
   Last one standing); questions come in decks: built in, your own, or AI-made from a topic. Details:
-  [11-pick-a-side.md](v2/features/11-pick-a-side.md).
+  [11-party-games.md](v2/features/11-party-games.md).
 - **Card games:** an Uno-like game and Slave. Werewolf, with more 3D than just sitting.
-- **Whiteboard.**
+- **Whiteboard:** a drop-in board everyone in front of it draws on, live on the wall; cleared when
+  everyone leaves. Details: [11-party-games.md](v2/features/11-party-games.md#-whiteboard).
 - **Photo mode:** a dock button that takes photos anywhere, with an app-logo frame and a 3 s timer;
   save, share to Room chat or copy. Connecta keeps no photos.
 - **A drawing-telephone game** (our own Gartic Phone–style game), with Normal and Knock-off modes.
@@ -285,7 +286,7 @@ The UI is approved in `demo/` first, then a spec is written to `docs/v2/features
 | 8   | Study tools                                               | [08-study-tools.md](v2/features/08-study-tools.md)               |
 | 9   | Activity framework                                        | [09-activity-framework.md](v2/features/09-activity-framework.md) |
 | 10  | Watch together and photo mode                             | [10-watch-and-photo.md](v2/features/10-watch-and-photo.md)       |
-| 11  | Pick a Side, whiteboard, drawing telephone                | [11-pick-a-side.md](v2/features/11-pick-a-side.md) (Pick a Side) |
+| 11  | Pick a Side, whiteboard, drawing telephone                | [11-party-games.md](v2/features/11-party-games.md)               |
 | 12  | Card games, Werewolf                                      |                                                                  |
 | 13  | AI flashcards (AI quiz decks are in 11)                   |                                                                  |
 | 14  | Open rooms, drop-in rooms and moderation                  |                                                                  |

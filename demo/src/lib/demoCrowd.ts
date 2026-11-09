@@ -164,6 +164,11 @@ export function startPickASide() {
 }
 
 /** Demo: someone walks to the big screen and puts a video on (feature 10). */
+export const BOARD_EVENT = 'connecta-demo:board';
+export function drawOnBoard() {
+  window.dispatchEvent(new Event(BOARD_EVENT));
+}
+
 export const WATCH_EVENT = 'connecta-demo:watch';
 export function putOnVideo() {
   window.dispatchEvent(new Event(WATCH_EVENT));

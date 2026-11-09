@@ -8,6 +8,7 @@ import type { DayLight } from './dayCycle';
 import { CHAIR_BACK } from './Avatar';
 import { StaticBatch } from './StaticBatch';
 import { BigScreen, GameTable } from '../activities/Activity3D';
+import { WhiteboardFrame } from '../activities/board/Board3D';
 
 const W = ROOM.width;
 const D = ROOM.depth;
@@ -321,6 +322,7 @@ export function Library({ light, shadows = true }: { light: DayLight; shadows?: 
         <ReadingNook lamps={light.lamps} />
         <GameTable />
         <BigScreen />
+        <WhiteboardFrame />
 
         <Plant x={9.3} z={6.2} />
         <Plant x={-9.3} z={-5.6} s={0.9} />

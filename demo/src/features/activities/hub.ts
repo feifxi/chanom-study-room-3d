@@ -1,4 +1,5 @@
 import type { MockRoom } from '../room3d/mockRoom';
+import { BoardStore, catDoodle } from './board/board';
 import { BUILT_IN, deckKindFor, type Deck } from './pickASide/decks';
 import { ASK_MS, REVEAL_MS, newGame, sidesFor, zoneAt, zoneCenter, type SideGame, type SideMode } from './pickASide/game';
 import { SPOTS, spotById, type Game, type Spot, type SpotId } from './spots';
@@ -103,6 +104,8 @@ export const watchPosition = (w: WatchState, now = Date.now()) => (w.paused ? w.
 export class ActivityHub {
   readonly spots = Object.fromEntries(SPOTS.map((s) => [s.id, fresh(s)])) as Record<SpotId, SpotState>;
   readonly watch: WatchState = { now: null, queue: [], offset: 0, startedAt: 0, paused: false };
+  /** The whiteboard's drawing (its own store: strokes change on every pointer move). */
+  readonly board = new BoardStore();
   /** Pick a Side: the deck the host picked in the lobby, and the game while it runs (and its results). */
   floorDeck: Deck = BUILT_IN[0]!;
   side: SideGame | null = null;
@@ -187,12 +190,15 @@ export class ActivityHub {
       st.optedOut = st.optedOut.filter((id) => here.includes(id));
       const counted = here.filter((id) => !st.optedOut.includes(id));
 
-      // Drop-in (the big screen): whoever's in the area is in; no rounds, no lobby, no knock-outs
+      // Drop-in (big screen, whiteboard): whoever's in the area is in; no rounds, no lobby, no knock-outs
       if (spot.kind === 'drop-in') {
         if (st.phase !== 'playing') continue;
         st.players = counted;
         if (counted.length) st.since = now;
-        else if (now - st.since > EMPTY_SCREEN_MS) this.screenOff();
+        else if (now - st.since > EMPTY_SCREEN_MS) {
+          if (spot.id === 'tv') this.screenOff();
+          else this.boardOff();
+        }
         continue;
       }
 
@@ -274,6 +280,42 @@ export class ActivityHub {
   private screenOff() {
     Object.assign(this.watch, { now: null, queue: [], offset: 0, paused: false });
     Object.assign(this.spots.tv, fresh(spotById('tv')));
+  }
+
+  // --- Whiteboard ---
+
+  /** E at the board: it's on for everyone in front of it. */
+  openBoard(by: string, now = Date.now()) {
+    const st = this.spots.board;
+    if (st.phase !== 'free') return;
+    Object.assign(st, fresh(spotById('board')), { phase: 'playing', hostId: by, since: now });
+    this.changed();
+  }
+
+  /** Everyone has been gone for a while: the drawing goes (photos of it are the players' to keep). */
+  private boardOff() {
+    this.board.clear();
+    Object.assign(this.spots.board, fresh(spotById('board')));
+  }
+
+  /** Demo: someone walks to the board and doodles a cat, a few points at a time. */
+  scriptDraw() {
+    const id = this.freePeople()[0];
+    if (!id) return;
+    const spot = spotById('board');
+    this.room.sendTo(id, ringSpot(spot, 1));
+    this.later(3000, () => {
+      this.openBoard(id);
+      let t = 0;
+      catDoodle().forEach((s, k) => {
+        const sid = `${id}-${Date.now()}-${k}`;
+        this.later((t += 500), () => this.board.start({ id: sid, by: id, color: s.color, size: s.size, pts: s.pts.slice(0, 2) }));
+        for (let i = 2; i < s.pts.length; i += 6) {
+          const chunk = s.pts.slice(i, i + 6);
+          this.later((t += 45), () => this.board.add(sid, chunk));
+        }
+      });
+    });
   }
 
   /** Demo: someone walks to the big screen and puts something on. */

@@ -10,6 +10,7 @@ import {
   goAwayNow,
   publishMapUpdate,
   setCrowd,
+  drawOnBoard,
   putOnVideo,
   setManyRooms,
   startPickASide,
@@ -126,6 +127,9 @@ export function DemoToolbar() {
         </button>
         <button onClick={putOnVideo} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
           📺 Someone puts a video on the big screen (in a 3D room)
+        </button>
+        <button onClick={drawOnBoard} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
+          🎨 Someone draws on the whiteboard
         </button>
         <button onClick={startPickASide} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
           🗳️ Someone starts Pick a Side (in a 3D room; invite card)

@@ -32,6 +32,9 @@ export const GAME_SEATS: Seat[] = [0, 1, 2, 3].map((i) => {
 
 export const isGameSeat = (seatId: string) => seatId.startsWith('game-');
 
+/** The whiteboard on the left wall, between the corner plant and the Buddy Machine. */
+export const BOARD = { x: -9.88, z: -4.4, width: 1.9, height: 1.07, y: 1.45 } as const;
+
 /** The big screen on the left wall, between the Buddy Machine and the reading nook, facing into the room. */
 export const TV = { x: -9.88, z: -0.1, width: 2.6, height: 1.46, y: 1.55 } as const;
 
@@ -123,8 +126,8 @@ export const SPOTS: Spot[] = [
     kind: 'drop-in',
     roomWide: false,
     games: [{ id: 'board', name: 'Whiteboard', emoji: '🎨', min: 1, max: 12 }],
-    area: { x: -8.6, z: -4.6, r: 1.4 },
-    built: false,
+    area: { x: BOARD.x + 1.6, z: BOARD.z, r: 1.35 },
+    built: true,
     feature: 11,
     tint: 'bg-lavender',
   },

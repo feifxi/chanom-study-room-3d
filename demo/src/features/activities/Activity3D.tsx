@@ -5,6 +5,8 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { CHAIR_BACK } from '../room3d/Avatar';
 import type { SpotState, WatchState } from './hub';
+import { BoardSurface } from './board/Board3D';
+import type { BoardStore } from './board/board';
 import { SideZones } from './pickASide/Side3D';
 import type { SideGame } from './pickASide/game';
 import { GAME_SEATS, GAME_TABLE, SPOTS, TV, spotById, type SpotId } from './spots';
@@ -126,9 +128,20 @@ const RING_COLOR: Record<string, string> = { gathering: '#ffb3cf', playing: '#ff
  * What passers-by see of each activity (the "3D world" layer): a glowing ring around a spot that's
  * gathering or playing, cards on the game table mid-round, and Pick a Side's zones on the floor.
  */
-export function ActivityLayer3D({ spots, watch, side }: { spots: Record<SpotId, SpotState>; watch: WatchState; side: SideGame | null }) {
+export function ActivityLayer3D({
+  spots,
+  watch,
+  side,
+  board,
+}: {
+  spots: Record<SpotId, SpotState>;
+  watch: WatchState;
+  side: SideGame | null;
+  board: BoardStore;
+}) {
   return (
     <>
+      <BoardSurface board={board} />
       <ScreenSurface videoId={watch.now?.id ?? null} paused={watch.paused} />
       {SPOTS.filter((s) => s.built && spots[s.id].phase !== 'free').map((s) => (
         <AreaRing key={s.id} x={s.area.x} z={s.area.z} r={s.area.r} phase={spots[s.id].phase} />

@@ -42,17 +42,21 @@ export function ActivitiesPanel({
             ? 'Off in this room'
             : st.phase === 'gathering'
               ? `${st.game.name} · ${st.players.length} in · ${hostName(st.hostId ?? '')} hosting`
-              : st.phase === 'playing' && spot.kind === 'drop-in'
-                ? `${watchTitle ?? 'Something’s on'} · ${st.players.length} watching`
-                : st.phase === 'playing'
-                  ? `${st.game.name} · ${st.players.length} playing`
-                  : st.phase === 'results'
-                    ? `${st.game.name} · just finished`
-                    : spot.seats
-                      ? 'Free · sit down to start a game'
-                      : spot.kind === 'drop-in'
-                        ? 'Off · go there and press E to put something on'
-                        : 'Free · go there and press E to start';
+              : st.phase === 'playing' && spot.id === 'board'
+                ? `${st.players.length} drawing`
+                : st.phase === 'playing' && spot.kind === 'drop-in'
+                  ? `${watchTitle ?? 'Something’s on'} · ${st.players.length} watching`
+                  : st.phase === 'playing'
+                    ? `${st.game.name} · ${st.players.length} playing`
+                    : st.phase === 'results'
+                      ? `${st.game.name} · just finished`
+                      : spot.seats
+                        ? 'Free · sit down to start a game'
+                        : spot.id === 'board'
+                          ? 'Free · go there and press E to draw'
+                          : spot.kind === 'drop-in'
+                            ? 'Off · go there and press E to put something on'
+                            : 'Free · go there and press E to start';
         return (
           <div
             key={spot.id}

@@ -51,12 +51,13 @@ import { ActivityLayer3D } from '../activities/Activity3D';
 import { AwayBanner, InviteStack, LobbyCard, NextRoundCard, PlayStrip, ResultsCard, type Who } from '../activities/ActivityHud';
 import { GamePlaceholder } from '../activities/GamePlaceholder';
 import type { SideGame } from '../activities/pickASide/game';
+import { BoardPanel } from '../activities/board/BoardPanel';
 import { DeckPicker } from '../activities/pickASide/DeckPicker';
 import { deckKindFor } from '../activities/pickASide/decks';
 import { sidesFor, zoneAt as sideZoneAt } from '../activities/pickASide/game';
 import { SideHud, list } from '../activities/pickASide/SideHud';
 import { isGameSeat, spotById, type Spot } from '../activities/spots';
-import { PICK_A_SIDE_EVENT, WATCH_EVENT } from '@/lib/demoCrowd';
+import { BOARD_EVENT, PICK_A_SIDE_EVENT, WATCH_EVENT } from '@/lib/demoCrowd';
 import { AddVideo, WatchPanel } from '../activities/WatchPanel';
 import { ChannelOverlay, type ChatTarget } from './ChannelOverlay';
 import { PhotoMode } from './PhotoMode';
@@ -159,13 +160,16 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     const t = setTimeout(() => hub.scriptPickASide(), 25_000);
     const onDemo = () => hub.scriptPickASide();
     const onWatch = () => hub.scriptWatch();
+    const onDraw = () => hub.scriptDraw();
     window.addEventListener(PICK_A_SIDE_EVENT, onDemo);
     window.addEventListener(WATCH_EVENT, onWatch);
+    window.addEventListener(BOARD_EVENT, onDraw);
     return () => {
       clearInterval(id);
       clearTimeout(t);
       window.removeEventListener(PICK_A_SIDE_EVENT, onDemo);
       window.removeEventListener(WATCH_EVENT, onWatch);
+      window.removeEventListener(BOARD_EVENT, onDraw);
       hub.dispose();
     };
   }, [hub]);
@@ -221,6 +225,8 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const music = useMusic(speaking.size > 0 || watchingTv);
   const [watchMini, setWatchMini] = useState(false);
   const [puttingOn, setPuttingOn] = useState(false);
+  const atBoard = hub.mine('me')?.id === 'board';
+  const [boardMini, setBoardMini] = useState(false);
 
   // Stay "connected" while browsing chats elsewhere, like a voice channel
   useEffect(() => {
@@ -362,6 +368,13 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     Math.hypot(me.x - floor.area.x, me.z - floor.area.z) <= floor.area.r;
   const tv = spotById('tv');
   const atFreeTv = !seated && hub.spots.tv.phase === 'free' && Math.hypot(me.x - tv.area.x, me.z - tv.area.z) <= tv.area.r;
+  const boardSpot = spotById('board');
+  const atFreeBoard =
+    !seated && hub.spots.board.phase === 'free' && Math.hypot(me.x - boardSpot.area.x, me.z - boardSpot.area.z) <= boardSpot.area.r;
+  const openBoard = () => {
+    hub.openBoard('me');
+    setBoardMini(false);
+  };
   // Walked away from the screen with the "put something on" card open: close it
   const showPutOn = puttingOn && atFreeTv;
 
@@ -391,16 +404,19 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     }
   };
   useEffect(() => {
-    if (!atFreeFloor && !atFreeTv) return;
+    if (!atFreeFloor && !atFreeTv && !atFreeBoard) return;
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement | null;
       if (e.code !== 'KeyE' || e.repeat || (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA'))) return;
       if (atFreeFloor) hub.start('floor', 'me');
+      else if (atFreeBoard) openBoard();
       else setPuttingOn(true);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [atFreeFloor, atFreeTv, hub]);
+    // openBoard only calls the hub and a state setter
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [atFreeFloor, atFreeTv, atFreeBoard, hub]);
 
   const study = (
     <StudyPanel
@@ -568,7 +584,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
             onZoom={setZoom}
             onSlow={saver ? undefined : goSaver}
           >
-            <ActivityLayer3D spots={hub.spots} watch={hub.watch} side={hub.side} />
+            <ActivityLayer3D spots={hub.spots} watch={hub.watch} side={hub.side} board={hub.board} />
           </RoomCanvas>
           {/* Photos never show names: labels hide in photo mode so the preview matches the photo */}
           <div className={cn(photo && 'hidden')}>
@@ -660,7 +676,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                     <div className="pointer-events-auto flex flex-col items-center gap-1.5">
                       <PlayStrip
                         st={myState}
-                        verb={mySpot.kind === 'drop-in' ? 'watching' : 'playing'}
+                        verb={mySpot.id === 'tv' ? 'watching' : mySpot.id === 'board' ? 'drawing' : 'playing'}
                         isHost={myState.hostId === 'me'}
                         onLeave={() => leaveActivity(mySpot)}
                         onEnd={() => hub.end(mySpot.id)}
@@ -768,6 +784,30 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                   />
                 </div>
               )}
+              {/* Whiteboard: the big drawing panel under the strip, or a small board in the corner */}
+              {atBoard && myState && (
+                <div
+                  className={cn(
+                    'absolute z-20',
+                    boardMini ? 'right-3 bottom-[72px]' : 'top-[60px] left-1/2 -translate-x-1/2 max-sm:top-[180px]',
+                  )}
+                >
+                  <BoardPanel
+                    board={hub.board}
+                    people={myState.players}
+                    name={(id) => who(id).name}
+                    mini={boardMini}
+                    onMini={setBoardMini}
+                  />
+                </div>
+              )}
+              {!mySpot && atFreeBoard && (
+                <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2 whitespace-nowrap">
+                  <button onClick={openBoard} className="panel rounded-full px-4 py-2 text-sm font-bold">
+                    {touch ? 'Tap' : 'Press E'} to draw on the whiteboard 🎨
+                  </button>
+                </div>
+              )}
               {!mySpot && atFreeTv && (
                 <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2">
                   {showPutOn ? (
@@ -808,7 +848,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                   </button>
                 </div>
               )}
-              {(hint || seated) && !atGameTable && !atFreeFloor && !atFreeTv && (
+              {(hint || seated) && !atGameTable && !atFreeFloor && !atFreeTv && !atFreeBoard && (
                 <div className="absolute bottom-[100px] left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap">
                   <button
                     onClick={() => {
