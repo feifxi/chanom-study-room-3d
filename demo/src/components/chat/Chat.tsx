@@ -364,12 +364,20 @@ function EditBox({ text, onSave }: { text: string; onSave: (text: string) => voi
   );
 }
 
-function EmojiPicker({ onPick, children }: { onPick: (emoji: string) => void; children: ReactNode }) {
+function EmojiPicker({
+  onPick,
+  align = 'end',
+  children,
+}: {
+  onPick: (emoji: string) => void;
+  align?: 'start' | 'end';
+  children: ReactNode;
+}) {
   const [open, setOpen] = useState(false);
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
-      <PopoverContent align="end" className="grid w-auto grid-cols-8 gap-0.5 rounded-2xl p-1.5">
+      <PopoverContent align={align} className="grid w-auto grid-cols-8 gap-0.5 rounded-2xl p-1.5">
         {EMOJI.map((e) => (
           <button
             key={e}
@@ -552,6 +560,11 @@ function FullComposer({
           >
             <ImagePlus />
           </Button>
+          <EmojiPicker align="start" onPick={(e) => setText((t) => t + e)}>
+            <Button type="button" size="icon" variant="ghost" className="rounded-xl text-muted-foreground" aria-label="Emoji">
+              <Smile />
+            </Button>
+          </EmojiPicker>
           <input
             ref={input}
             value={text}
@@ -577,11 +590,6 @@ function FullComposer({
             className="h-9 min-w-0 flex-1 bg-transparent px-2 text-sm outline-none"
             aria-label={placeholder}
           />
-          <EmojiPicker onPick={(e) => setText((t) => t + e)}>
-            <Button type="button" size="icon" variant="ghost" className="rounded-xl text-muted-foreground" aria-label="Emoji">
-              <Smile />
-            </Button>
-          </EmojiPicker>
           <Button type="submit" size="icon" className="rounded-xl" aria-label="Send">
             <Send />
           </Button>
@@ -676,6 +684,17 @@ export function Composer({
             </Button>
           </>
         )}
+        <EmojiPicker
+          align="start"
+          onPick={(e) => {
+            setText((t) => (maxLength ? (t + e).slice(0, maxLength) : t + e));
+            input.current?.focus();
+          }}
+        >
+          <Button type="button" size="icon" variant="ghost" className="size-8 rounded-lg text-muted-foreground" aria-label="Emoji">
+            <Smile />
+          </Button>
+        </EmojiPicker>
         <input
           ref={input}
           value={text}
@@ -694,16 +713,6 @@ export function Composer({
           className="h-9 min-w-0 flex-1 bg-transparent px-2 text-sm outline-none"
           aria-label={placeholder}
         />
-        <EmojiPicker
-          onPick={(e) => {
-            setText((t) => (maxLength ? (t + e).slice(0, maxLength) : t + e));
-            input.current?.focus();
-          }}
-        >
-          <Button type="button" size="icon" variant="ghost" className="size-8 rounded-lg text-muted-foreground" aria-label="Emoji">
-            <Smile />
-          </Button>
-        </EmojiPicker>
         <Button type="submit" size="icon" className="rounded-xl" aria-label="Send">
           <Send />
         </Button>

@@ -5,13 +5,24 @@ import { useEffect, useRef, type RefObject } from 'react';
 // Which press closed a panel. A click outside a panel only closes it, like menus everywhere: the 3D
 // room asks `pressClosedPanel()` so that same click doesn't also walk you somewhere.
 let presses = 0;
+const TEXT_BOX = 'textarea, input:not([type=range], [type=checkbox], [type=radio], [type=button], [type=submit], [type=file])';
 let closingPress = -1;
 if (typeof window !== 'undefined') {
   // Window capture runs before the document listeners below, so the count is current when they run
-  window.addEventListener('pointerdown', () => presses++, true);
+  window.addEventListener(
+    'pointerdown',
+    (e) => {
+      presses++;
+      // Typing in a box (chat, a to-do) and pressing elsewhere only takes you out of the box, like
+      // closing a panel: that press doesn't walk you anywhere either
+      const typing = document.activeElement as HTMLElement | null;
+      if (typing && typing !== e.target && (typing.matches(TEXT_BOX) || typing.isContentEditable)) closingPress = presses;
+    },
+    true,
+  );
 }
 
-/** True while handling the click whose press just closed a HUD panel. */
+/** True while handling the click whose press just closed a HUD panel (or left a text box). */
 export const pressClosedPanel = () => closingPress === presses;
 
 /**

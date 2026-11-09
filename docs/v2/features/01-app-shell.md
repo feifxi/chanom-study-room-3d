@@ -94,7 +94,8 @@ Plus the **chat window**: Room chat or a DM opened large over the dimmed room (â
   which members never see: today Talk to everyone; later mute all, spotlight, switch map. When
   occasional tools come, they go in a **â‹¯ More** button, not new dock buttons. No user pinning.
 - **Every HUD panel closes when you press anywhere else** or hit Escape (room card, people, my
-  tools). Chat stays open; the Chat button in the dock shows or hides it. Menus and dialogs opened
+  tools). **That press doesn't walk you**, and neither does a press that only takes you out of a text
+  box (typing in chat, a to-do): the first click leaves the box, the next one walks. Chat stays open; the Chat button in the dock shows or hides it. Menus and dialogs opened
   from a panel don't close it.
 - **Room card** (300px). Like Gather there's no back button: you're in the room or you've left it.
   Expanded:
