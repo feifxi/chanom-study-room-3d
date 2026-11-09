@@ -14,6 +14,7 @@ import {
   putOnVideo,
   setManyRooms,
   startPickASide,
+  startTelephone,
   useCrowd,
   useManyRooms,
 } from '@/lib/demoCrowd';
@@ -133,6 +134,9 @@ export function DemoToolbar() {
         </button>
         <button onClick={startPickASide} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
           🗳️ Someone starts Pick a Side (in a 3D room; invite card)
+        </button>
+        <button onClick={startTelephone} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
+          ✏️ Someone starts drawing telephone (art corner; invite card)
         </button>
         <button onClick={publishMapUpdate} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
           🛠️ Team publishes a map update (in a 3D room; 60 s heads-up)

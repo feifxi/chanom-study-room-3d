@@ -56,8 +56,9 @@ import { DeckPicker } from '../activities/pickASide/DeckPicker';
 import { deckKindFor } from '../activities/pickASide/decks';
 import { sidesFor, zoneAt as sideZoneAt } from '../activities/pickASide/game';
 import { SideHud, list } from '../activities/pickASide/SideHud';
-import { isGameSeat, spotById, type Spot } from '../activities/spots';
-import { BOARD_EVENT, PICK_A_SIDE_EVENT, WATCH_EVENT } from '@/lib/demoCrowd';
+import { TelephonePanel } from '../activities/telephone/TelephonePanel';
+import { SPOTS, isGameSeat, spotById, type Spot } from '../activities/spots';
+import { BOARD_EVENT, PICK_A_SIDE_EVENT, TELEPHONE_EVENT, WATCH_EVENT } from '@/lib/demoCrowd';
 import { AddVideo, WatchPanel } from '../activities/WatchPanel';
 import { ChannelOverlay, type ChatTarget } from './ChannelOverlay';
 import { PhotoMode } from './PhotoMode';
@@ -153,7 +154,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const hub = useMemo(() => new ActivityHub(room, roomDef.roomWideGames, (text) => toast(text)), [room, roomDef.roomWideGames]);
   useSyncExternalStore(hub.subscribe, hub.getVersion, hub.getVersion);
   // Pick a Side's timer and "you're on B" need more than once a second
-  const sideNow = useNow(hub.side && hub.spots.floor.phase === 'playing' ? 250 : 5000);
+  const sideNow = useNow((hub.side && hub.spots.floor.phase === 'playing') || hub.tel ? 250 : 5000);
   useEffect(() => {
     const id = setInterval(() => hub.tick(Date.now()), 250);
     // Demo: someone starts Pick a Side a little after you arrive (or from the Demo tab)
@@ -161,7 +162,9 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     const onDemo = () => hub.scriptPickASide();
     const onWatch = () => hub.scriptWatch();
     const onDraw = () => hub.scriptDraw();
+    const onTel = () => hub.scriptTelephone();
     window.addEventListener(PICK_A_SIDE_EVENT, onDemo);
+    window.addEventListener(TELEPHONE_EVENT, onTel);
     window.addEventListener(WATCH_EVENT, onWatch);
     window.addEventListener(BOARD_EVENT, onDraw);
     return () => {
@@ -170,6 +173,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
       window.removeEventListener(PICK_A_SIDE_EVENT, onDemo);
       window.removeEventListener(WATCH_EVENT, onWatch);
       window.removeEventListener(BOARD_EVENT, onDraw);
+      window.removeEventListener(TELEPHONE_EVENT, onTel);
       hub.dispose();
     };
   }, [hub]);
@@ -358,7 +362,8 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     : [];
   const [hideInvites] = useHideInvitesWhileFocusing();
   const invites = hideInvites && pomo.phase === 'focus' ? [] : hub.invites(now);
-  const anyLive = Object.values(hub.spots).some((st) => st.phase === 'gathering' || st.phase === 'playing');
+  // The whiteboard is a free zone, not an activity: drawing there doesn't light the Activities button
+  const anyLive = SPOTS.some((s) => !s.freeZone && (hub.spots[s.id].phase === 'gathering' || hub.spots[s.id].phase === 'playing'));
   // Standing spots start with E (tables start when you sit): you're in the ring and it's free
   const floor = spotById('floor');
   const atFreeFloor =
@@ -371,6 +376,8 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const boardSpot = spotById('board');
   const atFreeBoard =
     !seated && hub.spots.board.phase === 'free' && Math.hypot(me.x - boardSpot.area.x, me.z - boardSpot.area.z) <= boardSpot.area.r;
+  const art = spotById('art');
+  const atFreeArt = !seated && hub.spots.art.phase === 'free' && Math.hypot(me.x - art.area.x, me.z - art.area.z) <= art.area.r;
   const openBoard = () => {
     hub.openBoard('me');
     setBoardMini(false);
@@ -403,20 +410,29 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
       driverRef.current?.goTo(spot.area.x + Math.sin(a) * (spot.area.r + 0.8), spot.area.z + Math.cos(a) * (spot.area.r + 0.8));
     }
   };
+  // What E does where you're standing. Kept in a ref by an effect that runs on every commit: a single
+  // listener reads it, so it never depends on an effect re-running when you arrive somewhere
+  const eAction = useRef<(() => void) | null>(null);
   useEffect(() => {
-    if (!atFreeFloor && !atFreeTv && !atFreeBoard) return;
+    eAction.current = atFreeFloor
+      ? () => hub.start('floor', 'me')
+      : atFreeArt
+        ? () => hub.start('art', 'me')
+        : atFreeBoard
+          ? openBoard
+          : atFreeTv
+            ? () => setPuttingOn(true)
+            : null;
+  });
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement | null;
       if (e.code !== 'KeyE' || e.repeat || (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA'))) return;
-      if (atFreeFloor) hub.start('floor', 'me');
-      else if (atFreeBoard) openBoard();
-      else setPuttingOn(true);
+      eAction.current?.();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-    // openBoard only calls the hub and a state setter
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [atFreeFloor, atFreeTv, atFreeBoard, hub]);
+  }, []);
 
   const study = (
     <StudyPanel
@@ -674,13 +690,16 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                 <div className="pointer-events-none absolute top-3 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-1.5 max-sm:top-[136px]">
                   {mySpot && myState && inGame && (
                     <div className="pointer-events-auto flex flex-col items-center gap-1.5">
-                      <PlayStrip
-                        st={myState}
-                        verb={mySpot.id === 'tv' ? 'watching' : mySpot.id === 'board' ? 'drawing' : 'playing'}
-                        isHost={myState.hostId === 'me'}
-                        onLeave={() => leaveActivity(mySpot)}
-                        onEnd={() => hub.end(mySpot.id)}
-                      />
+                      {/* A free zone (the whiteboard) has no strip: you leave by walking away */}
+                      {!mySpot.freeZone && (
+                        <PlayStrip
+                          st={myState}
+                          verb={mySpot.id === 'tv' ? 'watching' : 'playing'}
+                          isHost={myState.hostId === 'me'}
+                          onLeave={() => leaveActivity(mySpot)}
+                          onEnd={() => hub.end(mySpot.id)}
+                        />
+                      )}
                       {myState.awaySince.me && <AwayBanner since={myState.awaySince.me} now={now} />}
                       {mySpot.id === 'floor' && side && (
                         <SideHud
@@ -691,6 +710,9 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                           name={(id) => who(id).name}
                           now={sideNow}
                         />
+                      )}
+                      {mySpot.id === 'art' && hub.tel && (
+                        <TelephonePanel hub={hub} game={hub.tel} st={myState} name={(id) => who(id).name} now={sideNow} />
                       )}
                       {mySpot.id === 'cards' && (
                         <GamePlaceholder
@@ -752,6 +774,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                       st={myState}
                       who={who}
                       {...(mySpot.id === 'floor' && side ? sideResults(side, myState, (id) => who(id).name) : {})}
+                      {...(mySpot.id === 'art' ? { title: '✏️ That’s a wrap!', medals: false } : {})}
                       isHost={myState.hostId === 'me'}
                       now={now}
                       onAgain={() => hub.begin(mySpot.id)}
@@ -848,7 +871,14 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                   </button>
                 </div>
               )}
-              {(hint || seated) && !atGameTable && !atFreeFloor && !atFreeTv && !atFreeBoard && (
+              {!mySpot && atFreeArt && (
+                <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2 whitespace-nowrap">
+                  <button onClick={() => hub.start('art', 'me')} className="panel rounded-full px-4 py-2 text-sm font-bold">
+                    {touch ? 'Tap' : 'Press E'} to start a game at the art corner 🖌️
+                  </button>
+                </div>
+              )}
+              {(hint || seated) && !atGameTable && !atFreeFloor && !atFreeTv && !atFreeBoard && !atFreeArt && (
                 <div className="absolute bottom-[100px] left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap">
                   <button
                     onClick={() => {

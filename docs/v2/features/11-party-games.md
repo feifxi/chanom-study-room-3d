@@ -1,15 +1,18 @@
 # 11. Pick a Side, whiteboard, drawing telephone
 
-Status: Pick a Side and the whiteboard decided (2026-11-09); drawing telephone is next. Overview: [`docs/v2-plan.md`](../../v2-plan.md). The shared activity flow (lobby, host, invites,
+Status: Pick a Side, the whiteboard and drawing telephone decided (2026-11-09). Overview: [`docs/v2-plan.md`](../../v2-plan.md). The shared activity flow (lobby, host, invites,
 leaving): [`09-activity-framework.md`](09-activity-framework.md).
 
 Try it: `pnpm --filter @study/demo demo:dev` → http://localhost:3100/servers/chanom/rooms/library.
 
-- Dock → Activities → Open floor → **Go there**, press **E**. Pick a mode and a deck (try **✨ AI**),
+- Dock → Activities → Pick a Side → **Go there**, press **E**. Pick a mode and a deck (try **✨ AI**),
   📣 **Call everyone** (two friends walk over), **Start**. Walk into a zone to answer.
 - Demo tab → **Someone starts Pick a Side**: someone else hosts (a different mode each time).
-- Activities → Whiteboard → **Go there**, press **E**, draw. Demo tab → **Someone draws on the
+- Walk to the whiteboard (left wall), press **E**, draw. Demo tab → **Someone draws on the
   whiteboard**: watch a cat appear on the wall, live.
+- Activities → Drawing telephone → **Go there**, press **E**, pick Drawing telephone or Knock-off, 📣 **Call
+  everyone**, **Start**. Demo tab → **Someone starts drawing telephone**: join from the invite card
+  (the scripted players alternate the two modes).
 
 ## 🗳️ Pick a Side
 
@@ -81,7 +84,8 @@ scores }`. The server reads zones from positions it already has, at the moment t
 
 ## 🎨 Whiteboard
 
-A **drop-in** activity at the board spot (the library's is on the left wall, between the corner plant
+A **free zone**, not an activity (like the Buddy Machine: not in the Activities list, no activity
+strip), using the drop-in machinery at the board spot (the library's is on the left wall, between the corner plant
 and the Buddy Machine), the same flow as the big screen.
 
 ### How it works
@@ -102,7 +106,7 @@ and the Buddy Machine), the same flow as the big screen.
   (anyone at the board; asks "Clear the whole board for everyone?").
 - **Save as image** (PNG) and **Share to Room chat**, like photo mode. No gallery.
 - No text boxes, stickers or shapes for now: a pure drawing board. Drawing telephone reuses this
-  canvas.
+  canvas and its tools.
 
 ### Backend notes
 
@@ -114,4 +118,50 @@ and the Buddy Machine), the same flow as the big screen.
 
 ## ✏️ Drawing telephone
 
-Next: designed with the user before it's built.
+Our own Gartic Phone–style game at a new **Art corner** spot (rounds, 3–10 players). The whiteboard
+stays free drawing; the art corner is where the game is. Two modes, picked by the host in the lobby:
+
+- **Drawing telephone:** write a prompt → the next person draws it → the next describes the drawing →
+  the next draws that → … Watching "a cat in bubble tea" become "a sad potato" is the fun.
+- **Knock-off:** draw anything → the next person sees it for 8 s and redraws it from memory → … No
+  writing.
+
+### How it works
+
+- Everyone plays at once. Each player starts a **chain**; every step, each chain moves on to the next
+  player. **Chain length = players, capped at 8** steps (with more players, not everyone sees every
+  chain).
+- **Timers:** write 30 s, draw 60 s, describe 30 s; Knock-off's copy step is 8 s to look + 45 s to
+  draw. The step ends early when everyone has pressed **Done**.
+- **Prompts:** your own, or 🎲 for a random one.
+- **Time runs out = what you have is sent** (half a drawing, half a sentence). Sending nothing counts
+  as an empty turn: **two empty turns in a row, or leaving, = out**; your later turns are skipped and
+  the chains carry on from the last real entry. Out players stay for the album.
+- **The album plays on its own** (like Gartic): each chain, step by step, then the next chain. The
+  **host can pause it or skip to the next chain** (the last one says Finish). Everyone can react
+  (😂 😍 😮 👏), **save a chain** as one tall image or **share it to Room chat**.
+- **No scores**: it's for laughs. The results card says "That's a wrap!" with no medals; **Again**
+  starts a new round with whoever's there.
+
+### Panel only, no 3D game
+
+- The whole game happens in **one panel** under the activity strip, like Gartic Phone: your turn
+  (write / draw / describe / copy), "Sent. Waiting for the others…", then the album. The room and
+  voice carry on around it.
+- **Nothing in 3D changes during a game** (decided 2026-11-09): no drawings on easels or walls. The
+  art corner is decor only (a paint-splatter rug, three easels, a paint cart, a gallery easel with a
+  picture), all in the map's static batch, so it costs nothing per frame.
+- The drawing step reuses the whiteboard's canvas and tools (colours, sizes, eraser, undo, clear).
+
+### Backend notes
+
+- The server owns the game: order, step, timers, who sent, chains. A turn is sent once (text, or the
+  drawing's strokes in 0–1 coordinates); in-progress strokes stay on the player's device, and when
+  the time runs out the client sends what it has (the server skips anyone silent).
+- The other players' entries are only sent at reveal time, so nobody can peek at the chains.
+- Cost: nothing stored; a saved chain is drawn on the device, sharing is a normal Room chat image
+  upload.
+
+### Not now
+
+- Scores or votes for the best chain, custom timers, a word-only mode, animation steps.

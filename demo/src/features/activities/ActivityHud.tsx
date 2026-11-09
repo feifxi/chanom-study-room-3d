@@ -68,7 +68,7 @@ export function LobbyCard({
         <span className={cn('grid size-9 flex-none place-items-center rounded-xl text-lg', spot.tint)}>{game.emoji}</span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-black">
-            {game.name} <span className="font-semibold text-muted-foreground">· {spot.name}</span>
+            {game.name} <span className="font-semibold text-muted-foreground">· {spot.activity}</span>
           </span>
           <span className="block text-[11px] text-muted-foreground">
             {counting
@@ -310,7 +310,7 @@ export function InviteStack({
                   {who(inv.by).name} is starting {st.game.name}
                 </span>
                 <span className="block text-[11px] text-muted-foreground">
-                  {spot.name} · {st.players.length} joined
+                  {spot.activity} at the {spot.name.toLowerCase()} · {st.players.length} joined
                 </span>
               </span>
             </div>

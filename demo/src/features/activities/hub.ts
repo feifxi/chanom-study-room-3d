@@ -1,5 +1,20 @@
 import type { MockRoom } from '../room3d/mockRoom';
-import { BoardStore, catDoodle } from './board/board';
+import { BoardStore, catDoodle, type Stroke } from './board/board';
+import { DOODLES, FUNNY_GUESSES, randomPrompt, wobble } from './telephone/content';
+import {
+  CHAIN_GAP,
+  LOOK_MS,
+  TURN_MS,
+  entryKind,
+  newTel,
+  revealGap,
+  sourceFor,
+  stepKind,
+  chainOf,
+  type Entry,
+  type TelGame,
+  type TelMode,
+} from './telephone/game';
 import { BUILT_IN, deckKindFor, type Deck } from './pickASide/decks';
 import { ASK_MS, REVEAL_MS, newGame, sidesFor, zoneAt, zoneCenter, type SideGame, type SideMode } from './pickASide/game';
 import { SPOTS, spotById, type Game, type Spot, type SpotId } from './spots';
@@ -109,6 +124,9 @@ export class ActivityHub {
   /** Pick a Side: the deck the host picked in the lobby, and the game while it runs (and its results). */
   floorDeck: Deck = BUILT_IN[0]!;
   side: SideGame | null = null;
+  /** Drawing telephone at the art corner, and what you have so far this turn (sent as is when time runs out). */
+  tel: TelGame | null = null;
+  telDraft: { text: string; strokes: Stroke[] } = { text: '', strokes: [] };
   private listeners = new Set<() => void>();
   private snapshot = '';
   version = 0;
@@ -117,6 +135,7 @@ export class ActivityHub {
   /** Where scripted people were sitting before a game, so they can go back. */
   private home = new Map<string, string>();
   private scripted = 0;
+  private scriptedTel = 0;
   constructor(
     private readonly room: MockRoom,
     readonly roomWideGames: boolean,
@@ -132,7 +151,12 @@ export class ActivityHub {
 
   private changed() {
     const snap =
-      JSON.stringify(this.spots) + JSON.stringify(this.watch) + JSON.stringify(this.side) + this.floorDeck.id + [...this.dismissed].join();
+      JSON.stringify(this.spots) +
+      JSON.stringify(this.watch) +
+      JSON.stringify(this.side) +
+      (this.tel ? `${this.tel.rev}:${this.tel.stage}` : '') +
+      this.floorDeck.id +
+      [...this.dismissed].join();
     if (snap === this.snapshot) return;
     this.snapshot = snap;
     this.version++;
@@ -217,6 +241,7 @@ export class ActivityHub {
           if (st.players.length >= st.game.min) {
             Object.assign(st, { phase: 'playing', since: now, startsAt: 0, out: [], awaySince: {}, invite: null });
             if (spot.id === 'floor') this.sideStart(now);
+            if (spot.id === 'art') this.telStart(now);
           } else st.startsAt = 0;
         }
       } else if (st.phase === 'playing') {
@@ -228,8 +253,9 @@ export class ActivityHub {
         st.nextRound = counted.filter((id) => !st.players.includes(id) && !st.out.includes(id));
         if (st.hostId && !st.players.includes(st.hostId)) st.hostId = st.players[0] ?? null;
         if (spot.id === 'floor') this.sideTick(now, spot, st);
-        // Pick a Side ends itself after the reveal, so the last answer still shows
-        const sideRunning = spot.id === 'floor' && this.side && this.side.stage !== 'done';
+        if (spot.id === 'art') this.telTick(now, st);
+        // Pick a Side ends itself after the reveal, and telephone after its album, so they play out
+        const sideRunning = (spot.id === 'floor' && this.side && this.side.stage !== 'done') || (spot.id === 'art' && !!this.tel);
         if (st.phase === 'playing' && !sideRunning && st.players.length <= 1) this.finish(spot.id, st.players);
       } else if (st.phase === 'results' && now >= st.resultsUntil) {
         Object.assign(st, { phase: 'gathering', players: counted, results: [], out: [], nextRound: [], since: now });
@@ -280,6 +306,182 @@ export class ActivityHub {
   private screenOff() {
     Object.assign(this.watch, { now: null, queue: [], offset: 0, paused: false });
     Object.assign(this.spots.tv, fresh(spotById('tv')));
+  }
+
+  // --- Drawing telephone (feature 11) ---
+
+  private telStart(now: number) {
+    const st = this.spots.art;
+    this.tel = newTel(st.game.id as TelMode, [...st.players], now);
+    this.telDraft = { text: '', strokes: [] };
+    this.scriptTelTurn();
+  }
+
+  private telChanged() {
+    if (this.tel) this.tel.rev++;
+    this.changed();
+  }
+
+  /** What you have so far this turn: sent as it is when the time runs out. */
+  setTelDraft(text: string, strokes: Stroke[]) {
+    this.telDraft = { text, strokes };
+  }
+
+  /** Send your turn (Done, or the timer ran out). Empty counts towards being out. */
+  telSend(id: string, entry: Omit<Entry, 'by'>) {
+    const g = this.tel;
+    if (!g || g.stage !== 'turn' || g.sent[id]) return;
+    const c = chainOf(g, id);
+    if (c < 0) return;
+    const empty = entry.kind === 'text' ? !entry.text?.trim() : !entry.strokes?.length;
+    g.chains[c]![g.step] = { ...entry, by: id, skipped: empty || undefined };
+    g.sent[id] = true;
+    g.empty[id] = empty ? (g.empty[id] ?? 0) + 1 : 0;
+    this.telChanged();
+  }
+
+  private telTick(now: number, st: SpotState) {
+    const g = this.tel;
+    if (!g) return;
+    if (g.stage === 'turn') {
+      const active = g.order.filter((id) => st.players.includes(id));
+      if (now < g.until && !active.every((id) => g.sent[id])) return;
+      // Time's up: yours goes as it is; whoever's out is skipped
+      if (!g.sent.me && active.includes('me')) {
+        const kind = entryKind(stepKind(g.mode, g.step));
+        this.telSend('me', kind === 'text' ? { kind, text: this.telDraft.text } : { kind, strokes: [...this.telDraft.strokes] });
+      }
+      for (const id of g.order) {
+        if (!g.sent[id]) this.telSend(id, { kind: entryKind(stepKind(g.mode, g.step)) });
+        if ((g.empty[id] ?? 0) >= 2 && st.players.includes(id)) this.knockOut(st, id, 'idle');
+      }
+      this.telDraft = { text: '', strokes: [] };
+      if (g.step + 1 >= g.steps) {
+        Object.assign(g, { stage: 'reveal', reveal: { chain: 0, shown: 1, paused: false, nextAt: now + revealGap(g.chains[0]![0]) } });
+      } else {
+        const kind = stepKind(g.mode, g.step + 1);
+        Object.assign(g, { step: g.step + 1, sent: {}, until: now + TURN_MS[kind], lookUntil: kind === 'copy' ? now + LOOK_MS : 0 });
+        this.scriptTelTurn();
+      }
+      this.telChanged();
+      return;
+    }
+    if (g.stage === 'reveal') {
+      const r = g.reveal;
+      if (r.paused || now < r.nextAt) return;
+      const chain = g.chains[r.chain]!;
+      if (r.shown < chain.length) {
+        r.shown++;
+        r.nextAt = now + revealGap(chain[r.shown - 1]);
+        this.scriptReact(r.chain, r.shown - 1);
+      } else if (r.chain + 1 < g.chains.length) this.telNextChain(now);
+      else {
+        g.stage = 'done';
+        this.tel = null;
+        this.finish(
+          'art',
+          g.order.filter((id) => st.players.includes(id)),
+        );
+      }
+      this.telChanged();
+    }
+  }
+
+  /** Host: pause or carry on the album. */
+  telPause(paused: boolean, now = Date.now()) {
+    const g = this.tel;
+    if (!g || g.stage !== 'reveal') return;
+    g.reveal.paused = paused;
+    if (!paused) g.reveal.nextAt = now + 1200;
+    this.telChanged();
+  }
+
+  /** Host: skip to the next chain (or end the album after the last one). */
+  telNextChain(now = Date.now()) {
+    const g = this.tel;
+    if (!g || g.stage !== 'reveal') return;
+    if (g.reveal.chain + 1 >= g.chains.length) {
+      g.reveal.shown = g.chains[g.reveal.chain]!.length;
+      g.reveal.nextAt = now;
+    } else
+      Object.assign(g.reveal, {
+        chain: g.reveal.chain + 1,
+        shown: 1,
+        nextAt: now + CHAIN_GAP + revealGap(g.chains[g.reveal.chain + 1]![0]),
+      });
+    this.telChanged();
+  }
+
+  telReact(chain: number, entry: number, emoji: string) {
+    const g = this.tel;
+    if (!g) return;
+    const key = `${chain}:${entry}`;
+    const r = (g.reactions[key] ??= {});
+    r[emoji] = (r[emoji] ?? 0) + 1;
+    this.telChanged();
+  }
+
+  /** Demo: the scripted players take their turns at different moments. */
+  private scriptTelTurn() {
+    const g = this.tel;
+    if (!g) return;
+    const step = g.step;
+    const kind = stepKind(g.mode, step);
+    for (const id of g.order) {
+      if (id === 'me') continue;
+      this.later((0.25 + Math.random() * 0.45) * TURN_MS[kind], () => {
+        if (this.tel !== g || g.step !== step || !this.spots.art.players.includes(id)) return;
+        const src = sourceFor(g, id);
+        if (kind === 'write') return this.telSend(id, { kind: 'text', text: randomPrompt() });
+        if (kind === 'describe') {
+          const d = DOODLES.find((x) => x.name === src?.doodle);
+          const pool = d && Math.random() < 0.75 ? d.guesses : FUNNY_GUESSES;
+          return this.telSend(id, { kind: 'text', text: pool[Math.floor(Math.random() * pool.length)] });
+        }
+        // Draw what the prompt says (or copy the last doodle), with a wobble
+        const text = (src?.text ?? '').toLowerCase();
+        const d =
+          (kind === 'copy' && DOODLES.find((x) => x.name === src?.doodle)) ||
+          DOODLES.find((x) => x.words.some((w) => text.includes(w))) ||
+          DOODLES[Math.floor(Math.random() * DOODLES.length)]!;
+        const strokes = wobble(d.strokes(), kind === 'copy' ? 0.02 : 0.008).map((s, i) => ({ ...s, id: `${id}-${step}-${i}`, by: id }));
+        this.telSend(id, { kind: 'drawing', strokes, doodle: d.name });
+      });
+    }
+  }
+
+  /** Demo: someone laughs at a drawing now and then. */
+  private scriptReact(chain: number, entry: number) {
+    if (Math.random() < 0.55) this.later(600 + Math.random() * 1500, () => this.telReact(chain, entry, Math.random() < 0.7 ? '😂' : '😍'));
+  }
+
+  /** Demo: someone opens the art corner, calls everyone, two friends come, and it starts once you're in. */
+  scriptTelephone() {
+    const spot = spotById('art');
+    if (this.spots.art.phase !== 'free') return;
+    const [host, ...rest] = this.freePeople();
+    if (!host) return;
+    const go = (id: string, i: number) => {
+      const p = this.room.state.players.get(id);
+      if (p?.seatId) this.home.set(id, p.seatId);
+      this.room.sendTo(id, ringSpot(spot, i));
+    };
+    go(host, 0);
+    this.start('art', host);
+    this.pickGame('art', this.scriptedTel++ % 2 ? 'knock' : 'tel');
+    this.call('art', host);
+    rest.slice(0, 2).forEach((id, i) => this.later(2500 + i * 2000, () => go(id, i + 1)));
+    const startedAt = Date.now();
+    const wait = setInterval(() => {
+      const st = this.spots.art;
+      if (st.phase !== 'gathering' || st.hostId !== host) return clearInterval(wait);
+      const ready = st.players.length >= st.game.min;
+      if (ready && (st.players.includes('me') || Date.now() - startedAt > 30_000)) {
+        clearInterval(wait);
+        this.later(4000, () => this.spots.art.phase === 'gathering' && this.begin('art'));
+      }
+    }, 500);
+    this.timers.push(wait as unknown as ReturnType<typeof setTimeout>);
   }
 
   // --- Whiteboard ---
@@ -438,6 +640,7 @@ export class ActivityHub {
   end(spotId: SpotId, now = Date.now()) {
     const st = this.spots[spotId];
     if (spotId === 'floor') this.side = null;
+    if (spotId === 'art') this.tel = null;
     Object.assign(st, { phase: 'gathering', out: [], nextRound: [], awaySince: {}, since: now });
     this.changed();
   }
@@ -476,12 +679,18 @@ export class ActivityHub {
     if (other) this.leave(spotId, other);
   }
 
-  private knockOut(st: SpotState, id: string, why: 'left' | 'away' | 'wrong') {
+  private knockOut(st: SpotState, id: string, why: 'left' | 'away' | 'wrong' | 'idle') {
     st.players = st.players.filter((x) => x !== id);
     if (!st.out.includes(id)) st.out.push(id);
     delete st.awaySince[id];
     if (id === 'me' && why !== 'wrong')
-      this.onNews(why === 'away' ? 'You were away from the game for 30 s, so you’re out' : 'You left the game');
+      this.onNews(
+        why === 'away'
+          ? 'You were away from the game for 30 s, so you’re out'
+          : why === 'idle'
+            ? 'You missed two turns, so you’re out. You can still watch the album'
+            : 'You left the game',
+      );
   }
 
   // --- Demo scripts: other people answering invites and starting games ---

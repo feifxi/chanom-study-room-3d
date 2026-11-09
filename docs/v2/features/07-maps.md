@@ -23,7 +23,7 @@ whichever map a room picks, every activity works there.
 | Lounge        | a corner to hang out        | sofa by the shelves   | beanbags, cat tower  | campfire circle      |
 | Private zones | at least 2                  | reading nook, alcove  | window booths        | tent, telescope deck |
 | Big screen    | watch together              | projector screen      | TV on the wall       | outdoor cinema sheet |
-| Game table    | cards and board games       | round table, 4 stools | card table           | low table with cards |
+| Card table    | card games                  | round table, 4 stools | card table           | low table with cards |
 | Open floor    | 12 m²+ for Pick a Side      | the middle rug        | by the counter       | the open deck        |
 | Whiteboard    | draw together               | chalkboard            | menu board           | chalk wall           |
 | Buddy Machine | study buddies               | by the door           | by the till          | by the stairs        |
@@ -43,7 +43,7 @@ whichever map a room picks, every activity works there.
 
 **Every map keeps every activity, the library too** (decided 2026-11-09). A "study-only library" was
 considered and dropped: the library stays fully functional. The activities are built in the library
-for now; its size, layout and props get reworked later so the new spots (game table, big screen,
+for now; its size, layout and props get reworked later so the new spots (card table, Werewolf table, big screen,
 open floor, whiteboard) fit its cosy look. **Cat Café and Starry Rooftop are the next maps built**, no
 new templates. Every map must fit the performance budget ([06-3d-room.md](06-3d-room.md#performance)).
 
@@ -108,7 +108,7 @@ or Demo tab → "Team publishes a map update".
    Pomodoro and music.
 4. **What changes:** everyone stands up and lands around the new map's spawn point; screen shares
    end (they belong to a desk). Whiteboard drawings and card games move to the new map's whiteboard
-   and game table: every map has them, thanks to the standard kit.
+   and card table: every map has them, thanks to the standard kit.
 5. If the owner's Plus ends, a Big or premium map moves to its basic version the same way.
 
 ## Backend notes

@@ -40,7 +40,7 @@ export const CATALOG: CatalogPiece[] = [
   },
   { kind: 'desk', name: 'Single desk', emoji: '🪑', w: 1.2, d: 0.8, kit: 'study', seats: 1, source: 'Kenney Furniture Kit (CC0)' },
   { kind: 'tv', name: 'Big screen', emoji: '📺', w: 2.4, d: 0.4, kit: 'screen', source: 'Kenney Furniture Kit (CC0)' },
-  { kind: 'game-table', name: 'Game table', emoji: '🃏', w: 1.6, d: 1.6, kit: 'games', source: 'Kenney Furniture Kit (CC0)' },
+  { kind: 'game-table', name: 'Card table', emoji: '🃏', w: 1.6, d: 1.6, kit: 'games', source: 'Kenney Furniture Kit (CC0)' },
   { kind: 'whiteboard', name: 'Whiteboard', emoji: '🖍️', w: 1.8, d: 0.4, kit: 'whiteboard', source: 'Kenney Furniture Kit (CC0)' },
   { kind: 'beanbag', name: 'Beanbag', emoji: '🫘', w: 0.9, d: 0.9, kit: 'lounge', source: 'Quaternius Cosy Pack (CC0)' },
   { kind: 'cat-bed', name: 'Cat bed', emoji: '🧺', w: 0.8, d: 0.8, kit: 'nap', source: 'Quaternius Cosy Pack (CC0)' },

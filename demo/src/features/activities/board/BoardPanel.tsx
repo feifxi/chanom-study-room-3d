@@ -30,32 +30,11 @@ export function BoardPanel({
   onMini: (mini: boolean) => void;
 }) {
   const panel = useDismiss<HTMLElement>(!mini, () => onMini(true));
-  const [color, setColor] = useState(COLORS[0]!);
-  const [size, setSize] = useState(1);
-  const [erasing, setErasing] = useState(false);
-  const [confirmClear, setConfirmClear] = useState(false);
-
-  // Cmd/Ctrl+Z takes back your last stroke
-  useEffect(() => {
-    if (mini) return;
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
-        e.preventDefault();
-        board.undo('me');
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [board, mini]);
 
   const save = async () => {
     const png = await boardPng(board.strokes);
     if (!png) return toast.error('Couldn’t save the board. Try again?');
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(png);
-    a.download = 'connecta-whiteboard.png';
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    downloadPng(png, 'connecta-whiteboard.png');
   };
 
   return (
@@ -95,19 +74,70 @@ export function BoardPanel({
           {mini ? <Maximize2 className="size-4" /> : <Minimize2 className="size-4" />}
         </ToolBtn>
       </div>
+      <DrawingPad
+        board={board}
+        active={!mini}
+        clearText="Clear the whole board for everyone?"
+        overlay={mini && <button onClick={() => onMini(false)} aria-label="Make it bigger" className="absolute inset-0 hover:bg-black/5" />}
+      />
+    </section>
+  );
+}
 
+export function downloadPng(png: Blob, filename: string) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(png);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+/**
+ * A drawing surface with the board's tools under it: colours, sizes, eraser, undo (your own last
+ * stroke, also Ctrl/Cmd+Z) and clear (asks first). The whiteboard and drawing telephone share it.
+ */
+export function DrawingPad({
+  board,
+  active,
+  clearText,
+  overlay,
+}: {
+  board: BoardStore;
+  /** Off: just the picture (the small board in the corner). */
+  active: boolean;
+  clearText: string;
+  overlay?: React.ReactNode;
+}) {
+  const [color, setColor] = useState(COLORS[0]!);
+  const [size, setSize] = useState(1);
+  const [erasing, setErasing] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
+
+  useEffect(() => {
+    if (!active) return;
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        board.undo('me');
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [board, active]);
+
+  return (
+    <>
       <div className="relative overflow-hidden rounded-xl border-2 border-[#c9ced6]" style={{ aspectRatio: ASPECT }}>
         <BoardCanvas
           board={board}
-          pen={mini ? null : { color: erasing ? ERASER.color : color, size: erasing ? ERASER.size : SIZES[size]! }}
+          pen={active ? { color: erasing ? ERASER.color : color, size: erasing ? ERASER.size : SIZES[size]! } : null}
         />
-        {mini && <button onClick={() => onMini(false)} aria-label="Make it bigger" className="absolute inset-0 hover:bg-black/5" />}
+        {overlay}
       </div>
-
-      {!mini &&
+      {active &&
         (confirmClear ? (
           <div className="flex items-center justify-center gap-2 rounded-full bg-destructive/10 py-1.5 text-xs font-bold">
-            Clear the whole board for everyone?
+            {clearText}
             <button
               onClick={() => {
                 board.clear();
@@ -165,16 +195,16 @@ export function BoardPanel({
             <ToolBtn label="Undo my last stroke (Ctrl+Z)" onClick={() => board.undo('me')}>
               <Undo2 className="size-4" />
             </ToolBtn>
-            <ToolBtn label="Clear the board" onClick={() => setConfirmClear(true)}>
+            <ToolBtn label="Clear" onClick={() => setConfirmClear(true)}>
               <Trash2 className="size-4" />
             </ToolBtn>
           </div>
         ))}
-    </section>
+    </>
   );
 }
 
-function ToolBtn({
+export function ToolBtn({
   label,
   onClick,
   pressed,
@@ -204,7 +234,7 @@ let strokeCount = 0;
  * The drawing surface: redraws the whole board when it changes (once per animation frame, however
  * many strokes arrived), at the screen's pixel density. With a pen, pointer moves become strokes.
  */
-function BoardCanvas({ board, pen }: { board: BoardStore; pen: { color: string; size: number } | null }) {
+export function BoardCanvas({ board, pen }: { board: BoardStore; pen: { color: string; size: number } | null }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const drawing = useRef<string | null>(null);
 

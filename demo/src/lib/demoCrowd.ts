@@ -163,12 +163,19 @@ export function startPickASide() {
   window.dispatchEvent(new Event(PICK_A_SIDE_EVENT));
 }
 
-/** Demo: someone walks to the big screen and puts a video on (feature 10). */
+/** Demo: someone draws on the whiteboard (feature 11). */
 export const BOARD_EVENT = 'connecta-demo:board';
 export function drawOnBoard() {
   window.dispatchEvent(new Event(BOARD_EVENT));
 }
 
+/** Demo: someone starts drawing telephone at the art corner and calls everyone (feature 11). */
+export const TELEPHONE_EVENT = 'connecta-demo:telephone';
+export function startTelephone() {
+  window.dispatchEvent(new Event(TELEPHONE_EVENT));
+}
+
+/** Demo: someone walks to the big screen and puts a video on (feature 10). */
 export const WATCH_EVENT = 'connecta-demo:watch';
 export function putOnVideo() {
   window.dispatchEvent(new Event(WATCH_EVENT));

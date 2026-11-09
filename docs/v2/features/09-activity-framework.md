@@ -5,7 +5,7 @@ map's standard kit: [`07-maps.md`](07-maps.md). Voice and leaving a room: [`06-3
 
 Try it: `pnpm --filter @study/demo demo:dev` → http://localhost:3100/servers/chanom/rooms/library.
 
-- Dock → **Activities** → Game table → **Go there**, press **E** to sit, then 📣 **Call everyone** (two
+- Dock → **Activities** → Card games → **Go there**, press **E** to sit, then 📣 **Call everyone** (two
   friends walk over), **Start**. In the placeholder you can "Finish the round" or have "Someone else
   leave".
 - Demo tab → **Someone starts Pick a Side** (it also happens on its own ~25 s after you walk in):
@@ -14,7 +14,8 @@ Try it: `pnpm --filter @study/demo demo:dev` → http://localhost:3100/servers/c
 
 ## The idea
 
-One flow for every activity (watch together, cards, Werewolf, Pick a Side, whiteboard, quizzes).
+One flow for every activity (watch together, cards, Werewolf, Pick a Side, drawing telephone,
+quizzes).
 Joining, starting, inviting, leaving and ending work the same everywhere; only what happens _during_
 the game differs, and each game designs that in its own feature (10–13).
 
@@ -23,17 +24,28 @@ the game differs, and each game designs that in its own feature (10–13).
 Every activity lives at a **spot** from the map's standard kit (feature 7). One activity per spot at a
 time; different spots run at the same time (TV + a card game + Pick a Side).
 
-| Spot       | Activities              | Joining          | Kind    | Room-wide |
-| ---------- | ----------------------- | ---------------- | ------- | --------- |
-| Game table | card games (feature 12) | sit on a stool   | rounds  | no        |
-| Open floor | Pick a Side (11)        | step in the ring | rounds  | yes       |
-| Big screen | watch together (10)     | step in the area | drop-in | no        |
-| Whiteboard | draw together (11)      | step in the area | drop-in | no        |
+The Activities list names each one by **what you do** ("Pick a Side", "Watch together"), with the
+place under it ("At the open floor · press E to start"), so nobody has to guess what an "art corner"
+is (decided 2026-11-09).
+
+| In the list       | Spot (place)   | Joining          | Kind    | Room-wide |
+| ----------------- | -------------- | ---------------- | ------- | --------- |
+| Card games (12)   | Card table     | sit on a stool   | rounds  | no        |
+| Werewolf (12)     | Werewolf table | sit at the table | rounds  | no        |
+| Pick a Side (11)  | Open floor     | step in the ring | rounds  | yes       |
+| Watch together    | Big screen     | step in the area | drop-in | no        |
+| Drawing telephone | Art corner     | step in the ring | rounds  | no        |
+
+- **Werewolf gets its own table** (user's idea, 2026-11-09), apart from the card table, so a werewolf
+  night and a card game can run at once. Designed in feature 12; the demo lists it as coming.
+- **The whiteboard is a free zone, not an activity** (like the Buddy Machine): it isn't in the list,
+  doesn't light the Activities button and has no activity strip; walk up, press E, draw, walk away.
+  It still uses the drop-in machinery underneath (who's there, cleared when everyone leaves).
 
 - **Rounds:** people who arrive mid-round play the next one (until then they watch in 3D).
 - **Drop-in:** step in any time.
-- A Big map can have more of a spot (2 game tables = 2 card games).
-- The demo's library got a **round game table with 4 stools** (front right) as a placeholder; each
+- A Big map can have more of a spot (2 card tables = 2 card games).
+- The demo's library got a **round card table with 4 stools** (front right) as a placeholder; each
   game's feature finishes its spot in the map editor.
 
 ## The flow
@@ -78,7 +90,7 @@ time; different spots run at the same time (TV + a card game + Pick a Side).
 - Only the **host** sends it, by pressing **Call everyone** on the lobby card ("Called ✓" after). Nothing
   is sent automatically, so a quick game with whoever's already sitting there pings nobody.
 - **The same invite card for every activity**, top right under the people pill:
-  "🃏 Jod is starting Slave · Game table · 2 joined · **Go there**".
+  "🃏 Jod is starting Slave · Card games at the card table · 2 joined · **Go there**".
   - Updates live; gone when the game starts, when you close it, or after ~20 s (a thin bar shows it).
   - No sound and never takes keyboard focus. Shown to everyone, **including people focusing** (people
     in the same room usually want to join in).

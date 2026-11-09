@@ -144,7 +144,7 @@ export const KIT = [
   { id: 'lounge', name: 'Lounge', need: 'a sofa corner to hang out' },
   { id: 'private', name: 'Private zones', need: 'at least 2' },
   { id: 'screen', name: 'Big screen', need: 'watch together' },
-  { id: 'games', name: 'Game table', need: 'cards and board games' },
+  { id: 'games', name: 'Card table', need: 'card games' },
   { id: 'floor', name: 'Open floor', need: 'room for Pick a Side' },
   { id: 'whiteboard', name: 'Whiteboard', need: 'draw together' },
   { id: 'buddy', name: 'Buddy Machine', need: 'study buddies' },

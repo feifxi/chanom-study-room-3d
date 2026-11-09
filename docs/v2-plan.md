@@ -66,7 +66,7 @@ model is Gather's, kept simpler:
 
 - **Who builds them:** only the platform admin, in a map editor. Users pick templates; they can't edit maps or upload models.
 - **What a map holds:** study areas, activity areas and private zones together. Every template has
-  the same **standard kit** (study spots, lounge, 2+ private zones, big screen, game table,
+  the same **standard kit** (study spots, lounge, 2+ private zones, big screen, card table,
   open floor, whiteboard, Buddy Machine, nap spots, spawn point), so every activity works in every
   map; only the place, props and theme differ.
 - **Templates:** Cosy Library, Cat Café and Starry Rooftop at launch (more ideas in feature 7).
@@ -150,12 +150,15 @@ Details: [09-activity-framework.md](v2/features/09-activity-framework.md).
 - **Pick a Side:** answer by walking into one of 2 or 4 zones. Three modes (Would you rather, Quiz,
   Last one standing); questions come in decks: built in, your own, or AI-made from a topic. Details:
   [11-party-games.md](v2/features/11-party-games.md).
-- **Card games:** an Uno-like game and Slave. Werewolf, with more 3D than just sitting.
-- **Whiteboard:** a drop-in board everyone in front of it draws on, live on the wall; cleared when
+- **Card games:** an Uno-like game and Slave at the card table. **Werewolf at its own table**, with
+  more 3D than just sitting.
+- **Whiteboard:** a free zone (not in the Activities list): everyone in front of it draws, live on the wall; cleared when
   everyone leaves. Details: [11-party-games.md](v2/features/11-party-games.md#-whiteboard).
 - **Photo mode:** a dock button that takes photos anywhere, with an app-logo frame and a 3 s timer;
   save, share to Room chat or copy. Connecta keeps no photos.
-- **A drawing-telephone game** (our own Gartic Phone–style game), with Normal and Knock-off modes.
+- **Drawing telephone** at a new Art corner (our own Gartic Phone–style game): Drawing telephone and
+  Knock-off modes, the album plays on its own, no scores; the game is panel-only, the corner is decor.
+  Details: [11-party-games.md](v2/features/11-party-games.md#-drawing-telephone).
 - **AI quizzes** are AI decks in Pick a Side (feature 11). Flashcards later. No AI tutor or chatbot.
 - **Not now:** emotes, celebrations and other body-movement games. Campfire and sofa corners are map
   pieces, not features.

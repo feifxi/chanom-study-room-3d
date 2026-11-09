@@ -32,6 +32,18 @@ export const GAME_SEATS: Seat[] = [0, 1, 2, 3].map((i) => {
 
 export const isGameSeat = (seatId: string) => seatId.startsWith('game-');
 
+/**
+ * The art corner, back right: a splattered rug with easels around it and a big gallery easel at the
+ * back that shows drawing telephone's reveal to the whole room.
+ */
+export const ART = { x: 8.2, z: -1.4, r: 1.45 } as const;
+export const GALLERY = { x: 7.55, z: -3.45, yaw: Math.PI / 4, width: 1.5, height: 0.86, y: 1.35 } as const;
+export const EASELS = [
+  { x: 9.5, z: -2.5 },
+  { x: 9.5, z: -0.3 },
+  { x: 6.95, z: 0.4 },
+].map((e) => ({ ...e, yaw: Math.atan2(ART.x - e.x, ART.z - e.z) }));
+
 /** The whiteboard on the left wall, between the corner plant and the Buddy Machine. */
 export const BOARD = { x: -9.88, z: -4.4, width: 1.9, height: 1.07, y: 1.45 } as const;
 
@@ -43,9 +55,11 @@ if (!SEAT_BY_ID.has('game-0')) {
   SEATS.push(...GAME_SEATS);
   for (const s of GAME_SEATS) (SEAT_BY_ID as Map<string, Seat>).set(s.id, s);
   OBSTACLES.push({ kind: 'circle', x: GAME_TABLE.x, z: GAME_TABLE.z, r: GAME_TABLE.r });
+  OBSTACLES.push({ kind: 'circle', x: GALLERY.x, z: GALLERY.z, r: 0.5 });
+  for (const e of EASELS) OBSTACLES.push({ kind: 'circle', x: e.x, z: e.z, r: 0.3 });
 }
 
-export type SpotId = 'cards' | 'floor' | 'tv' | 'board';
+export type SpotId = 'cards' | 'werewolf' | 'floor' | 'tv' | 'board' | 'art';
 
 export interface Game {
   id: string;
@@ -57,7 +71,12 @@ export interface Game {
 
 export interface Spot {
   id: SpotId;
+  /** The place in the map ("Card table"). */
   name: string;
+  /** What you do there, the name people look for in the Activities list ("Card games"). */
+  activity: string;
+  /** A free zone, like the Buddy Machine: not an activity, so not in the list (the whiteboard). */
+  freeZone?: boolean;
   emoji: string;
   /** Rounds: newcomers join next round. Drop-in: step in any time. */
   kind: 'rounds' | 'drop-in';
@@ -76,7 +95,8 @@ export interface Spot {
 export const SPOTS: Spot[] = [
   {
     id: 'cards',
-    name: 'Game table',
+    name: 'Card table',
+    activity: 'Card games',
     emoji: '🃏',
     kind: 'rounds',
     roomWide: false,
@@ -91,8 +111,23 @@ export const SPOTS: Spot[] = [
     tint: 'bg-mint',
   },
   {
+    // Its own table, apart from the card games: a game night runs while others play cards
+    id: 'werewolf',
+    name: 'Werewolf table',
+    activity: 'Werewolf',
+    emoji: '🐺',
+    kind: 'rounds',
+    roomWide: false,
+    games: [{ id: 'werewolf', name: 'Werewolf', emoji: '🐺', min: 5, max: 12 }],
+    area: { x: 0, z: 0, r: 0 },
+    built: false,
+    feature: 12,
+    tint: 'bg-lavender',
+  },
+  {
     id: 'floor',
     name: 'Open floor',
+    activity: 'Pick a Side',
     emoji: '🗳️',
     kind: 'rounds',
     roomWide: true,
@@ -110,6 +145,7 @@ export const SPOTS: Spot[] = [
   {
     id: 'tv',
     name: 'Big screen',
+    activity: 'Watch together',
     emoji: '📺',
     kind: 'drop-in',
     roomWide: false,
@@ -122,6 +158,8 @@ export const SPOTS: Spot[] = [
   {
     id: 'board',
     name: 'Whiteboard',
+    activity: 'Whiteboard',
+    freeZone: true,
     emoji: '🎨',
     kind: 'drop-in',
     roomWide: false,
@@ -130,6 +168,22 @@ export const SPOTS: Spot[] = [
     built: true,
     feature: 11,
     tint: 'bg-lavender',
+  },
+  {
+    id: 'art',
+    name: 'Art corner',
+    activity: 'Drawing telephone',
+    emoji: '🖌️',
+    kind: 'rounds',
+    roomWide: false,
+    games: [
+      { id: 'tel', name: 'Drawing telephone', emoji: '✏️', min: 3, max: 10 },
+      { id: 'knock', name: 'Knock-off', emoji: '🪞', min: 3, max: 10 },
+    ],
+    area: { x: ART.x, z: ART.z, r: ART.r },
+    built: true,
+    feature: 11,
+    tint: 'bg-peach',
   },
 ];
 

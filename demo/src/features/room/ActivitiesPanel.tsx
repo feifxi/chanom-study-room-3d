@@ -29,34 +29,31 @@ export function ActivitiesPanel({
       </div>
       {!roomWideGames && (
         <p className="rounded-xl bg-muted px-3 py-2 text-xs text-muted-foreground">
-          Room-wide games are off in this room. Tables, the TV and the board still work.
+          Room-wide games are off in this room. Tables, the big screen and the art corner still work.
         </p>
       )}
-      {SPOTS.map((spot) => {
+      {SPOTS.filter((s) => !s.freeZone).map((spot) => {
         const st = states[spot.id];
         const off = spot.roomWide && !roomWideGames;
         const live = st.phase === 'gathering' || st.phase === 'playing';
+        const place = spot.name.toLowerCase();
         const status = !spot.built
           ? `Comes with feature ${spot.feature}`
           : off
             ? 'Off in this room'
             : st.phase === 'gathering'
               ? `${st.game.name} · ${st.players.length} in · ${hostName(st.hostId ?? '')} hosting`
-              : st.phase === 'playing' && spot.id === 'board'
-                ? `${st.players.length} drawing`
-                : st.phase === 'playing' && spot.kind === 'drop-in'
-                  ? `${watchTitle ?? 'Something’s on'} · ${st.players.length} watching`
-                  : st.phase === 'playing'
-                    ? `${st.game.name} · ${st.players.length} playing`
-                    : st.phase === 'results'
-                      ? `${st.game.name} · just finished`
-                      : spot.seats
-                        ? 'Free · sit down to start a game'
-                        : spot.id === 'board'
-                          ? 'Free · go there and press E to draw'
-                          : spot.kind === 'drop-in'
-                            ? 'Off · go there and press E to put something on'
-                            : 'Free · go there and press E to start';
+              : st.phase === 'playing' && spot.kind === 'drop-in'
+                ? `${watchTitle ?? 'Something’s on'} · ${st.players.length} watching`
+                : st.phase === 'playing'
+                  ? `${st.game.name} · ${st.players.length} playing`
+                  : st.phase === 'results'
+                    ? `${st.game.name} · just finished`
+                    : spot.seats
+                      ? `At the ${place} · sit down to start`
+                      : spot.kind === 'drop-in'
+                        ? `At the ${place} · press E to watch`
+                        : `At the ${place} · press E to start`;
         return (
           <div
             key={spot.id}
@@ -75,7 +72,7 @@ export function ActivitiesPanel({
               )}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-sm font-extrabold">{spot.name}</span>
+              <span className="block text-sm font-extrabold">{spot.activity}</span>
               <span className="block truncate text-[11px] text-muted-foreground">{status}</span>
             </span>
             {spot.built && !off && (
