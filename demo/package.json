@@ -7,7 +7,8 @@
     "demo:dev": "next dev -p 3100",
     "demo:typecheck": "next typegen && tsc --noEmit",
     "demo:lint": "eslint --max-warnings 0",
-    "demo:perf": "node scripts/perf-check.mjs"
+    "demo:perf": "node scripts/perf-check.mjs",
+    "demo:screens": "node scripts/screens.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

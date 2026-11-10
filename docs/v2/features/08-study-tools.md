@@ -1,13 +1,10 @@
 # 8. Study tools
 
-Status: decided (2026-11-09). Overview: [`docs/v2-plan.md`](../../v2-plan.md). Status above heads and
-"focusing is never away": [`06-3d-room.md`](06-3d-room.md). Focus quests:
-[`v2-plan.md`, Business model](../../v2-plan.md#business-model).
+**Status:** decided and built in the demo. **Try it:** http://localhost:3100/servers/chanom/rooms/library
+→ My tools → 📖 Study session, and http://localhost:3100/home/focus
 
-Try it: `pnpm --filter @study/demo demo:dev`, then:
-
-- http://localhost:3100/servers/chanom/rooms/library → My tools (left rail) → 📖 Study session
-- http://localhost:3100/home/focus (header → Focus)
+A personal focus timer, a private to-do list, and rankings that count real focus minutes. Kept
+minimal on purpose: two presets, no streaks, no shared sessions.
 
 ## What's in it
 
@@ -49,17 +46,14 @@ Try it: `pnpm --filter @study/demo demo:dev`, then:
 
 ## The Focus page (`/home/focus`)
 
-Header nav: Home · Friends · **Focus** · Discover · Shop.
-
 - **My numbers (only you):** Today, Last 7 days, Daily average (over days you focused), a 7-day bar
   chart (hover a day for its minutes), and minutes per subject over the last 7 days.
 - **Rankings:** Friends / Everyone × Today / This week.
   - Friends: all your friends plus you, in order.
   - Everyone: the top 10, then "⋯" and your own rank pinned under it.
   - Days and weeks are in the viewer's time zone; weeks start Monday.
-- The room's own ranking ("Focus in this room today") stays in the Study panel; it lists members and
-  guests who focused in this room today. It has no link to the Focus page: nothing in a room navigates
-  away (see "Leaving a room" in [06-3d-room.md](06-3d-room.md)).
+- The room's own ranking ("Focus in this room today") stays in the Study panel, with no link to the
+  Focus page: nothing in a room navigates away ([06-3d-room.md](06-3d-room.md#leaving-a-room)).
 
 ## Everyone ranking and privacy
 
@@ -71,9 +65,10 @@ Header nav: Home · Friends · **Focus** · Discover · Shop.
 
 ## Backend notes
 
-- Table `focus_sessions (user_id, room_id, subject, started_at, ended_at, minutes)`, written by the
-  game server when a round ends or stops (V1 already does this). `todos (user_id, id, text, done,
-done_at, position)`, REST CRUD from the web app; a nightly job removes done items older than 7 days.
+- `focus_sessions (user_id, room_id, subject, started_at, ended_at, minutes)`, written by the game
+  server when a round ends or stops (V1 already does this).
+- `todos (user_id, id, text, done, done_at, position)`, REST CRUD; a nightly job removes done items
+  older than 7 days.
 - Rankings are `SUM(minutes)` per user over the window, capped per day. Today and This week depend on
   the viewer's time zone, so compute per request for Friends (small) and cache Everyone per time zone
   offset for ~5 minutes (top 10 + the viewer's rank via a window function).
@@ -85,4 +80,4 @@ done_at, position)`, REST CRUD from the web app; a nightly job removes done item
 
 - Shared or joined timers, room sessions, custom lengths, auto cycles.
 - Streaks, badges, focus goals.
-- Flashcards: dropped (2026-11-09). AI quizzes are AI decks in Pick a Side (feature 11).
+- Flashcards (dropped). AI quizzes are AI decks in Pick a Side (feature 11).

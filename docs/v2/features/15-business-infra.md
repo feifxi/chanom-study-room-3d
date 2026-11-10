@@ -1,7 +1,48 @@
 # 15. Business and infra
 
-Status: decided (2026-11-10). Overview: [`docs/v2-plan.md`](../../v2-plan.md). What Plus gives:
-[Business model](../../v2-plan.md#business-model). V1's infra: [`infra/README.md`](../../../infra/README.md).
+**Status:** decided; payments are mocked in the demo. **Try it:** http://localhost:3100/home/plus,
+`/checkout?plan=yearly`, and `/admin/money` (View as Connecta team). V1's infra:
+[`infra/README.md`](../../../infra/README.md).
+
+One subscription, **Connecta Plus**, plus earn-only coins for cosmetics. Infra is V1's single app
+server with only what V2 needs added, and monitoring on its own server for SRE practice.
+
+## Connecta Plus
+
+|                               | Free     | Plus                  |
+| ----------------------------- | -------- | --------------------- |
+| Rooms you own: people at once | 25       | 100 (Big maps)        |
+| Rooms you own: members        | 150      | 1,000                 |
+| Maps                          | basic    | + premium maps        |
+| Screen share                  | 720p     | 1080p                 |
+| Rooms you can make / join     | 10 / 100 | 30 / 200              |
+| Skins and pets                | base set | + premium skins, pets |
+| Name tag and profile banner   | plain    | animated              |
+| Uploads                       | 10 MB    | 50 MB                 |
+| AI quiz decks (Pick a Side)   | 3 a day  | 30 a day              |
+
+- **A room follows its owner's plan.** Everyone inside gets the room's space and maps; only the owner
+  pays. Friends chip in by **gifting Plus**.
+- **If Plus ends:** nothing is deleted. After 7 days of grace the owner's rooms go back to 25 at
+  once, and a premium or Big map moves live to its basic version.
+- **Rules:** never sell power, no ads in rooms, never charge to join. Paid perks either cost us money
+  to run (capacity, HD video, storage, AI) or are purely cosmetic. Free limits follow real cost.
+
+## Coins and daily quests
+
+- **Coins are earned, never bought.** Money only buys Plus. Coins buy cosmetics in the Shop
+  (accessories ~200–400, outfits ~500–800, pets ~1,000–1,500: something new about once a week).
+  Premium skins and pets come with Plus, never for coins; Plus earns no extra coins.
+- **3 quests a day** (new at midnight, ~60 coins a day), one per group, so someone studying in a room
+  with room-wide games off can still earn:
+  - 📖 Focus: focus for 1 hour, finish 2 focus sessions
+  - 💬 Together: 30 minutes in a room with others, say 5 things (bubbles or Room chat)
+  - 🎲 Play: pet a cat 3 times, use the Buddy Machine, play any activity once
+- **Quests must be simple to check:** each counts one event the server already sees (timer minutes,
+  time with others in the room, messages, a pet, an activity's "round finished"). Never "with a
+  friend" or "3 different people". Each pays once a day, so faking one gains almost nothing.
+- Shown in the Shop and in 3D under My tools → 🎯 ("1/3"), with a toast when one's done. No weekly
+  bonus and no streaks.
 
 ## Prices
 
@@ -23,8 +64,8 @@ How we got there (redo it with real numbers after the playtest):
 
 ## Paying (Stripe)
 
-**Two plans, any way to pay** (decided 2026-11-10; replaced "card plans plus PromptPay packs", which
-looked like different products). How you pay is picked on the payment page:
+**Two plans, any way to pay** (PromptPay packs were dropped: they looked like a different product).
+How you pay is picked on the payment page:
 
 - **Card:** renews by itself on the date.
 - **PromptPay:** nobody can take money from PromptPay without you scanning, so it **renews by
@@ -36,15 +77,14 @@ looked like different products). How you pay is picked on the payment page:
 - **Gift Plus:** a friend's "…" → Gift Plus → 1, 3 or 12 months, a note, card or PromptPay. They get
   a gift card in DMs and the Inbox. A gift adds on top of Plus they already have.
 - **Cancel** any time in Settings → Plus & billing; Plus runs to the end of the paid period. Then the
-  7-day grace from the business model.
+  7-day grace.
 - **Refunds:** no button. The team refunds real mistakes from the admin site (charged twice, a yearly
   renewal asked about within 48 hours, a bug), since a refused refund becomes a chargeback that
   costs more. Gifts can't be refunded once received.
-
 - **Failed renewals:** Stripe retries 4 times over about two weeks and emails the person; Plus stays
   on meanwhile. After the last try Plus ends and the 7-day grace starts.
 
-### In the demo (Stripe mocked, built 2026-11-10)
+### In the demo (Stripe mocked)
 
 Real Stripe (test mode first) comes with the backend; the demo fakes it:
 
@@ -131,7 +171,7 @@ OAuth, OpenAI's free moderation endpoint (text and pictures), OpenAI API (AI dec
 
 GitHub Actions (check → e2e → deploy on `main`), GitHub OIDC role, ECR (web, api, game, NEW gateway),
 SSM Parameter Store (NEW: Stripe, OpenAI, OAuth secrets), SSM Run Command for `deploy.sh`, Terraform
-(`bootstrap` and `app`, run by you).
+(`bootstrap` and `app`, run by the owner only).
 
 ### Network and security
 

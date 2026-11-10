@@ -23,6 +23,11 @@ and run a pomodoro side by side.
 
 </div>
 
+> **Next up: Connecta (V2).** This repo is growing into Connecta, cosy 3D rooms for friend groups to
+> hang out, study and play. It's being designed in `demo/`. Developers and coding agents start at
+> [`AGENTS.md`](AGENTS.md) and [`docs/v2-plan.md`](docs/v2-plan.md). The rest of this README
+> describes V1.
+
 ## Features
 
 - **Multiplayer rooms**: up to 20 people per room; a new room opens when one is full. No accounts:

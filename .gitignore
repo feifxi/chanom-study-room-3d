@@ -14,3 +14,5 @@ coverage
 *.tfstate.*
 *.tfvars
 !*.tfvars.example
+# demo:screens output
+demo/.screens

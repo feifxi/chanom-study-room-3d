@@ -1,92 +1,69 @@
 # 3. Rooms and membership
 
-Status: decided (2026-11-08). Overview: [`docs/v2-plan.md`](../../v2-plan.md). Accounts and guests:
-[`02-accounts.md`](02-accounts.md).
+**Status:** decided and built in the demo. **Try it:** http://localhost:3100/home (you own Chanom
+Friends and mod CPE Year 3; Discover has rooms to preview). The Demo tab's **View as** switches role.
 
-Try it: `pnpm --filter @study/demo demo:dev` → http://localhost:3100/home. You own Chanom Friends
-(owner view of Room settings) and are a mod in CPE Year 3 (mod view, join requests). Discover has
-open rooms to preview and join.
+Like Discord, you're a member of a room before you walk in. Three fixed roles, two kinds of invite
+link, and kick, ban and time out where you see the person.
 
-## You're a member before you walk in
-
-Like Discord, you join a room before you can be inside it. The exceptions are Common rooms
-(platform-run, no membership) and guest passes.
+## Getting in
 
 | Room                  | How you get in                                                           |
 | --------------------- | ------------------------------------------------------------------------ |
 | **Private** (default) | A member invite link only. Not listed.                                   |
 | **Ask to join**       | Listed in Discover. Ask with an optional note → a mod lets you in.       |
 | **Open**              | Listed. One button, **Join & walk in**: you become a member and walk in. |
-| **Common** (platform) | No membership; anyone walks in, guests too. Text only (feature 14).      |
+| **Common** (Connecta) | No membership; anyone walks in, guests too. Text only (feature 14).      |
 | **Guest pass**        | Walk into that one room for 24 hours without an account.                 |
 
-**Preview before joining** (our version of Discord's server preview): tapping an Open or Ask-to-join
-room opens its card: map, description, owner, inside/capacity, members, tags, friends inside, and
-the room rules. The chat stays hidden until you're a member. A full Open room can still be joined
-("Join · tell me when there's a spot"): the chat works, and you walk in when there's room.
-
-Leaving is in the room's "…" menu on Home. Rooms you haven't opened in 30+ days fold away under
-"Quiet for a while".
+- **Preview before joining:** an Open or Ask-to-join room opens a card with its map, description,
+  owner, inside/capacity, members, tags, friends inside and rules. The chat stays hidden until you
+  join. A full Open room can still be joined; you walk in when there's a spot.
+- **Ask to join:** a note up to 150 characters → "Request sent 💌", Home shows "Waiting". Mods see
+  "3 asking to join" and decide in Members & roles → Requests (Let in or ✕). Declined people can ask
+  again after **7 days**.
+- **Leaving:** in the room's "…" on Home. Owners transfer or delete in Room settings first.
 
 ## Roles
 
-Three fixed roles, no custom roles (custom roles are a big part of why Discord feels complicated,
-and our rooms are small groups). Explained in Members & roles → "What can each role do?".
+Fixed roles, no custom ones (they're much of why Discord feels complicated; our rooms are small).
 
-| Role       | Can                                                                                                                                     | Can't                                                    |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| **Owner**  | Everything: name, map, visibility, make or remove mods, hand the room over, delete it, plus everything a mod can                        | Act on themselves                                        |
-| **Mod**    | Kick, ban and time out members and guests; approve join requests; make and cancel invite links; delete messages; change safety settings | Act on the owner or other mods; change map or visibility |
-| **Member** | Chat, walk in, invite people if the room allows it ("Members can invite")                                                               |                                                          |
-
-Room settings for a **mod** only show Members & roles, Invites and Safety. Overview (name,
-visibility, hand over, delete) and Map & look are the owner's.
+| Role       | Can                                                                                                                 | Can't                                              |
+| ---------- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| **Owner**  | Everything: name, map, visibility, mods, hand over, delete, plus all a mod can                                      | Act on themselves                                  |
+| **Mod**    | Kick, ban, time out members and guests; approve requests; make and cancel invites; delete messages; safety settings | Act on the owner or mods; change map or visibility |
+| **Member** | Chat, walk in, invite if "Members can invite" is on                                                                 |                                                    |
 
 ## Invites
 
-One **Invite** dialog (room "…" menu, the room card in 3D, the Chat page), two kinds of link:
+One **Invite** dialog (room "…", the Room card, the room's page):
 
-- **Member invite** (`connecta.app/i/<code>`): whoever opens it joins. Expires after **7 days** by
-  default (or 1 day, or never), optionally after **1 / 5 / 10 / 25 uses**. Changing the options or
-  pressing ↻ makes a new link; the old one keeps its own rules.
-- **Guest pass** (`connecta.app/g/<code>`): walk in without an account for **24 hours**. Only when
-  the room allows guests (Map & look → Allow guests).
-- **Invite a friend:** friends who aren't members yet, with an Invite button that sends it in a DM.
+- **Member invite** (`connecta.app/i/<code>`): whoever opens it joins. Expires after **7 days**
+  (or 1 day, or never), optionally after **1 / 5 / 10 / 25 uses**. New options make a new link; old
+  links keep their rules.
+- **Guest pass** (`connecta.app/g/<code>`): 24 hours without an account, if the room allows guests.
+- **Invite a friend:** friends who aren't members, sent in a DM.
 
-**Room settings → Invites** (owner and mods): the "Members can invite" and "Guests can use voice"
-switches, and **Active links**: kind, who made it, uses (`9/10`), expiry, and **Cancel** (stops
-working right away).
-
-## Ask to join
-
-1. The person taps **Ask to join** on the preview and can add a note (up to 150 characters, e.g.
-   "I'm in Mai's class"). The preview then says "Request sent 💌", and Home shows the room as "Waiting".
-2. Owners and mods get a notification and see **"3 asking to join"** on the room's Home card.
-3. **Members & roles → Requests (3):** name, note, when, who they know there, **Let in** or ✕.
-4. Let in → they're a member and get a notification. Declined → they can ask again after **7 days**.
+**Room settings → Invites:** Members can invite, Allow guests, Guests can use voice, and the active
+links (kind, made by, uses, expiry, **Cancel**).
 
 ## Kick, ban, time out
 
-In each person's "…" in Members & roles **and** in the in-room people list (same actions, so
-managing people happens where you see them):
+The same actions in Members & roles and in the in-room people list:
 
-- **Time out** 10 minutes / 1 hour / 1 day: they stay, but can't talk or type. Shows as
-  "Timed out · 1 hour" in the list.
-- **Kick:** removed from the room and its membership; a new invite lets them back in.
-- **Ban:** removed, and can't rejoin or use guest passes for this room. Tied to the account, so a
-  new guest name doesn't get around it. **Members & roles → Banned** lists who, why, by whom and
-  when, with **Unban** (they still need a new invite).
-- **Make mod / Remove mod:** owner only.
-- In 3D there's also **Mute for everyone** (mic off for the room).
+- **Time out** 10 minutes / 1 hour / 1 day: they stay but can't talk or type.
+- **Kick:** removed from the room and its membership; a new invite brings them back.
+- **Ban:** removed, and can't rejoin or use guest passes. Tied to the account, so a new guest name
+  doesn't get around it. Members & roles → Banned lists who, why, by whom, with **Unban**.
+- **Make or remove mod:** owner only. In 3D there's also **Mute for everyone**.
 
 ## Backend notes
 
-- **Tables:** room, membership (room, user, role, joined at, timed out until), join request (room,
-  user, note, status, decided by/at), ban (room, user, by, reason, at), invite link (code, room,
+- **Tables:** room; membership (room, user, role, joined at, timed out until); join request (room,
+  user, note, status, decided by and at); ban (room, user, by, reason, at); invite link (code, room,
   kind, created by, max uses, uses, expires at, cancelled at).
-- **Checks on the server:** every action goes through the role rules above (`canActOn(me, them)`);
-  the client only hides buttons. A ban is checked on join, on invite use and on guest pass use.
-- **Timeouts** are enforced by the chat gateway and by Colyseus/LiveKit (no publish permission
-  until the time is up).
-- **Invite codes** are short and random; opening one is rate-limited so codes can't be guessed.
-- **Cost:** only database rows and notifications; nothing paid.
+- **Server checks:** every action goes through the role rules (`canActOn(me, them)`); the client only
+  hides buttons. Bans are checked on join, invite use and guest pass use.
+- **Timeouts** are enforced by the chat gateway and by Colyseus and LiveKit (no publish permission).
+- **Invite codes** are short and random; opening one is rate-limited.
+- **Cost:** database rows and notifications only.

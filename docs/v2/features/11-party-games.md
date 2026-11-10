@@ -1,26 +1,24 @@
 # 11. Pick a Side, whiteboard, Draw & Guess
 
-Status: done (2026-11-09). Pick a Side, the whiteboard (a free zone) and Draw & Guess are
-decided and built in the demo. Overview: [`docs/v2-plan.md`](../../v2-plan.md). The shared activity flow (lobby, host, invites,
-leaving): [`09-activity-framework.md`](09-activity-framework.md).
+**Status:** decided and built in the demo. **Try it:** http://localhost:3100/servers/chanom/rooms/library
 
-Try it: `pnpm --filter @study/demo demo:dev` → http://localhost:3100/servers/chanom/rooms/library.
+- Activities → Pick a Side → **Go there**, press **E**, pick a mode and a deck (try **✨ AI**), 📣
+  **Call everyone**, **Start**. Walk into a zone to answer. Or Demo tab → **Someone starts Pick a
+  Side**.
+- Walk to the whiteboard, press **E**, draw. Demo tab → **Someone draws on the whiteboard** shows a
+  cat appear on the wall, live.
+- Activities → Draw & Guess → **Go there**, **E**, pick a mode, **Start**. Or Demo tab → **Someone
+  starts Draw & Guess**.
 
-- Dock → Activities → Pick a Side → **Go there**, press **E**. Pick a mode and a deck (try **✨ AI**),
-  📣 **Call everyone** (two friends walk over), **Start**. Walk into a zone to answer.
-- Demo tab → **Someone starts Pick a Side**: someone else hosts (a different mode each time).
-- Walk to the whiteboard (left wall), press **E**, draw. Demo tab → **Someone draws on the
-  whiteboard**: watch a cat appear on the wall, live.
-- Activities → Draw & Guess → **Go there**, press **E**, pick Draw & Guess or Copycat, 📣 **Call
-  everyone**, **Start**. Demo tab → **Someone starts Draw & Guess**: join from the invite card
-  (the scripted players alternate the two modes).
+Three party pieces, all on the shared activity flow ([09-activity-framework.md](09-activity-framework.md)):
+a walk-to-answer quiz game, a free drawing wall, and a pass-it-along drawing game.
 
 ## 🗳️ Pick a Side
 
 ### The game
 
 A room-wide game on the **open floor** (feature 9's rounds flow). A question and a timer; you answer by
-**walking into a zone** of the ring. When the timer ends, answers lock where people stand; the reveal
+**walking into a zone** of the floor's rug. When the timer ends, answers lock where people stand; the reveal
 shows for 4 s; then the next question. Standing outside every zone = no answer.
 
 | Mode                     | Zones | Right answer                                | Timer | Ends                                         |
@@ -53,7 +51,7 @@ deck that fits.
 
 ### On screen
 
-- **3D (everyone sees it, from anywhere):** the ring splits into 2 or 4 coloured zones (A pink, B blue,
+- **3D (everyone sees it, from anywhere):** the open floor splits into 2 or 4 coloured zones (A pink, B blue,
   C yellow, D green) with the letter and answer painted on the floor. Zones follow the screen: A is on
   the left (top left with four). At the reveal the right zone stays lit and the others fade.
 - **Small HUD** under the top strip (the room stays visible): question number, deck, timer bar, the
@@ -68,8 +66,8 @@ deck that fits.
 
 ### Backend notes
 
-- Runs as the floor's game in the activity module: `{ mode, deck, questions, i, stage, until, answers,
-scores }`. The server reads zones from positions it already has, at the moment the timer ends.
+- Runs as the floor's game in the activity module: `{ mode, deck, questions, i, stage, until,
+answers, scores }`. The server reads zones from positions it already has when the timer ends.
 - Decks: `decks(id, owner_id, name, kind, questions jsonb, source)`; built-in decks ship with the app.
   The host's client sends the chosen deck's questions when the game starts.
 - Played questions per room: a small list of question ids per deck (in memory with the room is enough;
@@ -86,8 +84,8 @@ scores }`. The server reads zones from positions it already has, at the moment t
 ## 🎨 Whiteboard
 
 A **free zone**, not an activity (like the Buddy Machine: not in the Activities list, no activity
-strip), using the drop-in machinery at the board spot (the library's is on the left wall, between the corner plant
-and the Buddy Machine), the same flow as the big screen.
+strip). It uses the drop-in machinery at each map's whiteboard (the library's board, the café's menu
+board, the rooftop's chalk wall), the same flow as the big screen.
 
 ### How it works
 
@@ -119,20 +117,18 @@ and the Buddy Machine), the same flow as the big screen.
 
 ## ✏️ Draw & Guess
 
-Our own Gartic Phone–style game at a new **Art corner** spot (rounds, 3–10 players). The whiteboard
-stays free drawing; the art corner is where the game is. Two modes, picked by the host in the lobby:
+A pass-it-along drawing game at the **Art corner** (rounds, 3–10 players). The whiteboard stays free
+drawing; the art corner is where the game is. Two modes, picked by the host:
 
 - **Draw & Guess:** write a prompt → the next person draws it → the next describes the drawing →
   the next draws that → … Watching "a cat in bubble tea" become "a sad potato" is the fun.
 - **Copycat:** draw anything → the next person sees it for 8 s and redraws it from memory → … No
   writing.
 
-**Names** (decided 2026-11-09, renamed the same day): the game is older than Gartic Phone (the paper
-game Telephone Pictionary, the board game Telestrations). It was "Draw & Guess", but
-"telephone" means little to most people, so it's **Draw & Guess**, with the line "Pass it along and
-see how it ends up" so nobody expects one drawer and everyone guessing. Our own mode name is
-**Copycat** (Gartic Phone calls it Knock-off). Never use Gartic Phone or Telestrations
-in the app.
+**Names:** the game is older than Gartic Phone (the paper game Telephone Pictionary). It's called
+**Draw & Guess** (it was "Drawing telephone"; "telephone" meant little to people), with the line
+"Pass it along and see how it ends up", so nobody expects one drawer and everyone guessing. Our mode
+name is **Copycat**. Never use Gartic Phone, Telestrations or their mode names (Knock-off) in the app.
 
 ### How it works
 
@@ -156,9 +152,8 @@ in the app.
 - The whole game happens in **one panel** under the activity strip, like Gartic Phone: your turn
   (write / draw / describe / copy), "Sent. Waiting for the others…", then the album. The room and
   voice carry on around it.
-- **Nothing in 3D changes during a game** (decided 2026-11-09): no drawings on easels or walls. The
-  art corner is decor only (a paint-splatter rug, three easels, a paint cart, a gallery easel with a
-  picture), all in the map's static batch, so it costs nothing per frame.
+- **Nothing in 3D changes during a game:** no drawings on easels or walls. The art corner (easels,
+  stools, a paint cart, a gallery) is decor in the map's static batch, so it costs nothing per frame.
 - The drawing step reuses the whiteboard's canvas and tools (colours, sizes, eraser, undo, clear).
 
 ### Backend notes

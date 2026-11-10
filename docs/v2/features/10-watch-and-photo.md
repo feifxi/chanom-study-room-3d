@@ -1,23 +1,20 @@
 # 10. Watch together and photo mode
 
-Status: decided (2026-11-09). Overview: [`docs/v2-plan.md`](../../v2-plan.md). The shared activity flow:
-[`09-activity-framework.md`](09-activity-framework.md).
+**Status:** decided and built in the demo. **Try it:** http://localhost:3100/servers/chanom/rooms/library
 
-Try it: `pnpm --filter @study/demo demo:dev` → http://localhost:3100/servers/chanom/rooms/library.
-
-- Dock → Activities → Big screen → **Go there**, press **E**, paste a YouTube link (e.g.
-  `https://youtu.be/lTRiuFIWV54`). Click anywhere outside the panel to shrink it; click the small
-  player to make it big again.
-- Demo tab → **Someone puts a video on the big screen**: watch the 3D screen from across the room.
+- Activities → Watch together → **Go there**, press **E**, paste a YouTube link (e.g.
+  `https://youtu.be/lTRiuFIWV54`). Click outside the panel to shrink it; click the small player to
+  grow it.
+- Demo tab → **Someone puts a video on the big screen**, to see the 3D screen from across the room.
 - Dock → **Photo**.
 
-**The jukebox is dropped** (decided 2026-11-09). Music is personal lo-fi only; YouTube music plays
-through the big screen.
+Watch YouTube in sync with whoever stands in front of the big screen, and take photos anywhere.
+There's no jukebox: music is personal lo-fi, and YouTube music plays through the big screen.
 
 ## 📺 Watch together
 
-A **drop-in** activity at the **Big screen** spot (every map has one; the library's is the TV
-lounge in the front-left corner: a TV on a console, an L-shaped sofa, beanbags and a rug).
+A **drop-in** activity at the **Big screen** spot: every map has one, in a cosy corner (the
+library's TV lounge, the café's lounge, the rooftop's cinema sheet with floor cushions).
 
 ### How it works
 
@@ -46,8 +43,7 @@ lounge in the front-left corner: a TV on a console, an L-shaped sofa, beanbags a
 ### Sound
 
 - Only people watching hear the video.
-- **The video keeps its volume while people talk** (no ducking; decided 2026-11-09, reversing the
-  Discord-style dip).
+- **The video keeps its volume while people talk** (no Discord-style ducking).
 - **Your own TV volume:** a speaker button (mute) and slider in the panel's controls. Only you hear the
   change; it's remembered in this browser.
 - **Your lo-fi fades while you watch**: Settings → Voice & sound → "Fade my music while I watch" (on).

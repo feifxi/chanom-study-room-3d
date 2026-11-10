@@ -1,9 +1,9 @@
 # 5. Friends
 
-Status: decided (2026-11-08). Overview: [`docs/v2-plan.md`](../../v2-plan.md). DMs and blocking:
-[`04-chat-and-dms.md`](04-chat-and-dms.md).
+**Status:** decided and built in the demo. **Try it:** http://localhost:3100/home/friends
 
-Try it: `pnpm --filter @study/demo demo:dev` → http://localhost:3100/home/friends.
+Friends are how you find each other: only friends can DM, and only friends see where you are. You
+add people by exact @handle, from a room, or by a friend link; nothing is ever pushed at you.
 
 ## What friends get
 
@@ -12,8 +12,7 @@ Try it: `pnpm --filter @study/demo demo:dev` → http://localhost:3100/home/frie
   "Show what I'm doing" is off) and which room you're in. Everyone else sees nothing unless you share
   a room. "Appear offline" hides you from friends too.
 - **No notifications when a friend walks into a room.** Like Discord's "Active Now": you see where
-  friends are when you look (Home's "Friends out right now", this page, Messages), and nothing pings
-  you. (No favourites either: too much for now.)
+  friends are when you look (Home, this page, Messages); nothing pings you. No favourites either.
 
 ## Adding someone
 
@@ -42,13 +41,12 @@ Sorted by "who can I go hang out with", not A–Z:
 1. **Out in rooms:** friends inside a room right now, **one card per room** (3 friends in the same
    room = one card) with each friend's activity and a button:
    - **Join** when you can walk in anyway: you're a member, it's Open, or it's a Common room (you land in your friend's copy).
-   - **Ask to join Earth** when you can't (a private room you're not in). **A private room you're
-     not in is never named** (decided 2026-11-09, like Discord): the card says "🔒 A private room",
-     with no name, map or who else is there, and one card per friend so it doesn't show who's
-     together. Listed rooms (Ask to join, Open) are named, since anyone can find them in Discover.
-     Earth gets a DM card
-     "feifei wants to join you · Send invite / Not now"; Send invite gives you a 24-hour guest pass, or
-     a member invite if Earth is allowed to make one.
+   - **Ask to join Earth** when you can't. Earth gets a DM card "feifei wants to join you · Send
+     invite / Not now"; Send invite gives you a 24-hour guest pass, or a member invite if Earth may
+     make one.
+   - **A private room you're not in is never named:** the card says "🔒 A private room" with no
+     name, map or others, one card per friend so it doesn't reveal who's together. Listed rooms (Ask
+     to join, Open) are named, since anyone can find them in Discover.
 2. **Online** (not in a room) and 3. **Offline** ("Last seen 3h ago"), each with 💬 and "…" (Invite
    to a room, Remove friend, Block).
 

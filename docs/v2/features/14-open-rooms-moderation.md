@@ -1,28 +1,27 @@
 # 14. Common rooms, open rooms and moderation
 
-Status: decided and built in the demo (2026-11-09). Overview: [`docs/v2-plan.md`](../../v2-plan.md). Room
-roles, kick, ban and time out: [`03-rooms-membership.md`](03-rooms-membership.md). Reporting a person:
-[`01-app-shell.md`](01-app-shell.md).
+**Status:** decided and built in the demo. **Try it:** http://localhost:3100 with the Demo tab's
+**View as**:
 
-Try it: `pnpm --filter @study/demo demo:dev` → http://localhost:3100. The Demo tab's **View as**
-switches who you are: Guest, Member, Mod, Owner, Connecta team (or "As in the mock").
-
-- Discover → **Common rooms** → Cat Café → **Walk in**: you land in Mook's copy (a friend). Mic is
-  off for everyone, there's no Room chat or pictures, Activities shows Watch together and Werewolf as
-  "Not in Common rooms", and bubbles have a 3 s slow mode.
-- View as **Guest**: Home, Friends and room chats show "This page needs an account"; Discover works;
-  open rooms say "Sign up to join".
-- View as **Member** in Chanom Friends: the Room card shows **About** (with the rules), not Settings,
-  and **Report this room**. View as **Owner** or **Mod** for Settings.
-- View as **Connecta team**: header menu → **Admin site** (`/admin`). In a Common room, a person's
+- Discover → **Common rooms** → Cat Café → **Walk in**: you land in Mook's copy (a friend). Mic off,
+  no Room chat or pictures, Watch together and Werewolf say "Not in Common rooms", 3 s slow mode.
+- View as **Guest**: Discover works; other pages show what an account adds; open rooms say "Sign up
+  to join".
+- View as **Member** in Chanom Friends: the Room card shows **About** (with the rules) and **Report
+  this room**.
+- View as **Connecta team**: avatar menu → **Admin site** (`/admin`). In a Common room, a person's
   "…" has the team's actions.
 
-## Common rooms (were "drop-in rooms")
+Two kinds of room anyone can walk into: **Common rooms**, run by Connecta and safe for strangers by
+design, and **open rooms**, run by their owners. Plus the moderation that keeps both in order, and
+the team's admin site.
+
+## Common rooms
 
 Rooms run by Connecta, one per template, that anyone can walk into, guests included. The name comes
 from a school's common room: a shared space run by the place, not by a member.
 
-### Safe for strangers by design (decided 2026-11-09)
+### Safe for strangers by design
 
 Nobody runs a Common room and the team can't watch every copy, so the risky parts are off for
 **everyone**, accounts included:
@@ -61,18 +60,28 @@ is run.
 
 ## Open rooms in Discover
 
-- **No account-age rule** for listing (the 7-day idea was dropped): every sign-up already verifies an
-  email or uses Google/Discord, and reports plus delisting cover the rest.
+- **Anyone can list a room:** no account-age rule and no extra limits for new accounts. Sign-up
+  already verifies an email or uses Google or Discord; reports and delisting cover the rest.
 - **Tags:** 1–3 from a fixed list (Study, Chill, Games, Language exchange, Music, Art, Anime, Late
   night) plus a **language** (Thai, English, Japanese, Korean, Chinese, Mixed). No free-text tags.
   Set in Room settings → Overview.
 - **Order:** friends inside first, then most people inside now, then newest; empty rooms sink.
   Filters: tag chips and a language picker.
-- **No extra limits for new accounts** (the "under 24 hours" idea was dropped: Common rooms already
-  block pictures and links for everyone, and open rooms are their owners' call).
 - Discover has two sections: **Common rooms** (run by Connecta · anyone welcome · text only) first,
   then **Open rooms** (made by people · voice on · run by their owners and mods).
 - Guests can browse Discover and walk into Common rooms; open rooms say "Sign up to join".
+
+## Moderation layers
+
+Every message, picture and room name goes through one `moderate()` step. Each layer can be switched
+on or off in the admin site, cheapest first:
+
+1. **Word filter** (free): `obscenity` plus our own list, Thai included.
+2. **Limits:** slow mode, link caps.
+3. **Report thresholds:** 3 reports in 10 minutes → muted 15 minutes (rooms with mods); 5 in 30
+   minutes from different accounts → out of Common rooms for an hour.
+4. **OpenAI's free Moderation API** for pictures and smarter text checks (confirm it's still free
+   when building). Paid AI checks only if needed later.
 
 ## Reporting a room
 
@@ -107,30 +116,6 @@ Everyone else gets "page not found". Left nav:
 - **Every action emails the account** with the reason; they **reply to appeal** (no appeal form).
 - **No voice recording, ever** (privacy and cost). Voice reports go by how many people reported and
   the account's history.
-
-## Settings audit (done with this feature)
-
-Where each setting lives now:
-
-- **Room settings → Overview:** name, description, **thumbnail** (moved from Map & look), who can join,
-  **tags and language** (new), **people at once** (moved). Danger zone.
-- **Map & look:** template, size, time of day only.
-- **Invites:** member links, members can invite, **allow guests** (moved), guests can use voice.
-- **Rules & safety** (was Safety): **the room rules text** (new; the "show rules before joining" toggle
-  had nothing to show), show rules before joining, word filter, slow mode, new members wait,
-  **room-wide games** (moved).
-- **Members never open Room settings**: the Room card shows **About** (the room's facts and rules)
-  instead; mods land on Members & roles.
-- **Your own settings inside 3D:** only from the Room card (expand it → Your settings: My look, Voice &
-  sound, Notifications, Privacy, All your settings).
-  Not on the My tools rail, which stays for things you use while there (decided 2026-11-09). Same
-  dialog as on Home, opening on the tab you picked. Guests have none.
-
-- **Changing your look in a room is live** (decided 2026-11-09): Save in My look swaps your character
-  for everyone on the spot with a little sparkle, no rejoin. At most once every 5 s; the server checks
-  you own the items. Guests keep the look they picked on the invite page.
-- Removed: the "Bouncy animations" switch (everyone gets the bounce). The friend-request switch became
-  three plain choices: Anyone / People from my rooms / Nobody.
 
 ## Backend notes
 

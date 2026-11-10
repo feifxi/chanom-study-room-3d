@@ -1,55 +1,42 @@
 # 9. Activity framework
 
-Status: decided (2026-11-09). Overview: [`docs/v2-plan.md`](../../v2-plan.md). Spots come from the
-map's standard kit: [`07-maps.md`](07-maps.md). Voice and leaving a room: [`06-3d-room.md`](06-3d-room.md).
+**Status:** decided and built in the demo (card games are a placeholder until feature 12). **Try it:**
+http://localhost:3100/servers/chanom/rooms/library
 
-Try it: `pnpm --filter @study/demo demo:dev` → http://localhost:3100/servers/chanom/rooms/library.
+- Activities → Card games → **Go there**, press **E** to sit, 📣 **Call everyone** (two friends walk
+  over), **Start**. The placeholder can "Finish the round" or have "Someone else leave".
+- Demo tab → **Someone starts Pick a Side**: an invite card, **Go there**, and the host starts once
+  you're in. Walk off mid-round to see the 30 s "come back" banner.
 
-- Dock → **Activities** → Card games → **Go there**, press **E** to sit, then 📣 **Call everyone** (two
-  friends walk over), **Start**. In the placeholder you can "Finish the round" or have "Someone else
-  leave".
-- Demo tab → **Someone starts Pick a Side** (it also happens on its own ~25 s after you walk in):
-  an invite card, **Go there**, and the host starts once you're in. Walk off mid-round to see the
-  30 s "come back" banner.
-
-## The idea
-
-One flow for every activity (watch together, cards, Werewolf, Pick a Side, Draw & Guess,
-quizzes).
-Joining, starting, inviting, leaving and ending work the same everywhere; only what happens _during_
-the game differs, and each game designs that in its own feature (10–13).
+**One flow for every activity.** Joining, starting, inviting, leaving and ending work the same
+everywhere; only what happens during the game differs, and each game designs that in its own spec.
 
 ## Spots
 
-Every activity lives at a **spot** from the map's standard kit (feature 7). One activity per spot at a
-time; different spots run at the same time (TV + a card game + Pick a Side).
+Every activity lives at a **spot** from the map's standard kit (feature 7). One activity per spot at
+a time; different spots run at once (the TV, a card game and Pick a Side).
 
-The Activities list names each one by **what you do** ("Pick a Side", "Watch together"), with the
-place under it ("At the open floor · press E to start"), so nobody has to guess what an "art corner"
-is (decided 2026-11-09).
+The Activities list names each one by **what you do**, with the place under it ("At the open floor ·
+press E to start"), so nobody has to guess what an "art corner" is.
 
-| In the list      | Spot (place)   | Joining          | Kind    | Room-wide |
-| ---------------- | -------------- | ---------------- | ------- | --------- |
-| Card games (12)  | Card table     | sit on a stool   | rounds  | no        |
-| Werewolf (12)    | Werewolf table | sit at the table | rounds  | no        |
-| Pick a Side (11) | Open floor     | step in the ring | rounds  | yes       |
-| Watch together   | Big screen     | step in the area | drop-in | no        |
-| Draw & Guess     | Art corner     | step in the ring | rounds  | no        |
+| In the list    | Spot (place)    | Joining           | Kind    | Room-wide |
+| -------------- | --------------- | ----------------- | ------- | --------- |
+| Watch together | Big screen      | step onto the rug | drop-in | no        |
+| Card games     | Card table      | sit on a stool    | rounds  | no        |
+| Werewolf       | Werewolf circle | sit on a cushion  | rounds  | no        |
+| Draw & Guess   | Art corner      | step onto the rug | rounds  | no        |
+| Pick a Side    | Open floor      | step onto the rug | rounds  | yes       |
 
-- **List order** (2026-11-09): Watch together, Card games, Werewolf, Draw & Guess, Pick a
-  Side (the most inviting first). A lobby you can join floats to the top, then anything live.
-- **Werewolf gets its own table** (user's idea, 2026-11-09), apart from the card table, so a werewolf
-  night and a card game can run at once. Designed in feature 12; the demo lists it as coming.
-- **The whiteboard is a free zone, not an activity** (like the Buddy Machine): it isn't in the list,
-  doesn't light the Activities button and has no activity strip; walk up, press E, draw, walk away.
-  It still uses the drop-in machinery underneath (who's there, cleared when everyone leaves).
-
-- **Rounds:** people who arrive mid-round play the next one (until then they watch in 3D).
-- **Drop-in:** step in any time.
-- A Big map can have more of a spot (2 card tables = 2 card games).
-- The demo's library has **two oak card tables with 4 stools** by the door (2026-11-10 redesign);
-  only the first runs the card activity until feature 12 runs one game per table. The **Werewolf
-  circle** (12 cushions round a lantern table) is built; its game is feature 12.
+- **List order** is the table's: the most inviting first. A lobby you can join floats to the top,
+  then anything live.
+- **Werewolf has its own circle**, apart from the card tables, so a werewolf night and a card game
+  can run at once. Cards and Werewolf are feature 12; the demo lists Werewolf as coming.
+- **The whiteboard is a free zone, not an activity** (like the Buddy Machine): not in the list, no
+  live dot, no strip. Walk up, press E, draw, walk away. It still uses the drop-in machinery (who's
+  there, cleared when everyone leaves).
+- **Rounds:** people who arrive mid-round play the next one. **Drop-in:** step in any time.
+- Every map has **two card tables**; until feature 12 only the first runs the card activity. A Big
+  map can have more of a spot.
 
 ## The flow
 
@@ -62,9 +49,9 @@ is (decided 2026-11-09).
 1. **Free.** Get there by walking, or **Go there** in the Activities list or on an invite card, which
    **runs** you there along the path. The trigger stays yours: **sit** at a table (tables start when
    you sit) or press **E** at a standing spot ("Press E to start a game on the open floor").
-2. **Gathering (the lobby).** You're the **host**. A ring glows on the floor around the spot: the
-   **area**. **Being in the area is being in**: sit on a free stool, or step into the ring. Nobody
-   presses "Join".
+2. **Gathering (the lobby).** You're the **host**. The spot's rug (its **area**) keeps a glowing
+   edge. **Being in the area is being in**: sit on a free seat or step onto the rug. Nobody presses
+   "Join".
 3. **Playing.** The host presses **Start** once there are enough players (a 3 s countdown). Each game
    then shows its own layers (below).
 4. **Results.** A results card at the spot. The host can **Play again** straight away; otherwise it
@@ -79,7 +66,7 @@ is (decided 2026-11-09).
 ### Leaving
 
 - **Leave** is always in the same place: on the lobby card, the results card, and the strip at the top
-  while playing. Standing up from the table or walking out of the ring works too.
+  while playing. Standing up or walking off the rug works too.
 - **Out of the area for 30 s** (walked off, connection dropped) also counts as leaving; a banner shows
   "Come back to stay in the game · 0:24". One rule for both, which matters on phones.
 - **Leaving mid-round = you're out** (a loss). When only one player is left, they win.
@@ -117,8 +104,7 @@ is (decided 2026-11-09).
 | **Big panel** | needs detail or precise input; voice and the room keep going     | your hand of cards, the drawing canvas, a video |
 
 Rule: **what you see up close goes in 2D, what others see from afar shows in 3D.** Some games need map
-pieces too (a Werewolf circle, a stage); that's designed per game, and only the Connecta team builds
-maps.
+pieces too (the Werewolf circle); only the Connecta team builds maps.
 
 ## The shared UI pieces
 
@@ -136,8 +122,8 @@ maps.
 ## Backend notes
 
 - An `Activity` module in the Colyseus room: per spot `{ phase, gameId, hostId, players, nextRound,
-out, awaySince, startsAt }`, synced in the room state (small). The server decides who's in from
-  positions and seats it already has; games plug in with `start / onLeave / finish` hooks.
+out, awaySince, startsAt }`, synced in the room state. The server decides who's in from positions
+  and seats it already has; games plug in with `start / onLeave / finish` hooks.
 - Invites are a room broadcast; the client filters (dismissed, focusing + setting).
 - Results only go to quests ("play any activity once"); no game history is stored.
 - Cost: nothing new beyond the room state; games with media (watch together) add their own.

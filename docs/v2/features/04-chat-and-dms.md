@@ -1,11 +1,11 @@
 # 4. Room chat and DMs
 
-Status: decided (2026-11-08). Overview: [`docs/v2-plan.md`](../../v2-plan.md). Who can DM whom:
-friends only (plan, "People and chat").
+**Status:** decided and built in the demo. **Try it:** http://localhost:3100/servers/chanom (a room's
+chat), http://localhost:3100/home/messages/mai (Mai types back), /home/messages/ken (unfriended). In
+3D: Chat → Room chat → ⤢.
 
-Try it: `pnpm --filter @study/demo demo:dev` → http://localhost:3100/servers/chanom (the room's Chat
-page), http://localhost:3100/home/messages/mai (send something: Mai types back) and
-http://localhost:3100/home/messages/ken (unfriended). In 3D: Chat → Room chat → ⤢.
+Each room has one saved chat, every DM is 1-to-1 between friends, and every thread works the same
+way: react, reply, edit, delete, @mentions and pictures. No threads and no read receipts.
 
 ## Where chat lives
 
@@ -26,7 +26,7 @@ Hover (or long-press on phones) shows a small toolbar:
   "Replying to Ploy ✕".
 - **Edit** (your own): inline, Enter saves, Esc cancels. Shows "(edited)".
 - **Delete:** your own; the owner and mods can delete anyone's in their room. A toast offers Undo.
-- **No threads.** They're a big part of what makes Discord channels feel heavy.
+- **No threads:** they're much of what makes Discord channels feel heavy.
 
 ## @mentions
 
@@ -64,7 +64,7 @@ Hover (or long-press on phones) shows a small toolbar:
 
 ## Backend notes
 
-- **Gateway:** the NestJS WebSocket gateway (plan, "Realtime split") carries messages, edits,
+- **Gateway:** the NestJS WebSocket gateway carries messages, edits,
   deletes, reactions and typing; Redis pub/sub between instances. Typing is not stored.
 - **Tables:** message (id, room or DM, author, text, reply to, edited at, deleted at), attachment
   (message, key, width, height, bytes), reaction (message, user, emoji; unique per user and emoji),
@@ -72,6 +72,6 @@ Hover (or long-press on phones) shows a small toolbar:
   unread counts; it's never shown to others (no "Seen").
 - **Rules on the server:** DMs only between friends; delete others' messages only as owner or mod of
   that room; @room only as owner or mod; blocked users' messages are filtered for the blocker;
-  timed-out members can't post (feature 3); every message goes through `moderate()` (plan).
+  timed-out members can't post (feature 3); every message goes through `moderate()` (feature 14).
 - **Pictures:** the client asks for a presigned S3 upload URL; a small worker makes the WebP and
   checks it with the moderation step before the message shows.
