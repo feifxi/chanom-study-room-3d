@@ -11,7 +11,21 @@ import { cn } from '@/lib/utils';
  * rather than a distance. Zooming out to ~57% shows the whole library. Min/max match the
  * OrbitControls limits (31%–194%).
  */
-export const ZOOM = { base: 62 * 1.75, start: 62 * 1.75, min: 34, max: 210, step: 1.2 } as const;
+/** The 26 × 18 m library needs a wider start than V1's room did: 100% shows about a third of it. */
+export const ZOOM = { base: 62 * 1.3, start: 62 * 1.3, min: 30, max: 210, step: 1.2 } as const;
+
+/** At least this much floor fits across the screen when a room opens. */
+const MIN_VIEW_METRES = 9;
+
+/**
+ * The zoom a room opens at. Ortho zoom is pixels per metre, so a portrait phone at the desktop zoom
+ * would see under 5 m of a 26 m map; narrow screens start wider instead (about 54% on a 390 px phone).
+ * The room renders client-side only, so the window is there.
+ */
+export function startZoom(): number {
+  if (typeof window === 'undefined') return ZOOM.start;
+  return Math.max(ZOOM.min, Math.min(ZOOM.start, window.innerWidth / MIN_VIEW_METRES));
+}
 
 type Box<T> = { current: T };
 

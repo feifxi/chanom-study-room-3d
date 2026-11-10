@@ -1,3 +1,4 @@
+import { areaRadius, inArea, type Area } from '../../map/types';
 import type { Deck, Question } from './decks';
 
 /**
@@ -42,10 +43,10 @@ export const LETTERS = ['A', 'B', 'C', 'D'];
  * Zones follow the screen, not the room: A is on the left (top left with four), whatever way the room
  * is built. The camera looks in from +x +z, so screen right is (+x, −z) and screen up is (−x, −z).
  */
-export function zoneAt(area: { x: number; z: number; r: number }, sides: number, x: number, z: number): number | null {
+export function zoneAt(area: Area, sides: number, x: number, z: number): number | null {
+  if (!inArea(area, x, z)) return null;
   const dx = x - area.x;
   const dz = z - area.z;
-  if (Math.hypot(dx, dz) > area.r) return null;
   const u = (dx - dz) / Math.SQRT2;
   const v = -(dx + dz) / Math.SQRT2;
   if (sides === 2) return u < 0 ? 0 : 1;
@@ -53,8 +54,8 @@ export function zoneAt(area: { x: number; z: number; r: number }, sides: number,
 }
 
 /** The middle of a zone in the room, in screen-aligned (u, v) turned back into x, z. */
-export function zoneCenter(area: { x: number; z: number; r: number }, sides: number, zone: number, jitter = 0) {
-  const k = area.r * 0.55;
+export function zoneCenter(area: Area, sides: number, zone: number, jitter = 0) {
+  const k = areaRadius(area) * 0.55;
   const u = (sides === 2 ? (zone === 0 ? -1 : 1) : zone % 2 === 0 ? -0.75 : 0.75) * k + (Math.random() - 0.5) * jitter;
   const v = (sides === 2 ? 0 : zone < 2 ? 0.75 : -0.75) * k + (Math.random() - 0.5) * jitter;
   return { x: area.x + (u - v) / Math.SQRT2, z: area.z + (-u - v) / Math.SQRT2 };

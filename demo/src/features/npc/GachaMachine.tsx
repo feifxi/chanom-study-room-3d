@@ -1,9 +1,11 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useLayoutEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { GACHA_MACHINE, SUMMON_REVEAL_MS } from '@study/shared';
+import { SUMMON_REVEAL_MS } from '@study/shared';
+import { activeMap } from '../map/active';
+import { StaticBatch } from '../room3d/StaticBatch';
 import type { Summon } from '../room3d/roomSession';
 
 // Muted pastels so the machine blends in with the library
@@ -52,6 +54,7 @@ export function GachaMachine({ lastSummon }: { lastSummon: Summon | undefined })
   );
 
   const capsuleColor = lastSummon?.kind === 'buddy' ? '#a9cde3' : '#e9a9c2';
+  const GACHA_MACHINE = activeMap().gacha;
 
   useFrame(() => {
     const since = lastSummon ? (Date.now() - lastSummon.at) / 1000 : Infinity;
@@ -90,12 +93,17 @@ export function GachaMachine({ lastSummon }: { lastSummon: Summon | undefined })
 
   return (
     <group position={[GACHA_MACHINE.x, 0, GACHA_MACHINE.z]} rotation={[0, GACHA_MACHINE.yaw, 0]} scale={0.95}>
-      {/* Body */}
-      <Box args={[0.86, 0.82, 0.78]} position={[0, 0.41, 0]} color="#e7b9c9" />
-      <Box args={[0.92, 0.08, 0.84]} position={[0, 0.84, 0]} color="#d8a0b4" />
-      <Box args={[0.6, 0.12, 0.02]} position={[0, 0.7, 0.4]} color="#fff4fa" />
-      {/* Chute */}
-      <Box args={[0.3, 0.2, 0.08]} position={[0, 0.2, 0.37]} color="#3a2f45" />
+      {/* Body and chute never move: one draw call per colour (the knob, dome and capsule animate) */}
+      <StaticBatch>
+        <Box args={[0.86, 0.82, 0.78]} position={[0, 0.41, 0]} color="#e7b9c9" />
+        <Box args={[0.92, 0.08, 0.84]} position={[0, 0.84, 0]} color="#d8a0b4" />
+        <Box args={[0.6, 0.12, 0.02]} position={[0, 0.7, 0.4]} color="#fff4fa" />
+        <Box args={[0.3, 0.2, 0.08]} position={[0, 0.2, 0.37]} color="#3a2f45" />
+        <mesh position={[0, 1.6, 0]} castShadow>
+          <cylinderGeometry args={[0.22, 0.3, 0.1, 24]} />
+          <meshStandardMaterial color="#d8a0b4" roughness={0.5} />
+        </mesh>
+      </StaticBatch>
       {/* Knob */}
       <group ref={knob} position={[0, 0.48, 0.41]}>
         <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
@@ -106,20 +114,11 @@ export function GachaMachine({ lastSummon }: { lastSummon: Summon | undefined })
       </group>
       {/* Glass dome with capsules */}
       <group ref={dome}>
-        {balls.map((b, i) => (
-          <mesh key={i} position={[b.x, b.y, b.z]} castShadow>
-            <sphereGeometry args={[0.085, 14, 10]} />
-            <meshStandardMaterial color={b.color} roughness={0.35} />
-          </mesh>
-        ))}
+        <Capsules balls={balls} />
       </group>
       <mesh position={[0, 1.18, 0]}>
         <sphereGeometry args={[0.43, 32, 20]} />
         <meshStandardMaterial color="#ffffff" transparent opacity={0.2} roughness={0.05} metalness={0.1} depthWrite={false} />
-      </mesh>
-      <mesh position={[0, 1.6, 0]} castShadow>
-        <cylinderGeometry args={[0.22, 0.3, 0.1, 24]} />
-        <meshStandardMaterial color="#d8a0b4" roughness={0.5} />
       </mesh>
       {/* The capsule that pops out */}
       <group ref={capsule} visible={false}>
@@ -144,5 +143,28 @@ export function GachaMachine({ lastSummon }: { lastSummon: Summon | undefined })
         </group>
       </group>
     </group>
+  );
+}
+
+/** The capsules resting in the dome, as one instanced mesh. */
+function Capsules({ balls }: { balls: { x: number; y: number; z: number; color: string }[] }) {
+  const ref = useRef<THREE.InstancedMesh>(null);
+  useLayoutEffect(() => {
+    const mesh = ref.current!;
+    const m = new THREE.Matrix4();
+    const c = new THREE.Color();
+    balls.forEach((b, i) => {
+      m.makeTranslation(b.x, b.y, b.z);
+      mesh.setMatrixAt(i, m);
+      mesh.setColorAt(i, c.set(b.color));
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  }, [balls]);
+  return (
+    <instancedMesh ref={ref} args={[undefined, undefined, balls.length]} castShadow>
+      <sphereGeometry args={[0.085, 14, 10]} />
+      <meshStandardMaterial roughness={0.35} />
+    </instancedMesh>
   );
 }

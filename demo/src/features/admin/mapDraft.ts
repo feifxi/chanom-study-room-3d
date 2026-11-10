@@ -76,8 +76,8 @@ export interface Draft {
 }
 
 export const MAP_DIMENSIONS: Record<MapSize, { w: number; d: number; seats: number }> = {
-  cosy: { w: 20, d: 14, seats: 12 },
-  big: { w: 28, d: 18, seats: 24 },
+  cosy: { w: 26, d: 18, seats: 12 },
+  big: { w: 34, d: 24, seats: 24 },
 };
 
 /** The footprint after rotating: a quarter turn swaps width and depth. */
@@ -110,7 +110,7 @@ function fullLayout(): Draft {
       at('lamp', 19.2, 0.4),
     ],
     zones: [
-      { id: newId('zone'), name: 'Reading nook', kind: 'private', x: 0.2, z: 9.2, w: 4.2, d: 4.6 },
+      { id: newId('zone'), name: 'Fireside', kind: 'private', x: 0.2, z: 9.2, w: 4.2, d: 4.6 },
       { id: newId('zone'), name: 'Card corner', kind: 'private', x: 14.8, z: 8.6, w: 3.4, d: 3.2 },
       { id: newId('zone'), name: 'Open floor', kind: 'floor', x: 6.4, z: 9.8, w: 6, d: 2.6 },
     ],
@@ -123,9 +123,7 @@ export function initialDrafts(): Record<string, Draft> {
   cafe.pieces = cafe.pieces
     .filter((p) => p.kind !== 'tv')
     .map((p) => (p.kind === 'study-table' ? { ...p, kind: 'cafe-table' } : p.kind === 'sofa' ? { ...p, kind: 'cat-tower' } : p));
-  cafe.zones = cafe.zones
-    .filter((z) => z.name !== 'Card corner')
-    .map((z) => (z.name === 'Reading nook' ? { ...z, name: 'Window booth' } : z));
+  cafe.zones = cafe.zones.filter((z) => z.name !== 'Card corner').map((z) => (z.name === 'Fireside' ? { ...z, name: 'Window booth' } : z));
   return { library: fullLayout(), cafe, rooftop: fullLayout() };
 }
 

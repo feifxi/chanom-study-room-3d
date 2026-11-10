@@ -172,10 +172,10 @@ function Section({ title, count, children }: { title: string; count: number; chi
 }
 
 function People({ people, onRemove }: { people: User[]; onRemove: (u: User, block: boolean) => void }) {
-  if (!people.length) return null;
-  const myRooms = SERVERS.filter((s) => roleIn(s) || s.visibility !== 'private');
   const [giftTo, setGiftTo] = useState<string>();
   const [gifting, setGifting] = useState(false);
+  if (!people.length) return null;
+  const myRooms = SERVERS.filter((s) => roleIn(s) || s.visibility !== 'private');
   return (
     <div className="flex flex-col divide-y rounded-3xl border bg-card">
       <GiftPlusDialog key={giftTo} to={giftTo} open={gifting} onOpenChange={setGifting} />

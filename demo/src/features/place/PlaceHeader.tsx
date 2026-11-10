@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { BarChart3, Compass, Crown, House, LogOut, MessageCircle, Settings, ShieldCheck, ShoppingBag, Users } from 'lucide-react';
 import { SettingsDialog } from '@/components/app/SettingsDialog';
 import { Inbox } from './Inbox';
-import { Logo, LogoMark } from '@/components/Logo';
+import { Logo } from '@/components/Logo';
 import { UserAvatar } from '@/components/UserAvatar';
 import {
   DropdownMenu,
@@ -43,12 +43,12 @@ export function PlaceHeader() {
     <header className="flex h-14 flex-none items-center gap-2 px-1 sm:gap-4 sm:px-2">
       {/* Guests have no Home (it needs an account), so the logo takes them to Discover */}
       <Link href={viewer === 'guest' ? '/discover' : '/home'} aria-label="Connecta home" className="flex-none">
-        <Logo className="hidden sm:flex" />
-        <LogoMark className="sm:hidden" />
+        <Logo />
       </Link>
-      <nav className="flex min-w-0 items-center gap-1 overflow-x-auto [scrollbar-width:none]" aria-label="App">
+      {/* Phones get the tab bar at the bottom instead (PhoneTabs): five tabs don't fit beside the buttons */}
+      <nav className="hidden min-w-0 items-center gap-1 sm:flex" aria-label="App">
         {nav.map((n) => {
-          const active = n.href === '/home' ? path === '/home' : path.startsWith(n.href);
+          const active = isActive(n.href, path);
           return (
             <Link
               key={n.href}
@@ -83,6 +83,50 @@ export function PlaceHeader() {
         )}
       </div>
     </header>
+  );
+}
+
+const isActive = (href: string, path: string) => (href === '/home' ? path === '/home' : path.startsWith(href));
+
+/**
+ * The phone tab bar under Home's pages, like Instagram's or Discord's: thumb-reachable and every tab
+ * always visible. Guests have only Discover, so they get no bar.
+ */
+export function PhoneTabs() {
+  const path = usePathname();
+  const guest = useViewer() === 'guest';
+  // Inside a DM thread the composer owns the bottom edge (Instagram hides its tabs there too)
+  if (guest || /^\/home\/messages\/./.test(path)) return null;
+  return (
+    <nav
+      className="flex flex-none items-stretch justify-around rounded-3xl border bg-card px-1 pt-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] shadow-soft sm:hidden"
+      aria-label="App"
+    >
+      {NAV.map((n) => {
+        const active = isActive(n.href, path);
+        return (
+          <Link
+            key={n.href}
+            href={n.href}
+            aria-current={active ? 'page' : undefined}
+            className={cn(
+              'relative flex flex-1 flex-col items-center gap-0.5 rounded-2xl py-1.5 text-[10px] font-extrabold',
+              active ? 'text-primary' : 'text-muted-foreground',
+            )}
+          >
+            <span className={cn('grid h-7 w-12 place-items-center rounded-full transition-colors', active && 'bg-secondary')}>
+              <n.icon className="size-5" />
+            </span>
+            {n.label}
+            {!!n.badge && (
+              <span className="absolute top-0.5 left-1/2 ml-2 grid h-4 min-w-4 place-items-center rounded-full border-2 border-card bg-primary px-1 text-[9px] font-black text-primary-foreground">
+                {n.badge}
+              </span>
+            )}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
 

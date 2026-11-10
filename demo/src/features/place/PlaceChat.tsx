@@ -39,12 +39,15 @@ export function PlaceChat({ server }: { server: Server }) {
         >
           <ArrowLeft className="size-4" />
         </Link>
-        <span className={cn('grid size-11 flex-none place-items-center rounded-2xl text-xl', room.tint)}>{room.emoji}</span>
+        <span className={cn('grid size-9 flex-none place-items-center rounded-2xl text-lg sm:size-11 sm:text-xl', room.tint)}>
+          {room.emoji}
+        </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5 text-[15px] font-black">
             <span className="truncate">{room.name}</span>
             {room.ownerPlus && (
-              <span className="flex flex-none items-center gap-0.5 rounded-full bg-lavender px-1.5 text-[10px] font-black text-lavender-ink">
+              // Phones need the width for the room's name; the badge is only a perk label
+              <span className="hidden flex-none items-center gap-0.5 rounded-full bg-lavender px-1.5 text-[10px] font-black text-lavender-ink sm:flex">
                 <Crown className="size-3" /> Plus
               </span>
             )}
@@ -58,7 +61,13 @@ export function PlaceChat({ server }: { server: Server }) {
             {room.full ? 'inside · full' : 'inside'}
           </span>
         </span>
-        <Button size="icon-sm" variant="ghost" className="rounded-full text-primary" aria-label="Invite" onClick={() => setInvite(true)}>
+        <Button
+          size="icon-sm"
+          variant="ghost"
+          className="hidden rounded-full text-primary sm:inline-flex"
+          aria-label="Invite"
+          onClick={() => setInvite(true)}
+        >
           <UserPlus />
         </Button>
         <RoomMenu
@@ -71,10 +80,10 @@ export function PlaceChat({ server }: { server: Server }) {
         />
         {room.full ? (
           <Button className="h-10 rounded-full px-4 font-black sm:px-5" onClick={() => toast.success('We’ll tell you when a spot opens')}>
-            <Bell /> Full · notify me
+            <Bell /> Full<span className="hidden sm:inline"> · notify me</span>
           </Button>
         ) : (
-          <Button asChild className="h-10 rounded-full px-4 font-black sm:px-5">
+          <Button asChild className="h-10 rounded-full px-3 font-black sm:px-5">
             <Link href={walkInHref(room)}>
               <Play className="fill-current" /> Walk in
             </Link>

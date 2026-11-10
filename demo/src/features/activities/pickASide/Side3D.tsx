@@ -2,35 +2,36 @@
 
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
+import { areaRadius, type Area } from '../../map/types';
 import { LETTERS, ZONE_COLORS, sidesFor, type SideGame } from './game';
 
 /**
- * Pick a Side in the room (what everyone sees, from anywhere): the ring split into 2 or 4 coloured
- * zones, each with its letter and answer written on the floor. At the reveal the right zone stays lit
- * and the others fade; would-you-rather keeps both lit.
+ * Pick a Side in the room (what everyone sees, from anywhere): the open floor's rug split into 2 or 4
+ * coloured zones, each with its letter and answer written on the floor. At the reveal the right zone
+ * stays lit and the others fade; would-you-rather keeps both lit.
  *
- * Built in screen-aligned axes (turned 45° to face the camera), the same as `zoneAt`, so "A on the
- * left" in the HUD is on the left in the room.
+ * Zones follow the screen (turned 45° to face the camera), the same as `zoneAt`, so "A on the left"
+ * in the HUD is on the left in the room; the rug's edge is the zone's edge, whatever shape it is.
  */
-export function SideZones({ game, area }: { game: SideGame; area: { x: number; z: number; r: number } }) {
+export function SideZones({ game, area }: { game: SideGame; area: Area }) {
   const sides = sidesFor(game.mode);
   const q = game.questions[game.i];
   const revealing = game.stage === 'reveal';
+  const shapes = useMemo(() => zoneShapes(area, sides), [area, sides]);
+  const k = areaRadius(area) * 0.55;
   const zones = Array.from({ length: sides }, (_, i) => {
-    // Sector angles in the turned plane: x = screen right, y = screen up
-    const [start, length] = sides === 2 ? [i === 0 ? Math.PI / 2 : -Math.PI / 2, Math.PI] : QUAD[i]!;
-    const k = area.r * 0.55;
+    // Label spots in the turned plane: x = screen right, y = screen up
     const cx = sides === 2 ? (i === 0 ? -1 : 1) * k : (i % 2 === 0 ? -0.75 : 0.75) * k;
     const cy = sides === 2 ? 0 : (i < 2 ? 0.75 : -0.75) * k;
     const dim = revealing && game.mode !== 'wyr' && q?.right !== i;
-    return { i, start, length, cx, cy, dim };
+    return { i, cx, cy, dim };
   });
   return (
-    <group position={[area.x, 0.026, area.z]} rotation={[0, Math.PI / 4, 0]}>
+    <group position={[area.x, 0.026, area.z]}>
       <group rotation={[-Math.PI / 2, 0, 0]}>
         {zones.map((z) => (
           <mesh key={z.i} userData={{ dynamic: true }}>
-            <circleGeometry args={[area.r - 0.1, 40, z.start + 0.04, z.length - 0.08]} />
+            <shapeGeometry args={[shapes[z.i]!]} />
             <meshBasicMaterial
               color={z.dim ? '#b9b2bd' : ZONE_COLORS[z.i]}
               transparent
@@ -39,31 +40,83 @@ export function SideZones({ game, area }: { game: SideGame; area: { x: number; z
             />
           </mesh>
         ))}
-        {q &&
-          zones.map((z) => (
-            <FloorLabel
-              key={`${game.i}-${z.i}`}
-              x={z.cx}
-              y={z.cy}
-              letter={LETTERS[z.i]!}
-              text={q.answers[z.i] ?? ''}
-              color={ZONE_COLORS[z.i]!}
-              right={revealing && game.mode !== 'wyr' && q.right === z.i}
-              dim={z.dim}
-              small={sides === 4}
-            />
-          ))}
+      </group>
+      <group rotation={[0, Math.PI / 4, 0]}>
+        <group rotation={[-Math.PI / 2, 0, 0]}>
+          {q &&
+            zones.map((z) => (
+              <FloorLabel
+                key={`${game.i}-${z.i}`}
+                x={z.cx}
+                y={z.cy}
+                letter={LETTERS[z.i]!}
+                text={q.answers[z.i] ?? ''}
+                color={ZONE_COLORS[z.i]!}
+                right={revealing && game.mode !== 'wyr' && q.right === z.i}
+                dim={z.dim}
+                small={sides === 4}
+              />
+            ))}
+        </group>
       </group>
     </group>
   );
 }
 
-const QUAD: [number, number][] = [
-  [Math.PI / 2, Math.PI / 2], // A: top left
-  [0, Math.PI / 2], // B: top right
-  [Math.PI, Math.PI / 2], // C: bottom left
-  [(3 * Math.PI) / 2, Math.PI / 2], // D: bottom right
-];
+type Pt = [number, number];
+const GAP = 0.05;
+
+/** The rug's outline (inset a little), cut into screen-aligned halves or quarters. The open floor's four-colour rug uses the same cut. */
+export function zoneShapes(area: Area, sides: number): THREE.Shape[] {
+  const outline: Pt[] =
+    area.kind === 'circle'
+      ? Array.from({ length: 48 }, (_, i) => {
+          const a = (i / 48) * Math.PI * 2;
+          return [Math.cos(a) * (area.r - 0.1), Math.sin(a) * (area.r - 0.1)];
+        })
+      : [
+          [-area.w / 2 + 0.1, -area.d / 2 + 0.1],
+          [area.w / 2 - 0.1, -area.d / 2 + 0.1],
+          [area.w / 2 - 0.1, area.d / 2 - 0.1],
+          [-area.w / 2 + 0.1, area.d / 2 - 0.1],
+        ];
+  // Screen axes from room offsets (dx, dz): u = right, v = up
+  const u = ([dx, dz]: Pt) => (dx - dz) / Math.SQRT2;
+  const v = ([dx, dz]: Pt) => -(dx + dz) / Math.SQRT2;
+  const halfPlanes = (i: number): ((p: Pt) => number)[] => {
+    const left = (p: Pt) => -u(p) - GAP;
+    const right = (p: Pt) => u(p) - GAP;
+    if (sides === 2) return [i === 0 ? left : right];
+    const top = (p: Pt) => v(p) - GAP;
+    const bottom = (p: Pt) => -v(p) - GAP;
+    return [i % 2 === 0 ? left : right, i < 2 ? top : bottom];
+  };
+  return Array.from({ length: sides }, (_, i) => {
+    const poly = halfPlanes(i).reduce(clip, outline);
+    const shape = new THREE.Shape();
+    // The flat group maps shape (x, y) to room (dx, −dz)
+    poly.forEach(([dx, dz], k) => (k === 0 ? shape.moveTo(dx, -dz) : shape.lineTo(dx, -dz)));
+    shape.closePath();
+    return shape;
+  });
+}
+
+/** Sutherland–Hodgman: keep the part of the polygon where f ≥ 0. */
+function clip(poly: Pt[], f: (p: Pt) => number): Pt[] {
+  const out: Pt[] = [];
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i]!;
+    const b = poly[(i + 1) % poly.length]!;
+    const fa = f(a);
+    const fb = f(b);
+    if (fa >= 0) out.push(a);
+    if (fa >= 0 !== fb >= 0) {
+      const t = fa / (fa - fb);
+      out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]);
+    }
+  }
+  return out;
+}
 
 /** The letter and answer, painted on the floor (a canvas texture: no font files to load). */
 function FloorLabel({
@@ -114,7 +167,7 @@ function FloorLabel({
     return t;
   }, [letter, text, color, right]);
   useEffect(() => () => texture.dispose(), [texture]);
-  const w = small ? 1.2 : 1.55;
+  const w = small ? 1.3 : 1.7;
   return (
     <mesh position={[x, y, 0.01]} userData={{ dynamic: true }}>
       <planeGeometry args={[w, w / 2]} />

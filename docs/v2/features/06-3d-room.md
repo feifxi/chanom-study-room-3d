@@ -36,13 +36,16 @@ with client prediction (see the root `CLAUDE.md`).
 
 ## Private zones
 
-Areas built into the map (a reading nook, a booth, a card table). The demo's library has one: the
-**Reading nook** around the sofa.
+Areas built into the map (a fireside, a booth, a card table). The demo's library has two: the
+**Fireside** (the fireplace, two armchairs and a loveseat) and the **Window booth** (a bench under the
+bay window).
 
 - **Inside:** you hear only the people in the zone, at full volume however far apart. Bubbles said
   inside stay inside. People outside can't hear in, and you can't hear out.
-- **On the floor:** a soft purple tint and a dashed edge, so you see where it starts.
-- **Inside, a label at the top:** "🔒 🛋️ Reading nook · only people here can hear you".
+- **On the floor:** the zone is a rug; its edge flashes when you step on. A small hanging sign
+  reads "🔥 Fireside · private" so you know before you walk in.
+- **Inside, a label at the top:** "🔒 🔥 Fireside · only people here can hear you".
+- **From outside:** people in a zone you're not in show a 🔇 by their name, so you know you can't hear them.
 - **No locks** in v1: anyone can walk in, like a real café table.
 - A map can have several; the standard kit asks for at least 2 (feature 7).
 
@@ -100,7 +103,7 @@ Decided 2026-11-09: performance is checked now, while features are added, not at
 
 | Per frame  | Map's share | Each person                   |
 | ---------- | ----------- | ----------------------------- |
-| Draw calls | 120         | 6                             |
+| Draw calls | 130         | 6                             |
 | Triangles  | 150k        | 20k (battery saver: about 4k) |
 | Textures   | 32          | 1 (bone data)                 |
 | Our JS     | 8 ms total  |                               |
@@ -131,6 +134,26 @@ Measured on a Mac in headless Chrome (2026-11-09):
 | Smooth        | 6      | 58  | 1.8   | 135        | 90k       |
 | Smooth        | 102    | 50  | 2.6   | 479        | 1,463k    |
 | Battery saver | 102    | 30  | 3.3   | 502        | 421k      |
+
+**The three launch maps (2026-11-10):** zoomed all the way out, the library, café and rooftop each
+cost about 190–200 draw calls with almost nobody in, over budget, though the check at the opening
+zoom passed (part of the map was off screen). Two fixes:
+
+- **Static batches merge across colours** (`room3d/StaticBatch.tsx`): one batch per shading and
+  shadow flags, with each mesh's colour stored per vertex, instead of one batch per colour. A map's
+  batches went from ~84 draw calls to ~8 and look identical.
+- **`demo:perf` checks every map, zoomed all the way out** (the worst case), at 0, 50 and 100 extra
+  people, smooth and battery saver. `MAPS=cafe` runs one map.
+
+| Map (zoomed out, ~6 people) | Draw calls | Triangles |
+| --------------------------- | ---------- | --------- |
+| Library                     | 122 / 166  | 121k      |
+| Cat Café                    | 121 / 166  | 134k      |
+| Starry Rooftop              | 117 / 160  | 118k      |
+
+The biggest cost left in a map is the resident cats: each one is ~25 small toon meshes plus
+outlines (~85 draw calls for all of them). Merging a cat into skinned meshes like the characters is
+the next win if a map needs headroom (the Cat Café wants more cats).
 
 **Next, with the real maps** (each one is checked against the budget):
 

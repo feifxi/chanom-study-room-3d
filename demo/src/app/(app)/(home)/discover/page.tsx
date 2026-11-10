@@ -32,7 +32,7 @@ export default function DiscoverPage() {
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-10 p-5 sm:p-8">
       <header className="relative grid items-center gap-6 overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-mint via-sky to-lavender p-6 sm:p-10 md:grid-cols-[1fr_20rem]">
-        <span className="pointer-events-none absolute top-6 right-[36%] text-6xl opacity-25">🌏</span>
+        <span className="pointer-events-none absolute top-6 right-[36%] hidden text-6xl opacity-25 md:block">🌏</span>
         <div>
           <p className="flex items-center gap-2 text-xs font-black tracking-wider uppercase">
             <span className="size-2 animate-pulse rounded-full bg-online" /> 1,284 online · 213 rooms open

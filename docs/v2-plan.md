@@ -5,8 +5,11 @@ communities hang out, study and play together. This file is the overview. Each f
 spec in `docs/v2/features/`, written after the feature has been discussed in detail and approved
 in the demo (`demo/`, `pnpm --filter @study/demo demo:dev`, port 3100).
 
-Status (2026-11-09): features 1–11 and 14 are decided and built in the demo; 13 (flashcards) was
-dropped; feature 12 (card games, Werewolf) is paused mid-discussion. The demo is frontend-only with mock data. Nothing is deployed.
+Status (2026-11-10): features 1–11, 14 and 15 are decided and built in the demo; 13 (flashcards)
+was dropped; feature 12 (card games, Werewolf) is paused mid-discussion and is the last feature.
+All three launch maps (Cosy Library, Cat Café, Starry Rooftop) are built, each with its own layout,
+and a polish pass covered phone widths, guests and dark mode. The demo is frontend-only with mock
+data. Nothing is deployed. See [What's left](#whats-left).
 
 ## Why
 
@@ -303,6 +306,28 @@ The UI is approved in `demo/` first, then a spec is written to `docs/v2/features
 | 15  | Business and infra (done)                                 | [15-business-infra.md](v2/features/15-business-infra.md)               |
 
 Feature 3 was "Servers" before the move to rooms.
+
+## What's left
+
+Updated 2026-11-10, in order:
+
+1. **Feature 12: card games and Werewolf.** Paused mid-discussion; card proposals are ready,
+   Werewolf isn't discussed yet. Card tables and the Werewolf circle already sit in every map.
+2. **Port the demo to `apps/web`.** The stack moves to NestJS and Prisma first, then the port
+   checklist in [Porting the demo](#porting-the-demo-to-appsweb-dont-forget) (servers → rooms
+   rename, routes, demo-only code), then the infra in
+   [15-business-infra.md](v2/features/15-business-infra.md), then a playtest, then launch.
+
+Deferred on purpose (no date yet):
+
+- **Map polish:** odd furniture, overlapping rugs, more café cats, overlapping name labels
+  ([07-maps.md](v2/features/07-maps.md#map-polish-backlog-noted-2026-11-10-do-later)).
+- **Cheaper cats:** merge each resident cat into skinned meshes before adding more
+  ([06-3d-room.md](v2/features/06-3d-room.md#performance)).
+- **Pictures from the team:** thumbnails and images for the maps and web pages.
+- **Blender models** for maps and characters, with baked lighting (07-maps.md, Art pipeline).
+- **Real-app performance:** lower detail for far-away people, the map editor's budget check, a test
+  on a mid-range Android phone before launch.
 
 ## Open questions
 

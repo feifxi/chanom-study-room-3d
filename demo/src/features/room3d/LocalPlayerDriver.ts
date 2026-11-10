@@ -1,18 +1,6 @@
 import * as THREE from 'three';
-import {
-  CLIENT_SEND_HZ,
-  GACHA_MACHINE,
-  NPC_REACH,
-  RUN_SPEED,
-  SEATS,
-  SEAT_BY_ID,
-  SIT_REACH,
-  WALK_SPEED,
-  findPath,
-  npcRadius,
-  resolveCollisions,
-  type PlayerView,
-} from '@study/shared';
+import { CLIENT_SEND_HZ, NPC_REACH, RUN_SPEED, SIT_REACH, WALK_SPEED, npcRadius, type PlayerView } from '@study/shared';
+import { activeMap } from '../map/active';
 import type { LocalMotion } from './Avatar';
 import type { StudyRoom } from './roomSession';
 import { reconcile, recordMove, type SentMove } from './reconcile';
@@ -73,11 +61,12 @@ export function findHint(room: StudyRoom, x: number, z: number): Hint | null {
     if (n.kind !== 'cat' || n.following === room.sessionId) continue;
     consider({ kind: 'pet', npcId: id, name: n.name }, Math.hypot(n.x - x, n.z - z), NPC_REACH);
   }
-  consider({ kind: 'machine' }, Math.hypot(GACHA_MACHINE.x - x, GACHA_MACHINE.z - z), GACHA_MACHINE.reach);
+  const machine = activeMap().gacha;
+  consider({ kind: 'machine' }, Math.hypot(machine.x - x, machine.z - z), machine.reach);
 
   const taken = new Set<string>();
   for (const [, o] of room.state.players ?? []) if (o.seatId) taken.add(o.seatId);
-  for (const s of SEATS) {
+  for (const s of activeMap().seats) {
     if (!taken.has(s.id)) consider({ kind: 'seat', seatId: s.id }, Math.hypot(s.x - x, s.z - z), SIT_REACH * 0.8);
   }
   return best;
@@ -223,7 +212,7 @@ export class LocalPlayerDriver {
   /** Seated: the server owns our position. Any movement key stands us up. */
   private staySeated(p: PlayerView, wantsToMove: number) {
     const m = this.motion.current;
-    const seat = SEAT_BY_ID.get(p.seatId);
+    const seat = activeMap().seatById.get(p.seatId);
     if (seat) Object.assign(m, { x: seat.x, z: seat.z, yaw: seat.yaw });
     m.moving = false;
     const now = performance.now();
@@ -238,7 +227,7 @@ export class LocalPlayerDriver {
     this.followServer(p, dt);
     if (ix || iz) this.stopPath();
     else if (this.dest && this.needsPath) {
-      this.path = findPath({ x: m.x, z: m.z }, this.dest);
+      this.path = activeMap().nav.findPath({ x: m.x, z: m.z }, this.dest);
       this.needsPath = false;
       if (!this.path.length) this.stopPath();
     }
@@ -263,7 +252,7 @@ export class LocalPlayerDriver {
     // Shift runs; the joystick always walks (a thumb nearly always pushes it to the edge)
     const speed = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') ? RUN_SPEED : WALK_SPEED;
     const next = { x: m.x + move.x * speed * dt, z: m.z + move.z * speed * dt };
-    resolveCollisions(next, this.obstaclesAround());
+    activeMap().resolveCollisions(next, this.obstaclesAround());
     Object.assign(m, { x: next.x, z: next.z, yaw: Math.atan2(move.x, move.z) });
     return true;
   }
@@ -282,7 +271,7 @@ export class LocalPlayerDriver {
       return this.path.length > 0;
     }
     const next = { x: m.x + (dx / d) * stepLen, z: m.z + (dz / d) * stepLen };
-    resolveCollisions(next, this.obstaclesAround());
+    activeMap().resolveCollisions(next, this.obstaclesAround());
     const moved = Math.hypot(next.x - m.x, next.z - m.z);
     // Someone standing in the way: stop after a moment instead of pushing forever
     this.stuckFor = moved < stepLen * 0.3 ? this.stuckFor + dt : 0;

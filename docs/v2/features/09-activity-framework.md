@@ -47,8 +47,9 @@ is (decided 2026-11-09).
 - **Rounds:** people who arrive mid-round play the next one (until then they watch in 3D).
 - **Drop-in:** step in any time.
 - A Big map can have more of a spot (2 card tables = 2 card games).
-- The demo's library got a **round card table with 4 stools** (front right) as a placeholder; each
-  game's feature finishes its spot in the map editor.
+- The demo's library has **two oak card tables with 4 stools** by the door (2026-11-10 redesign);
+  only the first runs the card activity until feature 12 runs one game per table. The **Werewolf
+  circle** (12 cushions round a lantern table) is built; its game is feature 12.
 
 ## The flow
 

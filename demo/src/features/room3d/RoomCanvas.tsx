@@ -4,7 +4,6 @@ import { useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { ROOM, SPAWN } from '@study/shared';
 import { useClickToWalk } from '@/lib/controls';
 import { pressClosedPanel } from '../room/useDismiss';
 import { GachaMachine } from '../npc/GachaMachine';
@@ -14,15 +13,14 @@ import type { DayLight } from './dayCycle';
 import { FrameDriver } from './FrameDriver';
 import { LabelProjector, type LabelBoard } from './labels';
 import { perfMeter } from './perf';
-import { Library } from './Library';
 import { LocalController, type Hint } from './LocalController';
 import type { LocalPlayerDriver } from './LocalPlayerDriver';
+import { activeMap } from '../map/active';
 import type { MockRoom } from './mockRoom';
 import type { Quality } from './quality';
 import type { Bubble } from './roomSession';
 import { StaticShadows } from './StaticShadows';
-import { ZONES } from './zones';
-import { ZOOM, ZoomBridge } from './ZoomControl';
+import { startZoom, ZOOM, ZoomBridge } from './ZoomControl';
 
 interface Props {
   room: MockRoom;
@@ -68,18 +66,20 @@ export function RoomCanvas({
 }: Props) {
   const ids = useMemo(() => [...room.state.players.keys()], [room]);
   const npcIds = useMemo(() => [...room.state.npcs.keys()], [room]);
+  const map = activeMap();
+  const SPAWN = map.spawn;
   return (
     <Canvas
       shadows="percentage"
       orthographic
       dpr={[1, quality.dpr]}
       frameloop="never"
-      camera={{ position: [SPAWN.x + 20, 18, SPAWN.z + 20], zoom: ZOOM.start, near: 0.1, far: 200 }}
+      camera={{ position: [SPAWN.x + 20, 18, SPAWN.z + 20], zoom: startZoom(), near: 0.1, far: 200 }}
       gl={{ preserveDrawingBuffer: true }}
     >
       <FrameDriver fps={quality.fps} onSlow={onSlow} />
       <StaticShadows lightKey={`${light.sunPosition.join(',')}|${light.sunIntensity.toFixed(2)}|${quality.shadows}`} />
-      <Library light={light} shadows={quality.shadows} />
+      <map.Scene light={light} shadows={quality.shadows} />
       <OrbitControls
         makeDefault
         target={[SPAWN.x, 0.6, SPAWN.z]}
@@ -93,7 +93,6 @@ export function RoomCanvas({
       <MockTicker room={room} />
       <LocalController room={room} motion={motion} onHint={onHint} onOpenMachine={() => {}} driverRef={driverRef} />
       <ClickToWalk driverRef={driverRef} />
-      <ZoneMarks />
       {children}
       <GachaMachine lastSummon={undefined} />
       {npcIds.map((id) => (
@@ -151,35 +150,13 @@ function ClickToWalk({ driverRef }: { driverRef: React.RefObject<LocalPlayerDriv
           driverRef.current?.goTo(e.point.x, e.point.z);
         }}
       >
-        <planeGeometry args={[ROOM.width, ROOM.depth]} />
+        <planeGeometry args={[activeMap().room.width, activeMap().room.depth]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
       <mesh ref={marker} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
         <ringGeometry args={[0.18, 0.3, 32]} />
         <meshBasicMaterial color="#ff6fa8" transparent opacity={0.85} depthWrite={false} />
       </mesh>
-    </>
-  );
-}
-
-/** Private zones: a soft tint and a dashed-looking edge on the floor, so you can see where they start. */
-function ZoneMarks() {
-  return (
-    <>
-      {ZONES.map((zn) => (
-        <group key={zn.id} position={[zn.x, 0.025, zn.z]} rotation={[-Math.PI / 2, 0, 0]}>
-          <mesh>
-            <circleGeometry args={[zn.r, 64]} />
-            <meshBasicMaterial color="#b9a2ff" transparent opacity={0.12} depthWrite={false} />
-          </mesh>
-          {Array.from({ length: 36 }, (_, i) => (
-            <mesh key={i} rotation={[0, 0, (i / 36) * Math.PI * 2]}>
-              <ringGeometry args={[zn.r - 0.06, zn.r, 4, 1, 0, (Math.PI * 2) / 72]} />
-              <meshBasicMaterial color="#8f6bff" transparent opacity={0.7} depthWrite={false} />
-            </mesh>
-          ))}
-        </group>
-      ))}
     </>
   );
 }

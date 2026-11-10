@@ -1,5 +1,8 @@
 import { PLAYER_RADIUS } from './constants';
 import { BOUNDS, OBSTACLES } from './layout';
+import type { World } from './navigation';
+
+const V1: World = { bounds: BOUNDS, obstacles: OBSTACLES };
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
@@ -25,11 +28,12 @@ export interface Walker {
 
 /**
  * Push a walker of `radius` out of furniture, other walkers and the walls.
- * Mutates `p`. Used by clients (prediction) and the server (NPC movement).
+ * Mutates `p`. Used by clients (prediction) and the server (NPC movement). `world` is the map
+ * (V1's library unless given), so V2 maps pass their own.
  */
-export function resolveCollisions(p: { x: number; z: number }, others: Iterable<Walker>, radius = PLAYER_RADIUS) {
+export function resolveCollisions(p: { x: number; z: number }, others: Iterable<Walker>, radius = PLAYER_RADIUS, world: World = V1) {
   const R = radius;
-  for (const o of OBSTACLES) {
+  for (const o of world.obstacles) {
     if (o.kind === 'circle') {
       pushOutOfCircle(p, o.x, o.z, o.r + R);
       continue;
@@ -58,6 +62,6 @@ export function resolveCollisions(p: { x: number; z: number }, others: Iterable<
     }
   }
   for (const q of others) pushOutOfCircle(p, q.x, q.z, R + (q.r ?? PLAYER_RADIUS));
-  p.x = clamp(p.x, BOUNDS.minX, BOUNDS.maxX);
-  p.z = clamp(p.z, BOUNDS.minZ, BOUNDS.maxZ);
+  p.x = clamp(p.x, world.bounds.minX, world.bounds.maxX);
+  p.z = clamp(p.z, world.bounds.minZ, world.bounds.maxZ);
 }

@@ -18,6 +18,7 @@ import {
 import { BUILT_IN, deckKindFor, type Deck } from './pickASide/decks';
 import { ASK_MS, REVEAL_MS, newGame, sidesFor, zoneAt, zoneCenter, type SideGame, type SideMode } from './pickASide/game';
 import { SPOTS, spotById, type Game, type Spot, type SpotId } from './spots';
+import { areaEdgePoint, areaInnerPoint, inArea, isGameSeat } from '../map/types';
 
 /**
  * The activity framework (feature 9), played by the demo the way the game server will run it.
@@ -175,7 +176,7 @@ export class ActivityHub {
     const p = this.room.state.players.get(id);
     if (!p) return false;
     if (spot.seats) return spot.seats.includes(p.seatId);
-    return Math.hypot(p.x - spot.area.x, p.z - spot.area.z) <= spot.area.r;
+    return inArea(spot.area, p.x, p.z);
   }
 
   /** The spot you're part of right now (lobby or round), if any. */
@@ -656,7 +657,7 @@ export class ActivityHub {
     if (spot.seats && this.room.state.players.get(id)?.seatId) {
       if (id === 'me') this.room.send('stand', {});
       // Scripted people wander off a little, out of the area
-      else this.room.sendTo(id, { x: spot.area.x - 2.6, z: spot.area.z - 1.4 });
+      else this.room.sendTo(id, areaEdgePoint(spot.area, Math.atan2(-2.6, -1.4), 1.0));
     }
     this.changed();
   }
@@ -699,7 +700,7 @@ export class ActivityHub {
   private freePeople() {
     const busy = new Set(SPOTS.flatMap((s) => [...this.spots[s.id].players, ...this.spots[s.id].nextRound]));
     return [...this.room.state.players.entries()]
-      .filter(([id, p]) => id !== 'me' && !busy.has(id) && !this.room.traveling(id) && !p.seatId.startsWith('game-'))
+      .filter(([id, p]) => id !== 'me' && !busy.has(id) && !this.room.traveling(id) && !isGameSeat(p.seatId))
       .sort(([, a], [, b]) => Number(a.status === 'focus') - Number(b.status === 'focus'))
       .map(([id]) => id);
   }
@@ -771,12 +772,11 @@ export class ActivityHub {
 /** Just outside the ring, where people knocked out stand and watch. */
 function edgeSpot(spot: Spot, id: string) {
   const a = 2.2 + (id.charCodeAt(0) % 5) * 0.5;
-  return { x: spot.area.x + Math.sin(a) * (spot.area.r + 0.6), z: spot.area.z + Math.cos(a) * (spot.area.r + 0.6) };
+  return areaEdgePoint(spot.area, a, 0.6);
 }
 
 /** A place inside a spot's ring for the i-th person to stand. */
 function ringSpot(spot: Spot, i: number) {
   const a = 0.8 + i * 1.9;
-  const r = spot.area.r * 0.55;
-  return { x: spot.area.x + Math.sin(a) * r, z: spot.area.z + Math.cos(a) * r };
+  return areaInnerPoint(spot.area, a, 0.55);
 }

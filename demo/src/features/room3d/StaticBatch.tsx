@@ -5,8 +5,9 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /**
- * Merges the static meshes inside it into one mesh per look (colour, shading, shadow flags), so
- * the room costs a few dozen draw calls instead of hundreds. The original meshes stay in the scene
+ * Merges the static meshes inside it into one mesh per shading and shadow flags, with each mesh's
+ * colour stored per vertex, so a whole map costs a handful of draw calls instead of hundreds. (One
+ * batch per colour cost ~85 draw calls on a cosy map, more than the rest of the room together.) The original meshes stay in the scene
  * but hidden, so the JSX that builds the room is unchanged.
  *
  * Skipped (they change at runtime, or someone looks them up): named meshes, instanced meshes,
@@ -58,12 +59,17 @@ function buildBatches(group: THREE.Group) {
   group.traverse((o) => {
     if (!isBatchable(o) || !o.visible) return;
     const m = o.material;
-    const key = [m.color.getHexString(), m.flatShading, m.side, o.castShadow, o.receiveShadow].join('|');
-    // Non-indexed and normal/uv-only, so geometries of different shapes can be merged together
+    const key = [m.flatShading, m.side, o.castShadow, o.receiveShadow].join('|');
+    // Non-indexed and position/normal-only, so geometries of different shapes can be merged together
     const g = (o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone()).applyMatrix4(
       new THREE.Matrix4().multiplyMatrices(toLocal, o.matrixWorld),
     );
-    for (const name of Object.keys(g.attributes)) if (name !== 'position' && name !== 'normal' && name !== 'uv') g.deleteAttribute(name);
+    for (const name of Object.keys(g.attributes)) if (name !== 'position' && name !== 'normal') g.deleteAttribute(name);
+    // The material's colour (already linear, like vertex colours) on every vertex
+    const n = g.attributes.position!.count;
+    const colors = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) colors.set([m.color.r, m.color.g, m.color.b], i * 3);
+    g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     const bucket = buckets.get(key) ?? { sample: o, geometries: [] };
     bucket.geometries.push(g);
     buckets.set(key, bucket);
@@ -77,7 +83,7 @@ function buildBatches(group: THREE.Group) {
     if (!merged) continue;
     const src = sample.material;
     // Lambert shading is cheaper than PBR and looks the same on these matte, single-colour props
-    const material = new THREE.MeshLambertMaterial({ color: src.color, flatShading: src.flatShading, side: src.side });
+    const material = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: src.flatShading, side: src.side });
     const mesh = new THREE.Mesh(merged, material);
     mesh.castShadow = sample.castShadow;
     mesh.receiveShadow = sample.receiveShadow;

@@ -16,7 +16,8 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { SEAT_BY_ID, SPAWN } from '@study/shared';
+import { activeMap, mapDefFor, setActiveMap } from '../map/active';
+import { areaEdgePoint, areaInnerPoint, inArea } from '../map/types';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SettingsDialog, type SettingsTab } from '@/components/app/SettingsDialog';
@@ -78,19 +79,19 @@ import { isGuestViewer, isTeam, roleIn } from '@/lib/viewer';
 /** Scripted crowd: where each mock person sits or walks. */
 const PRESETS: Record<string, Omit<MockPerson, 'id' | 'name' | 'look'>> = {
   mai: { seatId: 't00-b0', status: 'focus', subject: 'Calculus', focusMin: 32 },
-  jod: { seatId: 't01-f1', status: 'focus', subject: 'Kuy pawa', focusMin: 9 },
+  jod: { seatId: 'l0-f1', status: 'focus', subject: 'Kuy pawa', focusMin: 9 },
   ploy: {
     path: [
-      { x: -2.5, z: 4.2 },
-      { x: 7.3, z: 4.2 },
-      { x: 7.3, z: -0.3 },
-      { x: -2.5, z: -0.3 },
+      { x: -6.5, z: 1.3 },
+      { x: 6.8, z: 1.3 },
+      { x: 6.8, z: 8.0 },
+      { x: 0.8, z: 7.2 },
     ],
   },
-  ken: { seatId: 'sofa-1' },
+  ken: { seatId: 'lounge-1' },
   nam: { seatId: 't10-b1', status: 'focus', subject: 'Physics', focusMin: 18 },
-  pim: { at: { x: 3, z: 3 } },
-  bow: { seatId: 'sofa-0' },
+  pim: { at: { x: 0.5, z: 3.0 } },
+  bow: { seatId: 'fire-0' },
 };
 const GUEST_COLOR = '#9c8aa0';
 /** No keys, clicks or moves for this long: you're away (💤, mic off). */
@@ -120,9 +121,16 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   );
   const myName = guest ? guestAs || 'Guest' : ME.name;
 
+  // The owner sets the room's look and time of day for everyone (feature 7); Common rooms use the defaults
+  const lookId = server.id === 'public' ? `public:${roomDef.id}` : server.id;
+  const look = useRoomLook(lookId, roomDef.mapId);
+  // Your predicted position; the driver snaps it to the server's (the map's door) on its first update
+  const motion = useRef<LocalMotion>({ x: mapDefFor(roomDef.mapId).spawn.x, z: mapDefFor(roomDef.mapId).spawn.z, yaw: 0, moving: false });
   // Demo only: fill the room up to a crowd of 50 or 100, in 3D and in the people list
   const crowd = useCrowd();
   const room = useMemo(() => {
+    // The map first: seats, paths and the scene all come from it (a live map change rebuilds the room)
+    const map = setActiveMap(look.mapId);
     const regulars = roomDef.people.length ? roomDef.people : ['ploy', 'ken'];
     const people: MockPerson[] = regulars.map((id) => ({ id, name: USERS[id]!.name, look: USERS[id]!.look, ...PRESETS[id] }));
     if (roomDef.allowGuests && !guest)
@@ -130,12 +138,12 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
         id: 'guest-mint',
         name: 'Mint',
         look: { hair: '#8fdcc0', outfit: '#12a37f', accessory: 'none' },
-        at: { x: -6.8, z: 5.6 },
+        at: { x: -8.2, z: 0.8 },
       });
     // A guest walks in with the character they picked on the invite page (client-only, so storage is safe here)
     const extra = crowd ? crowdPeople(Math.max(0, crowd - people.length - 1)) : [];
-    return new MockRoom({ name: myName, look: guest ? (loadGuest()?.look ?? GUEST_LOOK) : getMyLook() }, people, extra);
-  }, [roomDef, guest, myName, crowd]);
+    return new MockRoom(map, { name: myName, look: guest ? (loadGuest()?.look ?? GUEST_LOOK) : getMyLook() }, people, extra);
+  }, [roomDef, guest, myName, crowd, look.mapId]);
 
   // A look saved in Settings → My character swaps your character live for everyone (no rejoin)
   const myLook = useMyLook();
@@ -144,16 +152,12 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     if (me && !guest && myLook.version > 0) me.look = JSON.stringify(myLook.look);
   }, [room, guest, myLook]);
 
-  const motion = useRef<LocalMotion>({ x: SPAWN.x, z: SPAWN.z, yaw: 0, moving: false });
   const driverRef = useRef<LocalPlayerDriver | null>(null);
   // Zoom buttons ask; the canvas applies it on its next frame and reports back (scroll zoom too)
   const zoomRequest = useRef<number | null>(null);
   const [zoom, setZoom] = useState(100);
   const board = useMemo(() => new LabelBoard(), []);
-  // The owner sets the room's look and time of day for everyone (feature 7); Common rooms use the defaults
-  const lookId = server.id === 'public' ? `public:${roomDef.id}` : server.id;
-  const look = useRoomLook(lookId, roomDef.mapId);
-  // After a live map change everyone stands up (seats belong to the old map); the demo has only one 3D map
+  // After a live map change everyone stands up (seats belong to the old map)
   const arrive = useCallback(() => room.send('stand', {}), [room]);
   const light = useDayLight(look.time === 'clock' ? 'auto' : look.time);
   const [saver, setSaver] = useState(isTouchScreen);
@@ -330,7 +334,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
               : p.status === 'break'
                 ? '☕ On a break'
                 : p.seatId
-                  ? SEAT_BY_ID.get(p.seatId)?.kind === 'sofa'
+                  ? activeMap().seatById.get(p.seatId)?.kind === 'sofa'
                     ? '🛋️ On the sofa'
                     : '🪑 At a desk'
                   : p.moving
@@ -355,7 +359,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const people = crowd ? [...realPeople, ...crowdPeople(Math.max(0, crowd - realPeople.length))] : realPeople;
   const roomName = server.id === 'public' ? roomDef.name : server.name;
   const micIds = new Set(realPeople.filter((p) => p.micOn).map((p) => p.id));
-  const seatKind = me.seatId ? SEAT_BY_ID.get(me.seatId)?.kind : undefined;
+  const seatKind = me.seatId ? activeMap().seatById.get(me.seatId)?.kind : undefined;
   const seated = !!seatKind;
   const atGameTable = isGameSeat(me.seatId);
 
@@ -388,18 +392,13 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const anyLive = SPOTS.some((s) => !s.freeZone && (hub.spots[s.id].phase === 'gathering' || hub.spots[s.id].phase === 'playing'));
   // Standing spots start with E (tables start when you sit): you're in the ring and it's free
   const floor = spotById('floor');
-  const atFreeFloor =
-    !seated &&
-    roomDef.roomWideGames &&
-    hub.spots.floor.phase === 'free' &&
-    Math.hypot(me.x - floor.area.x, me.z - floor.area.z) <= floor.area.r;
+  const atFreeFloor = !seated && roomDef.roomWideGames && hub.spots.floor.phase === 'free' && inArea(floor.area, me.x, me.z);
   const tv = spotById('tv');
-  const atFreeTv = !common && !seated && hub.spots.tv.phase === 'free' && Math.hypot(me.x - tv.area.x, me.z - tv.area.z) <= tv.area.r;
+  const atFreeTv = !common && !seated && hub.spots.tv.phase === 'free' && inArea(tv.area, me.x, me.z);
   const boardSpot = spotById('board');
-  const atFreeBoard =
-    !seated && hub.spots.board.phase === 'free' && Math.hypot(me.x - boardSpot.area.x, me.z - boardSpot.area.z) <= boardSpot.area.r;
+  const atFreeBoard = !seated && hub.spots.board.phase === 'free' && inArea(boardSpot.area, me.x, me.z);
   const art = spotById('art');
-  const atFreeArt = !seated && hub.spots.art.phase === 'free' && Math.hypot(me.x - art.area.x, me.z - art.area.z) <= art.area.r;
+  const atFreeArt = !seated && hub.spots.art.phase === 'free' && inArea(art.area, me.x, me.z);
   const openBoard = () => {
     hub.openBoard('me');
     setBoardMini(false);
@@ -414,14 +413,15 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     if (!d) return;
     if (spot.seats) {
       const free = spot.seats
-        .map((id) => SEAT_BY_ID.get(id)!)
+        .map((id) => activeMap().seatById.get(id)!)
         .filter((st) => room.seatFree(st.id))
         .sort((a, b) => Math.hypot(a.x - me.x, a.z - me.z) - Math.hypot(b.x - me.x, b.z - me.z))[0];
       if (!free) return toast(`${spot.name} is full. Watch from nearby, you’ll see the game on the table.`);
       d.goTo(free.out.x, free.out.z, true);
     } else {
       const a = Math.atan2(me.x - spot.area.x, me.z - spot.area.z);
-      d.goTo(spot.area.x + Math.sin(a) * spot.area.r * 0.4, spot.area.z + Math.cos(a) * spot.area.r * 0.4, true);
+      const to = areaInnerPoint(spot.area, a, 0.4);
+      d.goTo(to.x, to.z, true);
     }
   };
   /** Leave an activity: seats stand you up (the hub does it); out of a ring, you step outside it. */
@@ -429,7 +429,8 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     hub.leave(spot.id, 'me');
     if (!spot.seats) {
       const a = Math.atan2(me.x - spot.area.x, me.z - spot.area.z) || Math.PI;
-      driverRef.current?.goTo(spot.area.x + Math.sin(a) * (spot.area.r + 0.8), spot.area.z + Math.cos(a) * (spot.area.r + 0.8));
+      const to = areaEdgePoint(spot.area, a, 0.8);
+      driverRef.current?.goTo(to.x, to.z);
     }
   };
   // What E does where you're standing. Kept in a ref by an effect that runs on every commit: a single
@@ -618,6 +619,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
         {/* The 3D view */}
         <div className="relative min-w-0 flex-1 overflow-hidden">
           <RoomCanvas
+            key={look.mapId}
             room={room}
             myLookVersion={guest ? 0 : myLook.version}
             myLook={guest || !myLook.version ? undefined : JSON.stringify(myLook.look)}
@@ -633,7 +635,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
             onZoom={setZoom}
             onSlow={saver ? undefined : goSaver}
           >
-            <ActivityLayer3D spots={hub.spots} watch={hub.watch} side={hub.side} board={hub.board} />
+            <ActivityLayer3D spots={hub.spots} watch={hub.watch} side={hub.side} board={hub.board} motion={motion} />
           </RoomCanvas>
           {/* Photos never show names: labels hide in photo mode so the preview matches the photo */}
           <div className={cn(photo && 'hidden')}>

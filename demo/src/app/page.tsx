@@ -123,7 +123,9 @@ export default function Landing() {
         <section className="bg-cocoa text-white">
           <div className="mx-auto grid max-w-6xl gap-8 px-4 py-14 sm:px-6 md:grid-cols-[1fr_1.4fr] md:items-center">
             <h2 className="text-3xl font-black tracking-[-0.03em] text-balance sm:text-4xl">
-              Chat apps are where you talk. <span className="text-secondary">Connecta is where you hang out.</span>
+              Chat apps are where you talk.{' '}
+              {/* Secondary turns deep in dark mode, so the band (dark in both themes) uses the brighter brand pink there */}
+              <span className="text-secondary dark:text-primary">Connecta is where you hang out.</span>
             </h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               {[

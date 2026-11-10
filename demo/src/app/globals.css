@@ -371,6 +371,12 @@
   body {
     @apply bg-background text-foreground antialiased;
   }
+  /* No one-word last lines on phone-width headings ("…feels / it") */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
   button:not(:disabled),
   [role='button']:not(:disabled) {
     cursor: pointer;

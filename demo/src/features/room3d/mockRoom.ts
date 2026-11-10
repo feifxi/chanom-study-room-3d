@@ -1,19 +1,6 @@
-import {
-  NAP_SPOTS,
-  SEAT_BY_ID,
-  SPAWN,
-  STARTER_CAT,
-  WALK_SPEED,
-  findPath,
-  randomLook,
-  randomWalkable,
-  type AvatarLook,
-  type NpcView,
-  type PlayerView,
-} from '@study/shared';
+import { WALK_SPEED, randomLook, type AvatarLook, type NpcView, type PlayerView } from '@study/shared';
 import { questProgress } from '@/lib/quests';
-// Registers the demo's game table with the shared seats and collisions before anything uses them
-import '../activities/spots';
+import type { MapDef } from '../map/types';
 import type { StudyRoom } from './roomSession';
 
 /**
@@ -74,15 +61,22 @@ export class MockRoom implements StudyRoom {
   private trips = new Map<string, { path: { x: number; z: number }[]; seatId?: string }>();
 
   constructor(
+    /** The map the room is in: seats, paths and where the cats start. */
+    readonly map: MapDef,
     me: { name: string; look: AvatarLook },
     people: MockPerson[],
     /** Demo crowd (50/100 people) to see how the 3D room copes: two in three wander, the rest stand around. */
     crowd: { id: string; name: string }[] = [],
   ) {
+    const { spawn: SPAWN, seatById: SEAT_BY_ID, napSpots: NAP_SPOTS, starterCat: STARTER_CAT } = map;
+    const { findPath, randomWalkable } = map.nav;
     this.state.players.set('me', player({ name: me.name, look: JSON.stringify(me.look), x: SPAWN.x, z: SPAWN.z }));
     const now = Date.now();
+    const taken = new Set<string>();
     for (const p of people) {
-      const seat = p.seatId ? SEAT_BY_ID.get(p.seatId) : undefined;
+      // Presets name the library's seats; in another map they take a seat of the same sort
+      const seat = p.seatId ? (SEAT_BY_ID.get(p.seatId) ?? this.seatLike(p.seatId, taken)) : undefined;
+      if (seat) taken.add(seat.id);
       const start = seat ?? p.path?.[0] ?? p.at ?? SPAWN;
       this.state.players.set(
         p.id,
@@ -114,6 +108,14 @@ export class MockRoom implements StudyRoom {
     this.state.npcs.set('tofu', cat('Tofu', 'orange', STARTER_CAT.x, STARTER_CAT.z, 0, 'idle'));
   }
 
+  /** A free seat of the same sort as a seat id from another map: soft seats stay soft, desks stay desks. */
+  private seatLike(seatId: string, taken: Set<string>) {
+    const soft = /^(lounge|fire|sofa|booth|tent|deck|cinema)-/.test(seatId);
+    return this.map.seats.find(
+      (s) => !taken.has(s.id) && (soft ? s.kind === 'sofa' : s.kind === 'chair' && this.map.deskSeats.includes(s)),
+    );
+  }
+
   send(type: string, payload: unknown) {
     const me = this.state.players.get('me')!;
     if (type === 'move') {
@@ -121,7 +123,7 @@ export class MockRoom implements StudyRoom {
       if (me.seatId) return this.stand(me);
       Object.assign(me, { x: m.x, z: m.z, yaw: m.yaw, moving: m.moving, moveSeq: m.seq ?? me.moveSeq });
     } else if (type === 'sit') {
-      const seat = SEAT_BY_ID.get((payload as { seatId: string }).seatId);
+      const seat = this.map.seatById.get((payload as { seatId: string }).seatId);
       const taken = [...this.state.players.values()].some((p) => p.seatId === seat?.id);
       if (seat && !taken) Object.assign(me, { seatId: seat.id, x: seat.x, z: seat.z, yaw: seat.yaw, moving: false });
     } else if (type === 'stand') {
@@ -148,9 +150,9 @@ export class MockRoom implements StudyRoom {
     if (!p || id === 'me') return;
     this.walkers.delete(id);
     if (p.seatId) this.stand(p);
-    const seat = seatId ? SEAT_BY_ID.get(seatId) : undefined;
+    const seat = seatId ? this.map.seatById.get(seatId) : undefined;
     const to = seat ? seat.out : dest;
-    const path = findPath({ x: p.x, z: p.z }, to);
+    const path = this.map.nav.findPath({ x: p.x, z: p.z }, to);
     this.trips.set(id, { path: path.length ? path : [to], seatId });
   }
 
@@ -167,7 +169,7 @@ export class MockRoom implements StudyRoom {
   }
 
   private stand(me: PlayerView) {
-    const seat = SEAT_BY_ID.get(me.seatId);
+    const seat = this.map.seatById.get(me.seatId);
     if (!seat) return;
     Object.assign(me, { seatId: '', x: seat.out.x, z: seat.out.z });
   }
@@ -189,7 +191,7 @@ export class MockRoom implements StudyRoom {
       t.path.shift();
       if (t.path.length) continue;
       this.trips.delete(id);
-      const seat = t.seatId ? SEAT_BY_ID.get(t.seatId) : undefined;
+      const seat = t.seatId ? this.map.seatById.get(t.seatId) : undefined;
       const taken = [...this.state.players.values()].some((o) => o.seatId === seat?.id);
       if (seat && !taken) Object.assign(p, { seatId: seat.id, x: seat.x, z: seat.z, yaw: seat.yaw, moving: false });
       else p.moving = false;

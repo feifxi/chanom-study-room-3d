@@ -16,8 +16,8 @@ through the big screen.
 
 ## 📺 Watch together
 
-A **drop-in** activity at the **Big screen** spot (every map has one; the library's is on the left
-wall between the Buddy Machine and the reading nook).
+A **drop-in** activity at the **Big screen** spot (every map has one; the library's is the TV
+lounge in the front-left corner: a TV on a console, an L-shaped sofa, beanbags and a rug).
 
 ### How it works
 

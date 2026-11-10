@@ -7,6 +7,7 @@ import type { NpcView, PlayerView } from '@study/shared';
 import { npcKey, type Bubble, type Reaction } from './roomSession';
 import { minutesSince, useNow } from '@/lib/time';
 import { STATUS_ICON } from '../focus/status';
+import { zoneAt } from './zones';
 
 const v = new THREE.Vector3();
 
@@ -92,6 +93,12 @@ function Emotes({ target, reactions }: { target: string; reactions: Reaction[] }
   );
 }
 
+/** They're inside a private zone and you aren't in the same one. */
+function inOtherZone(p: { x: number; z: number }, me: { x: number; z: number } | undefined) {
+  const theirs = zoneAt(p.x, p.z);
+  return !!theirs && (!me || zoneAt(me.x, me.z) !== theirs);
+}
+
 export function LabelLayer({ board, ids, players, localId, bubbles, voice, clockOffset, npcIds, npcs, reactions }: LayerProps) {
   // Re-render every second: status/subject come from synced state, which React doesn't watch
   const now = useNow(1000);
@@ -136,6 +143,8 @@ export function LabelLayer({ board, ids, players, localId, bubbles, voice, clock
             >
               {voice.stage?.has(id) && <span className="mr-1">📢</span>}
               {voice.away?.has(id) && <span className="mr-1">💤</span>}
+              {/* In a private zone you're not in: you can see them but can't hear them (feature 6) */}
+              {!isLocal && inOtherZone(player, players.get(localId)) && <span className="mr-1">🔇</span>}
               {/* Deafened (can't hear the room), like Discord's crossed headphones, so nobody talks to them in vain */}
               {voice.deafened?.has(id) && (
                 <HeadphoneOff className="mr-1 inline size-3 -translate-y-px text-[#ffb3c4]" aria-label="Deafened" />
