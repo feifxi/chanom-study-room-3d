@@ -19,21 +19,23 @@ a time; different spots run at once (the TV, a card game and Pick a Side).
 The Activities list names each one by **what you do**, with the place under it ("At the open floor ·
 press E to start"), so nobody has to guess what an "art corner" is.
 
-| In the list    | Spot (place)    | Joining           | Kind    | Room-wide |
-| -------------- | --------------- | ----------------- | ------- | --------- |
-| Watch together | Big screen      | step onto the rug | drop-in | no        |
-| Card games     | Card table      | sit on a stool    | rounds  | no        |
-| Werewolf       | Werewolf circle | sit on a cushion  | rounds  | no        |
-| Draw & Guess   | Art corner      | step onto the rug | rounds  | no        |
-| Pick a Side    | Open floor      | step onto the rug | rounds  | yes       |
+| In the list    | Spot (place) | Joining           | Kind    | Room-wide |
+| -------------- | ------------ | ----------------- | ------- | --------- |
+| Watch together | Big screen   | step onto the rug | drop-in | no        |
+| Card games     | Card table   | sit on a stool    | rounds  | no        |
+| Draw & Guess   | Art corner   | sit at the table¹ | rounds  | no        |
+| Pick a Side    | Open floor   | step onto the rug | rounds  | yes       |
+
+¹ The library's art corner is a round table with 10 stools (sit to join, like the card tables);
+maps without an art table still stand at easels and press E.
 
 - **List order** is the table's: the most inviting first. A lobby you can join floats to the top,
   then anything live.
-- **Werewolf has its own circle**, apart from the card tables, so a werewolf night and a card game
-  can run at once. Cards and Werewolf are feature 12; the demo lists Werewolf as coming.
+- **Card games are feature 12.** (Werewolf was dropped on 2026-11-20; its cushion circle stays in
+  every map as a lantern circle to hang out at, not a spot.)
 - **The whiteboard is a free zone, not an activity** (like the Buddy Machine): not in the list, no
-  live dot, no strip. Walk up, press E, draw, walk away. It still uses the drop-in machinery (who's
-  there, cleared when everyone leaves).
+  live dot, no strip. It's always on: walk up, draw, walk away (no E). It still uses the drop-in
+  machinery for who's there.
 - **Rounds:** people who arrive mid-round play the next one. **Drop-in:** step in any time.
 - Every map has **two card tables**; until feature 12 only the first runs the card activity. A Big
   map can have more of a spot.
@@ -70,7 +72,7 @@ press E to start"), so nobody has to guess what an "art corner" is.
 - **Out of the area for 30 s** (walked off, connection dropped) also counts as leaving; a banner shows
   "Come back to stay in the game · 0:24". One rule for both, which matters on phones.
 - **Leaving mid-round = you're out** (a loss). When only one player is left, they win.
-- Each game says what "out" means for it (Werewolf: you die; Draw & Guess: your turn is skipped).
+- Each game says what "out" means for it (cards: your hand is out; Draw & Guess: your turn is skipped).
 - **Turn-based games:** a turn timer; missing 2 turns in a row puts you out, so nobody stalls a game.
 - **No spectator mode** and no bots: you watch by standing nearby, because every spot shows its game
   in 3D.
@@ -104,12 +106,20 @@ press E to start"), so nobody has to guess what an "art corner" is.
 | **Big panel** | needs detail or precise input; voice and the room keep going     | your hand of cards, the drawing canvas, a video |
 
 Rule: **what you see up close goes in 2D, what others see from afar shows in 3D.** Some games need map
-pieces too (the Werewolf circle); only the Connecta team builds maps.
+pieces too (the card tables, the art table); only the Connecta team builds maps.
 
 ## The shared UI pieces
 
 - **Activities** (dock): every spot with its live state (green dot gathering, pink playing) and **Go
   there**; the dock button gets a dot while anything is live.
+- **Spot tags** in the room: each activity spot names itself with a pill floating just over the
+  names of the people there (drawn on top of them, so a crowd never hides it; any higher and the
+  camera's tilt carries it off over the next spot). Idle: "🃏 Card games", shown only within
+  about 6 m of you. Live, from anywhere: green "🃏 Card games · 2 waiting" while gathering, pink
+  "🤔 Would you rather · 5 playing" (or "📺 Watch together · 3 watching") once it starts. Not on the
+  whiteboard (a quiet side spot), and not on the second card table until feature 12.
+  **Hidden from people inside the spot** (on its rug or in its game): the panel and the top strip
+  already say what's on.
 - **Lobby card** (above the dock): game and spot, faces with the host's crown, empty seats as "+",
   player count, the host's game picker, 📣 Call everyone, ▶ Start (or "You're in. Mai starts the game").
 - **Top strip** while playing: "🃏 Slave · 3 playing · 1 next round · End · Leave".

@@ -399,9 +399,10 @@
     backdrop-filter: blur(8px);
   }
 
+  /* Radius = the buttons' 14px + the 8px padding, so the corners run parallel instead of pinching */
   .dock {
     background: var(--cocoa);
-    border-radius: 24px;
+    border-radius: 22px;
     box-shadow: 0 14px 36px rgb(20 10 18 / 0.4);
   }
 

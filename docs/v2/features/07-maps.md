@@ -12,20 +12,20 @@ kit, so every activity works in every map, but each map has its own layout**, so
 
 ## The standard kit
 
-| Kit piece       | Needs                       | Cosy Library             | Cat Café                   | Starry Rooftop       |
-| --------------- | --------------------------- | ------------------------ | -------------------------- | -------------------- |
-| Study spots     | 12+ seats (Cosy), 24+ (Big) | 4-seat and long tables   | bar, window bar, tables    | picnic desks         |
-| Lounge          | a corner to hang out        | TV lounge                | TV lounge, cat tower       | campfire circle      |
-| Private zones   | at least 2                  | Fireside, Window booth   | Window booth, Corner booth | Tent, Telescope deck |
-| Big screen      | watch together              | TV on a console          | TV on the back wall        | outdoor cinema sheet |
-| Card tables     | card games                  | 2                        | 2                          | 2                    |
-| Werewolf circle | 12 seats                    | cushions round a lantern | front left                 | right side           |
-| Open floor      | 12 m²+ for Pick a Side      | four-colour rug          | dance floor by the bar     | four-colour deck     |
-| Whiteboard      | draw together               | board in an oak frame    | menu board                 | chalk wall           |
-| Art corner      | Draw & Guess                | easels and gallery wall  | under the cat photo wall   | front left           |
-| Buddy Machine   | study buddies               | by the door              | by the till                | by the stairwell     |
-| Nap spots       | where the cats sleep        | hearth, shelf, sofa      | cat beds, cat tower        | hammock, tent, fire  |
-| Spawn point     | where you walk in           | front door               | side door with a bell      | stairwell door       |
+| Kit piece      | Needs                       | Cosy Library             | Cat Café                   | Starry Rooftop       |
+| -------------- | --------------------------- | ------------------------ | -------------------------- | -------------------- |
+| Study spots    | 12+ seats (Cosy), 24+ (Big) | 4-seat and long tables   | bar, window bar, tables    | picnic desks         |
+| Lounge         | a corner to hang out        | TV lounge                | TV lounge, cat tower       | campfire circle      |
+| Private zones  | at least 2                  | Fireside, Window booth   | Window booth, Corner booth | Tent, Telescope deck |
+| Big screen     | watch together              | TV on a console          | TV on the back wall        | outdoor cinema sheet |
+| Card tables    | card games                  | 2                        | 2                          | 2                    |
+| Lantern circle | 12 cushions to hang out     | cushions round a lantern | front left                 | right side           |
+| Open floor     | 12 m²+ for Pick a Side      | four-colour rug          | dance floor by the bar     | four-colour deck     |
+| Whiteboard     | draw together               | board in an oak frame    | menu board                 | chalk wall           |
+| Art corner     | Draw & Guess                | round table, 10 stools   | under the cat photo wall   | front left           |
+| Buddy Machine  | study buddies               | by the door              | by the till                | by the stairwell     |
+| Nap spots      | where the cats sleep        | hearth, shelf, sofa      | cat beds, cat tower        | hammock, tent, fire  |
+| Spawn point    | where you walk in           | front door               | side door with a bell      | stairwell door       |
 
 ## Templates and sizes
 
@@ -46,25 +46,26 @@ kit, so every activity works in every map, but each map has its own layout**, so
 - **Quiet at the back, loud at the front.** Study farthest from the door; games and talk near it;
   private zones tucked against walls.
 - **The rug is the area.** Every activity spot and private zone is a rug, square where the thing has
-  sides, round only for circle games (Werewolf). No floating rings: stepping on flashes the edge, and
-  a spot that's gathering or playing keeps a glowing edge. The whiteboard shows no outline until you
-  are close.
-- **Private zones have three cues:** a hanging sign, a pill at the top while you're inside, and 🔇 on
-  people inside seen from outside.
+  sides, round only where the thing is round (the art table, the lantern circle). No floating rings: stepping on flashes the edge, and
+  a spot that's gathering or playing keeps a glowing edge. The whiteboard is the exception: no rug, no
+  outline, no flash; its area is just the strip in front of the board.
+- **Private zones have three cues:** a floating "🔇 Private zone" tag over the zone's middle (a hanging plaque in the Café
+  and Rooftop for now), a pill at the top while you're inside, and 🔇 on people inside seen from
+  outside.
 - **Areas never overlap**, and decor rugs stay clear of activity rugs.
 
 ## The three maps
 
 The numbers are in each data file: `demo/src/features/map/library.ts`, `cafe.ts`, `rooftop.ts`.
 
-**📚 Cosy Library** (75 seats for a room capped at 50)
+**📚 Cosy Library** (76 seats for a room capped at 50)
 
-| Where | Places                                                                                                                      |
-| ----- | --------------------------------------------------------------------------------------------------------------------------- |
-| Back  | Study block: 4 small tables and a 10-seat and an 8-seat long table under the arched window; the **Window booth** in the bay |
-| Left  | Whiteboard over a 3.2 m rug; the **Fireside** (fireplace, armchairs, loveseat); the **TV lounge** (TV, L sofa, beanbags)    |
-| Front | The **open floor** (6 × 5.4 m four-colour rug); the door with a mat, tea cart, coat stand and the Buddy Machine             |
-| Right | Two **card tables** (oak, felt, pendant lamps); the **Werewolf circle**; the **art corner** (4 easels, paint cart, gallery) |
+| Where | Places                                                                                                                                                               |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Back  | Study block: 4 small tables and a 10-seat and an 8-seat long table under the arched window; the **Window booth** in the bay                                          |
+| Left  | A 3 m whiteboard (no rug); the **Fireside** (fireplace, armchairs, loveseat); the **TV lounge** (TV, a sofa, beanbags and floor cushions to look at)                 |
+| Front | The **open floor** (5.4 m square four-colour rug); the door with a mat, tea cart, coat stand and the Buddy Machine                                                   |
+| Right | Two **card tables** (walnut, burgundy leather, a deck and score pad); the **lantern circle**; the **art corner** (a round table with 10 stools, paint cart, gallery) |
 
 **🐈 Cat Café**
 
@@ -73,7 +74,7 @@ The numbers are in each data file: `demo/src/features/map/library.ts`, `cafe.ts`
 | Back   | The **bar** (7 stools, a shared screen, pastry case, coffee machine, till, Buddy Machine); the **menu board**; the **art corner** under a cat photo wall |
 | Left   | A glass front: the **TV lounge** in the corner, the 6-stool **window bar**, the **door with a bell**                                                     |
 | Middle | The **open floor**: a dance floor in front of the bar                                                                                                    |
-| Front  | An 8-seat communal table, two 4-seat and four bistro tables; the **Werewolf circle** front left; two **card tables** front right                         |
+| Front  | An 8-seat communal table, two 4-seat and four bistro tables; the **lantern circle** front left; two **card tables** front right                          |
 | Right  | The **Window booth** and **Corner booth** (4 each, facing benches)                                                                                       |
 
 Cat beds, a cat wheel, tiles behind the bar, Edison bulbs, bunting and hanging plants.
@@ -86,7 +87,7 @@ behind a parapet, with the city beyond and stars at night.
 | The block | You come out of the **stairwell door**; the Buddy Machine and **chalk wall** beside it; the **cinema sheet** on its front with floor cushions |
 | Left      | Four **picnic desks** (24 seats) under string lights; the **art corner** front left                                                           |
 | Middle    | The **campfire circle** (8 log benches) and the **open deck** in front                                                                        |
-| Right     | Two **card tables**, the **Werewolf circle**, the **Tent** (back right) and the **Telescope deck** (front right), a hammock                   |
+| Right     | Two **card tables**, the **lantern circle**, the **Tent** (back right) and the **Telescope deck** (front right), a hammock                    |
 
 ## What owners change (Room settings → Map & look)
 
@@ -140,6 +141,11 @@ what blocks playtests before the Blender models (which redo most of it):
   ([06-3d-room.md](06-3d-room.md#performance)).
 - **Name labels overlap** when two people stand together (Mook on the café doormat). Start scripted
   people apart; labels could nudge apart.
+- **Café and Rooftop, as the library got on 2026-11-20:** floating zone tags instead of plaques
+  (`floatingZoneTags`), card tables in the map's own style instead of casino felt (`CardTables`
+  `look`), a square open-floor rug so Pick a Side's quarters are squares, a seated art table instead
+  of easels (`artTable`), the whiteboard bigger, with no rug and its area cut to a strip in front of it, no hanging lamps cluttering the camera's view, and table props checked to
+  sit on their tables.
 - **General pass:** spacing, clear walkways from the door, props clipping into walls, day and night
   lighting balance.
 

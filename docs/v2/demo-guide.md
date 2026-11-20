@@ -59,11 +59,11 @@ old concept; users never see it, and the port renames it. Don't add new "server"
 A map is two halves, paired in `features/map/active.ts`:
 
 - **Data** (`features/map/library.ts`, `cafe.ts`, `rooftop.ts`): size, bounds, spawn, seats,
-  obstacles, private zones, activity areas (rugs: `rect` or `circle`), card tables, the Werewolf
+  obstacles, private zones, activity areas (rugs: `rect` or `circle`), card tables, the lantern
   circle, TV and whiteboard places, nap spots, and its own navigator from `createNavigator`.
   Types and area helpers are in `features/map/types.ts`.
 - **Scene** (`room3d/Library.tsx`, `Cafe.tsx`, `Rooftop.tsx`): the 3D build. `Library.tsx` exports the
-  shared props and palette (Box, Cyl, Rug, Bulbs, Plant, ZoneSign, WerewolfCircle…).
+  shared props and palette (Box, Cyl, Rug, Bulbs, Plant, ZoneSign, LanternCircle…).
 
 Data files never import their scene (that cycle crashed the module loader), which is why they meet
 in `active.ts`. `RoomView` calls `setActiveMap(look.mapId)` before building the mock room; everything

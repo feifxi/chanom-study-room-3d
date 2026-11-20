@@ -25,7 +25,7 @@ import {
   RUG_GREEN_EDGE,
   Rug,
   WALNUT,
-  WerewolfCircle,
+  LanternCircle,
   YELLOW,
   ZoneSign,
   seededRandom,
@@ -60,8 +60,8 @@ import {
   STAIRWELL,
   STAIR_DOOR,
   TENT,
-  WOLF,
-  WOLF_SEATS,
+  CIRCLE,
+  CIRCLE_SEATS,
   ZONES,
 } from '../map/rooftop';
 
@@ -477,7 +477,7 @@ function StringLightPosts() {
   );
 }
 
-/** Every glowing thing: string lights along the cords, city windows, lantern glass, pendants, the Werewolf lantern. */
+/** Every glowing thing: string lights along the cords, city windows, lantern glass, pendants, the lantern circle. */
 function RooftopBulbs({ lamps }: { lamps: number }) {
   const bulbs = useMemo<Bulb[]>(() => {
     const list: Bulb[] = [];
@@ -493,7 +493,7 @@ function RooftopBulbs({ lamps }: { lamps: number }) {
     for (const l of LANTERNS) list.push({ x: l.x, y: 0.3, z: l.z, s: 2.2, color: '#ffd27a' });
     list.push({ x: DECK.lamp.x, y: 1.8, z: DECK.lamp.z, s: 2.2, color: '#ffd27a' });
     for (const t of CARD_TABLES) list.push({ x: t.x, y: 1.7, z: t.z, s: 1.2, color: '#fff1b0' });
-    list.push({ x: WOLF.x, y: 0.72, z: WOLF.z, s: 2.4, color: '#ffd27a' });
+    list.push({ x: CIRCLE.x, y: 0.72, z: CIRCLE.z, s: 2.4, color: '#ffd27a' });
     list.push({ x: GACHA_MACHINE.x - 1.2, y: 2.85, z: GACHA_MACHINE.z + 0.2, s: 1.4, color: '#fff1b0' });
     // City windows, a few per block
     const rand = seededRandom(7);
@@ -582,7 +582,7 @@ export function Rooftop({ light, shadows = true }: { light: DayLight; shadows?: 
         <Tent />
         <TelescopeDeck lamps={lamps} />
         <CardTables />
-        <WerewolfCircle wolf={WOLF} seats={WOLF_SEATS} lamps={lamps} />
+        <LanternCircle circle={CIRCLE} seats={CIRCLE_SEATS} lamps={lamps} />
         <ArtCorner area={ART_AREA} easels={EASELS} cart={PAINT_CART} gallery={GALLERY} />
         <Hammock />
         {LANTERNS.map((l, i) => (

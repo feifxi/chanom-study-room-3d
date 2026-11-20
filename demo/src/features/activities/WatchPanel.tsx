@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Maximize2, Minimize2, Pause, Play, Plus, SkipForward, Volume1, Volume2, VolumeX, X } from 'lucide-react';
+import { Maximize2, Minimize2, MonitorUp, Pause, Play, Plus, SkipForward, Volume1, Volume2, VolumeX, X } from 'lucide-react';
 import { useDismiss } from '../room/useDismiss';
+import { canShareScreen, isTouchScreen } from '@/lib/screen';
 import { cn } from '@/lib/utils';
-import { watchPosition, type Video, type WatchState } from './hub';
+import { watchPosition, type ScreenShare, type Video, type WatchState } from './hub';
+import { myShareStream } from './screenShare';
 
 /**
  * Watch together (feature 10): the big panel layer. The 3D screen only shows what's on for people
@@ -113,6 +115,8 @@ export function WatchPanel({
   onEnded,
   onAdd,
   onRemove,
+  onShare,
+  onStopShare,
 }: {
   watch: WatchState;
   who: (id: string) => string;
@@ -124,6 +128,8 @@ export function WatchPanel({
   onEnded: (videoId: string) => void;
   onAdd: (v: Omit<Video, 'by'>) => void;
   onRemove: (i: number) => void;
+  onShare: () => void;
+  onStopShare: () => void;
 }) {
   const panel = useDismiss<HTMLElement>(!mini, () => onMini(true));
   const host = useRef<HTMLDivElement>(null);
@@ -217,6 +223,9 @@ export function WatchPanel({
 
   const pos = watchPosition(watch);
   const live = duration === 0 || !Number.isFinite(duration);
+  const share = watch.share;
+  const mine = share?.by === 'me';
+  const shareName = share && (mine ? 'Your' : `${who(share.by)}’s`);
 
   return (
     <section
@@ -232,6 +241,7 @@ export function WatchPanel({
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <div className="relative aspect-video overflow-hidden rounded-xl bg-black">
             <div ref={host} className="absolute inset-0 [&>*]:h-full [&>*]:w-full" />
+            {share && <SharePicture share={share} name={who(share.by)} />}
             {mini ? (
               // The small player's picture is one big "make it bigger" button
               <button onClick={() => onMini(false)} aria-label="Make it bigger" className="absolute inset-0 hover:bg-white/10" />
@@ -250,44 +260,75 @@ export function WatchPanel({
             )}
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <IconBtn label={watch.paused ? 'Play' : 'Pause'} onClick={() => onPause(!watch.paused)}>
-              {watch.paused ? <Play className="size-4 fill-current" /> : <Pause className="size-4 fill-current" />}
-            </IconBtn>
-            {!mini && (
-              <>
-                <span className="w-12 text-right font-mono text-[11px] text-muted-foreground tabular-nums">{clock(pos)}</span>
-                <input
-                  type="range"
-                  min={0}
-                  max={live ? 1 : Math.floor(duration)}
-                  value={live ? 1 : Math.min(Math.floor(pos), Math.floor(duration))}
-                  disabled={live}
-                  onChange={(e) => onSeek(Number(e.target.value))}
-                  aria-label="Seek"
-                  className="min-w-0 flex-1 accent-[var(--primary)]"
-                />
-                <span className="w-12 font-mono text-[11px] text-muted-foreground tabular-nums">{live ? 'LIVE' : clock(duration)}</span>
-              </>
-            )}
-            {mini && <span className="min-w-0 flex-1 truncate text-xs font-bold">{watch.now?.title}</span>}
-            <IconBtn label="Skip" onClick={onSkip}>
-              <SkipForward className="size-4" />
-            </IconBtn>
-            {!mini && <VolumeControl volume={volume} onChange={setVolume} />}
-            <IconBtn label={mini ? 'Make it bigger' : 'Shrink to the corner'} onClick={() => onMini(!mini)}>
-              {mini ? <Maximize2 className="size-4" /> : <Minimize2 className="size-4" />}
-            </IconBtn>
-          </div>
+          {share ? (
+            <div className="flex items-center gap-1.5">
+              <MonitorUp className="ml-1.5 size-4 flex-none text-primary" />
+              <span className="min-w-0 flex-1 truncate text-xs font-bold">
+                {shareName} screen
+                {!mini && <span className="font-semibold text-muted-foreground"> · {share.audio ? '🔊 with sound' : '🔇 no sound'}</span>}
+              </span>
+              {/* Your own screen plays muted for you (no echo); everyone else has their volume */}
+              {!mini && !mine && share.audio && <VolumeControl volume={volume} onChange={setVolume} />}
+              {mine && (
+                <button
+                  onClick={onStopShare}
+                  className="flex-none rounded-full bg-destructive px-3 py-1.5 text-xs font-extrabold text-white"
+                >
+                  Stop sharing
+                </button>
+              )}
+              <IconBtn label={mini ? 'Make it bigger' : 'Shrink to the corner'} onClick={() => onMini(!mini)}>
+                {mini ? <Maximize2 className="size-4" /> : <Minimize2 className="size-4" />}
+              </IconBtn>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <IconBtn label={watch.paused ? 'Play' : 'Pause'} onClick={() => onPause(!watch.paused)}>
+                {watch.paused ? <Play className="size-4 fill-current" /> : <Pause className="size-4 fill-current" />}
+              </IconBtn>
+              {!mini && (
+                <>
+                  <span className="w-12 text-right font-mono text-[11px] text-muted-foreground tabular-nums">{clock(pos)}</span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={live ? 1 : Math.floor(duration)}
+                    value={live ? 1 : Math.min(Math.floor(pos), Math.floor(duration))}
+                    disabled={live}
+                    onChange={(e) => onSeek(Number(e.target.value))}
+                    aria-label="Seek"
+                    className="min-w-0 flex-1 accent-[var(--primary)]"
+                  />
+                  <span className="w-12 font-mono text-[11px] text-muted-foreground tabular-nums">{live ? 'LIVE' : clock(duration)}</span>
+                </>
+              )}
+              {mini && <span className="min-w-0 flex-1 truncate text-xs font-bold">{watch.now?.title}</span>}
+              <IconBtn label="Skip" onClick={onSkip}>
+                <SkipForward className="size-4" />
+              </IconBtn>
+              {!mini && <VolumeControl volume={volume} onChange={setVolume} />}
+              <IconBtn label={mini ? 'Make it bigger' : 'Shrink to the corner'} onClick={() => onMini(!mini)}>
+                {mini ? <Maximize2 className="size-4" /> : <Minimize2 className="size-4" />}
+              </IconBtn>
+            </div>
+          )}
         </div>
 
         {!mini && (
           <aside className="flex flex-col gap-2 lg:w-[280px] lg:flex-none">
-            <div className="px-1">
-              <p className="text-[11px] font-black text-muted-foreground">Now playing</p>
-              <p className="line-clamp-2 text-sm font-extrabold">{watch.now?.title}</p>
-              {watch.now && <p className="text-[11px] text-muted-foreground">put on by {who(watch.now.by)}</p>}
-            </div>
+            {share ? (
+              <div className="px-1">
+                <p className="text-[11px] font-black text-muted-foreground">Sharing now</p>
+                <p className="text-sm font-extrabold">{shareName} screen</p>
+                {watch.now && <p className="line-clamp-2 text-[11px] text-muted-foreground">Then “{watch.now.title}” carries on</p>}
+              </div>
+            ) : (
+              <div className="px-1">
+                <p className="text-[11px] font-black text-muted-foreground">Now playing</p>
+                <p className="line-clamp-2 text-sm font-extrabold">{watch.now?.title}</p>
+                {watch.now && <p className="text-[11px] text-muted-foreground">put on by {who(watch.now.by)}</p>}
+              </div>
+            )}
             <div className="flex min-h-0 flex-1 flex-col gap-1 rounded-xl bg-muted/60 p-2">
               <p className="px-1 text-[11px] font-black text-muted-foreground">
                 Up next {watch.queue.length > 0 && `· ${watch.queue.length}`}
@@ -308,14 +349,66 @@ export function WatchPanel({
                   </div>
                 ))}
               </div>
-              <div className="mt-auto">
+              <div className="mt-auto flex flex-col gap-1.5">
                 <AddVideo onAdd={onAdd} compact />
+                {!share && <ShareScreenButton onShare={onShare} compact />}
               </div>
             </div>
           </aside>
         )}
       </div>
     </section>
+  );
+}
+
+/**
+ * A shared screen on the stage. Your own share shows your live capture (muted: you'd hear yourself
+ * twice). In the demo nobody else really shares, so their screens are a pretend slide.
+ */
+function SharePicture({ share, name }: { share: ScreenShare; name: string }) {
+  const video = useRef<HTMLVideoElement>(null);
+  const stream = share.by === 'me' ? myShareStream() : null;
+  useEffect(() => {
+    if (video.current) video.current.srcObject = stream;
+  }, [stream]);
+  if (stream) return <video ref={video} autoPlay muted playsInline className="absolute inset-0 size-full bg-black object-contain" />;
+  return (
+    <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#2b2f5c] to-[#4b2d55] p-6 text-white">
+      <div className="w-full max-w-[520px] rounded-xl bg-white/10 p-4 shadow-lg ring-1 ring-white/15">
+        <div className="mb-3 flex gap-1.5">
+          {['#ff8a8a', '#ffd36e', '#8fe3a1'].map((c) => (
+            <span key={c} className="size-2.5 rounded-full" style={{ background: c }} />
+          ))}
+        </div>
+        <p className="text-lg font-black">📊 Group project · slide 3</p>
+        <div className="mt-3 flex flex-col gap-2">
+          {[90, 72, 80].map((w) => (
+            <span key={w} className="h-2.5 rounded-full bg-white/25" style={{ width: `${w}%` }} />
+          ))}
+        </div>
+      </div>
+      <p className="absolute bottom-2 text-[11px] font-bold text-white/70">{name}’s screen · a pretend picture in the demo</p>
+    </div>
+  );
+}
+
+/** Share your screen on the TV. Phones can't (browsers don't let them), so it says so instead. */
+export function ShareScreenButton({ onShare, compact }: { onShare: () => void; compact?: boolean }) {
+  const can = canShareScreen() && !isTouchScreen();
+  return (
+    <div className="flex flex-col gap-0.5">
+      <button
+        onClick={onShare}
+        disabled={!can}
+        className={cn(
+          'flex items-center justify-center gap-1.5 rounded-full border bg-card px-3 text-xs font-extrabold hover:bg-muted disabled:opacity-45',
+          compact ? 'h-8' : 'h-9',
+        )}
+      >
+        <MonitorUp className="size-3.5" /> Share your screen
+      </button>
+      {!can && <p className="px-2 text-[11px] text-muted-foreground">Phones can’t share their screen. You can still watch.</p>}
+    </div>
   );
 }
 

@@ -1,5 +1,5 @@
 import { createNavigator, resolveCollisions as resolveIn, type Obstacle, type Seat, type Walker, type World } from '@study/shared';
-import { cardSeats, circle, rect, wolfSeats, zoneAtIn, type CardTable, type MapData, type Werewolf, type Zone } from './types';
+import { cardSeats, circle, rect, circleSeats, zoneAtIn, type CardTable, type MapData, type CushionCircle, type Zone } from './types';
 
 /**
  * The Starry Rooftop map (feature 7, built 2026-11-10): a 26 × 18 m terrace with its own layout.
@@ -7,7 +7,7 @@ import { cardSeats, circle, rect, wolfSeats, zoneAtIn, type CardTable, type MapD
  * the Buddy Machine and the chalk wall are beside it, and the outdoor cinema sheet hangs on its
  * front. Everything else is open to the sky behind a parapet and railings, with the city beyond.
  * Picnic desks under string lights on the left, the campfire circle in the middle, the open deck in
- * front, the tent (private) in the back-right corner, the Werewolf circle on the right, the telescope
+ * front, the tent (private) in the back-right corner, the lantern circle on the right, the telescope
  * deck (private) front right, the art corner front left, card tables by the chalk wall.
  * Rugs (decking, gravel, mats) are the areas. Units are metres; +z faces the camera.
  *
@@ -55,6 +55,7 @@ const CINEMA_SEATS: Seat[] = CINEMA.cushions.map((c, i) => ({
   z: c.z,
   yaw: 0,
   out: { x: c.x, z: c.z + 0.7 },
+  low: true,
 }));
 
 // ---------- Chalk wall by the stairs (the whiteboard) ----------
@@ -172,7 +173,7 @@ const DECK_SEATS: Seat[] = [
   })),
 ];
 
-// ---------- Card tables, Werewolf circle, art corner ----------
+// ---------- Card tables, lantern circle, art corner ----------
 
 export const CARD_TABLES: CardTable[] = [
   { id: 'game1', x: 5.2, z: -5.8, r: 0.62, area: rect(5.2, -5.8, 3.0, 3.0) },
@@ -180,8 +181,8 @@ export const CARD_TABLES: CardTable[] = [
 ];
 const CARD_SEATS: Seat[] = CARD_TABLES.flatMap(cardSeats);
 
-export const WOLF: Werewolf = { x: 9.6, z: 0.6, tableR: 0.6, cushionR: 1.55, area: circle(9.6, 0.6, 2.6) };
-export const WOLF_SEATS: Seat[] = wolfSeats(WOLF);
+export const CIRCLE: CushionCircle = { x: 9.6, z: 0.6, tableR: 0.6, cushionR: 1.55, area: circle(9.6, 0.6, 2.6) };
+export const CIRCLE_SEATS: Seat[] = circleSeats(CIRCLE);
 
 export const ART_AREA = rect(-10.5, 6.8, 4.2, 3.6);
 export const EASELS = [
@@ -227,7 +228,7 @@ export const ZONES: Zone[] = [
 
 // ---------- Seats, collisions, cats ----------
 
-export const SEATS: Seat[] = [...DESK_SEATS, ...CINEMA_SEATS, ...FIRE_SEATS, ...TENT_SEATS, ...DECK_SEATS, ...CARD_SEATS, ...WOLF_SEATS];
+export const SEATS: Seat[] = [...DESK_SEATS, ...CINEMA_SEATS, ...FIRE_SEATS, ...TENT_SEATS, ...DECK_SEATS, ...CARD_SEATS, ...CIRCLE_SEATS];
 export const SEAT_BY_ID: ReadonlyMap<string, Seat> = new Map(SEATS.map((s) => [s.id, s]));
 
 const box = (minX: number, maxX: number, minZ: number, maxZ: number): Obstacle => ({ kind: 'box', minX, maxX, minZ, maxZ });
@@ -244,7 +245,7 @@ export const OBSTACLES: Obstacle[] = [
   disc(DECK.telescope.x, DECK.telescope.z, 0.4),
   disc(DECK.lamp.x, DECK.lamp.z, 0.25),
   ...CARD_TABLES.map((t) => disc(t.x, t.z, t.r)),
-  disc(WOLF.x, WOLF.z, WOLF.tableR),
+  disc(CIRCLE.x, CIRCLE.z, CIRCLE.tableR),
   ...EASELS.map((e) => disc(e.x, e.z, 0.3)),
   disc(PAINT_CART.x, PAINT_CART.z, 0.3),
   box(GALLERY.x - GALLERY.width / 2, GALLERY.x + GALLERY.width / 2, GALLERY.z - 0.2, GALLERY.z + 0.15),
@@ -270,7 +271,7 @@ export const NAP_SPOTS: { x: number; z: number; y: number }[] = [
   { x: 12.7, z: -0.8, y: PARAPET.height }, // on the parapet
   { x: TENT.x, z: TENT.z - 1.4, y: 0.08 }, // just inside the tent
   { x: CAMPFIRE.x + 2.3, z: CAMPFIRE.z + 0.4, y: 0 }, // warm, by the fire
-  { x: WOLF.x, z: WOLF.z + WOLF.cushionR, y: 0.12 }, // a Werewolf cushion
+  { x: CIRCLE.x, z: CIRCLE.z + CIRCLE.cushionR, y: 0.12 }, // a lantern-circle cushion
 ];
 
 export const ROOFTOP: MapData = {
@@ -285,7 +286,7 @@ export const ROOFTOP: MapData = {
   obstacles: OBSTACLES,
   zones: ZONES,
   cardTables: CARD_TABLES,
-  wolf: WOLF,
+  circle: CIRCLE,
   floorArea: FLOOR_AREA,
   tvArea: CINEMA.area,
   boardArea: BOARD_AREA,

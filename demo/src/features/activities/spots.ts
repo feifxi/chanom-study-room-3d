@@ -1,5 +1,5 @@
 import { activeMap } from '../map/active';
-import { cardSeats, wolfSeats, type Area } from '../map/types';
+import { artSeats, cardSeats, type Area } from '../map/types';
 
 /**
  * Activity spots: the places in a map where activities happen (standard kit, feature 7). Every
@@ -11,7 +11,7 @@ import { cardSeats, wolfSeats, type Area } from '../map/types';
 export { isGameSeat } from '../map/types';
 export type { Area } from '../map/types';
 
-export type SpotId = 'cards' | 'werewolf' | 'floor' | 'tv' | 'board' | 'art';
+export type SpotId = 'cards' | 'floor' | 'tv' | 'board' | 'art';
 
 export interface Game {
   id: string;
@@ -69,25 +69,7 @@ export const SPOTS: Spot[] = [
     feature: 12,
     tint: 'bg-mint',
   },
-  {
-    // Its own table, apart from the card games: a game night runs while others play cards
-    id: 'werewolf',
-    name: 'Werewolf table',
-    activity: 'Werewolf',
-    emoji: '🐺',
-    kind: 'rounds',
-    roomWide: false,
-    games: [{ id: 'werewolf', name: 'Werewolf', emoji: '🐺', min: 5, max: 12 }],
-    get area() {
-      return activeMap().wolf.area;
-    },
-    get seats() {
-      return wolfSeats(activeMap().wolf).map((s) => s.id);
-    },
-    built: false,
-    feature: 12,
-    tint: 'bg-lavender',
-  },
+
   {
     id: 'floor',
     name: 'Open floor',
@@ -152,6 +134,11 @@ export const SPOTS: Spot[] = [
     ],
     get area() {
       return activeMap().artArea;
+    },
+    // A map with an art table seats it (sit to join); otherwise you stand at the easels
+    get seats() {
+      const t = activeMap().artTable;
+      return t ? artSeats(t).map((s) => s.id) : undefined;
     },
     built: true,
     feature: 11,

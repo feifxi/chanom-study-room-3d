@@ -10,7 +10,7 @@ import { COMMON_CAPACITY, COMMON_COPIES, COMMON_FRIEND_SEATS, COMMON_ROOMS, MAPS
 
 /**
  * Common rooms (feature 14): Connecta's own rooms, one per template, with copies that open and close
- * by themselves. Their rules are fixed (text only, slow mode, no videos or Werewolf); the team only
+ * by themselves. Their rules are fixed (text only, slow mode, no videos); the team only
  * watches the copies, sets how full they get, and can post a notice in all of them.
  */
 export default function CommonRoomsAdmin() {
@@ -69,19 +69,13 @@ export default function CommonRoomsAdmin() {
         <div className="flex flex-col gap-2">
           <h2 className="font-black">Rules (fixed for every Common room)</h2>
           <ul className="flex flex-wrap gap-1.5">
-            {[
-              'Text only, no voice',
-              'No pictures',
-              'No watch together',
-              'No screen share',
-              'No Werewolf',
-              'Slow mode 3 s',
-              'Links not clickable',
-            ].map((r) => (
-              <li key={r}>
-                <Pill tone="info">{r}</Pill>
-              </li>
-            ))}
+            {['Text only, no voice', 'No pictures', 'No watch together', 'No screen share', 'Slow mode 3 s', 'Links not clickable'].map(
+              (r) => (
+                <li key={r}>
+                  <Pill tone="info">{r}</Pill>
+                </li>
+              ),
+            )}
           </ul>
           <p className="text-xs text-muted-foreground">
             5 reports in 30 min from different accounts puts someone out of Common rooms for 1 hour (Moderation).

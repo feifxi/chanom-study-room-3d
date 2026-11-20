@@ -1,30 +1,34 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { areaRadius, type Area } from '../../map/types';
-import { LETTERS, ZONE_COLORS, sidesFor, type SideGame } from './game';
+import type { Area } from '../../map/types';
+import { LETTERS, ZONE_COLORS, sidesFor, zoneOffset, type SideGame } from './game';
 
 /**
- * Pick a Side in the room (what everyone sees, from anywhere): the open floor's rug split into 2 or 4
- * coloured zones, each with its letter and answer written on the floor. At the reveal the right zone
- * stays lit and the others fade; would-you-rather keeps both lit.
+ * Pick a Side in the room (what everyone sees, from anywhere): the open floor's rug cut into 2 or 4
+ * coloured zones along its edges, each with its letter on the floor (the answers are in the panel). At the reveal
+ * the right zone stays lit and the others fade; would-you-rather keeps both lit.
  *
- * Zones follow the screen (turned 45° to face the camera), the same as `zoneAt`, so "A on the left"
- * in the HUD is on the left in the room; the rug's edge is the zone's edge, whatever shape it is.
+ * The cut is the same as `zoneAt`. The zones are opaque, so the open floor's four-colour rug never
+ * shows through (Would you rather is two colours, not four); the labels lie flat but turn with the
+ * camera, so they read straight however someone has turned the view.
  */
 export function SideZones({ game, area }: { game: SideGame; area: Area }) {
   const sides = sidesFor(game.mode);
   const q = game.questions[game.i];
   const revealing = game.stage === 'reveal';
   const shapes = useMemo(() => zoneShapes(area, sides), [area, sides]);
-  const k = areaRadius(area) * 0.55;
+  const labels = useRef<(THREE.Group | null)[]>([]);
+  useFrame(({ camera }) => {
+    camera.getWorldDirection(look);
+    const yaw = Math.atan2(-look.x, -look.z);
+    for (const g of labels.current) if (g) g.rotation.y = yaw;
+  });
   const zones = Array.from({ length: sides }, (_, i) => {
-    // Label spots in the turned plane: x = screen right, y = screen up
-    const cx = sides === 2 ? (i === 0 ? -1 : 1) * k : (i % 2 === 0 ? -0.75 : 0.75) * k;
-    const cy = sides === 2 ? 0 : (i < 2 ? 0.75 : -0.75) * k;
     const dim = revealing && game.mode !== 'wyr' && q?.right !== i;
-    return { i, cx, cy, dim };
+    return { i, ...zoneOffset(area, sides, i), dim };
   });
   return (
     <group position={[area.x, 0.026, area.z]}>
@@ -32,41 +36,48 @@ export function SideZones({ game, area }: { game: SideGame; area: Area }) {
         {zones.map((z) => (
           <mesh key={z.i} userData={{ dynamic: true }}>
             <shapeGeometry args={[shapes[z.i]!]} />
-            <meshBasicMaterial
-              color={z.dim ? '#b9b2bd' : ZONE_COLORS[z.i]}
-              transparent
-              opacity={z.dim ? 0.25 : revealing ? 0.75 : 0.5}
-              depthWrite={false}
-            />
+            <meshBasicMaterial color={zoneColor(z.i, z.dim, revealing)} />
           </mesh>
         ))}
       </group>
-      <group rotation={[0, Math.PI / 4, 0]}>
-        <group rotation={[-Math.PI / 2, 0, 0]}>
-          {q &&
-            zones.map((z) => (
+      {q &&
+        zones.map((z) => (
+          <group
+            key={`${game.i}-${z.i}`}
+            ref={(g) => {
+              labels.current[z.i] = g;
+            }}
+            position={[z.dx, 0, z.dz]}
+            rotation={[0, Math.PI / 4, 0]}
+          >
+            <group rotation={[-Math.PI / 2, 0, 0]}>
               <FloorLabel
-                key={`${game.i}-${z.i}`}
-                x={z.cx}
-                y={z.cy}
                 letter={LETTERS[z.i]!}
-                text={q.answers[z.i] ?? ''}
                 color={ZONE_COLORS[z.i]!}
                 right={revealing && game.mode !== 'wyr' && q.right === z.i}
                 dim={z.dim}
                 small={sides === 4}
               />
-            ))}
-        </group>
-      </group>
+            </group>
+          </group>
+        ))}
     </group>
   );
+}
+
+const look = new THREE.Vector3();
+const RUG = new THREE.Color('#e8dcc8');
+const DIM = new THREE.Color('#b9b2bd');
+/** The zone's colour woven into the rug's cream: soft while asking, stronger at the reveal, grey when wrong. */
+function zoneColor(i: number, dim: boolean, revealing: boolean) {
+  if (dim) return RUG.clone().lerp(DIM, 0.6);
+  return RUG.clone().lerp(new THREE.Color(ZONE_COLORS[i]), revealing ? 0.85 : 0.6);
 }
 
 type Pt = [number, number];
 const GAP = 0.05;
 
-/** The rug's outline (inset a little), cut into screen-aligned halves or quarters. The open floor's four-colour rug uses the same cut. */
+/** The rug's outline (inset a little), cut along its edges into halves or quarters. The open floor's four-colour rug uses the same cut. */
 export function zoneShapes(area: Area, sides: number): THREE.Shape[] {
   const outline: Pt[] =
     area.kind === 'circle'
@@ -80,16 +91,11 @@ export function zoneShapes(area: Area, sides: number): THREE.Shape[] {
           [area.w / 2 - 0.1, area.d / 2 - 0.1],
           [-area.w / 2 + 0.1, area.d / 2 - 0.1],
         ];
-  // Screen axes from room offsets (dx, dz): u = right, v = up
-  const u = ([dx, dz]: Pt) => (dx - dz) / Math.SQRT2;
-  const v = ([dx, dz]: Pt) => -(dx + dz) / Math.SQRT2;
+  // Zone i keeps x < 0 or x > 0 (its column) and, with four, z < 0 or z > 0 (its row); see zoneAt
   const halfPlanes = (i: number): ((p: Pt) => number)[] => {
-    const left = (p: Pt) => -u(p) - GAP;
-    const right = (p: Pt) => u(p) - GAP;
-    if (sides === 2) return [i === 0 ? left : right];
-    const top = (p: Pt) => v(p) - GAP;
-    const bottom = (p: Pt) => -v(p) - GAP;
-    return [i % 2 === 0 ? left : right, i < 2 ? top : bottom];
+    const col = i % 2 === 0 ? ([dx]: Pt) => -dx - GAP : ([dx]: Pt) => dx - GAP;
+    if (sides === 2) return [col];
+    return [col, i < 2 ? ([, dz]: Pt) => -dz - GAP : ([, dz]: Pt) => dz - GAP];
   };
   return Array.from({ length: sides }, (_, i) => {
     const poly = halfPlanes(i).reduce(clip, outline);
@@ -118,82 +124,41 @@ function clip(poly: Pt[], f: (p: Pt) => number): Pt[] {
   return out;
 }
 
-/** The letter and answer, painted on the floor (a canvas texture: no font files to load). */
-function FloorLabel({
-  x,
-  y,
-  letter,
-  text,
-  color,
-  right,
-  dim,
-  small,
-}: {
-  x: number;
-  y: number;
-  letter: string;
-  text: string;
-  color: string;
-  right: boolean;
-  dim: boolean;
-  small: boolean;
-}) {
+/**
+ * Just the zone's letter, painted on the floor (✓ on the right one at the reveal). The answers
+ * themselves are read in the panel: long text on the floor was hard to read from the room camera.
+ * A canvas texture: no font files to load.
+ */
+function FloorLabel({ letter, color, right, dim, small }: { letter: string; color: string; right: boolean; dim: boolean; small: boolean }) {
   const texture = useMemo(() => {
     const c = document.createElement('canvas');
-    c.width = 512;
+    c.width = 256;
     c.height = 256;
     const g = c.getContext('2d')!;
-    g.fillStyle = 'rgba(255,255,255,0.92)';
+    g.fillStyle = 'rgba(255,255,255,0.95)';
     g.beginPath();
-    g.roundRect(8, 8, 496, 240, 48);
+    g.arc(128, 128, 122, 0, Math.PI * 2);
     g.fill();
     g.fillStyle = color;
     g.beginPath();
-    g.arc(78, 128, 54, 0, Math.PI * 2);
+    g.arc(128, 128, 104, 0, Math.PI * 2);
     g.fill();
     g.fillStyle = '#ffffff';
-    g.font = '900 64px system-ui, sans-serif';
+    g.font = '900 130px system-ui, sans-serif';
     g.textAlign = 'center';
     g.textBaseline = 'middle';
-    g.fillText(right ? '✓' : letter, 78, 132);
-    g.fillStyle = '#45323d';
-    g.textAlign = 'left';
-    const lines = wrap(g, text, 340, 72);
-    const lh = parseInt(g.font.split(' ')[1]!) * 1.1;
-    lines.forEach((l, i) => g.fillText(l, 152, 132 + (i - (lines.length - 1) / 2) * lh));
+    g.fillText(right ? '✓' : letter, 128, 138);
     const t = new THREE.CanvasTexture(c);
     t.colorSpace = THREE.SRGBColorSpace;
     t.anisotropy = 4;
     return t;
-  }, [letter, text, color, right]);
+  }, [letter, color, right]);
   useEffect(() => () => texture.dispose(), [texture]);
-  const w = small ? 1.3 : 1.7;
+  const w = small ? 0.9 : 1.1;
   return (
-    <mesh position={[x, y, 0.01]} userData={{ dynamic: true }}>
-      <planeGeometry args={[w, w / 2]} />
+    <mesh position={[0, 0, 0.01]} userData={{ dynamic: true }}>
+      <planeGeometry args={[w, w]} />
       <meshBasicMaterial map={texture} transparent opacity={dim ? 0.45 : 1} depthWrite={false} toneMapped={false} />
     </mesh>
   );
-}
-
-/** Up to two lines at the biggest size that fits. */
-function wrap(g: CanvasRenderingContext2D, text: string, width: number, size: number): string[] {
-  for (let s = size; s >= 30; s -= 4) {
-    g.font = `800 ${s}px system-ui, sans-serif`;
-    const words = text.split(' ');
-    const lines: string[] = [];
-    let line = '';
-    for (const w of words) {
-      const next = line ? `${line} ${w}` : w;
-      if (g.measureText(next).width <= width) line = next;
-      else {
-        if (line) lines.push(line);
-        line = w;
-      }
-    }
-    if (line) lines.push(line);
-    if (lines.length <= 2 && lines.every((l) => g.measureText(l).width <= width)) return lines;
-  }
-  g.font = '800 30px system-ui, sans-serif';
-  return [text.length > 20 ? `${text.slice(0, 19)}…` : text];
 }

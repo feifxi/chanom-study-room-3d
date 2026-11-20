@@ -6,9 +6,13 @@
   `https://youtu.be/lTRiuFIWV54`). Click outside the panel to shrink it; click the small player to
   grow it.
 - Demo tab → **Someone puts a video on the big screen**, to see the 3D screen from across the room.
-- Dock → **Photo**.
+- At the TV, **Put something on → Share your screen** (desktop Chrome or Edge; tick "Share tab
+  audio" for sound). Demo tab → **Someone shares their screen on the TV** shows someone else's share
+  (a pretend picture in the demo).
+- Dock → **⋯ More** → **Photo mode**.
 
-Watch YouTube in sync with whoever stands in front of the big screen, and take photos anywhere.
+Watch YouTube in sync with whoever stands in front of the big screen, or share your screen on it, and
+take photos anywhere.
 There's no jukebox: music is personal lo-fi, and YouTube music plays through the big screen.
 
 ## 📺 Watch together
@@ -19,13 +23,30 @@ library's TV lounge, the café's lounge, the rooftop's cinema sheet with floor c
 ### How it works
 
 1. Walk up (or **Go there**) and press **E**: "Put something on" → paste a **YouTube link** (Shorts,
-   live streams and `youtu.be` links work). It plays at once.
+   live streams and `youtu.be` links work). It plays at once. Next to the sofa, **E sits** and
+   "Put something on" is an orange button above the seat's hint, so you can always sit down.
 2. **Being in front of the screen is watching.** Step into the area and the big panel opens, in sync;
    step out and it closes. The big panel is like Discord's activity view: the video takes most of the
    screen, with Now playing and Up next beside it (below it on narrow screens). No lobby, no rounds, nobody is "out".
 3. The **3D screen** shows the video's thumbnail and glows (dimmer when paused), so people walking past
    see what's on. The video itself plays only in the panel.
 4. When nobody has been watching for 30 s, the screen turns off and the queue clears.
+
+### Share your screen on the TV
+
+- "Put something on" has two choices: **paste a YouTube link** or **Share your screen**. The panel's
+  Up next has the share button too.
+- **One thing on the screen at a time. A share takes over:** a playing video pauses and carries on
+  when the share ends; videos added during a share wait in Up next. Only one person shares at once.
+- Everyone in the area watches it in the same big panel, with the sharer's name and "🔊 with sound"
+  or "🔇 no sound". The sharer sees their own screen (muted, so no echo) and **Stop sharing**.
+- **Walking off the rug ends your share**, like standing up from a desk share. The browser's own
+  "Stop sharing" bar ends it too.
+- **The 3D screen shows a card** ("Jod is sharing · step onto the rug to watch"), never the live
+  picture: a video texture would cost frame time and data for the whole room, including people who
+  aren't watching (the same reason the video shows only its thumbnail).
+- **Phones can't share** (browsers don't allow it): the button is greyed out with "Phones can't share
+  their screen. You can still watch." Phones watch as usual.
 
 ### Controls
 
@@ -42,7 +63,11 @@ library's TV lounge, the café's lounge, the rooftop's cinema sheet with floor c
 
 ### Sound
 
-- Only people watching hear the video.
+- Only people watching hear the video, or a shared screen's sound.
+- **Every screen share carries its sound** (the TV and desk shares, like Discord), where the browser
+  allows: Chrome and Edge share a tab's sound everywhere and the whole computer's sound on Windows;
+  Safari and Firefox share no sound. The browser's picker shows the "Share audio" box. A share without
+  sound says so, and the sharer gets a tip to share a tab with its audio.
 - **The video keeps its volume while people talk** (no Discord-style ducking).
 - **Your own TV volume:** a speaker button (mute) and slider in the panel's controls. Only you hear the
   change; it's remembered in this browser.
@@ -55,10 +80,14 @@ library's TV lounge, the café's lounge, the rooftop's cinema sheet with floor c
   player seeks back in line when it's more than 2 s off. Play/pause/seek set a new offset and time.
 - The first player to report "ended" moves the queue on (the server ignores reports for an old video).
 - Titles come from YouTube's oEmbed (free, no key).
+- **Screen share:** room state holds only `share: { by, audio }` and whether the video should resume.
+  The picture and sound are LiveKit tracks (`getDisplayMedia` with `audio: true`; V1 sends
+  `audio: false`); the game server lets only people in the TV area subscribe, as private zones do. It
+  ends the share when the sharer leaves the area.
 
 ## 📸 Photo mode
 
-A **dock button**, from anywhere, any time.
+Under the dock's **⋯ More**, from anywhere, any time.
 
 - The HUD and **name labels hide** (photos never show names), and a frame with the logo, room name and
   date appears. You can still drag and zoom the camera.

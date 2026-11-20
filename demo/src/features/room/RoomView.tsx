@@ -2,22 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Camera,
-  HeadphoneOff,
-  Headphones,
-  Leaf,
-  MessageCircle,
-  Mic,
-  MicOff,
-  MonitorUp,
-  MousePointerClick,
-  Sparkles,
-  X,
-} from 'lucide-react';
+import { HeadphoneOff, Headphones, MessageCircle, Mic, MicOff, MonitorUp, Sparkles, Tv, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { activeMap, mapDefFor, setActiveMap } from '../map/active';
-import { areaEdgePoint, areaInnerPoint, inArea } from '../map/types';
+import { areaEdgePoint, areaInnerPoint, inArea, type Area } from '../map/types';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SettingsDialog, type SettingsTab } from '@/components/app/SettingsDialog';
@@ -36,7 +24,7 @@ import { useRoomLook } from '@/features/place/roomLook';
 import { MapMove } from './MapMove';
 import { useDayLight } from '../room3d/dayCycle';
 import { Joystick } from '../room3d/Joystick';
-import { LabelBoard, LabelLayer } from '../room3d/labels';
+import { LabelBoard, LabelLayer, type SpotTag } from '../room3d/labels';
 import type { Hint } from '../room3d/LocalController';
 import type { LocalPlayerDriver } from '../room3d/LocalPlayerDriver';
 import { MockRoom, type MockPerson } from '../room3d/mockRoom';
@@ -61,8 +49,9 @@ import { sidesFor, zoneAt as sideZoneAt } from '../activities/pickASide/game';
 import { SideHud, list } from '../activities/pickASide/SideHud';
 import { TelephonePanel } from '../activities/telephone/TelephonePanel';
 import { SPOTS, isGameSeat, spotById, type Spot } from '../activities/spots';
-import { BOARD_EVENT, PICK_A_SIDE_EVENT, TELEPHONE_EVENT, WATCH_EVENT } from '@/lib/demoCrowd';
-import { AddVideo, WatchPanel } from '../activities/WatchPanel';
+import { BOARD_EVENT, PICK_A_SIDE_EVENT, SHARE_EVENT, TELEPHONE_EVENT, WATCH_EVENT } from '@/lib/demoCrowd';
+import { AddVideo, ShareScreenButton, WatchPanel } from '../activities/WatchPanel';
+import { startMyShare, stopMyShare } from '../activities/screenShare';
 import { ChannelOverlay, type ChatTarget } from './ChannelOverlay';
 import { PhotoMode } from './PhotoMode';
 import { ChatPanel, type RoomLine } from './ChatPanel';
@@ -74,6 +63,7 @@ import { LeaveRoomGuard, LeaveRoomLink } from './LeaveRoom';
 import { logFocus } from '@/lib/focus';
 import { usePomodoro, type Phase } from './usePomodoro';
 import { RoomCard } from './RoomCard';
+import { MoreMenu } from './MoreMenu';
 import { isGuestViewer, isTeam, roleIn } from '@/lib/viewer';
 
 /** Scripted crowd: where each mock person sits or walks. */
@@ -99,12 +89,13 @@ const AWAY_MS = 10 * 60_000;
 
 /**
  * The room screen, five named parts:
- * - **Room card** (top left): the room itself: invite, settings, the room's time of day, battery saver, Leave
+ * - **Room card** (top left): the room itself: invite, room settings, Leave
  * - **My tools** (left rail): study, music, help; only you
  * - **Chat** (bottom left): Room chat, Bubbles and Messages in one panel
  * - **People** (top right): a pill of faces that opens who's here
- * - **Dock** (bottom centre): mic, sound, chat, photo, activities. Screen share only shows once
- *   you sit at a desk, because that's the only place it works.
+ * - **Dock** (bottom centre): mic, sound, chat, activities, room tools (owner and mods), and More
+ *   (photo mode and your own settings). Screen share only shows once you sit at a desk, because
+ *   that's the only place it works.
  */
 export default function RoomView({ serverId, roomId, guestName }: { serverId: string; roomId: string; guestName: string | null }) {
   const router = useRouter();
@@ -161,14 +152,14 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const arrive = useCallback(() => room.send('stand', {}), [room]);
   const light = useDayLight(look.time === 'clock' ? 'auto' : look.time);
   const [saver, setSaver] = useState(isTouchScreen);
-  // Your own settings, opened from the Room card's Your settings; null = closed
+  // Your own settings, opened from the dock's More menu; null = closed
   const [mySettings, setMySettings] = useState<SettingsTab | null>(null);
   const lastSaid = useRef(0);
   const perfOn = usePerfOverlay();
   // A device that can't keep up switches itself to battery saver, once, and says so
   const goSaver = useCallback(() => {
     setSaver(true);
-    toast('🍃 Switched to battery saver to keep things smooth. You can turn it off in the room card.');
+    toast('🍃 Switched to battery saver to keep things smooth. You can turn it off under More.');
   }, []);
   const quality = QUALITY[saver ? 'saver' : 'smooth'];
   const compact = useCompactScreen();
@@ -186,17 +177,20 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     const t = setTimeout(() => hub.scriptPickASide(), 25_000);
     const onDemo = () => hub.scriptPickASide();
     const onWatch = () => hub.scriptWatch();
+    const onShare = () => hub.scriptShare();
     const onDraw = () => hub.scriptDraw();
     const onTel = () => hub.scriptTelephone();
     window.addEventListener(PICK_A_SIDE_EVENT, onDemo);
     window.addEventListener(TELEPHONE_EVENT, onTel);
     window.addEventListener(WATCH_EVENT, onWatch);
+    window.addEventListener(SHARE_EVENT, onShare);
     window.addEventListener(BOARD_EVENT, onDraw);
     return () => {
       clearInterval(id);
       clearTimeout(t);
       window.removeEventListener(PICK_A_SIDE_EVENT, onDemo);
       window.removeEventListener(WATCH_EVENT, onWatch);
+      window.removeEventListener(SHARE_EVENT, onShare);
       window.removeEventListener(BOARD_EVENT, onDraw);
       window.removeEventListener(TELEPHONE_EVENT, onTel);
       hub.dispose();
@@ -252,11 +246,54 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   }, [room]);
   // Your lo-fi fades while people talk, and while you're watching the big screen
   const watchingTv = hub.mine('me')?.id === 'tv';
+  // Each activity spot's floating name (not the whiteboard, a quiet side spot)
+  // nor the spot you're playing at (a seat can sit just off its rug)
+  const spotTags: SpotTag[] = SPOTS.filter((sp) => sp.built && !sp.freeZone && sp.id !== hub.mine('me')?.id).map((sp) => {
+    const st = hub.spots[sp.id];
+    const n = st.players.length;
+    const phase = st.phase === 'results' ? 'playing' : st.phase;
+    const text =
+      phase === 'free'
+        ? `${sp.emoji} ${sp.activity}`
+        : phase === 'gathering'
+          ? `${sp.emoji} ${sp.activity} · ${n} waiting`
+          : sp.id === 'tv'
+            ? `📺 ${hub.watch.share ? 'Screen share' : 'Watch together'} · ${n} watching`
+            : `${st.game.emoji} ${st.game.name} · ${n} playing`;
+    return { id: sp.id, text, phase, area: sp.area };
+  });
+  // Your share ended in the hub (you walked away, or Stop sharing): let the capture go too
+  const sharingTv = hub.watch.share?.by === 'me';
+  const sharedTv = useRef(false);
+  useEffect(() => {
+    if (sharingTv) {
+      sharedTv.current = true;
+      return;
+    }
+    stopMyShare();
+    if (sharedTv.current) toast('Your screen share on the TV ended');
+    sharedTv.current = false;
+  }, [sharingTv]);
+  const shareOnTv = async () => {
+    const got = await startMyShare(() => hub.stopShare('me'));
+    if (!got) return;
+    hub.startShare({ by: 'me', audio: got.audio });
+    setPuttingOn(false);
+    setWatchMini(false);
+    if (!got.audio) toast('Sharing without sound. For sound, share a tab and tick “Share tab audio”');
+  };
   const music = useMusic(speaking.size > 0 || watchingTv);
   const [watchMini, setWatchMini] = useState(false);
   const [puttingOn, setPuttingOn] = useState(false);
   const atBoard = hub.mine('me')?.id === 'board';
-  const [boardMini, setBoardMini] = useState(false);
+  // Walking up to the board opens it small in the corner, so passing by never fills your screen; a
+  // click makes it big (the board is always on: no E)
+  const [boardMini, setBoardMini] = useState(true);
+  const [wasAtBoard, setWasAtBoard] = useState(atBoard);
+  if (atBoard !== wasAtBoard) {
+    setWasAtBoard(atBoard);
+    if (atBoard) setBoardMini(true);
+  }
 
   // Stay "connected" while browsing chats elsewhere, like a voice channel
   useEffect(() => {
@@ -335,7 +372,9 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                 ? '☕ On a break'
                 : p.seatId
                   ? activeMap().seatById.get(p.seatId)?.kind === 'sofa'
-                    ? '🛋️ On the sofa'
+                    ? activeMap().seatById.get(p.seatId)?.low
+                      ? '🛋️ Lounging'
+                      : '🛋️ On the sofa'
                     : '🪑 At a desk'
                   : p.moving
                     ? '🚶 Walking around'
@@ -362,6 +401,9 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const seatKind = me.seatId ? activeMap().seatById.get(me.seatId)?.kind : undefined;
   const seated = !!seatKind;
   const atGameTable = isGameSeat(me.seatId);
+  // The activity whose seat you're about to sit on (card table, art table), for the E hint
+  const hintSpot =
+    hint?.kind === 'seat' && isGameSeat(hint.seatId) ? SPOTS.find((sp) => sp.built && sp.seats?.includes(hint.seatId)) : undefined;
 
   const who = (id: string): Who => {
     const p = room.state.players.get(id);
@@ -395,14 +437,9 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const atFreeFloor = !seated && roomDef.roomWideGames && hub.spots.floor.phase === 'free' && inArea(floor.area, me.x, me.z);
   const tv = spotById('tv');
   const atFreeTv = !common && !seated && hub.spots.tv.phase === 'free' && inArea(tv.area, me.x, me.z);
-  const boardSpot = spotById('board');
-  const atFreeBoard = !seated && hub.spots.board.phase === 'free' && inArea(boardSpot.area, me.x, me.z);
   const art = spotById('art');
-  const atFreeArt = !seated && hub.spots.art.phase === 'free' && inArea(art.area, me.x, me.z);
-  const openBoard = () => {
-    hub.openBoard('me');
-    setBoardMini(false);
-  };
+  // A map with an art table seats Draw & Guess: you sit to join (the seat hint), no E on the rug
+  const atFreeArt = !art.seats && !seated && hub.spots.art.phase === 'free' && inArea(art.area, me.x, me.z);
   // Walked away from the screen with the "put something on" card open: close it
   const showPutOn = puttingOn && atFreeTv;
 
@@ -419,8 +456,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
       if (!free) return toast(`${spot.name} is full. Watch from nearby, you’ll see the game on the table.`);
       d.goTo(free.out.x, free.out.z, true);
     } else {
-      const a = Math.atan2(me.x - spot.area.x, me.z - spot.area.z);
-      const to = areaInnerPoint(spot.area, a, 0.4);
+      const to = openPointIn(spot.area, me);
       d.goTo(to.x, to.z, true);
     }
   };
@@ -437,12 +473,14 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   // listener reads it, so it never depends on an effect re-running when you arrive somewhere
   const eAction = useRef<(() => void) | null>(null);
   useEffect(() => {
-    eAction.current = atFreeFloor
-      ? () => hub.start('floor', 'me')
-      : atFreeArt
-        ? () => hub.start('art', 'me')
-        : atFreeBoard
-          ? openBoard
+    // Something to sit on, pet or use within reach wins E (the driver handles it): on the TV rug
+    // you'd otherwise open "put something on" when you only meant to sit on the sofa
+    eAction.current = hint
+      ? null
+      : atFreeFloor
+        ? () => hub.start('floor', 'me')
+        : atFreeArt
+          ? () => hub.start('art', 'me')
           : atFreeTv
             ? () => setPuttingOn(true)
             : null;
@@ -504,7 +542,11 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
       className={className}
     />
   );
-  const chat = compact ? chatEl('h-[40dvh] border-0 shadow-none') : chatEl('h-[360px] w-[364px]', () => setChatOpen(false));
+  // Below 1080 px the dock can't sit beside the chat panel, so the panel sits above the dock instead
+  // (shorter if the screen is short too); see the dock's spacers
+  const chat = compact
+    ? chatEl('h-[40dvh] border-0 shadow-none')
+    : chatEl('h-[360px] w-[364px] max-[1079px]:h-[min(360px,calc(100dvh-400px))]', () => setChatOpen(false));
   const toggleChat = () => (compact ? setSheet(true) : setChatOpen(!chatOpen));
   const chatPressed = compact ? sheet : chatOpen;
 
@@ -517,8 +559,9 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     router.push(href ?? (guest ? (common ? '/discover' : '/') : '/home'));
   };
 
+  const [clickToWalk, setClickToWalk] = useClickToWalk();
   const dock = (className?: string) => (
-    <nav className={cn('dock flex items-center gap-1.5 p-1.5', className)} aria-label="Controls">
+    <nav className={cn('dock flex items-center gap-1.5 p-2', className)} aria-label="Controls">
       <Tooltip>
         <TooltipTrigger asChild>
           <span>
@@ -552,7 +595,6 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
         {!compact && (deaf ? 'Deafened' : 'Sound')}
       </button>
       <DockBtn icon={MessageCircle} label="Chat" compact={compact} pressed={chatPressed} onClick={toggleChat} />
-      <DockBtn icon={Camera} label="Photo" compact={compact} onClick={() => setPhoto(true)} />
       <DockBtn
         icon={Sparkles}
         label="Activities"
@@ -579,37 +621,18 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
           />
         </>
       )}
+      {/* Now-and-then things and your own settings, so the dock stays short */}
+      <MoreMenu
+        compact={compact}
+        onPhoto={() => setPhoto(true)}
+        onMySettings={guest ? undefined : setMySettings}
+        saver={saver}
+        onSaver={setSaver}
+        clickToWalk={clickToWalk}
+        onClickToWalk={setClickToWalk}
+      />
     </nav>
   );
-  const [clickToWalk, setClickToWalk] = useClickToWalk();
-  // Battery saver is the one thing that's yours alone: the time of day is the room's (owner's) choice
-  const view = (
-    <div className="flex flex-col gap-1.5">
-      <button
-        onClick={() => setSaver(!saver)}
-        aria-pressed={saver}
-        className={cn(
-          'flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-extrabold',
-          saver ? 'bg-mint text-mint-ink' : 'bg-card text-muted-foreground hover:text-foreground',
-        )}
-      >
-        <Leaf className="size-3.5" /> Battery saver
-        <span className="ml-auto">{saver ? 'On' : 'Off'}</span>
-      </button>
-      <button
-        onClick={() => setClickToWalk(!clickToWalk)}
-        aria-pressed={clickToWalk}
-        className={cn(
-          'flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-extrabold',
-          clickToWalk ? 'bg-mint text-mint-ink' : 'bg-card text-muted-foreground hover:text-foreground',
-        )}
-      >
-        <MousePointerClick className="size-3.5" /> Click to walk
-        <span className="ml-auto">{clickToWalk ? 'On' : 'Off'}</span>
-      </button>
-    </div>
-  );
-
   return (
     <LeaveRoomGuard roomName={server.name} focusing={pomo.phase === 'focus'} onLeave={leave}>
       <div
@@ -635,7 +658,14 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
             onZoom={setZoom}
             onSlow={saver ? undefined : goSaver}
           >
-            <ActivityLayer3D spots={hub.spots} watch={hub.watch} side={hub.side} board={hub.board} motion={motion} />
+            <ActivityLayer3D
+              spots={hub.spots}
+              watch={hub.watch}
+              shareName={hub.watch.share && (hub.watch.share.by === 'me' ? 'You' : who(hub.watch.share.by).name)}
+              side={hub.side}
+              board={hub.board}
+              motion={motion}
+            />
           </RoomCanvas>
           {/* Photos never show names: labels hide in photo mode so the preview matches the photo */}
           <div className={cn(photo && 'hidden')}>
@@ -657,6 +687,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
               npcIds={npcIds}
               npcs={room.state.npcs}
               reactions={[]}
+              spotTags={spotTags}
             />
           </div>
 
@@ -664,14 +695,12 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
             <PhotoMode roomName={roomDef.name} onClose={() => setPhoto(false)} />
           ) : (
             <div>
-              {/* Room card, top left: the room itself (invite, settings, your view, Leave) */}
+              {/* Room card, top left: the room itself (invite, room settings, Leave) */}
               <RoomCard
                 server={server}
                 room={roomDef}
                 here={people.length}
                 guest={guest}
-                view={view}
-                onMySettings={guest ? undefined : setMySettings}
                 onLeave={() => leave()}
                 className={cn('absolute top-3 left-3 z-30', compact && 'right-3')}
               />
@@ -712,7 +741,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                 className={cn('absolute left-3 z-20', compact ? 'top-[132px]' : 'top-[88px]')}
               />
               {mySettings && <SettingsDialog open onOpenChange={(o) => !o && setMySettings(null)} initialTab={mySettings} />}
-              {!compact && chatOpen && <div className="absolute bottom-3 left-3">{chat}</div>}
+              {!compact && chatOpen && <div className="absolute bottom-3 left-3 max-[1079px]:bottom-[92px]">{chat}</div>}
 
               <MapMove lookId={lookId} mapId={look.mapId} onArrive={arrive} />
 
@@ -823,7 +852,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                 </div>
               )}
               {/* Watch together: the big panel under the strip, or a small player in the corner */}
-              {watchingTv && hub.watch.now && (
+              {watchingTv && (hub.watch.now || hub.watch.share) && (
                 <div
                   className={cn(
                     'absolute z-20',
@@ -841,6 +870,8 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                     onEnded={(id) => hub.watch.now?.id === id && hub.next()}
                     onAdd={(v) => hub.putOn({ ...v, by: 'me' })}
                     onRemove={(i) => hub.removeQueued(i)}
+                    onShare={() => void shareOnTv()}
+                    onStopShare={() => hub.stopShare('me')}
                   />
                 </div>
               )}
@@ -861,15 +892,9 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                   />
                 </div>
               )}
-              {!mySpot && atFreeBoard && (
-                <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2 whitespace-nowrap">
-                  <button onClick={openBoard} className="panel rounded-full px-4 py-2 text-sm font-bold">
-                    {touch ? 'Tap' : 'Press E'} to draw on the whiteboard 🎨
-                  </button>
-                </div>
-              )}
               {!mySpot && atFreeTv && (
-                <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2">
+                // On phones the open card sits above the joystick
+                <div className={cn('absolute left-1/2 -translate-x-1/2', showPutOn && touch ? 'bottom-[220px]' : 'bottom-[100px]')}>
                   {showPutOn ? (
                     <div className="panel flex w-[360px] max-w-[calc(100vw-1.5rem)] flex-col gap-2 p-3">
                       <div className="flex items-center gap-2">
@@ -890,32 +915,44 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                           setWatchMini(false);
                         }}
                       />
+                      <ShareScreenButton onShare={() => void shareOnTv()} />
                       <p className="text-[11px] text-muted-foreground">
-                        Everyone in front of the screen watches in sync. YouTube only (Shorts too).
+                        Everyone in front of the screen watches in sync: a YouTube link (Shorts too) or your screen, with its sound.
                       </p>
                     </div>
                   ) : (
-                    <button onClick={() => setPuttingOn(true)} className="panel rounded-full px-4 py-2 text-sm font-bold whitespace-nowrap">
-                      {touch ? 'Tap' : 'Press E'} to put something on 📺
+                    // Next to a seat, E sits: the screen is a click away instead, above the seat's hint, in
+                    // the orange of the other click-only actions (Share screen to table) so it reads as a button
+                    <button
+                      onClick={() => setPuttingOn(true)}
+                      className={cn(
+                        'rounded-full px-4 py-2 text-sm whitespace-nowrap',
+                        hint
+                          ? 'flex -translate-y-12 items-center gap-1.5 bg-primary font-extrabold text-primary-foreground shadow-soft hover:bg-primary-ink'
+                          : 'panel font-bold',
+                      )}
+                    >
+                      {hint && <Tv className="size-4" />}
+                      {hint ? 'Put something on' : `${touch ? 'Tap' : 'Press E'} to put something on 📺`}
                     </button>
                   )}
                 </div>
               )}
-              {!mySpot && atFreeFloor && (
+              {!mySpot && atFreeFloor && !hint && (
                 <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2 whitespace-nowrap">
                   <button onClick={() => hub.start('floor', 'me')} className="panel rounded-full px-4 py-2 text-sm font-bold">
                     {touch ? 'Tap' : 'Press E'} to start Pick a Side 🗳️
                   </button>
                 </div>
               )}
-              {!mySpot && atFreeArt && (
+              {!mySpot && atFreeArt && !hint && (
                 <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2 whitespace-nowrap">
                   <button onClick={() => hub.start('art', 'me')} className="panel rounded-full px-4 py-2 text-sm font-bold">
                     {touch ? 'Tap' : 'Press E'} to start a game at the art corner 🖌️
                   </button>
                 </div>
               )}
-              {(hint || seated) && !atGameTable && !atFreeFloor && !atFreeTv && !atFreeBoard && !atFreeArt && (
+              {(hint || seated) && !atGameTable && !showPutOn && (hint || (!atFreeFloor && !atFreeTv && !atFreeArt)) && (
                 <div className="absolute bottom-[100px] left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap">
                   <button
                     onClick={() => {
@@ -929,13 +966,13 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                         ? `🛋️ Lounging · ${touch ? 'tap' : 'press E'} to get up`
                         : `📖 At a desk · ${touch ? 'tap' : 'press E'} to stand up`
                       : hint?.kind === 'seat'
-                        ? isGameSeat(hint.seatId)
+                        ? hintSpot
                           ? `${touch ? 'Tap' : 'Press E'} to ${
-                              hub.spots.cards.phase === 'free'
-                                ? 'sit and start a game 🃏'
-                                : hub.spots.cards.phase === 'playing'
+                              hub.spots[hintSpot.id].phase === 'free'
+                                ? `sit and start a game ${hintSpot.emoji}`
+                                : hub.spots[hintSpot.id].phase === 'playing'
                                   ? 'sit · you’ll play next round'
-                                  : `join ${hub.spots.cards.game.name} 🃏`
+                                  : `join ${hub.spots[hintSpot.id].game.name} ${hintSpot.emoji}`
                             }`
                           : `${touch ? 'Tap' : 'Press E'} to sit`
                         : hint?.kind === 'pet'
@@ -965,14 +1002,21 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                     states={hub.spots}
                     roomWideGames={roomDef.roomWideGames}
                     common={common}
-                    watchTitle={hub.watch.now?.title}
+                    watchTitle={hub.watch.share ? `${who(hub.watch.share.by).name}’s screen` : hub.watch.now?.title}
                     hostName={(id) => who(id).name}
                     onGo={goThere}
                   />
                 </div>
               )}
 
-              {dock('absolute bottom-3 left-1/2 -translate-x-1/2')}
+              {/* Centred, but never under the open chat panel: the left spacer is the panel's width and
+                  never shrinks, the right one mirrors it and gives way first, so on a laptop the dock
+                  slides right instead of under the chat (narrower screens lift the chat instead) */}
+              <div className="pointer-events-none absolute inset-x-3 bottom-3 flex justify-center">
+                {!compact && chatOpen && <span className="hidden w-[376px] flex-none min-[1080px]:block" />}
+                {dock('pointer-events-auto flex-none')}
+                {!compact && chatOpen && <span className="hidden w-[376px] min-w-0 min-[1080px]:block" />}
+              </div>
 
               {/* Bottom right: zoom (V1). Touch screens pinch, and the tablet joystick has this corner */}
               {!touch && <ZoomControl percent={zoom} onZoom={(z) => (zoomRequest.current = z)} className="absolute right-3 bottom-3" />}
@@ -1056,4 +1100,20 @@ function sideResults(g: SideGame, st: SpotState, name: (id: string) => string) {
     medals: true,
     detail: (id: string) => (st.out.includes(id) && g.mode === 'last' ? 'out' : `${g.scores[id] ?? 0} right`),
   };
+}
+
+/**
+ * Somewhere open on a rug, on your side of it, that you can walk to. Not simply the middle: furniture
+ * can stand there (the TV lounge's sofa), and a path to a blocked point stops wherever it can,
+ * sometimes off the rug.
+ */
+function openPointIn(area: Area, from: { x: number; z: number }) {
+  const nav = activeMap().nav;
+  const a = Math.atan2(from.x - area.x, from.z - area.z);
+  for (const da of [0, 0.4, -0.4, 0.8, -0.8, 1.2, -1.2, 1.6, -1.6])
+    for (const f of [0.4, 0.6, 0.25, 0.75, 0.1]) {
+      const p = areaInnerPoint(area, a + da, f);
+      if (nav.isWalkable(p) && nav.findPath(from, p).length) return p;
+    }
+  return areaInnerPoint(area, a, 0.4);
 }

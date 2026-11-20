@@ -18,7 +18,7 @@ export function ActivitiesPanel({
 }: {
   states: Record<SpotId, SpotState>;
   roomWideGames: boolean;
-  /** A Common room: nobody runs it, so no videos (watch together) and no voice games (Werewolf). */
+  /** A Common room: nobody runs it, so no videos (watch together). */
   common?: boolean;
   /** What's on the big screen. */
   watchTitle?: string;
@@ -100,10 +100,10 @@ export function ActivitiesPanel({
 }
 
 /** Common rooms are text only with strangers: videos and the talking game stay in rooms someone runs. */
-const NOT_IN_COMMON: SpotId[] = ['tv', 'werewolf'];
+const NOT_IN_COMMON: SpotId[] = ['tv'];
 
 /** The list's order (the user's pick): the most inviting first. */
-const ORDER: SpotId[] = ['tv', 'cards', 'werewolf', 'art', 'floor'];
+const ORDER: SpotId[] = ['tv', 'cards', 'art', 'floor'];
 
 /**
  * A lobby you can join floats to the top, then anything live; the rest keep their fixed order. The

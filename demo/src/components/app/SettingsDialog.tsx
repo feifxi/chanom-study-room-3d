@@ -266,7 +266,7 @@ function Toggles({ tab }: { tab: Tab }) {
     return (
       <div className="flex flex-col gap-5">
         <Row label="Mentions and DMs" defaultChecked />
-        <Row label="Room events starting" hint="“Werewolf night starts in 10 minutes”" defaultChecked />
+        <Row label="Room events starting" hint="“Card night starts in 10 minutes”" defaultChecked />
         <HideInvitesRow />
         <Row label="Sounds" defaultChecked />
       </div>

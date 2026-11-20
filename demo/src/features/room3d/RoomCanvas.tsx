@@ -122,7 +122,7 @@ export function RoomCanvas({
 }
 
 /**
- * Click or tap the floor to walk there (unless turned off in the Room card's Your settings / Settings → Controls). A click
+ * Click or tap the floor to walk there (unless turned off under the dock's More / Settings → Controls). A click
  * that closes an open panel only closes it. An invisible plane over the floor takes the click (furniture
  * has no handlers, so clicks on it land here too and the path ends next to it). A drag turns the
  * camera instead, so clicks that moved more than a few pixels are ignored.

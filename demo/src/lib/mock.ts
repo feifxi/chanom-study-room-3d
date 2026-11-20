@@ -180,14 +180,14 @@ export const MAPS: MapTemplate[] = [
     emoji: '📚',
     blurb: 'Long tables under warm lamps, a fireplace, a TV lounge and games by the door.',
     mood: 'Quiet focus, rain on the windows',
-    zones: ['Study tables', 'Fireside', 'TV lounge', 'Werewolf circle'],
+    zones: ['Study tables', 'Fireside', 'TV lounge', 'Lantern circle'],
     tint: 'bg-lavender',
     look: {
       study: 'Small and long tables with green lamps',
       lounge: 'The TV lounge: sofa, beanbags, cushions',
       private: 'Fireside, window booth',
       screen: 'TV on an oak console',
-      games: 'Two oak card tables, a Werewolf circle',
+      games: 'Two oak card tables, a lantern circle',
       floor: 'The four-colour rug by the door',
       whiteboard: 'Board in an oak frame',
       buddy: 'Buddy Machine by the door',
@@ -208,7 +208,7 @@ export const MAPS: MapTemplate[] = [
       lounge: 'Beanbags by the cat tower',
       private: 'Booths by the window',
       screen: 'TV on the wall',
-      games: 'Two card tables, a Werewolf circle',
+      games: 'Two card tables, a lantern circle',
       floor: 'The paw-print dance floor in front of the bar',
       whiteboard: 'Menu board',
       buddy: 'Buddy Machine by the till',
@@ -325,7 +325,7 @@ export const SERVERS: Server[] = [
       { id: 'rooftop', name: 'Rooftop', mapId: 'rooftop', capacity: 15, allowGuests: false, roomWideGames: true, people: [] },
     ],
     ownerPlus: true,
-    event: 'Werewolf night · Fri 20:00',
+    event: 'Card night · Fri 20:00',
   },
   {
     id: 'cpe',
@@ -377,7 +377,7 @@ export const SERVERS: Server[] = [
     emoji: '🎴',
     tint: 'bg-mint',
     banner: 'from-[#d9f5e3] via-[#fff3d6] to-[#ffe0ec]',
-    description: 'Werewolf, cards and drawing games every weekend. Everyone welcome!',
+    description: 'Cards and drawing games every weekend. Everyone welcome!',
     visibility: 'public',
     members: ['me', 'ploy', 'bow'],
     memberCount: 230,
@@ -410,7 +410,7 @@ function extraRooms(): Server[] {
     ['manga', 'Manga Club', '📖', 'bg-lavender', 'library', 'Mod', 1, 7],
     ['dorm-3b', 'Dorm 3B', '🛏️', 'bg-peach', 'rooftop', null, 0, 9],
     ['cpe-lab', 'CPE Lab Group 4', '🧪', 'bg-sky', 'library', null, 0, 14],
-    ['werewolf', 'Werewolf Fridays', '🐺', 'bg-lavender', 'rooftop', null, 3, 21],
+    ['card-fridays', 'Card Fridays', '🃏', 'bg-lavender', 'rooftop', null, 3, 21],
   ];
   return rows.map(([id, name, emoji, tint, mapId, role, inside, idleDays]) =>
     lightRoom(id, name, emoji, tint, mapId, role, inside, idleDays),
@@ -516,7 +516,7 @@ export interface Message {
 
 export const CHANNEL_MESSAGES: Record<string, Message[]> = {
   'chanom/general': [
-    { id: '1', author: 'ploy', at: 'Today 20:41', text: "who's free friday? werewolf night 🐺" },
+    { id: '1', author: 'ploy', at: 'Today 20:41', text: "who's free friday? card night 🃏" },
     { id: '2', author: 'ken', at: 'Today 20:43', text: '@feifei you coming?', reactions: [{ emoji: '👀', count: 2 }] },
     {
       id: '3',
@@ -624,7 +624,7 @@ export const COINS = 1240;
  * Common rooms (were "drop-in rooms", renamed 2026-11-09): run by Connecta from its templates, open
  * to everyone, guests included, with no members and no saved chat. When a copy fills, a new one
  * opens (#2, #3). Nobody runs them, so they're safe for strangers by design (feature 14): text only,
- * no voice, pictures, videos or screen share, slow mode, no clickable links, no Werewolf.
+ * no voice, pictures, videos or screen share, slow mode, no clickable links.
  */
 /** A copy's capacity: never more than this many inside. */
 export const COMMON_CAPACITY = 25;
@@ -759,7 +759,7 @@ export const OPEN_ROOMS: OpenRoom[] = [
     capacity: 50,
     tags: ['Games', 'Late night'],
     language: 'Thai',
-    blurb: 'Werewolf, cards and drawing games every weekend.',
+    blurb: 'Cards and drawing games every weekend.',
     friendsInside: ['ploy'],
   },
   {

@@ -4,7 +4,7 @@
 **View as**:
 
 - Discover → **Common rooms** → Cat Café → **Walk in**: you land in Mook's copy (a friend). Mic off,
-  no Room chat or pictures, Watch together and Werewolf say "Not in Common rooms", 3 s slow mode.
+  no Room chat or pictures, Watch together says "Not in Common rooms", 3 s slow mode.
 - View as **Guest**: Discover works; other pages show what an account adds; open rooms say "Sign up
   to join".
 - View as **Member** in Chanom Friends: the Room card shows **About** (with the rules) and **Report
@@ -29,7 +29,6 @@ Nobody runs a Common room and the team can't watch every copy, so the risky part
 - **Text only:** no voice, no pictures, no watch together, no screen share. Bubbles only (no saved
   chat, as before). Since nobody talks, guests and accounts get the same rules.
 - **Games that work without voice:** card games, Draw & Guess, Pick a Side, the whiteboard.
-  **Werewolf is off** (it's built around talking).
 - **Slow mode** for everyone (one bubble every 3 s), and **links aren't clickable**.
 - The Room card explains it: "Common room · run by Connecta. Text only, so it's comfy with strangers."
 
@@ -121,7 +120,7 @@ Everyone else gets "page not found". Left nav:
 
 - Common rooms: a `common_room_types` table (template, name, vibe) and copies as ordinary Colyseus
   rooms with `kind = 'common'`; the room sets the rules (no LiveKit publish grant for anyone, no
-  picture uploads, slow mode, Werewolf and the big screen off). Matchmaking: friends' copy, else the
+  picture uploads, slow mode, the big screen off). Matchmaking: friends' copy, else the
   busiest one with fewer than capacity − friend seats, else open a new copy; both numbers are admin settings.
 - Reports: `reports(id, target_kind, target_id, reason, details, reporter_id, room_id, context jsonb,
 created_at, status, outcome, decided_by)`. Thresholds count distinct reporters in a window (Redis).

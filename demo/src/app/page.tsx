@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 const ACTIVITIES = [
   ['📺', 'Watch together', 'bg-sky'],
   ['🃏', 'Card games', 'bg-mint'],
-  ['🐺', 'Werewolf', 'bg-lavender'],
+  ['🔇', 'Private corners', 'bg-lavender'],
   ['🗳️', 'Pick a Side', 'bg-peach'],
   ['✏️', 'Draw & Guess', 'bg-secondary'],
   ['🎨', 'Whiteboard', 'bg-sky'],

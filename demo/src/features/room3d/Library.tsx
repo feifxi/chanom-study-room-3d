@@ -12,9 +12,10 @@ import { zoneShapes } from '../activities/pickASide/Side3D';
 import { ArtCorner } from '../activities/telephone/ArtCorner3D';
 import {
   ART_AREA,
+  ART_TABLE,
+  NIGHT_FILLS,
   BAY_WINDOW,
   BIG_WINDOW,
-  BOARD_AREA,
   BOOTH,
   CARD_TABLES,
   CAT_TOWER,
@@ -32,15 +33,13 @@ import {
   STUDY_RUGS,
   STUDY_TABLES,
   TEA_CART,
-  WOLF,
-  WOLF_SEATS,
-  ZONES,
-  EASELS,
+  CIRCLE,
+  CIRCLE_SEATS,
   GALLERY,
   PAINT_CART,
   type StudyTable as StudyTableDef,
 } from '../map/library';
-import type { Area, RectArea, Werewolf, Zone } from '../map/types';
+import type { Area, RectArea, CushionCircle, Zone } from '../map/types';
 import type { Seat } from '@study/shared';
 
 /**
@@ -126,8 +125,11 @@ export function Cyl({
 
 /** Small deterministic PRNG (Park–Miller), so the shelves look the same on every visit. */
 export function seededRandom(seed: number) {
-  let state = seed;
-  return () => (state = (state * 16807) % 2147483647) / 2147483647;
+  // Park–Miller needs a state in 1…2³¹−2: a negative seed (a shelf left of the middle) gave only
+  // negative numbers, so no book ever passed its "put one here" roll and the shelves stood empty
+  const M = 2147483647;
+  let state = ((Math.floor(seed) % M) + M) % M || 1;
+  return () => (state = (state * 16807) % M) / M;
 }
 
 // ---------- Floor, walls, rugs ----------
@@ -314,18 +316,41 @@ function Bookshelf({ x0, x1, ladder }: { x0: number; x1: number; ladder: boolean
   return (
     <group>
       <Box size={[width, height, 0.06]} position={[cx, height / 2, z - 0.3]} color={WALNUT} />
+      {/* Shelves, dividers and the top are different depths (0.6, 0.64, 0.68): faces in the same plane
+          flicker as the two fight over which is in front */}
       {rows.map((y) => (
-        <Box key={y} size={[width, 0.06, 0.62]} position={[cx, y, z]} color={OAK_LIGHT} />
+        <Box key={y} size={[width, 0.06, 0.6]} position={[cx, y, z]} color={OAK_LIGHT} />
       ))}
-      <Box size={[width, 0.08, 0.66]} position={[cx, height, z]} color={OAK_LIGHT} />
+      <Box size={[width, 0.08, 0.68]} position={[cx, height, z]} color={OAK_LIGHT} />
       {Array.from({ length: dividers + 1 }, (_, i) => x0 + (i * width) / dividers).map((x) => (
-        <Box key={x} size={[0.08, height, 0.62]} position={[x, height / 2, z]} color={OAK} />
+        <Box key={x} size={[0.08, height, 0.64]} position={[x, height / 2, z]} color={OAK} />
       ))}
       <instancedMesh ref={ref} args={[undefined, undefined, books.length]} castShadow receiveShadow>
         <boxGeometry args={[1, 1, 1]} />
         <meshStandardMaterial roughness={0.8} />
       </instancedMesh>
       {ladder && <Ladder x={x0 + 1.3} z={z + 0.45} height={height} />}
+    </group>
+  );
+}
+
+/**
+ * A candle in a glass jar: a small warm light for low tables (the booth, the art table), cosier than
+ * a desk lamp. The flame glows by itself; the light is always mounted (see BankersLamp).
+ */
+function CandleJar({ position, lamps }: { position: [number, number, number]; lamps: number }) {
+  return (
+    <group position={position}>
+      <Cyl r={0.055} h={0.09} position={[0, 0.045, 0]} color={CREAM_SOFT} segments={14} />
+      <mesh position={[0, 0.075, 0]}>
+        <cylinderGeometry args={[0.07, 0.07, 0.15, 16, 1, true]} />
+        <meshStandardMaterial color="#f3e2c4" transparent opacity={0.35} roughness={0.2} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh position={[0, 0.115, 0]}>
+        <coneGeometry args={[0.018, 0.05, 8]} />
+        <meshStandardMaterial color="#ffcf6b" emissive="#ffb347" emissiveIntensity={0.6 + lamps * 1.6} />
+      </mesh>
+      <pointLight position={[0, 0.25, 0]} color="#ffbe73" intensity={lamps * 3.5} distance={3.5} decay={1.6} />
     </group>
   );
 }
@@ -346,7 +371,7 @@ function Ladder({ x, z, height }: { x: number; z: number; height: number }) {
 }
 
 /** A green banker's lamp: brass base and stem, green shade, the bulb glows at night. */
-function BankersLamp({ position, lamps, light = true }: { position: [number, number, number]; lamps: number; light?: boolean }) {
+function BankersLamp({ position, lamps }: { position: [number, number, number]; lamps: number }) {
   return (
     <group position={position}>
       <mesh castShadow>
@@ -366,7 +391,7 @@ function BankersLamp({ position, lamps, light = true }: { position: [number, num
         <meshStandardMaterial color={CREAM_SOFT} />
       </mesh>
       {/* Always mounted so day/night only changes brightness: adding or removing lights recompiles every shader */}
-      {light && <pointLight position={[0, 0.25, 0]} color="#ffd89a" intensity={lamps * 4} distance={4.5} decay={1.6} />}
+      <pointLight position={[0, 0.25, 0]} color="#ffd89a" intensity={lamps * 4} distance={4.5} decay={1.6} />
     </group>
   );
 }
@@ -387,13 +412,13 @@ function StudyTable({ t, lamps }: { t: StudyTableDef; lamps: number }) {
           />
         )),
       )}
-      {lampXs.map((lx, i) => (
-        // Long tables: two shades, one light between them (fewer lights keep every material cheap)
-        <BankersLamp key={lx} position={[lx, 0.8, 0]} lamps={lamps} light={i === 0} />
+      {lampXs.map((lx) => (
+        // Every lamp lights its own end: a long table's second lamp sat dark next to its pool of light
+        <BankersLamp key={lx} position={[lx, 0.8, 0]} lamps={lamps} />
       ))}
-      {/* A small stack of books at one end */}
-      <Box size={[0.22, 0.05, 0.3]} position={[t.width / 2 - 0.4, 0.815, -0.35]} color="#46527f" />
-      <Box size={[0.2, 0.04, 0.28]} position={[t.width / 2 - 0.42, 0.86, -0.34]} color="#e0457b" />
+      {/* A small stack of books on the middle strip, clear of the laptops on both sides and the lamp */}
+      <Box size={[0.22, 0.05, 0.3]} position={[0.6, 0.815, 0]} rotation={[0, 0.2, 0]} color="#46527f" />
+      <Box size={[0.2, 0.04, 0.28]} position={[0.62, 0.86, 0.01]} rotation={[0, 0.05, 0]} color="#e0457b" />
     </group>
   );
 }
@@ -406,6 +431,11 @@ export function SeatProps({ seats }: { seats: Seat[] }) {
         // Unit vector from the seat toward its table
         const fx = Math.sin(s.yaw);
         const fz = Math.cos(s.yaw);
+        // How far the table's edge is from the seat: side seats and end seats differ, and props placed
+        // a fixed step from the chair hung off the end of the long tables
+        const t = STUDY_TABLES.find((tb) => tb.id === s.tableId);
+        const edge = t ? (Math.abs(fz) > 0.5 ? Math.abs(s.z - t.z) - t.depth / 2 : Math.abs(s.x - t.x) - t.width / 2) : 0.35;
+        const lap = edge + 0.22;
         return (
           <group key={s.id}>
             <group position={[s.x - fx * CHAIR_BACK, 0, s.z - fz * CHAIR_BACK]} rotation={[0, s.yaw, 0]}>
@@ -417,7 +447,7 @@ export function SeatProps({ seats }: { seats: Seat[] }) {
                 )),
               )}
             </group>
-            <group position={[s.x + fx * 0.42, 0.79, s.z + fz * 0.42]} rotation={[0, s.yaw + Math.PI, 0]}>
+            <group position={[s.x + fx * lap, 0.79, s.z + fz * lap]} rotation={[0, s.yaw + Math.PI, 0]}>
               <Box size={[0.36, 0.02, 0.24]} position={[0, 0, 0.02]} color="#c9ccd4" cast={false} />
               <group position={[0, 0.01, -0.1]} rotation={[-0.35, 0, 0]}>
                 <Box size={[0.36, 0.22, 0.015]} position={[0, 0.11, 0]} color="#3a3d46" />
@@ -430,7 +460,7 @@ export function SeatProps({ seats }: { seats: Seat[] }) {
             </group>
             <Box
               size={[0.18, 0.015, 0.24]}
-              position={[s.x + fx * 0.4 + fz * 0.26, 0.795, s.z + fz * 0.4 - fx * 0.26]}
+              position={[s.x + fx * (edge + 0.18) + fz * 0.3, 0.795, s.z + fz * (edge + 0.18) - fx * 0.3]}
               color="#fdf6e3"
               cast={false}
             />
@@ -441,25 +471,9 @@ export function SeatProps({ seats }: { seats: Seat[] }) {
   );
 }
 
-/** A brass chandelier with candle bulbs (the bulbs are in Bulbs) over each half of the study block. */
-function Chandelier({ x, z }: { x: number; z: number }) {
-  return (
-    <group position={[x, 0, z]}>
-      <mesh position={[0, 3.75, 0]}>
-        <cylinderGeometry args={[0.012, 0.012, 0.9, 6]} />
-        <meshStandardMaterial color={IRON} />
-      </mesh>
-      <mesh position={[0, 3.3, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-        <torusGeometry args={[0.55, 0.03, 8, 32]} />
-        <meshStandardMaterial color={BRASS} metalness={0.6} roughness={0.35} />
-      </mesh>
-    </group>
-  );
-}
-
 // ---------- B. Window booth ----------
 
-function Booth() {
+function Booth({ lamps }: { lamps: number }) {
   const b = BOOTH.bench;
   const cx = (b.minX + b.maxX) / 2;
   const w = b.maxX - b.minX;
@@ -482,12 +496,13 @@ function Booth() {
       <Box size={[BOOTH.table.w, 0.06, BOOTH.table.d]} position={[BOOTH.table.x, 0.42, BOOTH.table.z]} color={OAK_LIGHT} />
       <Cyl r={0.05} h={0.4} position={[BOOTH.table.x, 0.2, BOOTH.table.z]} color={WALNUT} />
       <Cyl r={0.22} h={0.03} position={[BOOTH.table.x, 0.02, BOOTH.table.z]} color={WALNUT} />
+      {/* A candle lights the booth at night, at the end away from the tea */}
+      <CandleJar position={[BOOTH.table.x - 0.45, 0.45, BOOTH.table.z]} lamps={lamps} />
       {/* Teapot and two cups */}
       <Cyl r={0.09} h={0.12} position={[BOOTH.table.x - 0.2, 0.51, BOOTH.table.z]} color={CREAM_SOFT} segments={12} />
       {[0.15, 0.4].map((dx) => (
         <Cyl key={dx} r={0.04} h={0.06} position={[BOOTH.table.x + dx, 0.48, BOOTH.table.z + 0.1]} color={CREAM_SOFT} segments={10} />
       ))}
-      <HangingLamp x={BOOTH.lamp.x} z={BOOTH.lamp.z} y={BOOTH.lamp.y} />
     </group>
   );
 }
@@ -547,12 +562,13 @@ function Fireplace({ lamps }: { lamps: number }) {
         </mesh>
       ))}
       <Fire lamps={lamps} />
-      {/* On the mantel: a clock (WallClock sits above), two candlesticks and a small plant */}
+      {/* On the mantel, in front of the chimney breast (its face is at x 0.15; behind it they'd be
+          buried with only a leaf poking out): two candlesticks and a small plant */}
       {[-0.7, 0.7].map((dz) => (
-        <Cyl key={dz} r={0.03} h={0.3} position={[0.05, 1.55, dz]} color={BRASS} segments={8} />
+        <Cyl key={dz} r={0.03} h={0.3} position={[0.33, 1.55, dz]} color={BRASS} segments={8} />
       ))}
-      <Cyl r={0.09} h={0.12} position={[0.05, 1.46, 0.35]} color="#d9805c" segments={10} />
-      <mesh position={[0.05, 1.6, 0.35]} castShadow>
+      <Cyl r={0.09} h={0.12} position={[0.33, 1.46, 0.35]} color="#d9805c" segments={10} />
+      <mesh position={[0.33, 1.6, 0.35]} castShadow>
         <sphereGeometry args={[0.13, 10, 8]} />
         <meshStandardMaterial color="#5fa36a" flatShading />
       </mesh>
@@ -634,11 +650,8 @@ function Fireside({ lamps }: { lamps: number }) {
       {FIRESIDE.armchairs.map((c) => (
         <Armchair key={c.z} {...c} color="#8a5a6b" />
       ))}
-      <Cyl r={FIRESIDE.sideTable.r} h={0.04} position={[FIRESIDE.sideTable.x, 0.5, FIRESIDE.sideTable.z]} color={OAK_LIGHT} segments={20} />
-      <Cyl r={0.04} h={0.5} position={[FIRESIDE.sideTable.x, 0.25, FIRESIDE.sideTable.z]} color={WALNUT} segments={8} />
-      <Cyl r={0.05} h={0.08} position={[FIRESIDE.sideTable.x + 0.08, 0.56, FIRESIDE.sideTable.z]} color={CREAM_SOFT} segments={10} />
+      {/* No side table: it stood in the way into the Fireside */}
       <FloorLamp x={FIRESIDE.lamp.x} z={FIRESIDE.lamp.z} lamps={lamps} />
-      <ZoneSign zone={ZONES[0]!} x={FIRESIDE.zone.x + FIRESIDE.zone.w / 2 - 0.1} z={FIRESIDE.zone.z - FIRESIDE.zone.d / 2 + 0.2} />
     </group>
   );
 }
@@ -665,7 +678,6 @@ export function FloorLamp({ x, z, lamps }: { x: number; z: number; lamps: number
 function Lounge({ lamps }: { lamps: number }) {
   const c = LOUNGE.console;
   const run = LOUNGE.sofaRun;
-  const arm = LOUNGE.sofaArm;
   const mid = (a: number, b: number) => (a + b) / 2;
   const SOFA = '#6f80d6';
   const SOFA_DARK = '#5d6ec4';
@@ -677,30 +689,23 @@ function Lounge({ lamps }: { lamps: number }) {
         <Box key={dz} size={[0.02, 0.44, 1.0]} position={[c.maxX + 0.01, 0.32, mid(c.minZ, c.maxZ) + dz]} color={OAK_LIGHT} />
       ))}
       <BigScreen />
-      {/* The L-shaped sofa: the long run faces the TV, the arm runs along the front */}
+      {/* The sofa faces the TV; the nook in front of it stays open front and back */}
       <Box
         size={[run.maxX - run.minX, 0.42, run.maxZ - run.minZ]}
         position={[mid(run.minX, run.maxX), 0.21, mid(run.minZ, run.maxZ)]}
         color={SOFA}
       />
-      <Box size={[0.18, 0.55, run.maxZ - run.minZ]} position={[run.maxX - 0.09, 0.7, mid(run.minZ, run.maxZ)]} color={SOFA} />
-      <Box
-        size={[arm.maxX - arm.minX, 0.42, arm.maxZ - arm.minZ]}
-        position={[mid(arm.minX, arm.maxX), 0.21, mid(arm.minZ, arm.maxZ)]}
-        color={SOFA}
-      />
-      <Box size={[arm.maxX - arm.minX, 0.55, 0.18]} position={[mid(arm.minX, arm.maxX), 0.7, arm.maxZ - 0.09]} color={SOFA} />
-      <Box size={[0.16, 0.26, run.maxZ - run.minZ]} position={[run.minX + 0.08, 0.55, mid(run.minZ, run.maxZ) - 0.1]} color={SOFA} />
-      <Box size={[0.16, 0.26, arm.maxZ - arm.minZ]} position={[arm.minX + 0.08, 0.55, mid(arm.minZ, arm.maxZ)]} color={SOFA} />
+      {/* Backrest along the back (away from the TV), an armrest at each end: a sofa, not a trough */}
+      <Box size={[0.18, 0.55, run.maxZ - run.minZ - 0.02]} position={[run.maxX - 0.1, 0.7, mid(run.minZ, run.maxZ)]} color={SOFA} />
+      {/* Armrests stand 1 cm proud of the base and back: shared faces would flicker */}
+      {[run.minZ + 0.08, run.maxZ - 0.08].map((z) => (
+        <Box key={z} size={[run.maxX - run.minX + 0.02, 0.26, 0.18]} position={[mid(run.minX, run.maxX), 0.55, z]} color={SOFA} />
+      ))}
       {[4.5, 5.3, 6.1, 6.9].map((z) => (
-        <Box key={z} size={[0.6, 0.1, 0.7]} position={[run.minX + 0.4, 0.47, z]} color={SOFA_DARK} />
+        <Box key={z} size={[0.5, 0.1, 0.7]} position={[run.minX + 0.33, 0.47, z]} color={SOFA_DARK} />
       ))}
-      {[-11.3, -10.4].map((x) => (
-        <Box key={x} size={[0.7, 0.1, 0.6]} position={[x, 0.47, arm.minZ + 0.4]} color={SOFA_DARK} />
-      ))}
-      {/* Throw pillows in the corner */}
-      <Box size={[0.4, 0.4, 0.14]} position={[-9.8, 0.75, 7.2]} rotation={[0, 0.5, 0.1]} color={PINK} />
-      <Box size={[0.4, 0.4, 0.14]} position={[-10.0, 0.72, 7.55]} rotation={[0, 1.1, -0.1]} color={YELLOW} />
+      {/* A throw pillow leaning on the backrest at the free end; the cat naps in front of it */}
+      <Box size={[0.12, 0.34, 0.34]} position={[run.maxX - 0.25, 0.66, 7.45]} rotation={[0, 0, -0.2]} color={PINK} />
       {LOUNGE.beanbags.map((b, i) => (
         <mesh key={i} position={[b.x, 0.26, b.z]} scale={[1, 0.62, 1]} castShadow receiveShadow>
           <sphereGeometry args={[b.r, 18, 12]} />
@@ -756,14 +761,14 @@ function Entrance() {
   );
 }
 
-// ---------- H. Werewolf circle ----------
+// ---------- H. Lantern circle ----------
 
-export function WerewolfCircle({ wolf: WOLF, seats, lamps }: { wolf: Werewolf; seats: Seat[]; lamps: number }) {
+export function LanternCircle({ circle: CIRCLE, seats, lamps }: { circle: CushionCircle; seats: Seat[]; lamps: number }) {
   return (
     <group>
-      <Rug area={WOLF.area} color={RUG_GREEN} border={RUG_GREEN_EDGE} />
-      <group position={[WOLF.x, 0, WOLF.z]}>
-        <Cyl r={WOLF.tableR} h={0.06} position={[0, 0.34, 0]} color={OAK} segments={28} />
+      <Rug area={CIRCLE.area} color={RUG_GREEN} border={RUG_GREEN_EDGE} />
+      <group position={[CIRCLE.x, 0, CIRCLE.z]}>
+        <Cyl r={CIRCLE.tableR} h={0.06} position={[0, 0.34, 0]} color={OAK} segments={28} />
         <Cyl r={0.12} h={0.3} position={[0, 0.16, 0]} color={WALNUT} segments={12} />
         <Cyl r={0.3} h={0.03} position={[0, 0.015, 0]} color={WALNUT} segments={16} />
         {/* A brass lantern with a candle inside; its glow is a point light */}
@@ -874,7 +879,8 @@ function WallClock() {
     if (minute.current) minute.current.rotation.z = -(m / 60) * Math.PI * 2;
   });
   return (
-    <group position={[-W / 2 + 0.44, 2.6, FIRESIDE.hearth.z]} rotation={[0, Math.PI / 2, 0]}>
+    // On the chimney breast's face (hearth x + 0.15), not sunk into it with only the hands showing
+    <group position={[FIRESIDE.hearth.x + 0.18, 2.6, FIRESIDE.hearth.z]} rotation={[0, Math.PI / 2, 0]}>
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.36, 0.36, 0.05, 32]} />
         <meshStandardMaterial color="#6b4a33" />
@@ -979,31 +985,23 @@ export function Bulbs({ bulbs, lamps }: { bulbs: Bulb[]; lamps: number }) {
 
 function LibraryBulbs({ lamps }: { lamps: number }) {
   const bulbs = useMemo<Bulb[]>(() => {
+    // No hanging lamps over the study tables, card tables or the booth (they cluttered the view
+    // from the room camera): banker's lamps and floor lamps light those places instead
     const list: Bulb[] = [];
-    for (const [cx, cz] of [
-      [STUDY_RUGS[0]!.x, STUDY_RUGS[0]!.z],
-      [STUDY_RUGS[1]!.x, STUDY_RUGS[1]!.z],
-    ])
-      for (let i = 0; i < 8; i++) {
-        const a = (i / 8) * Math.PI * 2;
-        list.push({ x: cx + Math.cos(a) * 0.55, y: 3.42, z: cz + Math.sin(a) * 0.55, s: 1, color: '#fff1b0' });
-      }
     // String lights: a sagging line across the lounge
     for (let i = 0; i <= 14; i++) {
       const k = i / 14;
       list.push({ x: -12.7 + k * 4.4, y: 3.5 - Math.sin(k * Math.PI) * 0.5, z: 3.8 + k * 4.5, s: 0.9, color: '#ffe8a8' });
     }
-    // Paper lanterns over the Werewolf circle and the card tables
+    // Paper lanterns over the lantern circle and the card tables
     for (const [x, y, z, c] of [
       [8.4, 3.0, 4.4, '#ffb3c4'],
       [10.8, 3.3, 6.5, '#ffd9a0'],
       [9.6, 2.8, 7.7, '#c9e4ff'],
     ] as const)
       list.push({ x, y, z, s: 3.6, color: c });
-    for (const t of CARD_TABLES) list.push({ x: t.x, y: 1.7, z: t.z, s: 1.2, color: '#fff1b0' });
-    list.push({ x: BOOTH.lamp.x, y: BOOTH.lamp.y - 0.08, z: BOOTH.lamp.z, s: 1.2, color: '#fff1b0' });
     for (const l of [FIRESIDE.lamp, LOUNGE.lamp]) list.push({ x: l.x, y: 1.58, z: l.z, s: 1.6, color: '#fff1b0' });
-    list.push({ x: WOLF.x, y: 0.72, z: WOLF.z, s: 2.4, color: '#ffd27a' });
+    list.push({ x: CIRCLE.x, y: 0.72, z: CIRCLE.z, s: 2.4, color: '#ffd27a' });
     return list;
   }, []);
   return <Bulbs bulbs={bulbs} lamps={lamps} />;
@@ -1033,17 +1031,16 @@ export function Library({ light, shadows = true }: { light: DayLight; shadows?: 
       <StaticBatch>
         <Shell windowColor={light.windowColor} />
 
-        {/* Rugs: every activity and private zone is one (the rug is the area) */}
+        {/* Rugs: every activity and private zone is one (the rug is the area), except the whiteboard */}
         {STUDY_RUGS.map((r, i) => (
           <Rug key={i} area={r} color={RUG_RED} border={RUG_RED_EDGE} />
         ))}
         <Rug area={BOOTH.zone} color={LAVENDER} border={RUG_LAVENDER_EDGE} />
-        <Rug area={BOARD_AREA} color="#dfd3bf" border={TRIM} />
         <Rug area={FIRESIDE.zone} color={RUG_RED} border={RUG_RED_EDGE} />
         <Rug area={LOUNGE.area} color={LAVENDER} border={RUG_LAVENDER_EDGE} />
         <FourColourRug area={FLOOR_AREA} />
         {CARD_TABLES.map((t) => (
-          <Rug key={t.id} area={t.area} color={RUG_GREEN} border={RUG_GREEN_EDGE} />
+          <Rug key={t.id} area={t.area} color={RUG_CREAM} border={RUG_RED_EDGE} />
         ))}
         <Rug area={ART_AREA} color={RUG_CREAM} border={RUG_CREAM_EDGE} />
 
@@ -1054,22 +1051,30 @@ export function Library({ light, shadows = true }: { light: DayLight; shadows?: 
           <StudyTable key={t.id} t={t} lamps={lamps} />
         ))}
         <SeatProps seats={DESK_SEATS} />
-        {STUDY_RUGS.map((r, i) => (
-          <Chandelier key={i} x={r.x} z={r.z} />
-        ))}
         <Globe />
 
-        <Booth />
+        <Booth lamps={lamps} />
         <WhiteboardFrame />
         <ChalkCart />
         <Fireside lamps={lamps} />
         <WallClock />
         <Lounge lamps={lamps} />
         <Entrance />
-        <CardTables />
-        <WerewolfCircle wolf={WOLF} seats={WOLF_SEATS} lamps={lamps} />
-        <ZoneSign zone={ZONES[1]!} x={BOOTH.zone.x - BOOTH.zone.w / 2 + 0.3} z={BOOTH.zone.z + BOOTH.zone.d / 2 - 0.1} />
-        <ArtCorner area={ART_AREA} easels={EASELS} cart={PAINT_CART} gallery={GALLERY} />
+        <CardTables look="library" />
+        <LanternCircle circle={CIRCLE} seats={CIRCLE_SEATS} lamps={lamps} />
+        {NIGHT_FILLS.map((f) => (
+          <pointLight
+            key={`${f.x},${f.z}`}
+            position={[f.x, 2.8, f.z]}
+            color="#ffd9a0"
+            intensity={lamps * 6}
+            distance={f.reach}
+            decay={1.4}
+          />
+        ))}
+        {/* A candle on the Draw & Guess table, just off the pencil pots in the middle */}
+        <CandleJar position={[ART_TABLE.x, 0.75, ART_TABLE.z + 0.32]} lamps={lamps} />
+        <ArtCorner area={ART_AREA} table={ART_TABLE} cart={PAINT_CART} gallery={GALLERY} />
         <CatTower x={CAT_TOWER.x} z={CAT_TOWER.z} />
 
         <Print side="left" at={-3.4} y={2.5} color={GREEN} />

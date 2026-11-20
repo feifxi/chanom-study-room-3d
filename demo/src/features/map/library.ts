@@ -7,7 +7,7 @@ import {
   type Walker,
   type World,
 } from '@study/shared';
-import { cardSeats, circle, rect, wolfSeats, zoneAtIn, type CardTable, type MapData, type Zone } from './types';
+import { artSeats, cardSeats, circle, rect, circleSeats, zoneAtIn, type ArtTable, type CardTable, type MapData, type Zone } from './types';
 
 /**
  * The Cosy Library map (feature 7, redesigned 2026-11-10): a 26 × 18 m reading room laid out in
@@ -105,8 +105,8 @@ export const STUDY_RUGS = [rect(-5.5, -4.2, 6.8, 6.6), rect(3.6, -4.2, 7.6, 6.6)
 export const BOOTH = {
   zone: rect(10.5, -6.85, 4.2, 3.1),
   bench: { minX: 8.6, maxX: 12.4, minZ: -8.25, maxZ: -7.55, seatY: 0.45 },
-  table: { x: 10.5, z: -6.55, w: 1.4, d: 0.7 },
-  lamp: { x: 10.5, z: -7.2, y: 2.4 },
+  // Far enough from the bench that standing up leaves you on the floor between them
+  table: { x: 10.5, z: -6.1, w: 1.4, d: 0.6 },
 } as const;
 const BOOTH_SEATS: Seat[] = [9.1, 9.9, 11.1, 11.9].map((x, i) => ({
   id: `booth-${i}`,
@@ -120,9 +120,15 @@ const BOOTH_SEATS: Seat[] = [9.1, 9.9, 11.1, 11.9].map((x, i) => ({
 
 // ---------- C. Whiteboard ----------
 
-export const BOARD = { x: -HW + 0.12, z: -6.0, width: 1.9, height: 1.07, y: 1.45, yaw: Math.PI / 2 } as const;
-export const BOARD_AREA = rect(-11.2, -6.0, 3.2, 3.2);
-export const CHALK_CART = { x: -10.3, z: -7.3 } as const;
+// Big enough to fill its stretch of wall (16:9), between the wainscot and the picture rail
+export const BOARD = { x: -HW + 0.12, z: -6.0, width: 3.0, height: 1.69, y: 1.9, yaw: Math.PI / 2 } as const;
+/**
+ * Only the strip in front of the board, with no rug: the wall shows the drawing to the whole room,
+ * so the area is for whoever walks right up to draw (decided 2026-11-20).
+ */
+export const BOARD_AREA = rect(-12.0, -6.0, 1.6, 3.4);
+// Against the wall past the board's far end (the shelf's rolling ladder has the back corner)
+export const CHALK_CART = { x: -12.4, z: -3.75 } as const;
 
 // ---------- D. Fireside (private zone) ----------
 
@@ -130,12 +136,13 @@ export const FIRESIDE = {
   zone: rect(-10.95, 0.5, 3.5, 3.8),
   /** Stone surround on the left wall; the fire glows inside it. */
   hearth: { x: -HW + 0.35, z: 0.5, width: 2.4, depth: 0.7 },
-  loveseat: { x: -9.9, z: 0.5, yaw: -Math.PI / 2 },
+  // Set back from the armchairs so there's a way in between them (a 20 cm gap before: click-to-walk
+  // couldn't route through it)
+  loveseat: { x: -9.45, z: 0.5, yaw: -Math.PI / 2 },
   armchairs: [
     { x: -11.6, z: -0.95, yaw: 0 },
     { x: -11.6, z: 1.95, yaw: Math.PI },
   ],
-  sideTable: { x: -10.9, z: -0.7, r: 0.28 },
   lamp: { x: -9.7, z: 2.2 },
 } as const;
 const FIRESIDE_SEATS: Seat[] = [
@@ -164,17 +171,21 @@ const FIRESIDE_SEATS: Seat[] = [
 
 export const LOUNGE = {
   area: rect(-10.45, 6.05, 4.6, 4.9),
-  console: { minX: -HW + 0.2, maxX: -HW + 0.75, minZ: 4.9, maxZ: 7.3 },
-  /** The L-shaped sofa: a long run facing the TV and a short arm along the front. */
-  sofaRun: { minX: -10.15, maxX: -9.45, minZ: 3.95, maxZ: 7.45 },
-  sofaArm: { minX: -11.8, maxX: -9.45, minZ: 7.45, maxZ: 8.3 },
+  // Long enough for the TV and a speaker on each side to stand on it
+  console: { minX: -HW + 0.2, maxX: -HW + 0.75, minZ: 4.55, maxZ: 7.65 },
+  /**
+   * A sofa facing the TV, with beanbags and floor cushions between them. The nook is open front and
+   * back (an L-shaped sofa used to close it, leaving nowhere to stand and seats you couldn't get up
+   * from), and every seat has floor beside it.
+   */
+  sofaRun: { minX: -9.75, maxX: -9.05, minZ: 3.95, maxZ: 7.8 },
   beanbags: [
-    { x: -11.1, z: 4.3, r: 0.42 },
-    { x: -11.4, z: 5.6, r: 0.42 },
+    { x: -11.55, z: 4.6, r: 0.42 },
+    { x: -11.55, z: 7.2, r: 0.42 },
   ],
   cushions: [
-    { x: -11.2, z: 6.8, r: 0.26 },
-    { x: -10.5, z: 5.9, r: 0.26 },
+    { x: -11.6, z: 5.55, r: 0.26 },
+    { x: -11.6, z: 6.4, r: 0.26 },
   ],
   lamp: { x: -12.3, z: 8.3 },
 } as const;
@@ -185,35 +196,19 @@ const LOUNGE_SEATS: Seat[] = [
     id: `lounge-${i}`,
     kind: 'sofa' as const,
     tableId: 'lounge',
-    x: -9.8,
+    x: -9.4,
     z,
     yaw: -Math.PI / 2,
-    out: { x: -9.0, z },
+    // Stand up in front of the sofa, on the TV side (not behind its back)
+    out: { x: -10.3, z },
   })),
-  ...[-11.3, -10.4].map((x, i) => ({
-    id: `lounge-${i + 4}`,
-    kind: 'sofa' as const,
-    tableId: 'lounge',
-    x,
-    z: 7.9,
-    yaw: Math.PI,
-    out: { x, z: 7.1 },
-  })),
-  ...[...LOUNGE.beanbags, ...LOUNGE.cushions].map((b, i) => ({
-    id: `lounge-${i + 6}`,
-    kind: 'sofa' as const,
-    tableId: 'lounge',
-    x: b.x,
-    z: b.z,
-    yaw: -Math.PI / 2,
-    out: { x: b.x + b.r + 0.4, z: b.z },
-  })),
+  // The beanbags and floor cushions are decor: only the sofa is a seat
 ];
 
 // ---------- F. Open floor ----------
 
-/** A four-colour rug: one quarter per Pick a Side zone. */
-export const FLOOR_AREA = rect(-4.2, 5.1, 6.0, 5.4);
+/** A square four-colour rug: one quarter per Pick a Side zone (a 2×2 cut along its edges). */
+export const FLOOR_AREA = rect(-4.2, 5.1, 5.4, 5.4);
 
 // ---------- Entrance ----------
 
@@ -221,7 +216,8 @@ export const DOORMAT = rect(0, 8.3, 1.8, 1.0);
 export const TEA_CART = { minX: -2.6, maxX: -1.4, minZ: 8.0, maxZ: 8.7 } as const;
 /** The Buddy Machine by the door, facing into the room (−z). */
 export const GACHA_MACHINE = { x: 2.0, z: 8.2, yaw: Math.PI, reach: 1.7 } as const;
-export const COAT_STAND = { x: 3.2, z: 8.5 } as const;
+/** Tucked against the front wall, clear of the card stools' stand-up spots. */
+export const COAT_STAND = { x: 3.0, z: 8.75 } as const;
 
 // ---------- G. Card tables ----------
 
@@ -232,21 +228,30 @@ export const CARD_TABLES: CardTable[] = [
 ];
 const CARD_SEATS: Seat[] = CARD_TABLES.flatMap(cardSeats);
 
-// ---------- H. Werewolf circle ----------
+// ---------- H. Lantern circle ----------
 
-export const WOLF = { x: 9.6, z: 5.5, tableR: 0.55, cushionR: 1.55, area: circle(9.6, 5.5, 2.6) };
-export const WOLF_SEATS: Seat[] = wolfSeats(WOLF);
+export const CIRCLE = { x: 9.6, z: 5.5, tableR: 0.55, cushionR: 1.55, area: circle(9.6, 5.5, 2.6) };
+export const CIRCLE_SEATS: Seat[] = circleSeats(CIRCLE);
 
 // ---------- I. Art corner ----------
 
-export const ART_AREA = rect(10.7, -0.8, 4.2, 4.4);
-export const EASELS = [
-  { x: 12.3, z: -1.9 },
-  { x: 12.3, z: 0.2 },
-  { x: 9.2, z: 0.9 },
-  { x: 11.3, z: 1.1 },
-].map((e) => ({ ...e, yaw: Math.atan2(ART_AREA.x - e.x, ART_AREA.z - e.z) }));
+/** A big round art table with ten stools, one per Draw & Guess player at most: sit down to join. */
+export const ART_TABLE: ArtTable = { x: 10.5, z: -0.4, tableR: 0.85, stoolR: 1.45, stools: 10, area: circle(10.5, -0.4, 2.2) };
+export const ART_AREA = ART_TABLE.area;
+const ART_SEATS: Seat[] = artSeats(ART_TABLE);
 export const PAINT_CART = { x: 9.1, z: -2.5 } as const;
+
+/**
+ * Soft light from overhead, with nothing to see, for places with no lamp of their own so they aren't
+ * dark at night: the card tables, the open floor and the whiteboard. Hanging lamps used to light them (they
+ * cluttered the camera's view), and floor lamps standing in the room looked out of place.
+ */
+export const NIGHT_FILLS = [
+  { x: 4.3, z: 5.3, reach: 5.5 },
+  { x: -4.2, z: 5.1, reach: 6.5 },
+  // In front of the whiteboard: it's matte (lit like the walls), so with nothing on it it went dark
+  { x: -10.9, z: -6.0, reach: 5 },
+] as const;
 /** A folding screen along the back of the rug; its frames show Draw & Guess's last reveal. */
 export const GALLERY = { x: 10.7, z: -2.85, width: 2.6, height: 1.9, y: 1.3, yaw: 0 } as const;
 
@@ -262,7 +267,8 @@ export const PLANTS = [
   { x: 12.6, z: -4.9, s: 0.9 },
 ];
 export const CAT_TOWER = { x: 12.4, z: 2.3 } as const;
-export const GLOBE = { x: -0.6, z: -0.3 } as const;
+/** By the back wall, between the arched window and the books (it stood mid-room in the walkway). */
+export const GLOBE = { x: -1.35, z: -8.3 } as const;
 /** Tall shelves along the back wall (x ranges), a rolling ladder on the left one. */
 export const SHELVES = [
   { x0: -12.7, x1: -6.6, ladder: true },
@@ -281,7 +287,15 @@ export const ZONES: Zone[] = [
 
 // ---------- Seats, collisions, cats ----------
 
-export const SEATS: Seat[] = [...DESK_SEATS, ...BOOTH_SEATS, ...FIRESIDE_SEATS, ...LOUNGE_SEATS, ...CARD_SEATS, ...WOLF_SEATS];
+export const SEATS: Seat[] = [
+  ...DESK_SEATS,
+  ...BOOTH_SEATS,
+  ...FIRESIDE_SEATS,
+  ...LOUNGE_SEATS,
+  ...CARD_SEATS,
+  ...CIRCLE_SEATS,
+  ...ART_SEATS,
+];
 export const SEAT_BY_ID: ReadonlyMap<string, Seat> = new Map(SEATS.map((s) => [s.id, s]));
 
 const box = (minX: number, maxX: number, minZ: number, maxZ: number): Obstacle => ({ kind: 'box', minX, maxX, minZ, maxZ });
@@ -307,20 +321,17 @@ export const OBSTACLES: Obstacle[] = [
   ),
   box(FIRESIDE.loveseat.x - 0.4, FIRESIDE.loveseat.x + 0.35, -0.25, 1.25),
   ...FIRESIDE.armchairs.map((c) => box(c.x - 0.42, c.x + 0.42, c.z - 0.4, c.z + 0.4)),
-  disc(FIRESIDE.sideTable.x, FIRESIDE.sideTable.z, FIRESIDE.sideTable.r),
   disc(FIRESIDE.lamp.x, FIRESIDE.lamp.z, 0.25),
   box(LOUNGE.console.minX, LOUNGE.console.maxX, LOUNGE.console.minZ, LOUNGE.console.maxZ),
   box(LOUNGE.sofaRun.minX, LOUNGE.sofaRun.maxX, LOUNGE.sofaRun.minZ, LOUNGE.sofaRun.maxZ),
-  box(LOUNGE.sofaArm.minX, LOUNGE.sofaArm.maxX, LOUNGE.sofaArm.minZ, LOUNGE.sofaArm.maxZ),
-  ...LOUNGE.beanbags.map((b) => disc(b.x, b.z, b.r)),
-  ...LOUNGE.cushions.map((b) => disc(b.x, b.z, b.r)),
+  // Beanbags and floor cushions are soft decor: you walk over them
   disc(LOUNGE.lamp.x, LOUNGE.lamp.z, 0.25),
   box(TEA_CART.minX, TEA_CART.maxX, TEA_CART.minZ, TEA_CART.maxZ),
   disc(GACHA_MACHINE.x, GACHA_MACHINE.z, 0.5),
   disc(COAT_STAND.x, COAT_STAND.z, 0.25),
   ...CARD_TABLES.map((t) => disc(t.x, t.z, t.r)),
-  disc(WOLF.x, WOLF.z, WOLF.tableR),
-  ...EASELS.map((e) => disc(e.x, e.z, 0.3)),
+  disc(CIRCLE.x, CIRCLE.z, CIRCLE.tableR),
+  disc(ART_TABLE.x, ART_TABLE.z, ART_TABLE.tableR),
   disc(PAINT_CART.x, PAINT_CART.z, 0.3),
   box(GALLERY.x - GALLERY.width / 2, GALLERY.x + GALLERY.width / 2, GALLERY.z - 0.2, GALLERY.z + 0.15),
   ...PLANTS.map((p) => disc(p.x, p.z, 0.35)),
@@ -336,7 +347,7 @@ export const resolveCollisions = (p: { x: number; z: number }, others: Iterable<
   resolveIn(p, others, radius, WORLD);
 
 /** Where every new room's resident cat starts: by the lounge rug. */
-export const STARTER_CAT = { x: -11.7, z: 5.0 } as const;
+export const STARTER_CAT = { x: -10.5, z: 3.5 } as const;
 
 /** Where new buddies pop out: just in front of the machine. */
 export const NPC_SPAWN = {
@@ -346,11 +357,11 @@ export const NPC_SPAWN = {
 
 /** Cosy places a cat likes to nap. `y` lifts it onto furniture. */
 export const NAP_SPOTS: { x: number; z: number; y: number }[] = [
-  { x: -9.8, z: 7.9, y: 0.45 }, // the sofa's corner, where nobody sits
+  { x: -9.55, z: 7.45, y: 0.45 }, // the sofa's free end, in front of the pillow
   { x: 12.15, z: -7.9, y: BOOTH.bench.seatY }, // end of the window bench
   { x: -12.1, z: 1.95, y: 0 }, // the hearth
   { x: -9.6, z: -8.45, y: 1.48 }, // a shelf
-  { x: WOLF.x, z: WOLF.z + WOLF.cushionR, y: 0.12 }, // a Werewolf cushion
+  { x: CIRCLE.x, z: CIRCLE.z + CIRCLE.cushionR, y: 0.12 }, // a lantern-circle cushion
 ];
 
 export const LIBRARY: MapData = {
@@ -364,12 +375,14 @@ export const LIBRARY: MapData = {
   deskSeats: DESK_SEATS,
   obstacles: OBSTACLES,
   zones: ZONES,
+  floatingZoneTags: true,
   cardTables: CARD_TABLES,
-  wolf: WOLF,
+  circle: CIRCLE,
   floorArea: FLOOR_AREA,
   tvArea: LOUNGE.area,
   boardArea: BOARD_AREA,
   artArea: ART_AREA,
+  artTable: ART_TABLE,
   tv: TV,
   board: BOARD,
   gacha: GACHA_MACHINE,

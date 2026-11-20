@@ -110,6 +110,19 @@ export interface WatchState {
   offset: number;
   startedAt: number;
   paused: boolean;
+  /**
+   * Someone's screen on the big screen. It takes over while it lasts: the video pauses and carries
+   * on afterwards. The picture and sound go over LiveKit, never through room state.
+   */
+  share: ScreenShare | null;
+  /** The video was playing when the share began, so it plays again when the share ends. */
+  resume: boolean;
+}
+
+export interface ScreenShare {
+  by: string;
+  /** The sharer picked a tab or screen with its sound (browsers allow it on some systems only). */
+  audio: boolean;
 }
 
 /** Nobody watching for this long: the screen switches off and the queue clears. */
@@ -119,7 +132,7 @@ export const watchPosition = (w: WatchState, now = Date.now()) => (w.paused ? w.
 
 export class ActivityHub {
   readonly spots = Object.fromEntries(SPOTS.map((s) => [s.id, fresh(s)])) as Record<SpotId, SpotState>;
-  readonly watch: WatchState = { now: null, queue: [], offset: 0, startedAt: 0, paused: false };
+  readonly watch: WatchState = { now: null, queue: [], offset: 0, startedAt: 0, paused: false, share: null, resume: false };
   /** The whiteboard's drawing (its own store: strokes change on every pointer move). */
   readonly board = new BoardStore();
   /** Pick a Side: the deck the host picked in the lobby, and the game while it runs (and its results). */
@@ -142,7 +155,10 @@ export class ActivityHub {
     readonly roomWideGames: boolean,
     /** Things that happened to you, for toasts ("You're out", "You won!"). */
     private readonly onNews: (text: string) => void = () => {},
-  ) {}
+  ) {
+    // The whiteboard is always on: walk up and you're drawing, no E to press first (see tick)
+    this.spots.board.phase = 'playing';
+  }
 
   subscribe = (l: () => void) => {
     this.listeners.add(l);
@@ -220,10 +236,12 @@ export class ActivityHub {
         if (st.phase !== 'playing') continue;
         st.players = counted;
         if (counted.length) st.since = now;
-        else if (now - st.since > EMPTY_SCREEN_MS) {
-          if (spot.id === 'tv') this.screenOff();
-          else this.boardOff();
-        }
+        // A share ends when its sharer walks away from the screen, like a desk share when you stand
+        if (spot.id === 'tv' && this.watch.share && !here.includes(this.watch.share.by)) this.stopShare(this.watch.share.by, now);
+        // The screen switches off once nobody's watching; the board keeps its drawing until someone
+        // clears it or the room empties (the room resets then, like everything else)
+        if (counted.length) continue;
+        if (spot.id === 'tv' && now - st.since > EMPTY_SCREEN_MS) this.screenOff();
         continue;
       }
 
@@ -273,7 +291,8 @@ export class ActivityHub {
   putOn(video: Video, now = Date.now()) {
     const st = this.spots.tv;
     if (st.phase === 'free') Object.assign(st, fresh(spotById('tv')), { phase: 'playing', hostId: video.by, since: now });
-    if (this.watch.now) this.watch.queue.push(video);
+    // While a screen is shared, new videos wait their turn
+    if (this.watch.now || this.watch.share) this.watch.queue.push(video);
     else Object.assign(this.watch, { now: video, offset: 0, startedAt: now, paused: false });
     this.changed();
   }
@@ -304,8 +323,32 @@ export class ActivityHub {
     this.changed();
   }
 
+  /** Share a screen on the TV: it takes over at once, and a playing video pauses until it ends. */
+  startShare(share: ScreenShare, now = Date.now()) {
+    const st = this.spots.tv;
+    const w = this.watch;
+    if (w.share) return;
+    if (st.phase === 'free') Object.assign(st, fresh(spotById('tv')), { phase: 'playing', hostId: share.by, since: now });
+    const resume = !!w.now && !w.paused;
+    if (resume) Object.assign(w, { offset: watchPosition(w, now), startedAt: now, paused: true });
+    Object.assign(w, { share, resume });
+    this.changed();
+  }
+
+  /** The sharer stopped (or walked away): the video carries on, the next one starts, or the screen goes quiet. */
+  stopShare(by: string, now = Date.now()) {
+    const w = this.watch;
+    if (w.share?.by !== by) return;
+    const resume = w.resume;
+    Object.assign(w, { share: null, resume: false });
+    if (!w.now && w.queue.length) return this.next(now);
+    if (!w.now) this.screenOff();
+    else if (resume) Object.assign(w, { startedAt: now, paused: false });
+    this.changed();
+  }
+
   private screenOff() {
-    Object.assign(this.watch, { now: null, queue: [], offset: 0, paused: false });
+    Object.assign(this.watch, { now: null, queue: [], offset: 0, paused: false, share: null, resume: false });
     Object.assign(this.spots.tv, fresh(spotById('tv')));
   }
 
@@ -465,7 +508,9 @@ export class ActivityHub {
     const go = (id: string, i: number) => {
       const p = this.room.state.players.get(id);
       if (p?.seatId) this.home.set(id, p.seatId);
-      this.room.sendTo(id, ringSpot(spot, i));
+      // An art table: take a free stool (sitting is joining); otherwise stand on the rug
+      const seat = spot.seats?.find((s) => this.room.seatFree(s));
+      this.room.sendTo(id, ringSpot(spot, i), seat);
     };
     go(host, 0);
     this.start('art', host);
@@ -487,20 +532,6 @@ export class ActivityHub {
 
   // --- Whiteboard ---
 
-  /** E at the board: it's on for everyone in front of it. */
-  openBoard(by: string, now = Date.now()) {
-    const st = this.spots.board;
-    if (st.phase !== 'free') return;
-    Object.assign(st, fresh(spotById('board')), { phase: 'playing', hostId: by, since: now });
-    this.changed();
-  }
-
-  /** Everyone has been gone for a while: the drawing goes (photos of it are the players' to keep). */
-  private boardOff() {
-    this.board.clear();
-    Object.assign(this.spots.board, fresh(spotById('board')));
-  }
-
   /** Demo: someone walks to the board and doodles a cat, a few points at a time. */
   scriptDraw() {
     const id = this.freePeople()[0];
@@ -508,7 +539,6 @@ export class ActivityHub {
     const spot = spotById('board');
     this.room.sendTo(id, ringSpot(spot, 1));
     this.later(3000, () => {
-      this.openBoard(id);
       let t = 0;
       catDoodle().forEach((s, k) => {
         const sid = `${id}-${Date.now()}-${k}`;
@@ -529,6 +559,22 @@ export class ActivityHub {
     const tv = spotById('tv');
     this.room.sendTo(id, ringSpot(tv, 0));
     this.later(2500, () => this.putOn({ id: 'lTRiuFIWV54', title: '1 A.M Study Session 📚 [lofi hip hop]', by: id }));
+  }
+
+  /** Demo: someone walks to the big screen and shares their screen for a while. */
+  scriptShare() {
+    if (this.watch.share) return;
+    const id = this.freePeople()[0];
+    if (!id) return;
+    const tv = spotById('tv');
+    this.room.sendTo(id, ringSpot(tv, 1));
+    // Share once they're on the rug (walking off it ends a share), then stop after a minute
+    const share = (tries: number) => {
+      if (!this.inArea(tv, id)) return void (tries && this.later(500, () => share(tries - 1)));
+      this.startShare({ by: id, audio: true });
+      this.later(60_000, () => this.stopShare(id));
+    };
+    share(30);
   }
 
   /** E at a standing spot: open a lobby there, with you as host. */

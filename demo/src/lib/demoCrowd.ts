@@ -180,3 +180,9 @@ export const WATCH_EVENT = 'connecta-demo:watch';
 export function putOnVideo() {
   window.dispatchEvent(new Event(WATCH_EVENT));
 }
+
+/** Demo: someone walks to the big screen and shares their screen on it for a minute (feature 10). */
+export const SHARE_EVENT = 'connecta-demo:share';
+export function shareOnTv() {
+  window.dispatchEvent(new Event(SHARE_EVENT));
+}

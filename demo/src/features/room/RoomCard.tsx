@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
-import { Bell, ChevronDown, Flag, Info, Link2, LogOut, Mic, Settings, Shield, Shirt, VolumeX, type LucideIcon } from 'lucide-react';
-import type { SettingsTab } from '@/components/app/SettingsDialog';
+import { useState } from 'react';
+import { ChevronDown, Flag, Info, Link2, LogOut, Settings, VolumeX } from 'lucide-react';
 import { toast } from 'sonner';
 import { InviteDialog } from '@/components/server/InviteDialog';
 import { placeRoom } from '@/features/place/model';
@@ -14,20 +13,11 @@ import { mapById, useRoomLook } from '@/features/place/roomLook';
 import type { Room, Server } from '@/lib/mock';
 import { useDismiss } from './useDismiss';
 
-/** The shortcuts people look for in a room; everything else is under "All your settings". */
-const MY_TABS: [SettingsTab, LucideIcon, string][] = [
-  ['character', Shirt, 'My look'],
-  ['voice', Mic, 'Voice & sound'],
-  ['notifications', Bell, 'Notifications'],
-  ['privacy', Shield, 'Privacy'],
-];
-
 /**
  * Room card, top left: where you are and everything about the room itself. Collapsed it's just the
  * room. Expanded:
  * - **This room** (for everyone): Invite, and Room settings (owner and mods) or About & rules (members)
- * - **Your settings** (only you): shortcuts into your own settings (look, voice, notifications,
- *   privacy), battery saver and click to walk. Kept apart so an owner never mixes up the two.
+ * Your own settings live under the dock's More button, never here: this card is only the room's.
  * - Leave (like Gather there's no "back": you're either in the room or you've left it)
  * Chat lives in its own panel (bottom left), not in here.
  */
@@ -37,8 +27,6 @@ export function RoomCard({
   room,
   here,
   guest,
-  view,
-  onMySettings,
   onLeave,
   className,
 }: {
@@ -47,10 +35,6 @@ export function RoomCard({
   /** How many people are in this room right now, you included. */
   here: number;
   guest: boolean;
-  /** Your own view controls (battery saver). */
-  view: ReactNode;
-  /** Opens your own settings on a tab (guests have none). */
-  onMySettings?: (tab: SettingsTab) => void;
   onLeave: () => void;
   className?: string;
 }) {
@@ -132,35 +116,6 @@ export function RoomCard({
                 <span className="block font-black">Common room · run by Connecta</span>
                 Text only, so it’s comfy with strangers: no voice, pictures or videos. Be kind, and report anyone who isn’t from their “…”.
               </p>
-            )}
-          </section>
-
-          {/* Just for you: your own settings, never the room's */}
-          <section className="flex flex-col gap-2 rounded-2xl bg-muted/60 p-2.5">
-            <h3 className="flex items-baseline justify-between px-0.5 text-xs font-black">
-              Your settings <span className="text-[11px] font-bold text-muted-foreground">only you</span>
-            </h3>
-            {onMySettings && (
-              <div className="grid grid-cols-2 gap-1.5">
-                {MY_TABS.map(([tab, Icon, label]) => (
-                  <button
-                    key={tab}
-                    onClick={() => onMySettings(tab)}
-                    className="flex items-center gap-1.5 rounded-xl bg-card px-2.5 py-2 text-xs font-extrabold hover:bg-secondary hover:text-secondary-foreground"
-                  >
-                    <Icon className="size-3.5 flex-none text-primary" /> {label}
-                  </button>
-                ))}
-              </div>
-            )}
-            {view}
-            {onMySettings && (
-              <button
-                onClick={() => onMySettings('profile')}
-                className="px-1 text-left text-[11px] font-bold text-muted-foreground hover:text-foreground hover:underline"
-              >
-                All your settings →
-              </button>
             )}
           </section>
 

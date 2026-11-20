@@ -31,8 +31,8 @@ Two things, at different stages:
 
 ## What's next
 
-Feature 12 (card games and Werewolf), resuming from
-[the draft](docs/v2/features/12-cards-and-werewolf-draft.md); then the port to `apps/web`. The
+Feature 12 (card games), resuming from
+[the draft](docs/v2/features/12-cards-draft.md); then the port to `apps/web`. The
 plan's [status and What's left](docs/v2-plan.md#whats-left) is the source of truth.
 
 ## Working agreements

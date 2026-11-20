@@ -23,7 +23,8 @@ function blobTexture() {
   return texture;
 }
 
-export function BlobShadow({ radius = 0.34, y = 0.012 }: { radius?: number; y?: number }) {
+// Above every rug, outline and step-on flash (they reach 3.2 cm): at a rug's height the two flicker
+export function BlobShadow({ radius = 0.34, y = 0.04 }: { radius?: number; y?: number }) {
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, y, 0]} renderOrder={-1}>
       <planeGeometry args={[radius * 2, radius * 2]} />

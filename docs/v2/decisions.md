@@ -86,13 +86,18 @@ decision is made or changed: one line, a date, and the reason.
 - **Chat:** Bubbles (temporary, over heads, default tab) / Room chat (saved) / Messages (DMs). "We
   like to talk to each other first." No "Nearby" text chat. Emoji button sits left, next to
   pictures, never beside Send.
-- **Dock stays short:** Mic, Sound, Chat, Photo, Activities. Owner and mod powers live in 🛡️ Room;
-  Talk to everyone is an admin tool there. No separate emotes; emoji go in chat.
+- **Dock stays short:** Mic, Sound, Chat, Activities, then ⋯ More. Owner and mod powers live in 🛡️
+  Room; Talk to everyone is an admin tool there. No separate emotes; emoji go in chat.
+- **Your settings left the Room card for ⋯ More** (2026-11-20): the card was too long, and room and
+  personal settings belong apart (Discord's server menu vs your avatar, Gather's own tile). More also
+  takes Photo mode off the dock, being used now and then.
 - **People panel:** one panel built for 100 people (a small list and a fold-to-rail mode were
   rejected).
 - **Away:** after 10 minutes, but someone with a timer running is never away (people study in other
   tabs).
-- **Private zones are rugs** with a sign and a 🔇 cue, not circles. "Reading nook" was rejected as a
+- **Private zones are rugs** with a name and a 🔇 cue, not circles. A "🔇 Private zone" tag floats
+  high over the zone's middle like a name tag instead of a hanging plaque (2026-11-20, library
+  first): a label, not a prop, and without the zone's name (the owner wanted just "private zone"). "Reading nook" was rejected as a
   name; zones are named after the place (Fireside, Window booth, Tent…).
 - **Activity areas are rugs** too, square where possible; the whiteboard shows no outline until you
   are close.
@@ -110,13 +115,73 @@ decision is made or changed: one line, a date, and the reason.
 - **Watch together:** YouTube by pasted link (no search: API quota), anyone watching controls it,
   video does **not** duck when people talk (reversed), lo-fi fades while watching.
 - **Photo mode:** take photos anywhere; no gallery ("let users handle it").
+- **Pick a Side's zones are a 2×2 square** cut along the rug's edges (2026-11-20; the diagonal,
+  screen-aligned cut looked like pizza slices). On screen it's a diamond, matched to the HUD grid
+  turned 45°.
+- **The whiteboard is always on** (2026-11-20): no E. Walking up opens the small board, and the
+  drawing stays until Clear or the room empties. E on the first visit only, then not, was confusing.
+  It's lit like a wall, not a glowing screen.
+- **The library's Draw & Guess sits at a round table** (2026-11-20): 10 stools, sit to join, in
+  place of four easels; more seats for more players.
+- **Pick a Side's labels turn with the camera and the zones are opaque** (2026-11-20): flat labels
+  tilted once someone turned the view, and the four-colour rug showed through Would you rather. The
+  floor shows only the letter (A–D); the answers are read in the panel (the owner: "make it
+  simple").
+- **Card tables match their map** (2026-11-20): green felt and a brass lamp read as a casino; the
+  library's are walnut and burgundy leather with a deck, dealt cards and a score pad.
+- **No hanging lamps in the library** (2026-11-20): chandeliers over the study tables and pendants
+  over the card tables and the booth cluttered the camera's view; banker's and floor lamps stay.
+  The Fireside's side table went too: it blocked the way in.
+- **Every seat in the library can be reached and stood up from** (2026-11-20, a layout check): the
+  Fireside's way in was a 20 cm gap (the loveseat moved back), the TV lounge's L-shaped sofa closed
+  its nook (the arm went; beanbags and cushions moved), the booth's table stood where you got up,
+  and the coat stand sat on a card stool's stand-up spot. Beanbags and floor cushions are
+  walked over, not around, and are decor, not seats: only the sofa seats (you stand up in front of
+  it, on the TV side). **A seat within reach wins E** over a spot's own action (the TV's "Put something on"
+  opened when you meant to sit on the sofa); the spot's action stays a button. **Go there** aims at
+  open floor on the rug you can reach, not a fixed point (the TV's landed in the sofa and left you
+  off the rug). Stepping onto a live spot no longer adds a second, paler flash over its edge (the
+  whiteboard showed two colours).
+- **The whiteboard is a small, quiet spot** (2026-11-20, the owner): no rug, outline or step-on
+  flash, and its area is half the old rug's, a strip in front of the board. The board itself grew to
+  3 m so the corner isn't empty. It's a side activity: the wall shows the
+  drawing to the whole room, so the area is only for whoever walks right up to draw.
+- **Every place has its own light at night** (2026-11-20, the owner): taking down the hanging lamps
+  left the card tables, the Window booth, the art table and the open floor dark. A candle in a jar
+  lights the booth's and the art table's tables; the card tables, the open floor and the whiteboard
+  get soft light
+  from overhead with nothing to see (floor lamps standing there looked out of place, and banker's
+  lamps didn't suit low tables). Every banker's lamp has its own light: a long table's second lamp
+  used to sit dark.
+- **Floor cushions seat you on the floor** (2026-11-20, the owner): the lantern circle's and the
+  Rooftop cinema's cushions held you at chair height, floating. Seats can be `low`; the circle's
+  cushions are lounge seats (no laptop, no table screen share).
+- **Rooms open closer** (2026-11-20, the owner): the old 120% zoom is the new 100% and the starting
+  view (phones still start wide enough to see 9 m across).
+- **Activity spots name themselves** (2026-11-20, the owner): a floating tag like the private
+  zones', so you can tell what a table is for without opening Activities. Idle tags show only near
+  you and live ones from anywhere: eight always-on tags plus people's names were too busy zoomed
+  out. Tags float just over people's names and draw on top of them (a version pinned to the rug's
+  front edge read as being under the floor).
+- **Screen share on the TV, with sound for every share** (2026-11-20, the owner): the TV's "Put
+  something on" can share your screen as well as YouTube. A share takes over (the video pauses and
+  carries on after) rather than waiting for the video to end, so nobody hogs the TV. The 3D TV shows
+  a "Jod is sharing" card, not the live picture (a video texture costs every client in the room).
+  Shares carry their sound like Discord's, heard only by people watching (the TV rug, or the desk
+  share's table) with their own volume, not by proximity: a movie shouldn't carry across the study
+  tables. Phones can't share; browsers decide whether sound comes along.
 - **Pick a Side:** questions come in decks; ✨ AI decks are the only AI generation (3 a day Free, 30
   Plus). Host picks mode and deck only.
 - **Draw & Guess** (renamed from Drawing telephone): panel only, no live 3D. Mode names are generic:
   never "Gartic Phone" or "Telestrations"; "Knock-off" became **Copycat**.
 - **Activities list names what you do**, not the place ("art corner" meant nothing to players).
-- **Feature 12 (cards, Werewolf)** is paused mid-discussion and goes last. Proposals so far:
-  [12-cards-and-werewolf-draft.md](features/12-cards-and-werewolf-draft.md).
+- **Feature 12 (cards)** is paused mid-discussion and goes last. Proposals so far:
+  [12-cards-draft.md](features/12-cards-draft.md).
+- **Werewolf is dropped** (2026-11-20, the owner): it's a whole second game inside the app (roles, a
+  narrator, night and day, voting) for something that needs 6+ people, while most groups are 2–4
+  friends who'd rather play cards. Feature 12 is card games only. The 12-cushion circle stays in
+  every map as a **lantern circle**, somewhere to sit and hang out (it looks good), not an activity
+  spot.
 
 ### Study
 

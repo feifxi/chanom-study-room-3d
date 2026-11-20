@@ -68,19 +68,21 @@ The HUD has six named parts, each owning one kind of thing:
 
 | Part          | Where         | Holds                                                               |
 | ------------- | ------------- | ------------------------------------------------------------------- |
-| **Room card** | top left      | the room: name, map, who's here; This room + Your settings; Leave   |
+| **Room card** | top left      | the room: name, map, who's here; Invite, Room settings; Leave       |
 | **My tools**  | left rail     | your things: Study session, Music, Quests 🎯, How to play           |
 | **Chat**      | bottom left   | all text: Bubbles, Room chat, Messages; ⤢ opens the big chat window |
 | **People**    | top right     | who's here and what you can do with each person                     |
 | **Zoom**      | bottom right  | − 100% + (not on touch screens: they pinch)                         |
-| **Dock**      | bottom centre | Mic, Sound, Chat, Photo, Activities; 🛡️ Room for owner and mods     |
+| **Dock**      | bottom centre | Mic, Sound, Chat, Activities; 🛡️ Room (owner, mods); ⋯ More         |
 
-- **Room card** (300 px, no back button: you're in the room or you've left). Expanded, it has two
-  labelled parts so owners never mix them up: **This room** (Invite; Room settings for owner and
-  mods, About & rules for members) and **Your settings** (My look, Voice & sound, Notifications,
-  Privacy, Battery saver, Click to walk, All your settings). **Leave room** sits at the bottom.
-  Your settings in 3D live only here, not on the My tools rail. **Changing your look is live:** a
-  sparkle, no rejoin, at most once every 5 s; guests keep the look they picked.
+- **Room card** (300 px, no back button: you're in the room or you've left). Only the room's
+  things, like Discord's server menu: Invite; Room settings for owner and mods, About & rules for
+  members; **Leave room** at the bottom.
+- **⋯ More** (the dock's last button): what you use now and then and your own settings, like
+  Discord's and Gather's "you" menu. **Photo mode**, then **Your settings · only you**: My look,
+  Voice & sound, Notifications, Privacy, Battery saver, Click to walk, All your settings. Guests get
+  Photo mode and the two switches. **Changing your look is live:** a sparkle, no rejoin, at most
+  once every 5 s; guests keep the look they picked.
 - **Chat tabs:** **Bubbles** (default; said out loud, pops over heads, gone when the room empties),
   **Room chat** (the saved chat, same as the room's page; none in Common rooms), **Messages** (DMs).
   Emoji everywhere; pictures (up to 4) in Room chat and Messages, not Bubbles.
@@ -91,7 +93,10 @@ The HUD has six named parts, each owning one kind of thing:
   mods), and for owner and mods **Moderate** (mute for everyone, kick, ban, make or remove mod; kick
   and ban confirm and take an optional reason). Guests have no message or friend actions.
 - **Dock stays short:** only what most people use every session. Owner and mod tools live under 🛡️
-  Room (today: Talk to everyone). Future occasional tools go in a **⋯ More** button, not the dock.
+  Room (today: Talk to everyone); occasional tools go under **⋯ More**, not on the dock.
+- **The dock never hides under the chat panel:** it's centred, but slides right of an open chat panel
+  when there isn't room; below 1080 px wide the chat panel sits above the dock instead (shorter on
+  short screens).
   Screen share appears only when seated at a desk.
 - **Zoom:** rooms open at 100% (narrow screens open wider, so at least 9 m of floor fits across);
   range 37%–260%.

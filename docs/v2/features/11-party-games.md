@@ -5,7 +5,7 @@
 - Activities → Pick a Side → **Go there**, press **E**, pick a mode and a deck (try **✨ AI**), 📣
   **Call everyone**, **Start**. Walk into a zone to answer. Or Demo tab → **Someone starts Pick a
   Side**.
-- Walk to the whiteboard, press **E**, draw. Demo tab → **Someone draws on the whiteboard** shows a
+- Walk to the whiteboard and draw (no E: the small board opens as you arrive). Demo tab → **Someone draws on the whiteboard** shows a
   cat appear on the wall, live.
 - Activities → Draw & Guess → **Go there**, **E**, pick a mode, **Start**. Or Demo tab → **Someone
   starts Draw & Guess**.
@@ -52,8 +52,13 @@ deck that fits.
 ### On screen
 
 - **3D (everyone sees it, from anywhere):** the open floor splits into 2 or 4 coloured zones (A pink, B blue,
-  C yellow, D green) with the letter and answer painted on the floor. Zones follow the screen: A is on
-  the left (top left with four). At the reveal the right zone stays lit and the others fade.
+  C yellow, D green) with just the letter painted on the floor (the answers are read in the panel). The rug is cut along its own
+  edges (a 2×2 square, never pizza slices); the camera looks in corner-on, so on screen A is the top
+  quarter, B right, C left, D bottom, which is the HUD's 2×2 grid turned 45°. With two zones, A is
+  up and left, B down and right. The zones are opaque, so the four-colour rug underneath never shows
+  through (Would you rather shows two colours). The letters lie flat but turn with the camera, so they
+  read straight however the view is turned. At the reveal the right zone stays lit and the others
+  fade.
 - **Small HUD** under the top strip (the room stays visible): question number, deck, timer bar, the
   question, the answers with **live counts** of who's standing where, "You're on B · you can still
   move". Quiz shows the top three scores; Last one standing shows how many are left.
@@ -89,17 +94,19 @@ board, the rooftop's chalk wall), the same flow as the big screen.
 
 ### How it works
 
-- Walk up (or **Go there**) and press **E**: the board is on. **Being in front of it is drawing**: step
-  into the area and the panel opens; step out and it closes. Everyone there draws on the same board,
-  live; voice keeps working.
-- **The wall shows the drawing live** to the whole room, so people walking past see it fill up.
-- **Cleared when everyone leaves** (30 s after the last person steps away, like the big screen
-  turning off). Nothing is kept by Connecta.
+- **Always on, no E.** **Being right in front of it is drawing**: the area is only the strip in front
+  of the board (1.6 m deep in the library), with **no rug, outline or step-on flash**. Walk up and the
+  board opens small in the corner (walking past never fills your screen); click it to make it big.
+  Step out and it closes. Everyone there draws on the same board, live; voice keeps working.
+- **The wall shows the drawing live** to the whole room, so people walking past see it fill up. It's
+  a matte board lit by the room (dimmer at night), not a glowing screen.
+- **The drawing stays** until someone presses Clear or the room empties (the room resets then, like
+  everything else). Nothing is kept by Connecta.
 
 ### The panel
 
-- **Big panel** for drawing (precise input, phones too). Like the watch panel: a press anywhere else
-  shrinks it to the corner (that press doesn't walk you); a click on the small board makes it big.
+- **Big panel** for drawing (precise input, phones too), opened from the small board. Like the watch
+  panel: a press anywhere else shrinks it to the corner (that press doesn't walk you); a click on the small board makes it big.
 - **One fixed board** (16:9, like the wall). No pan or zoom.
 - **Tools:** pen, 6 colours, 3 sizes, eraser, **undo** (your own last stroke, Ctrl/Cmd+Z), **clear**
   (anyone at the board; asks "Clear the whole board for everyone?").
@@ -152,8 +159,11 @@ name is **Copycat**. Never use Gartic Phone, Telestrations or their mode names (
 - The whole game happens in **one panel** under the activity strip, like Gartic Phone: your turn
   (write / draw / describe / copy), "Sent. Waiting for the others…", then the album. The room and
   voice carry on around it.
-- **Nothing in 3D changes during a game:** no drawings on easels or walls. The art corner (easels,
-  stools, a paint cart, a gallery) is decor in the map's static batch, so it costs nothing per frame.
+- **Where you play:** in the library, a round art table with 10 stools (one per player at most):
+  sit down to start or join, like the card tables. Maps without one still use easels and E.
+- **Nothing in 3D changes during a game:** no drawings on the table, easels or walls. The art corner
+  (table or easels, stools, a paint cart, a gallery) is decor in the map's static batch, so it costs
+  nothing per frame.
 - The drawing step reuses the whiteboard's canvas and tools (colours, sizes, eraser, undo, clear).
 
 ### Backend notes

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { sanitizeLook, type PlayerView } from '@study/shared';
+import { activeMap } from '../map/active';
 import { CharacterRig, type CharacterDetail } from '../avatar/character';
 import type { LabelBoard } from './labels';
 import type { Bubble } from './roomSession';
@@ -99,6 +100,7 @@ export function Avatar({ id, player, isLocal, local, bubble, board, detail = 'fu
     rig.update(dt, t, yaw, {
       walking: !player.seatId && (isLocal ? !!local?.current?.moving : speed > 0.4),
       seated: !!player.seatId,
+      low: !!player.seatId && !!activeMap().seatById.get(player.seatId)?.low,
       talking,
       happy: talking && HAPPY.test(bubble!.text),
     });
@@ -119,7 +121,8 @@ export function Avatar({ id, player, isLocal, local, bubble, board, detail = 'fu
         </group>
       )}
       {isLocal && (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
+        // Just above the blob shadow, which sits above every rug
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.045, 0]}>
           <ringGeometry args={[0.45, 0.56, 40]} />
           <meshBasicMaterial color="#ff6fa8" transparent opacity={0.85} />
         </mesh>

@@ -32,7 +32,8 @@ export function WhiteboardFrame() {
 
 /**
  * The drawing on the wall, live for everyone in the room: redrawn into a canvas texture when the
- * strokes change (at most 10 times a second, which reads as live from across the room).
+ * strokes change (at most 10 times a second, which reads as live from across the room). It's lit by
+ * the room like the walls (matte, dimmer at night), so it reads as a board, not a glowing screen.
  */
 export function BoardSurface({ board }: { board: BoardStore }) {
   const BOARD = activeMap().board;
@@ -61,7 +62,7 @@ export function BoardSurface({ board }: { board: BoardStore }) {
       userData={{ dynamic: true }}
     >
       <planeGeometry args={[BOARD.width, BOARD.height]} />
-      <meshBasicMaterial map={texture} toneMapped={false} />
+      <meshStandardMaterial map={texture} roughness={0.9} />
     </mesh>
   );
 }

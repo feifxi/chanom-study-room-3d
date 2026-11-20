@@ -32,11 +32,8 @@ for (const map of MAPS)
       await page.goto(BASE + map);
       await page.waitForFunction(() => window.__perf?.sample(), null, { timeout: 30_000 });
       if (mode === 'saver') {
-        // Battery saver lives in the room card (top left)
-        await page
-          .getByRole('button', { name: /Chanom Friends/ })
-          .first()
-          .click();
+        // Battery saver lives under the dock's More button
+        await page.getByRole('button', { name: 'More', exact: true }).click();
         await page.getByRole('button', { name: /Battery saver/ }).click();
         await page.keyboard.press('Escape');
       }

@@ -13,6 +13,8 @@ const HEAD_Y = 1.1;
 /** Hip pivot height, and how far the body rises to rest on a chair seat (seat top ≈ 0.47 m). */
 const HIP_Y = 0.22;
 export const SIT_LIFT = 0.29;
+/** On a floor cushion (seat.low): about the cushion's top, not a chair's. */
+export const LOW_SIT_LIFT = 0.0;
 const R = 0.44;
 const SKIN = '#ffe6da';
 const INK = '#2b2140';
@@ -177,6 +179,8 @@ function resolve(look: AvatarLook): ResolvedLook {
 export interface Pose {
   walking: boolean;
   seated: boolean;
+  /** Seated on a floor cushion. */
+  low?: boolean;
   talking: boolean;
   happy: boolean;
 }
@@ -305,9 +309,12 @@ export class CharacterRig {
     show(this.mouthOpen, false);
   }
 
+  /** How high the current (or last) seat holds you; kept while you stand, so standing up eases down from it. */
+  private seatLift = SIT_LIFT;
+
   /** Current extra height from sitting (for placing labels above the head). */
   get lift() {
-    return this.sit * SIT_LIFT;
+    return this.sit * this.seatLift;
   }
 
   /** Advance animation. `targetYaw` is the facing angle to turn toward. */
@@ -316,9 +323,10 @@ export class CharacterRig {
     this.group.rotation.y = this.yaw;
 
     this.sit += ((pose.seated ? 1 : 0) - this.sit) * Math.min(1, dt * 8);
+    if (pose.seated) this.seatLift = pose.low ? LOW_SIT_LIFT : SIT_LIFT;
     const hop = pose.walking ? Math.abs(Math.sin(t * 10)) : 0;
     const breathe = Math.sin(t * 2.4 + this.phase) * 0.015;
-    this.body.position.y = hop * 0.1 + this.sit * SIT_LIFT;
+    this.body.position.y = hop * 0.1 + this.sit * this.seatLift;
     // Seated: legs swing forward over the chair edge, feet dangling a little
     const swingLegs = pose.walking ? Math.sin(t * 10) * 0.35 : 0;
     this.legs.forEach((leg, i) => {

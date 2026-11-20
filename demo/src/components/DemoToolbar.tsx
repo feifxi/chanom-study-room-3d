@@ -12,6 +12,7 @@ import {
   setCrowd,
   drawOnBoard,
   putOnVideo,
+  shareOnTv,
   setManyRooms,
   startPickASide,
   startTelephone,
@@ -133,6 +134,9 @@ export function DemoToolbar() {
         </button>
         <button onClick={putOnVideo} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
           📺 Someone puts a video on the big screen (in a 3D room)
+        </button>
+        <button onClick={shareOnTv} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
+          🖥️ Someone shares their screen on the TV (in a 3D room)
         </button>
         <button onClick={drawOnBoard} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
           🎨 Someone draws on the whiteboard

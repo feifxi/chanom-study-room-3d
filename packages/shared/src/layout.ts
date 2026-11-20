@@ -15,6 +15,8 @@ export interface Seat {
   yaw: number;
   /** Where you end up when you stand up. */
   out: { x: number; z: number };
+  /** A floor cushion: you sit right down on the floor, not at chair height (V2 maps). */
+  low?: boolean;
 }
 
 export interface Table {

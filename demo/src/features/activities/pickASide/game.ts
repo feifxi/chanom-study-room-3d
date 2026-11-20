@@ -40,25 +40,30 @@ export const ZONE_COLORS = ['#ff8fb8', '#7ab8ff', '#ffd166', '#7fd8b6'];
 export const LETTERS = ['A', 'B', 'C', 'D'];
 
 /**
- * Zones follow the screen, not the room: A is on the left (top left with four), whatever way the room
- * is built. The camera looks in from +x +z, so screen right is (+x, −z) and screen up is (−x, −z).
+ * Zones are the rug's own halves or quarters, cut along its edges (a 2×2 square, never pizza slices).
+ * The camera looks in from +x +z, so the square shows as a diamond: A at the top of the screen, B on
+ * the right, C on the left, D at the bottom. That's the HUD's 2×2 grid turned 45°, so A–D sit the same
+ * way round in both. With two zones, A is the half up and left, B down and right.
  */
 export function zoneAt(area: Area, sides: number, x: number, z: number): number | null {
   if (!inArea(area, x, z)) return null;
-  const dx = x - area.x;
-  const dz = z - area.z;
-  const u = (dx - dz) / Math.SQRT2;
-  const v = -(dx + dz) / Math.SQRT2;
-  if (sides === 2) return u < 0 ? 0 : 1;
-  return (v > 0 ? 0 : 2) + (u < 0 ? 0 : 1);
+  const col = x - area.x < 0 ? 0 : 1;
+  if (sides === 2) return col;
+  return (z - area.z < 0 ? 0 : 2) + col;
 }
 
-/** The middle of a zone in the room, in screen-aligned (u, v) turned back into x, z. */
+/** The middle of a zone, as an offset from the rug's centre (room x, z). */
+export function zoneOffset(area: Area, sides: number, zone: number) {
+  const k = areaRadius(area) * 0.5;
+  const dx = (zone % 2 === 0 ? -1 : 1) * k;
+  const dz = sides === 2 ? 0 : (zone < 2 ? -1 : 1) * k;
+  return { dx, dz };
+}
+
+/** The middle of a zone in the room, give or take `jitter` (where a bot stands). */
 export function zoneCenter(area: Area, sides: number, zone: number, jitter = 0) {
-  const k = areaRadius(area) * 0.55;
-  const u = (sides === 2 ? (zone === 0 ? -1 : 1) : zone % 2 === 0 ? -0.75 : 0.75) * k + (Math.random() - 0.5) * jitter;
-  const v = (sides === 2 ? 0 : zone < 2 ? 0.75 : -0.75) * k + (Math.random() - 0.5) * jitter;
-  return { x: area.x + (u - v) / Math.SQRT2, z: area.z + (-u - v) / Math.SQRT2 };
+  const { dx, dz } = zoneOffset(area, sides, zone);
+  return { x: area.x + dx + (Math.random() - 0.5) * jitter, z: area.z + dz + (Math.random() - 0.5) * jitter };
 }
 
 /**

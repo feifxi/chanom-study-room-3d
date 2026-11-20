@@ -1,10 +1,14 @@
 'use client';
 
-import type { Area, WallPanel } from '../../map/types';
+import { artSeats, type ArtTable, type Area, type WallPanel } from '../../map/types';
+import { CHAIR_BACK } from '../../room3d/Avatar';
 
 export interface ArtPlaces {
   area: Area;
-  easels: { x: number; z: number; yaw: number }[];
+  /** Easels with a stool each (standing Draw & Guess); a map with an art table has none. */
+  easels?: { x: number; z: number; yaw: number }[];
+  /** A round table with stools all round, where Draw & Guess sits (the library). */
+  table?: ArtTable;
   cart: { x: number; z: number };
   /** The folding screen (its `y` is the centre of the framed pictures); a map may hang its pictures on a wall instead. */
   gallery?: WallPanel;
@@ -16,7 +20,7 @@ export interface ArtPlaces {
  * on purpose: Draw & Guess happens in the panel, like Gartic Phone, so nothing here changes during a
  * game (and it all merges into the library's static batch). The rug itself is drawn with the others.
  */
-export function ArtCorner({ area: ART_AREA, easels: EASELS, cart: PAINT_CART, gallery }: ArtPlaces) {
+export function ArtCorner({ area: ART_AREA, easels: EASELS = [], table, cart: PAINT_CART, gallery }: ArtPlaces) {
   return (
     <group>
       {SPLATS.map(([dx, dz, r, c], i) => (
@@ -45,6 +49,7 @@ export function ArtCorner({ area: ART_AREA, easels: EASELS, cart: PAINT_CART, ga
           </group>
         </group>
       ))}
+      {table && <RoundArtTable table={table} />}
       {gallery && <GalleryScreen gallery={gallery} />}
       <PaintCart x={PAINT_CART.x} z={PAINT_CART.z} />
     </group>
@@ -203,3 +208,83 @@ function PaintCart({ x, z }: { x: number; z: number }) {
     </group>
   );
 }
+
+/**
+ * The art table: a big round table with paper, pencil pots and a box of crayons on it, and a stool
+ * at every seat (where the seat puts you, a chair's step behind the seat point).
+ */
+function RoundArtTable({ table: t }: { table: ArtTable }) {
+  const papers: [number, number, number, string][] = [
+    [0.45, 0.1, 0.3, '#fffaf0'],
+    [-0.3, 0.4, -0.5, '#fdf1f4'],
+    [-0.35, -0.4, 0.9, '#f2f7fd'],
+    [0.15, -0.55, -0.2, '#fffaf0'],
+  ];
+  return (
+    <group position={[t.x, 0, t.z]}>
+      <mesh position={[0, 0.72, 0]} castShadow receiveShadow>
+        <cylinderGeometry args={[t.tableR, t.tableR, 0.06, 40]} />
+        <meshStandardMaterial color={WOOD} roughness={0.8} />
+      </mesh>
+      <mesh position={[0, 0.36, 0]} castShadow>
+        <cylinderGeometry args={[0.1, 0.16, 0.72, 12]} />
+        <meshStandardMaterial color={WOOD_DARK} />
+      </mesh>
+      <mesh position={[0, 0.02, 0]}>
+        <cylinderGeometry args={[0.4, 0.4, 0.04, 18]} />
+        <meshStandardMaterial color={WOOD_DARK} />
+      </mesh>
+      {/* Sheets of paper and a few doodles' worth of colour, pencil pots and crayons in the middle */}
+      {papers.map(([x, z, r, c], i) => (
+        <mesh key={i} position={[x, 0.756, z]} rotation={[0, r, 0]}>
+          <boxGeometry args={[0.24, 0.006, 0.32]} />
+          <meshStandardMaterial color={c} roughness={0.9} />
+        </mesh>
+      ))}
+      {[
+        [0.08, 0.08, '#e9a9c2'],
+        [-0.12, 0.02, '#a9cde3'],
+      ].map(([x, z, c], i) => (
+        <group key={i} position={[x as number, 0.75, z as number]}>
+          <mesh position={[0, 0.06, 0]}>
+            <cylinderGeometry args={[0.06, 0.055, 0.12, 12]} />
+            <meshStandardMaterial color={c as string} />
+          </mesh>
+          {[-0.02, 0.02].map((dx, k) => (
+            <mesh key={k} position={[dx, 0.15, k ? 0.01 : -0.01]} rotation={[0, 0, dx * 4]}>
+              <cylinderGeometry args={[0.008, 0.008, 0.16, 6]} />
+              <meshStandardMaterial color={k ? '#e8b04a' : '#7c5cff'} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+      <mesh position={[0.02, 0.77, -0.18]} rotation={[0, 0.4, 0]}>
+        <boxGeometry args={[0.22, 0.04, 0.12]} />
+        <meshStandardMaterial color="#ef8a3c" />
+      </mesh>
+      {artSeats(t).map((s) => {
+        const bx = s.x - t.x - Math.sin(s.yaw) * CHAIR_BACK;
+        const bz = s.z - t.z - Math.cos(s.yaw) * CHAIR_BACK;
+        return (
+          <group key={s.id} position={[bx, 0, bz]}>
+            <mesh position={[0, 0.44, 0]} castShadow>
+              <cylinderGeometry args={[0.2, 0.2, 0.06, 16]} />
+              <meshStandardMaterial color={STOOL_TOPS[Number(s.id.slice(4)) % STOOL_TOPS.length]} />
+            </mesh>
+            {[-1, 1].flatMap((sx) =>
+              [-1, 1].map((sz) => (
+                <mesh key={`${sx}${sz}`} position={[sx * 0.11, 0.21, sz * 0.11]} rotation={[sz * 0.12, 0, -sx * 0.12]}>
+                  <cylinderGeometry args={[0.02, 0.02, 0.42, 6]} />
+                  <meshStandardMaterial color={WOOD_DARK} />
+                </mesh>
+              )),
+            )}
+          </group>
+        );
+      })}
+    </group>
+  );
+}
+
+/** Painted stool tops, the art corner's colours. */
+const STOOL_TOPS = ['#e9a9c2', '#a9cde3', '#e8d49a', '#b7d6b0', '#c9b6d9'];

@@ -1,5 +1,5 @@
 import { createNavigator, resolveCollisions as resolveIn, type Obstacle, type Seat, type Walker, type World } from '@study/shared';
-import { cardSeats, circle, rect, wolfSeats, zoneAtIn, type CardTable, type MapData, type Werewolf, type Zone } from './types';
+import { cardSeats, circle, rect, circleSeats, zoneAtIn, type CardTable, type MapData, type CushionCircle, type Zone } from './types';
 
 /**
  * The Cat Café map (feature 7, built 2026-11-10): the same 26 × 18 m footprint and standard kit as
@@ -8,7 +8,7 @@ import { cardSeats, circle, rect, wolfSeats, zoneAtIn, type CardTable, type MapD
  * open floor is the dance floor in front of it, the TV lounge sits in the back-left corner by the
  * window, the window bar faces the street, two booths (the private zones) are stacked along the
  * right side, the art corner is in the back-right corner under a cat photo wall, the tables fill
- * the front half, the Werewolf circle is front left and the card tables front right.
+ * the front half, the lantern circle is front left and the card tables front right.
  * Rugs are the areas, as in the library. Units are metres; +z faces the camera.
  *
  * Not final art: odd props, overlapping rugs and the café needing more resident cats are listed in
@@ -194,7 +194,7 @@ export const A_BOARD = { x: -11.2, z: 4.4 } as const;
 /** By the till, at the bar's end, facing into the room (+z). */
 export const GACHA_MACHINE = { x: 4.3, z: -7.5, yaw: 0, reach: 1.7 } as const;
 
-// ---------- G. Card tables (front right), H. Werewolf (front left), I. Art corner (back right) ----------
+// ---------- G. Card tables (front right), H. Lantern circle (front left), I. Art corner (back right) ----------
 
 export const CARD_TABLES: CardTable[] = [
   { id: 'game1', x: 10.2, z: 6.5, r: 0.62, area: rect(10.2, 6.5, 3.0, 3.0) },
@@ -202,8 +202,8 @@ export const CARD_TABLES: CardTable[] = [
 ];
 const CARD_SEATS: Seat[] = CARD_TABLES.flatMap(cardSeats);
 
-export const WOLF: Werewolf = { x: -8.8, z: 6.1, tableR: 0.6, cushionR: 1.55, area: circle(-8.8, 6.1, 2.6) };
-export const WOLF_SEATS: Seat[] = wolfSeats(WOLF);
+export const CIRCLE: CushionCircle = { x: -8.8, z: 6.1, tableR: 0.6, cushionR: 1.55, area: circle(-8.8, 6.1, 2.6) };
+export const CIRCLE_SEATS: Seat[] = circleSeats(CIRCLE);
 
 export const ART_AREA = rect(10.4, -6.4, 4.6, 4.2);
 export const EASELS = [
@@ -242,7 +242,7 @@ export const ZONES: Zone[] = BOOTHS.map((b) => b.zone);
 
 // ---------- Seats, collisions, cats ----------
 
-export const SEATS: Seat[] = [...DESK_SEATS, ...BOOTH_SEATS, ...LOUNGE_SEATS, ...CARD_SEATS, ...WOLF_SEATS];
+export const SEATS: Seat[] = [...DESK_SEATS, ...BOOTH_SEATS, ...LOUNGE_SEATS, ...CARD_SEATS, ...CIRCLE_SEATS];
 export const SEAT_BY_ID: ReadonlyMap<string, Seat> = new Map(SEATS.map((s) => [s.id, s]));
 
 const box = (minX: number, maxX: number, minZ: number, maxZ: number): Obstacle => ({ kind: 'box', minX, maxX, minZ, maxZ });
@@ -272,7 +272,7 @@ export const OBSTACLES: Obstacle[] = [
   disc(A_BOARD.x, A_BOARD.z, 0.35),
   disc(GACHA_MACHINE.x, GACHA_MACHINE.z, 0.5),
   ...CARD_TABLES.map((t) => disc(t.x, t.z, t.r)),
-  disc(WOLF.x, WOLF.z, WOLF.tableR),
+  disc(CIRCLE.x, CIRCLE.z, CIRCLE.tableR),
   ...EASELS.map((e) => disc(e.x, e.z, 0.3)),
   disc(PAINT_CART.x, PAINT_CART.z, 0.3),
   ...CAT_BEDS.map((c) => disc(c.x, c.z, 0.32)),
@@ -295,7 +295,7 @@ export const NAP_SPOTS: { x: number; z: number; y: number }[] = [
   { x: LOUNGE.catTower.x - 0.15, z: LOUNGE.catTower.z - 0.15, y: 1.45 }, // top of the cat tower
   { x: CAT_BEDS[3]!.x, z: CAT_BEDS[3]!.z, y: 0.08 }, // the bed by the bar
   { x: 12.1, z: -2.7, y: 0.45 }, // end of the window booth's bench
-  { x: WOLF.x, z: WOLF.z + WOLF.cushionR, y: 0.12 }, // a Werewolf cushion
+  { x: CIRCLE.x, z: CIRCLE.z + CIRCLE.cushionR, y: 0.12 }, // a lantern-circle cushion
 ];
 
 export const CAFE: MapData = {
@@ -310,7 +310,7 @@ export const CAFE: MapData = {
   obstacles: OBSTACLES,
   zones: ZONES,
   cardTables: CARD_TABLES,
-  wolf: WOLF,
+  circle: CIRCLE,
   floorArea: FLOOR_AREA,
   tvArea: LOUNGE.area,
   boardArea: BOARD_AREA,

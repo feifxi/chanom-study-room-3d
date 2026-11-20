@@ -80,25 +80,55 @@ export const cardSeats = (t: CardTable): Seat[] =>
       out: { x: t.x + dx * (STOOL_DISTANCE + STAND_BACK), z: t.z + dz * (STOOL_DISTANCE + STAND_BACK) },
     };
   });
-export const isGameSeat = (seatId: string) => seatId.startsWith('game');
+/** Seats that belong to an activity (card tables, the art table): sitting there joins it. */
+export const isGameSeat = (seatId: string) => seatId.startsWith('game') || seatId.startsWith('art-');
 
-export interface Werewolf {
+/** A round art table with stools all round: Draw & Guess sits here in maps that have one. */
+export interface ArtTable {
+  x: number;
+  z: number;
+  tableR: number;
+  stoolR: number;
+  stools: number;
+  area: Area;
+}
+/** Stools evenly round the art table, facing the middle (half a step turned, so none sits dead ahead of the camera). */
+export const artSeats = (t: ArtTable): Seat[] =>
+  Array.from({ length: t.stools }, (_, i) => {
+    const a = ((i + 0.5) / t.stools) * Math.PI * 2;
+    const dx = Math.sin(a);
+    const dz = Math.cos(a);
+    return {
+      id: `art-${i}`,
+      kind: 'chair',
+      tableId: 'art',
+      x: t.x + dx * t.stoolR,
+      z: t.z + dz * t.stoolR,
+      yaw: a + Math.PI,
+      out: { x: t.x + dx * (t.stoolR + STAND_BACK), z: t.z + dz * (t.stoolR + STAND_BACK) },
+    };
+  });
+
+/** A low round table with cushions all round and a lantern: somewhere to sit and hang out (no game). */
+export interface CushionCircle {
   x: number;
   z: number;
   tableR: number;
   cushionR: number;
   area: Area;
 }
-/** Twelve cushions round the table, facing the middle. */
-export const wolfSeats = (w: Werewolf): Seat[] =>
+/** Twelve cushions round the lantern table, facing the middle. */
+export const circleSeats = (w: CushionCircle): Seat[] =>
   Array.from({ length: 12 }, (_, i) => {
     const a = (i / 12) * Math.PI * 2;
     const dx = Math.sin(a);
     const dz = Math.cos(a);
     return {
-      id: `wolf-${i}`,
-      kind: 'chair',
-      tableId: 'wolf',
+      id: `circle-${i}`,
+      // A cushion is for hanging out: no laptop, no table screen share, sit right down on the floor
+      kind: 'sofa',
+      low: true,
+      tableId: 'circle',
       x: w.x + dx * w.cushionR,
       z: w.z + dz * w.cushionR,
       yaw: a + Math.PI,
@@ -128,13 +158,20 @@ export interface MapDef {
   deskSeats: Seat[];
   obstacles: Obstacle[];
   zones: Zone[];
+  /**
+   * Private zones' names float over them like name tags (see ZoneTags) instead of a plaque hanging in
+   * the scene. The library has switched; the other maps still hang plaques until their own pass.
+   */
+  floatingZoneTags?: boolean;
   /** The standard kit's places (feature 7). */
   cardTables: CardTable[];
-  wolf: Werewolf;
+  circle: CushionCircle;
   floorArea: Area;
   tvArea: Area;
   boardArea: Area;
   artArea: Area;
+  /** Draw & Guess at a round table with stools (sit to join) instead of standing at easels. */
+  artTable?: ArtTable;
   tv: WallPanel;
   board: WallPanel;
   gacha: { x: number; z: number; yaw: number; reach: number };

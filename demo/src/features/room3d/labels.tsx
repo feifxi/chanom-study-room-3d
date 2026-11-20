@@ -7,6 +7,8 @@ import type { NpcView, PlayerView } from '@study/shared';
 import { npcKey, type Bubble, type Reaction } from './roomSession';
 import { minutesSince, useNow } from '@/lib/time';
 import { STATUS_ICON } from '../focus/status';
+import { activeMap } from '../map/active';
+import { inArea, type Area, type Zone } from '../map/types';
 import { zoneAt } from './zones';
 
 const v = new THREE.Vector3();
@@ -49,6 +51,8 @@ export function LabelProjector({ board }: { board: LabelBoard }) {
 }
 
 interface LayerProps {
+  /** Activity spots' floating names (tables, the open floor, the TV). */
+  spotTags?: SpotTag[];
   board: LabelBoard;
   ids: string[];
   players: Map<string, PlayerView>;
@@ -99,12 +103,26 @@ function inOtherZone(p: { x: number; z: number }, me: { x: number; z: number } |
   return !!theirs && (!me || zoneAt(me.x, me.z) !== theirs);
 }
 
-export function LabelLayer({ board, ids, players, localId, bubbles, voice, clockOffset, npcIds, npcs, reactions }: LayerProps) {
+export function LabelLayer({
+  board,
+  ids,
+  players,
+  localId,
+  bubbles,
+  voice,
+  clockOffset,
+  npcIds,
+  npcs,
+  reactions,
+  spotTags = [],
+}: LayerProps) {
   // Re-render every second: status/subject come from synced state, which React doesn't watch
   const now = useNow(1000);
   const serverNow = now + clockOffset;
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      {/* First, so people's names draw over a zone's name */}
+      <ZoneTags board={board} me={players.get(localId)} />
       {ids.map((id) => {
         const player = players.get(id);
         if (!player) return null;
@@ -199,6 +217,124 @@ export function LabelLayer({ board, ids, players, localId, bubbles, voice, clock
           </div>
         );
       })}
+      {/* Last, so a spot's name draws over the names of the people gathered under it */}
+      <SpotTags board={board} me={players.get(localId)} tags={spotTags} />
+    </div>
+  );
+}
+
+/**
+ * Private zones' tags, floating high over each zone's middle like a name tag (maps with
+ * `floatingZoneTags`): a label rather than a prop, so it reads straight from any zoom. Just "Private
+ * zone" (the rug says where you are); it lights up while you're inside it.
+ */
+export function ZoneTags({ board, me }: { board: LabelBoard; me: { x: number; z: number } | undefined }) {
+  const map = activeMap();
+  if (!map.floatingZoneTags) return null;
+  const mine = me ? zoneAt(me.x, me.z) : undefined;
+  return (
+    <>
+      {map.zones.map((zone) => (
+        <ZoneTag key={zone.id} board={board} zone={zone} here={mine === zone} />
+      ))}
+    </>
+  );
+}
+
+function ZoneTag({ board, zone, here }: { board: LabelBoard; zone: Zone; here: boolean }) {
+  return (
+    <FloatTag
+      board={board}
+      id={`zone:${zone.id}`}
+      x={zone.area.x}
+      z={zone.area.z}
+      className={here ? 'bg-lavender text-lavender-ink' : 'bg-cocoa/80 text-white'}
+    >
+      🔇 Private zone
+    </FloatTag>
+  );
+}
+
+/** An activity spot's floating name: "🃏 Card games", or what's on there ("🤔 Would you rather · 5 playing"). */
+export interface SpotTag {
+  id: string;
+  text: string;
+  phase: 'free' | 'gathering' | 'playing';
+  area: Area;
+}
+
+/** Idle spots name themselves as you come near; live ones show from anywhere, so a game is easy to find. */
+const SPOT_TAG_NEAR = 6.5;
+
+function SpotTags({ board, me, tags }: { board: LabelBoard; me: { x: number; z: number } | undefined; tags: SpotTag[] }) {
+  return (
+    <>
+      {tags
+        // Not the one you're in: the panel and the top strip already say what's on
+        .filter((t) => !me || !inArea(t.area, me.x, me.z))
+        .filter((t) => t.phase !== 'free' || (me && Math.hypot(t.area.x - me.x, t.area.z - me.z) <= SPOT_TAG_NEAR))
+        .map((t) => (
+          <FloatTag
+            key={t.id}
+            board={board}
+            id={`spot:${t.id}`}
+            x={t.area.x}
+            z={t.area.z}
+            // Just over people's names: any higher and the camera's tilt carries it off over the
+            // next spot (it's drawn on top of the names, so a crowd never hides it)
+            y={2.6}
+            // The same colours as the Activities list's dots: green gathering, pink playing
+            className={
+              t.phase === 'gathering'
+                ? 'bg-online text-white'
+                : t.phase === 'playing'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-card/90 text-foreground'
+            }
+          >
+            {t.text}
+          </FloatTag>
+        ))}
+    </>
+  );
+}
+
+/** A pill floating over a spot of floor, above the names of people standing there. */
+function FloatTag({
+  board,
+  id,
+  x,
+  z,
+  y = 3.3,
+  className,
+  children,
+}: {
+  board: LabelBoard;
+  id: string;
+  x: number;
+  z: number;
+  y?: number;
+  className: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      ref={(el) => {
+        if (el) {
+          board.labels.set(id, el);
+          // High enough to clear the names of people standing or sitting there
+          board.anchors.set(id, new THREE.Vector3(x, y, z));
+        } else {
+          board.labels.delete(id);
+          board.anchors.delete(id);
+        }
+      }}
+      className="absolute top-0 left-0"
+      style={{ visibility: 'hidden' }}
+    >
+      <div className={`rounded-xl px-2.5 py-1 text-xs font-black whitespace-nowrap shadow-sm transition-colors ${className}`}>
+        {children}
+      </div>
     </div>
   );
 }

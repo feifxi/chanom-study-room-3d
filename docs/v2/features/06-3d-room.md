@@ -11,8 +11,10 @@ announcement mode for owners and mods. The HUD around the room is in
 ## Kept from V1
 
 Walk (WASD or arrows), run (Shift), a joystick on phones (always walks), sit at desks and sofas (E or
-tap), screen share to your table once seated, proximity voice, bubbles, cats and study buddies, day
-and night, battery saver, and "Showing" someone's path from the people list. Movement is
+tap), screen share to your table once seated (now **with its sound**, heard only by the table, each
+with their own volume; see [10-watch-and-photo.md](10-watch-and-photo.md#sound)), proximity voice,
+bubbles, cats and study buddies, day and night, battery saver, and "Showing" someone's path from the
+people list. Movement is
 server-authoritative with client prediction (see `AGENTS.md`, V1 architecture).
 
 ## Click to walk
@@ -22,7 +24,7 @@ server-authoritative with client prediction (see `AGENTS.md`, V1 architecture).
 - Dragging turns the camera; a click that moved more than a few pixels doesn't walk.
 - Someone in the way stops you instead of pushing forever.
 - A click that closes a panel only closes it; the next click walks.
-- **On by default** (new players may not know WASD). Off in the Room card's Your settings or
+- **On by default** (new players may not know WASD). Off under the dock's ⋯ More or
   Settings → Controls. Saved per browser.
 
 ## Proximity voice
@@ -39,8 +41,9 @@ café's two booths, the rooftop's **Tent** and **Telescope deck**.
 
 - **Inside** you hear only people in the zone, at full volume however far apart, and bubbles stay
   inside. Nobody outside hears in; you can't hear out.
-- **Seen from outside:** the zone is a rug with a hanging sign ("🔥 Fireside · private"), and people
-  inside show 🔇 by their name.
+- **Seen from outside:** the zone is a rug with "🔇 Private zone" floating high over its middle like
+  a name tag (no zone name; it lights up while you're inside), and people inside show 🔇 by their
+  name. The Café and Rooftop still hang a plaque until their own pass.
 - **Seen from inside:** "🔒 🔥 Fireside · only people here can hear you" at the top.
 - **No locks:** anyone can walk in, like a real café table.
 
@@ -63,7 +66,7 @@ café's two booths, the rooftop's **Tent** and **Telescope deck**.
 An announcement tool for owners and mods, under **🛡️ Room** in the dock; members never see it.
 While it's on, everyone hears them at full volume wherever they stand, even in private zones, and
 the mic turns on. The button turns pink with a pulsing ring and reads **On air**, a 📢 shows on
-their label and in the people list, and they see "📢 Everyone hears you · Stop". For "Werewolf
+their label and in the people list, and they see "📢 Everyone hears you · Stop". For "Card night
 starts in 5 minutes!" or a teacher's announcement.
 
 ## Leaving a room

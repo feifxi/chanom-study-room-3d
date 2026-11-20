@@ -30,7 +30,7 @@ import {
   RUG_GREEN_EDGE,
   Rug,
   WALNUT,
-  WerewolfCircle,
+  LanternCircle,
   YELLOW,
   ZoneSign,
   type Bulb,
@@ -67,8 +67,8 @@ import {
   TILL,
   UMBRELLA_STAND,
   WINDOW_BAR,
-  WOLF,
-  WOLF_SEATS,
+  CIRCLE,
+  CIRCLE_SEATS,
   type CafeTable,
 } from '../map/cafe';
 
@@ -666,7 +666,7 @@ function CafeBulbs({ lamps }: { lamps: number }) {
       list.push({ x, y, z, s: 3.6, color: c });
     for (const t of CARD_TABLES) list.push({ x: t.x, y: 1.7, z: t.z, s: 1.2, color: '#fff1b0' });
     list.push({ x: LOUNGE.lamp.x, y: 1.58, z: LOUNGE.lamp.z, s: 1.6, color: '#fff1b0' });
-    list.push({ x: WOLF.x, y: 0.72, z: WOLF.z, s: 2.4, color: '#ffd27a' });
+    list.push({ x: CIRCLE.x, y: 0.72, z: CIRCLE.z, s: 2.4, color: '#ffd27a' });
     const long = TABLES.find((t) => t.kind === 'long')!;
     list.push({ x: long.x, y: 1.82, z: long.z, s: 1.4, color: '#fff1b0' });
     return list;
@@ -746,7 +746,7 @@ export function Cafe({ light, shadows = true }: { light: DayLight; shadows?: boo
         <Lounge lamps={lamps} />
         <Entrance />
         <CardTables />
-        <WerewolfCircle wolf={WOLF} seats={WOLF_SEATS} lamps={lamps} />
+        <LanternCircle circle={CIRCLE} seats={CIRCLE_SEATS} lamps={lamps} />
         <ArtCorner area={ART_AREA} easels={EASELS} cart={PAINT_CART} />
 
         {CAT_BEDS.map((c, i) => (
