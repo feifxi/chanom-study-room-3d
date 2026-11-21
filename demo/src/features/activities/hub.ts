@@ -18,6 +18,8 @@ import {
 import { BUILT_IN, deckKindFor, type Deck } from './pickASide/decks';
 import { ASK_MS, REVEAL_MS, newGame, sidesFor, zoneAt, zoneCenter, type SideGame, type SideMode } from './pickASide/game';
 import { SPOTS, spotById, type Game, type Spot, type SpotId } from './spots';
+import type { PieceSymbol, Square } from 'chess.js';
+import { answerDraw, forfeit, friendlyMove, newChess, offerDraw, play, resign, turnOf, type ChessGame } from './chess/game';
 import { areaEdgePoint, areaInnerPoint, inArea, isGameSeat } from '../map/types';
 
 /**
@@ -141,6 +143,8 @@ export class ActivityHub {
   /** Draw & Guess at the art corner, and what you have so far this turn (sent as is when time runs out). */
   tel: TelGame | null = null;
   telDraft: { text: string; strokes: Stroke[] } = { text: '', strokes: [] };
+  /** Chess at the chess table, kept after it ends for the results (and the 3D board). */
+  chess: ChessGame | null = null;
   private listeners = new Set<() => void>();
   private snapshot = '';
   version = 0;
@@ -172,6 +176,7 @@ export class ActivityHub {
       JSON.stringify(this.watch) +
       JSON.stringify(this.side) +
       (this.tel ? `${this.tel.rev}:${this.tel.stage}` : '') +
+      (this.chess ? `${this.chess.rev}` : '-') +
       this.floorDeck.id +
       [...this.dismissed].join();
     if (snap === this.snapshot) return;
@@ -261,6 +266,7 @@ export class ActivityHub {
             Object.assign(st, { phase: 'playing', since: now, startsAt: 0, out: [], awaySince: {}, invite: null });
             if (spot.id === 'floor') this.sideStart(now);
             if (spot.id === 'art') this.telStart(now);
+            if (spot.id === 'chess') this.chessStart();
           } else st.startsAt = 0;
         }
       } else if (st.phase === 'playing') {
@@ -273,6 +279,11 @@ export class ActivityHub {
         if (st.hostId && !st.players.includes(st.hostId)) st.hostId = st.players[0] ?? null;
         if (spot.id === 'floor') this.sideTick(now, spot, st);
         if (spot.id === 'art') this.telTick(now, st);
+        // Chess: one player gone (left, or away for 30 s) and the other wins
+        if (spot.id === 'chess' && this.chess && !this.chess.end && st.players.length < 2) {
+          const gone = [this.chess.white, this.chess.black].find((id) => !st.players.includes(id));
+          if (gone) forfeit(this.chess, gone);
+        }
         // Pick a Side ends itself after the reveal, and telephone after its album, so they play out
         const sideRunning = (spot.id === 'floor' && this.side && this.side.stage !== 'done') || (spot.id === 'art' && !!this.tel);
         if (st.phase === 'playing' && !sideRunning && st.players.length <= 1) this.finish(spot.id, st.players);
@@ -530,6 +541,91 @@ export class ActivityHub {
     this.timers.push(wait as unknown as ReturnType<typeof setTimeout>);
   }
 
+  // --- Chess (feature 12) ---
+
+  private chessStart() {
+    const [a, b] = this.spots.chess.players;
+    if (!a || !b) return;
+    this.chess = newChess(a, b, this.chess ?? undefined);
+    this.scriptChessTurn();
+  }
+
+  chessMove(id: string, from: Square, to: Square, promotion?: PieceSymbol) {
+    const g = this.chess;
+    if (!g || !play(g, id, from, to, promotion)) return false;
+    this.chessAfter();
+    return true;
+  }
+
+  chessResign(id: string) {
+    if (!this.chess) return;
+    resign(this.chess, id);
+    this.chessAfter();
+  }
+
+  chessOfferDraw(id: string) {
+    const g = this.chess;
+    if (!g) return;
+    offerDraw(g, id);
+    this.changed();
+    // Demo: a scripted opponent thinks it over, and takes it about half the time
+    const other = id === g.white ? g.black : g.white;
+    if (other !== 'me') this.later(2500, () => this.chess === g && this.chessAnswerDraw(other, Math.random() < 0.5));
+  }
+
+  chessAnswerDraw(id: string, accept: boolean) {
+    if (!this.chess) return;
+    answerDraw(this.chess, id, accept);
+    this.chessAfter();
+  }
+
+  /** After any change: end the round if the game ended, otherwise let a scripted player move. */
+  private chessAfter() {
+    const g = this.chess;
+    if (!g) return;
+    if (g.end) {
+      const loser = g.end.winner && (g.end.winner === g.white ? g.black : g.white);
+      if (this.spots.chess.phase === 'playing') this.finish('chess', g.end.winner ? [g.end.winner, loser!] : [g.white, g.black]);
+    } else this.scriptChessTurn();
+    this.changed();
+  }
+
+  /** Demo: scripted players take a few seconds to move (a little longer as the game goes on). */
+  private scriptChessTurn() {
+    const g = this.chess;
+    if (!g || g.end) return;
+    const id = turnOf(g);
+    if (id === 'me') return;
+    const rev = g.rev;
+    this.later(1500 + Math.random() * 3500, () => {
+      if (this.chess !== g || g.rev !== rev || g.end || !this.spots.chess.players.includes(id)) return;
+      const m = friendlyMove(g);
+      if (m) this.chessMove(id, m.from, m.to, m.promotion);
+    });
+  }
+
+  /** Demo: two friends sit down at the chess table and play; you can stand by the table and watch. */
+  scriptChess() {
+    const spot = spotById('chess');
+    if (!spot.built || this.spots.chess.phase !== 'free') return;
+    const [a, b] = this.freePeople();
+    if (!a || !b) return;
+    const seats = spot.seats!.filter((s) => this.room.seatFree(s));
+    [a, b].forEach((id, i) => {
+      const p = this.room.state.players.get(id);
+      if (p?.seatId) this.home.set(id, p.seatId);
+      this.later(i * 1500, () => this.room.sendTo(id, ringSpot(spot, i), seats[i]));
+    });
+    const wait = setInterval(() => {
+      const st = this.spots.chess;
+      if (st.phase === 'gathering' && st.players.length >= 2) {
+        clearInterval(wait);
+        this.later(2500, () => this.spots.chess.phase === 'gathering' && this.begin('chess'));
+      }
+    }, 500);
+    this.timers.push(wait as unknown as ReturnType<typeof setTimeout>);
+  }
+
   // --- Whiteboard ---
 
   /** Demo: someone walks to the board and doodles a cat, a few points at a time. */
@@ -682,6 +778,7 @@ export class ActivityHub {
     const st = this.spots[spotId];
     if (spotId === 'floor') this.side = null;
     if (spotId === 'art') this.tel = null;
+    if (spotId === 'chess') this.chess = null;
     Object.assign(st, { phase: 'gathering', out: [], nextRound: [], awaySince: {}, since: now });
     this.changed();
   }

@@ -12,6 +12,8 @@ import type { BoardStore } from './board/board';
 import { SideZones } from './pickASide/Side3D';
 import type { SideGame } from './pickASide/game';
 import { SPOTS, spotById, type SpotId } from './spots';
+import { BOARD, ChessPieces } from './chess/Chess3D';
+import type { ChessGame } from './chess/game';
 
 const OAK = '#8a6244';
 const OAK_DARK = '#6b4a33';
@@ -114,7 +116,8 @@ function chessBoardTexture() {
   const g = c.getContext('2d')!;
   for (let y = 0; y < 8; y++)
     for (let x = 0; x < 8; x++) {
-      g.fillStyle = (x + y) % 2 ? '#6b4430' : '#f1e3c8';
+      // a1 (and h8) dark, whichever way round the board lies
+      g.fillStyle = (x + y) % 2 ? '#f1e3c8' : '#6b4430';
       g.fillRect(x * 16, y * 16, 16, 16);
     }
   boardTexture = new THREE.CanvasTexture(c);
@@ -123,34 +126,14 @@ function chessBoardTexture() {
   return boardTexture;
 }
 
-/** A pawn-shaped piece: a base and a round head (drawn a bit big so it reads from the room camera). */
-function Piece({ x, z, dark, tall = false }: { x: number; z: number; dark: boolean; tall?: boolean }) {
-  const color = dark ? '#3b2a24' : '#f6efe2';
-  return (
-    <group position={[x, 0, z]}>
-      <mesh position={[0, tall ? 0.04 : 0.025, 0]} castShadow>
-        <cylinderGeometry args={[0.018, 0.026, tall ? 0.08 : 0.05, 10]} />
-        <meshStandardMaterial color={color} roughness={0.5} />
-      </mesh>
-      <mesh position={[0, tall ? 0.095 : 0.062, 0]} castShadow>
-        <sphereGeometry args={[tall ? 0.024 : 0.019, 10, 8]} />
-        <meshStandardMaterial color={color} roughness={0.5} />
-      </mesh>
-    </group>
-  );
-}
-
 /**
  * The chess table (maps with `chessTable`): a small round oak table with a board between two stools
- * that face each other, a game set up on it. Static: feature 12 brings the moves.
+ * that face each other. Static (in the room's batch): the pieces are ChessPieces, which follow the game.
  */
 export function ChessTable() {
   const t = activeMap().chessTable;
   if (!t) return null;
-  const B = 0.56;
-  const sq = B / 8;
-  // Square centres along the board, seen from the side the first player sits on
-  const at = (i: number) => -B / 2 + sq * (i + 0.5);
+  const B = BOARD;
   return (
     <group position={[t.x, 0, t.z]}>
       <mesh position={[0, 0.72, 0]} castShadow receiveShadow>
@@ -174,17 +157,6 @@ export function ChessTable() {
         <planeGeometry args={[B, B]} />
         <meshStandardMaterial map={chessBoardTexture()} roughness={0.7} />
       </mesh>
-      <group position={[0, 0.782, 0]}>
-        {/* Each side's pawns and back row, a couple of pawns already moved */}
-        {Array.from({ length: 8 }, (_, i) => (
-          <group key={i}>
-            <Piece x={at(0)} z={at(i)} dark={false} tall />
-            <Piece x={at(i === 4 ? 3 : 1)} z={at(i)} dark={false} />
-            <Piece x={at(i === 3 ? 4 : 6)} z={at(i)} dark />
-            <Piece x={at(7)} z={at(i)} dark tall />
-          </group>
-        ))}
-      </group>
       <Stools table={t} />
     </group>
   );
@@ -371,6 +343,8 @@ export function ActivityLayer3D({
   side,
   board,
   motion,
+  chess = null,
+  chessWhiteSide = 1,
 }: {
   spots: Record<SpotId, SpotState>;
   watch: WatchState;
@@ -380,6 +354,10 @@ export function ActivityLayer3D({
   board: BoardStore;
   /** Your predicted position, for the step-on flash. */
   motion?: React.RefObject<LocalMotion>;
+  /** The chess game on the table, if one is on (or just ended). */
+  chess?: ChessGame | null;
+  /** Which side of the chess table White sits on (+1: the first stool, along +x). */
+  chessWhiteSide?: 1 | -1;
 }) {
   return (
     <>
@@ -395,6 +373,7 @@ export function ActivityLayer3D({
         />
       ))}
       {motion && <StepOnFlash motion={motion} spots={spots} />}
+      <ChessPieces game={spots.chess.phase === 'free' ? null : chess} whiteSide={chessWhiteSide} />
       {spots.cards.phase === 'playing' && <TableCards players={spots.cards.players.length + spots.cards.out.length} />}
       {spots.floor.phase === 'playing' && side && side.stage !== 'done' && <SideZones game={side} area={spotById('floor').area} />}
     </>

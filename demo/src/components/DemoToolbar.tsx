@@ -18,6 +18,7 @@ import {
   startTelephone,
   useCrowd,
   useManyRooms,
+  startChess,
 } from '@/lib/demoCrowd';
 import { nudgeQuests } from '@/lib/quests';
 import { cn } from '@/lib/utils';
@@ -146,6 +147,9 @@ export function DemoToolbar() {
         </button>
         <button onClick={startTelephone} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
           ✏️ Someone starts Draw & Guess (art corner; invite card)
+        </button>
+        <button onClick={startChess} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
+          ♟️ Two friends play chess (Library; stand by the table to watch)
         </button>
         <button onClick={publishMapUpdate} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
           🛠️ Team publishes a map update (in a 3D room; 60 s heads-up)

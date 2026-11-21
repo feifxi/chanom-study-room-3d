@@ -31,7 +31,7 @@ Two things, at different stages:
 
 ## What's next
 
-Feature 12 (table games: cards and chess), resuming from
+Feature 12 (table games): chess is built; **Slave** is next, resuming from
 [the draft](docs/v2/features/12-cards-draft.md); then the port to `apps/web`. The
 plan's [status and What's left](docs/v2-plan.md#whats-left) is the source of truth.
 

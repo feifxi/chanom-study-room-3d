@@ -175,6 +175,12 @@ export function startTelephone() {
   window.dispatchEvent(new Event(TELEPHONE_EVENT));
 }
 
+/** Demo: two friends sit down at the chess table and play (feature 12; maps with a chess table). */
+export const CHESS_EVENT = 'connecta-demo:chess';
+export function startChess() {
+  window.dispatchEvent(new Event(CHESS_EVENT));
+}
+
 /** Demo: someone walks to the big screen and puts a video on (feature 10). */
 export const WATCH_EVENT = 'connecta-demo:watch';
 export function putOnVideo() {

@@ -48,8 +48,10 @@ import { deckKindFor } from '../activities/pickASide/decks';
 import { sidesFor, zoneAt as sideZoneAt } from '../activities/pickASide/game';
 import { SideHud, list } from '../activities/pickASide/SideHud';
 import { TelephonePanel } from '../activities/telephone/TelephonePanel';
+import { ChessPanel } from '../activities/chess/ChessPanel';
+import { END_TEXT, type ChessGame } from '../activities/chess/game';
 import { SPOTS, isGameSeat, spotById, type Spot } from '../activities/spots';
-import { BOARD_EVENT, PICK_A_SIDE_EVENT, SHARE_EVENT, TELEPHONE_EVENT, WATCH_EVENT } from '@/lib/demoCrowd';
+import { BOARD_EVENT, PICK_A_SIDE_EVENT, SHARE_EVENT, TELEPHONE_EVENT, WATCH_EVENT, CHESS_EVENT } from '@/lib/demoCrowd';
 import { AddVideo, ShareScreenButton, WatchPanel } from '../activities/WatchPanel';
 import { startMyShare, stopMyShare } from '../activities/screenShare';
 import { ChannelOverlay, type ChatTarget } from './ChannelOverlay';
@@ -181,6 +183,8 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     const onShare = () => hub.scriptShare();
     const onDraw = () => hub.scriptDraw();
     const onTel = () => hub.scriptTelephone();
+    const onChess = () => hub.scriptChess();
+    window.addEventListener(CHESS_EVENT, onChess);
     window.addEventListener(PICK_A_SIDE_EVENT, onDemo);
     window.addEventListener(TELEPHONE_EVENT, onTel);
     window.addEventListener(WATCH_EVENT, onWatch);
@@ -194,6 +198,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
       window.removeEventListener(SHARE_EVENT, onShare);
       window.removeEventListener(BOARD_EVENT, onDraw);
       window.removeEventListener(TELEPHONE_EVENT, onTel);
+      window.removeEventListener(CHESS_EVENT, onChess);
       hub.dispose();
     };
   }, [hub]);
@@ -543,25 +548,37 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     : chatEl('h-[360px] w-[364px] max-[1079px]:h-[min(360px,calc(100dvh-400px))]', () => setChatOpen(false));
   // Watching big (theater): the player owns the screen
   const theater = watchingTv && !!(hub.watch.now || hub.watch.share) && !watchMini && !photo;
-  // The whiteboard big works the same way; it has no sidebar, so Chat shrinks it and opens the chat
+  // The whiteboard big works the same way
   const boardTheater = atBoard && !boardMini && !photo;
   // Draw & Guess plays in a panel, so while you play it's a theater too (no corner: the room comes
   // back between rounds); Pick a Side is played by walking, so it keeps the room
   const drawTheater = !!mySpot && mySpot.id === 'art' && !!hub.tel && inGame && !photo;
-  const bigView = theater || boardTheater || drawTheater;
+  // Chess: the players' board is a theater while they play; people standing by the table watch on a
+  // small board in the corner, and a click makes it big
+  const chessSpot = spotById('chess');
+  const chessPlayer = mySpot?.id === 'chess' && inGame && !!hub.chess;
+  const chessWatching =
+    !mySpot && !!hub.chess && hub.spots.chess.phase === 'playing' && chessSpot.built && inArea(chessSpot.area, me.x, me.z);
+  const [chessMini, setChessMini] = useState(true);
+  const [wasWatchingChess, setWasWatchingChess] = useState(chessWatching);
+  if (chessWatching !== wasWatchingChess) {
+    setWasWatchingChess(chessWatching);
+    if (chessWatching) setChessMini(true);
+  }
+  const chessTheater = !photo && (chessPlayer || (chessWatching && !chessMini));
+  const bigView = theater || boardTheater || drawTheater || chessTheater;
   const toggleChat = () => {
     if (compact) setSheet(true);
     else setChatOpen(!chatOpen);
   };
-  // Every theater (Watch together, the whiteboard, Draw & Guess) opens with the chat closed, so the
-  // stage is as big as it gets; Chat opens it beside the panel, which moves over. Once per visit:
+  // Every theater (Watch together, the whiteboard, Draw & Guess, chess) opens with the chat closed, so
+  // the stage is as big as it gets; Chat opens it beside the panel, which moves over. Once per visit:
   // reopening it is your choice.
-  // big as it gets; Chat opens it beside the canvas. Once per visit: reopening it is your choice.
   const chatClosedFor = useRef<string | null>(null);
-  const drawingStage = theater ? 'tv' : boardTheater ? 'board' : drawTheater ? 'art' : null;
+  const drawingStage = theater ? 'tv' : boardTheater ? 'board' : drawTheater ? 'art' : chessTheater ? 'chess' : null;
   useEffect(() => {
-    if (!mySpot) chatClosedFor.current = null;
-  }, [mySpot]);
+    if (!mySpot && !chessWatching) chatClosedFor.current = null;
+  }, [mySpot, chessWatching]);
   useEffect(() => {
     if (!drawingStage || chatClosedFor.current === drawingStage) return;
     chatClosedFor.current = drawingStage;
@@ -625,6 +642,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
           // Activities opens over the stage, so the big player steps aside to the corner
           if (theater) setWatchMini(true);
           if (boardTheater) setBoardMini(true);
+          if (chessWatching) setChessMini(true);
           setActivities(!activities);
         }}
       />
@@ -694,6 +712,9 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
               side={hub.side}
               board={hub.board}
               motion={motion}
+              chess={hub.chess}
+              // White's pieces face White's stool (the chess table's first stool is on the +x side)
+              chessWhiteSide={hub.chess && room.state.players.get(hub.chess.white)?.seatId === 'chess-1' ? -1 : 1}
             />
           </RoomCanvas>
           {/* Photos never show names: labels hide in photo mode so the preview matches the photo */}
@@ -841,7 +862,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                           shift={wide && chatOpen ? 188 : 0}
                         />
                       )}
-                      {(mySpot.id === 'cards' || mySpot.id === 'chess') && (
+                      {mySpot.id === 'cards' && (
                         <GamePlaceholder
                           spot={mySpot}
                           st={myState}
@@ -902,6 +923,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                       who={who}
                       {...(mySpot.id === 'floor' && side ? sideResults(side, myState, (id) => who(id).name) : {})}
                       {...(mySpot.id === 'art' ? { title: '✏️ That’s a wrap!', medals: false } : {})}
+                      {...(mySpot.id === 'chess' && hub.chess ? chessResults(hub.chess, (id) => who(id).name) : {})}
                       isHost={myState.hostId === 'me'}
                       now={now}
                       onAgain={() => hub.begin(mySpot.id)}
@@ -937,6 +959,33 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                     onRemove={(i) => hub.removeQueued(i)}
                     onShare={() => void shareOnTv()}
                     onStopShare={() => hub.stopShare('me')}
+                  />
+                </div>
+              )}
+              {/* Chess: the players' board under the strip (a theater), or a watcher's board in the corner */}
+              {(chessPlayer || chessWatching) && hub.chess && (
+                <div
+                  className={cn(
+                    'absolute z-20',
+                    chessTheater
+                      ? cn(
+                          'right-3 bottom-[84px] flex justify-center',
+                          chessPlayer ? 'top-[56px]' : 'top-3',
+                          wide && chatOpen ? 'left-[400px]' : 'left-3',
+                        )
+                      : 'right-3 bottom-[72px]',
+                  )}
+                  data-keep-open={chessPlayer || undefined}
+                >
+                  <ChessPanel
+                    game={hub.chess}
+                    who={who}
+                    mini={!chessTheater}
+                    onMini={setChessMini}
+                    onMove={(from, to, promotion) => hub.chessMove('me', from, to, promotion)}
+                    onResign={() => hub.chessResign('me')}
+                    onOfferDraw={() => hub.chessOfferDraw('me')}
+                    onAnswerDraw={(accept) => hub.chessAnswerDraw('me', accept)}
                   />
                 </div>
               )}
@@ -1146,6 +1195,18 @@ function DockBtn({
       {!compact && label}
     </button>
   );
+}
+
+/** Chess's results: who won and how, or how it was drawn; each player's colour. */
+function chessResults(g: ChessGame, name: (id: string) => string) {
+  const end = g.end;
+  const winner = end?.winner;
+  const title = !end
+    ? '♟️ Game over'
+    : winner
+      ? `♟️ ${winner === 'me' ? 'You won' : `${name(winner)} won`} ${end.why === 'left' ? '· the other player left' : END_TEXT[end.why]}${winner === 'me' ? ' 🎉' : ''}`
+      : `🤝 ${END_TEXT[end.why]}`;
+  return { title, medals: !!winner, detail: (id: string) => (id === g.white ? 'White' : 'Black') };
 }
 
 /** Pick a Side's results: who agreed with you (Would you rather) or scores (Quiz). */

@@ -20,7 +20,7 @@ export interface Who {
   color: string;
 }
 
-function Face({ who, host, size = 30 }: { who: Who; host?: boolean; size?: number }) {
+export function Face({ who, host, size = 30 }: { who: Who; host?: boolean; size?: number }) {
   return (
     <span className="relative flex-none" title={who.name}>
       <span

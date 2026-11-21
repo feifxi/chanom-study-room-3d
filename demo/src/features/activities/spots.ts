@@ -58,8 +58,8 @@ export const SPOTS: Spot[] = [
     roomWide: false,
     games: [
       // Up to the table's stools: the Library's card table seats 6, the Café's and Rooftop's 4 for now
+      // Slave only for now (Color Cards was dropped on 2026-11-21); a pair plays chess instead
       { id: 'slave', name: 'Slave', emoji: '🃏', min: 3, max: 6 },
-      { id: 'uno', name: 'Color Cards', emoji: '🎴', min: 2, max: 6 },
     ],
     // The first card table (the Café and Rooftop still have a second, its stools plain seats)
     get area() {

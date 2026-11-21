@@ -13,29 +13,29 @@ what each feature is, and what's left. The details are in one spec per feature
   and dark mode.
 - Nothing is deployed. The real app (`apps/`) is still V1.
 
-| #   | Feature                                 | Status           | Spec                                                                   |
-| --- | --------------------------------------- | ---------------- | ---------------------------------------------------------------------- |
-| 1   | App shell and navigation                | done             | [01-app-shell.md](v2/features/01-app-shell.md)                         |
-| 2   | Accounts and sign-up                    | done             | [02-accounts.md](v2/features/02-accounts.md)                           |
-| 3   | Rooms and membership                    | done             | [03-rooms-membership.md](v2/features/03-rooms-membership.md)           |
-| 4   | Room chat and DMs                       | done             | [04-chat-and-dms.md](v2/features/04-chat-and-dms.md)                   |
-| 5   | Friends                                 | done             | [05-friends.md](v2/features/05-friends.md)                             |
-| 6   | The 3D room                             | done             | [06-3d-room.md](v2/features/06-3d-room.md)                             |
-| 7   | Map templates and the editor            | done             | [07-maps.md](v2/features/07-maps.md)                                   |
-| 8   | Study tools                             | done             | [08-study-tools.md](v2/features/08-study-tools.md)                     |
-| 9   | Activity framework                      | done             | [09-activity-framework.md](v2/features/09-activity-framework.md)       |
-| 10  | Watch together and photo mode           | done             | [10-watch-and-photo.md](v2/features/10-watch-and-photo.md)             |
-| 11  | Pick a Side, whiteboard, Draw & Guess   | done             | [11-party-games.md](v2/features/11-party-games.md)                     |
-| 12  | Table games: cards, chess               | **next** (draft) | [12-cards-draft.md](v2/features/12-cards-draft.md)                     |
-| 13  | ~~AI flashcards~~                       | dropped          |                                                                        |
-| 14  | Common rooms, open rooms and moderation | done             | [14-open-rooms-moderation.md](v2/features/14-open-rooms-moderation.md) |
-| 15  | Business and infra                      | done             | [15-business-infra.md](v2/features/15-business-infra.md)               |
+| #   | Feature                                 | Status                              | Spec                                                                   |
+| --- | --------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------- |
+| 1   | App shell and navigation                | done                                | [01-app-shell.md](v2/features/01-app-shell.md)                         |
+| 2   | Accounts and sign-up                    | done                                | [02-accounts.md](v2/features/02-accounts.md)                           |
+| 3   | Rooms and membership                    | done                                | [03-rooms-membership.md](v2/features/03-rooms-membership.md)           |
+| 4   | Room chat and DMs                       | done                                | [04-chat-and-dms.md](v2/features/04-chat-and-dms.md)                   |
+| 5   | Friends                                 | done                                | [05-friends.md](v2/features/05-friends.md)                             |
+| 6   | The 3D room                             | done                                | [06-3d-room.md](v2/features/06-3d-room.md)                             |
+| 7   | Map templates and the editor            | done                                | [07-maps.md](v2/features/07-maps.md)                                   |
+| 8   | Study tools                             | done                                | [08-study-tools.md](v2/features/08-study-tools.md)                     |
+| 9   | Activity framework                      | done                                | [09-activity-framework.md](v2/features/09-activity-framework.md)       |
+| 10  | Watch together and photo mode           | done                                | [10-watch-and-photo.md](v2/features/10-watch-and-photo.md)             |
+| 11  | Pick a Side, whiteboard, Draw & Guess   | done                                | [11-party-games.md](v2/features/11-party-games.md)                     |
+| 12  | Table games: chess, Slave               | chess built; Slave **next** (draft) | [12-cards-draft.md](v2/features/12-cards-draft.md)                     |
+| 13  | ~~AI flashcards~~                       | dropped                             |                                                                        |
+| 14  | Common rooms, open rooms and moderation | done                                | [14-open-rooms-moderation.md](v2/features/14-open-rooms-moderation.md) |
+| 15  | Business and infra                      | done                                | [15-business-infra.md](v2/features/15-business-infra.md)               |
 
 ## What's left
 
 In order:
 
-1. **Feature 12: table games (cards and chess).** Proposals are in the draft. The Library has a
+1. **Feature 12: table games (chess, then Slave).** Proposals are in the draft. The Library has a
    6-stool card table and a chess table; the Café and Rooftop catch up later. (Werewolf was dropped
    on 2026-11-20.)
 2. **Port the demo to `apps/web`.** First move the stack to NestJS and Prisma, then work through the

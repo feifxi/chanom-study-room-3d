@@ -153,6 +153,15 @@ decision is made or changed: one line, a date, and the reason.
   from overhead with nothing to see (floor lamps standing there looked out of place, and banker's
   lamps didn't suit low tables). Every banker's lamp has its own light: a long table's second lamp
   used to sit dark.
+- **Chess, as designed** (2026-11-21, the owner): two players, casual, no clock; random colours,
+  swapped in a rematch; tap-to-move with legal dots (drag too), the board turned to your colour, no
+  move list; resign and draw offers, no takebacks; watchers on the rug get a small board that grows;
+  the 3D board shows the live game; our own pastel piece set. Not now: a computer opponent, clocks,
+  ratings, Makruk.
+- **Color Cards dropped; Slave is the only card game for now** (2026-11-21, the owner): one card game
+  done well before a second. Chess covers pairs (the reason Color Cards' 2-player minimum mattered),
+  and an Uno-like game sits close to someone else's product. Order for feature 12: chess first, then
+  Slave.
 - **Battery saver keeps 60 fps while you do things** (2026-11-21, the owner): a fixed 30 fps was the
   part people notice (walking, moving the camera). Now saver renders 60 while you're active and 30
   only while you're still, where it isn't visible and where a study room spends most of its hours.
