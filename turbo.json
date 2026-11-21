@@ -3,33 +3,26 @@
   "ui": "stream",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "generate"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"],
       "env": ["NEXT_PUBLIC_*"]
     },
+    "generate": {
+      "outputs": ["src/generated/**"]
+    },
     "dev": {
+      "dependsOn": ["generate"],
       "cache": false,
-      "persistent": true,
-      "passThroughEnv": [
-        "PORT",
-        "WEB_ORIGIN",
-        "DATABASE_URL",
-        "ADMIN_PASSWORD",
-        "TRUST_PROXY",
-        "API_DEV_URL",
-        "GAME_INTERNAL_URL",
-        "LIVEKIT_*",
-        "LOG_*",
-        "CHAOS_*",
-        "NEXT_PUBLIC_*"
-      ]
+      "persistent": true
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"]
+      "dependsOn": ["^typecheck", "generate"]
     },
-    "lint": {},
+    "lint": {
+      "dependsOn": ["generate"]
+    },
     "test": {
-      "dependsOn": ["^typecheck"]
+      "dependsOn": ["generate"]
     }
   }
 }

@@ -2,11 +2,11 @@
 // and battery-saver mode, zoomed all the way out, and fails if a frame goes over the budget
 // (src/features/room3d/perf.ts). Zoomed out is the worst case: the whole map is on screen, so nothing
 // is culled (at the opening zoom the maps once passed while costing ~70 draw calls more zoomed out).
-// Needs the demo running (pnpm --filter @study/demo demo:dev). Draw calls, triangles and JS time are
+// Needs the demo running (pnpm --filter @connecta/demo demo:dev). Draw calls, triangles and JS time are
 // what we check; fps in a headless browser says little about a phone, so it's only printed.
 //
-//   pnpm --filter @study/demo demo:perf            (Chrome with the GPU if it can, else Chromium)
-//   MAPS=cafe pnpm --filter @study/demo demo:perf  (one map)
+//   pnpm --filter @connecta/demo demo:perf            (Chrome with the GPU if it can, else Chromium)
+//   MAPS=cafe pnpm --filter @connecta/demo demo:perf  (one map)
 import { chromium } from 'playwright';
 
 const BASE = process.env.DEMO_URL ?? 'http://localhost:3100/servers/chanom/rooms/';

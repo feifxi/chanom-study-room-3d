@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, DoorOpen, Lock } from 'lucide-react';
-import type { AvatarLook } from '@study/shared';
+import type { AvatarLook } from '@connecta/shared';
 import { CharacterEditor } from '@/features/avatar/CharacterEditor';
 import { GUEST_LOOK, saveGuest } from '@/lib/guest';
 import { RoomShot, SplitScreen } from '@/components/app/SplitScreen';

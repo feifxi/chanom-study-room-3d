@@ -3,7 +3,7 @@ import { KIT, type KitId, type MapSize } from '@/lib/mock';
 /**
  * The admin map editor's model (feature 7). A map file is a list of pieces and zones on a metre
  * grid; the standard-kit check runs on it before Publish. Coordinates here start at the top-left
- * corner; the real map file stores them centred like `ROOM` in @study/shared.
+ * corner; the real map file stores them centred like `ROOM` in @connecta/shared.
  */
 
 export interface CatalogPiece {

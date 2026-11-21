@@ -16,7 +16,8 @@ decision is made or changed: one line, a date, and the reason.
 - **Name: Connecta** (2026-11-08), chosen over Popin, Kotatsu and keeping Chanom. The subscription
   is Connecta Plus. "Chanom Friends" in the demo is a user's room, not the app. Domain and trademark
   are not checked yet.
-- **V1 is saved** as tag `v1.0.0` with a GitHub Release. V2 continues on `main`.
+- **V1 is saved** as tag `v1.0.0` with a GitHub Release. V2 continues on `main`; V1's code left
+  `main` on 2026-11-21 (see [Engineering and infra](#engineering-and-infra)).
 
 ## How we work
 
@@ -266,14 +267,35 @@ decision is made or changed: one line, a date, and the reason.
 
 ### Engineering and infra
 
-- **Stack migration first, then port** (2026-11-07): NestJS with an OpenAPI-generated client
-  (replacing Hono), Prisma (replacing Drizzle), a NestJS WebSocket gateway for chat, DMs, presence and
-  notifications, Colyseus for rooms, self-hosted LiveKit, Redis between instances. Start with fresh
-  data.
+- **Build fresh instead of migrating V1** (2026-11-21, reverses "stack migration first, then port"
+  from 2026-11-07). Connecta is almost a different app (accounts, rooms with members and roles, chat,
+  DMs, Plus, table games), and extending V1 would carry over its structure and patterns (Hono
+  layout, one public room, anonymous visitors). So V1 left `main` (tag `v1.0.0` keeps it, along with
+  its AWS Terraform, deploy scripts and observability setup), `apps/web` starts as a copy of the
+  approved demo, and the backend is written new. Order: skeleton, the core (accounts, rooms),
+  the gateway, walking in a room, the rest; the [plan](../v2-plan.md#whats-left) tracks it.
+- **Lift V1's hard-won pieces on purpose, not its structure** (2026-11-21): client prediction with
+  `reconcile.ts` and the server's refilling move budget; the explicit Colyseus `WebSocketTransport`
+  and the hoisted `.npmrc`; LiveKit proximity voice and screen share; the e2e lessons (a dev-only
+  test handle on `window`, CI without a GPU); the SLO and dashboard generators if monitoring returns.
+  `packages/shared` kept only what V2 uses (avatars, world types, movement rules, collisions, A\*,
+  NPC types).
+- **The stack** (2026-11-07, kept): NestJS with an OpenAPI-generated client, Prisma, a NestJS
+  WebSocket gateway for chat, DMs, presence and notifications, Colyseus for rooms, self-hosted
+  LiveKit, Redis between instances. Start with fresh data.
+- **How the stack is set up** (2026-11-21): one NestJS app with two entry points (REST and the
+  WebSocket gateway): shared modules, two containers. Prisma lives in `apps/api`, which owns the
+  schema, not in a `packages/db`: if the game server needs data it asks the API, or the package is
+  split out then. Validation is Zod through Nest 12's Standard Schema support (Swagger reads the same
+  schemas), not class-validator. Prisma 7, not the Prisma 8 release candidate. Vitest everywhere
+  (SWC for Nest's decorator metadata), not Jest. TypeScript 5.9 everywhere. Package scope
+  `@connecta/*`.
+- **The cloud is open again** (2026-11-21): the owner plans to move to Azure now rather than later.
+  Discussed when the build reaches the infra step; until then, nothing cloud-specific.
 - **Infra = V1's architecture plus only what V2 needs** (2026-11-10): EC2 + Docker Compose + Caddy +
   RDS, plus gateway and Redis containers, S3 + CloudFront, SES, Stripe, and a separate monitoring
   server (SRE practice). Fargate, ALB, ECS and "managed swaps" were rejected. nginx was dropped.
-  AWS now, Azure later (team credits). Local development only until the owner says deploy.
-- **Only the owner provisions** (`terraform apply`, `infra:up/down/deploy`). Agents suggest steps and
-  do read-only checks.
+  AWS now, Azure later (team credits); see the 2026-11-21 line above. Local development only until
+  the owner says deploy.
+- **Only the owner provisions** cloud resources. Agents suggest steps and do read-only checks.
 - **Music must be royalty-free** (Pixabay). Never rips from YouTube or Spotify.

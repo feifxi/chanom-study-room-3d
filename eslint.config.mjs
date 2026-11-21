@@ -1,10 +1,10 @@
-// Lint config for the TypeScript packages outside Next (game server, shared, db).
-// apps/web has its own config (eslint-config-next).
+// Lint config for the TypeScript packages outside Next (api, shared). The Next apps (apps/web,
+// demo) have their own config (eslint-config-next).
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['**/dist/**', '**/node_modules/**', 'apps/web/**', '**/drizzle/**'] },
+  { ignores: ['**/dist/**', '**/node_modules/**', '**/generated/**', 'apps/web/**', 'demo/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Coins, Crown } from 'lucide-react';
 import { QuestList } from '@/components/app/QuestList';
 import { toast } from 'sonner';
-import type { Accessory, AvatarLook } from '@study/shared';
+import type { Accessory, AvatarLook } from '@connecta/shared';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';

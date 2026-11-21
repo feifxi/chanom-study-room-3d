@@ -176,8 +176,8 @@ team decides; nothing waits on it.
 ## Backend notes
 
 - **Map file:** JSON per template, size and version: pieces (kind, x, z, rotation), zones, seats,
-  spawn. Read by the game server (collisions, seats, zones, A\*) and the client. It replaces V1's
-  hard-coded layout in `@study/shared`. The demo's data files are its prototype.
+  spawn. Read by the game server (collisions, seats, zones, A\*) and the client, through the world
+  types in `@connecta/shared`. The demo's data files are its prototype.
 - **Tables:** `map_template` (id, name); `map_version` (template, size, version, file, published by,
   at, live); rooms store `template`, `size`, `time_of_day`, `thumbnail_key`.
 - **Look changes** (time of day, thumbnail) reach everyone inside over the gateway, no reload.

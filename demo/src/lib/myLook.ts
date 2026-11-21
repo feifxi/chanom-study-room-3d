@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import type { AvatarLook } from '@study/shared';
+import type { AvatarLook } from '@connecta/shared';
 import { ME } from './mock';
 
 /**

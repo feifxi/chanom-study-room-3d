@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { AvatarLook } from '@study/shared';
+import type { AvatarLook } from '@connecta/shared';
 import { show, skinCharacter } from './skin';
 
 /*

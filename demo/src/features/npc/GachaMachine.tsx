@@ -3,7 +3,7 @@
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { SUMMON_REVEAL_MS } from '@study/shared';
+import { SUMMON_REVEAL_MS } from '@connecta/shared';
 import { activeMap } from '../map/active';
 import { StaticBatch } from '../room3d/StaticBatch';
 import type { Summon } from '../room3d/roomSession';

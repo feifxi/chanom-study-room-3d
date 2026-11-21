@@ -1,4 +1,4 @@
-import { createNavigator, resolveCollisions as resolveIn, type Obstacle, type Seat, type Walker, type World } from '@study/shared';
+import { createNavigator, resolveCollisions as resolveIn, type Obstacle, type Seat, type Walker, type World } from '@connecta/shared';
 import { cardSeats, circle, rect, circleSeats, zoneAtIn, type CardTable, type MapData, type CushionCircle, type Zone } from './types';
 
 /**
@@ -259,7 +259,7 @@ export const OBSTACLES: Obstacle[] = [
 export const WORLD: World = { bounds: BOUNDS, obstacles: OBSTACLES };
 const nav = createNavigator(WORLD);
 export const resolveCollisions = (p: { x: number; z: number }, others: Iterable<Walker>, radius?: number) =>
-  resolveIn(p, others, radius, WORLD);
+  resolveIn(WORLD, p, others, radius);
 
 export const STARTER_CAT = { x: -4.0, z: -3.0 } as const;
 export const NPC_SPAWN = {

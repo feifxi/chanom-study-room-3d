@@ -1,4 +1,4 @@
-import type { AvatarLook } from '@study/shared';
+import type { AvatarLook } from '@connecta/shared';
 
 /** Everything the demo shows. Frontend only: no server, nothing is saved. */
 

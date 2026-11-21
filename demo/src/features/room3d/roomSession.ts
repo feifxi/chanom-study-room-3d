@@ -1,9 +1,8 @@
-import type { NpcSummoned, NpcView, PlayerView } from '@study/shared';
+import type { NpcSummoned, NpcView, PlayerView } from '@connecta/shared';
 
 /**
- * Demo stand-in for V1's roomSession.ts. The 3D files are copied from apps/web unchanged; they only
- * need these types. `StudyRoom` is the small slice of a Colyseus room they actually use, so a local
- * mock (mockRoom.ts) can play the server.
+ * The connection types the 3D files need. `StudyRoom` is the small slice of a Colyseus room they
+ * actually use, so a local mock (mockRoom.ts) can play the game server.
  */
 export interface StudyRoom {
   sessionId: string;

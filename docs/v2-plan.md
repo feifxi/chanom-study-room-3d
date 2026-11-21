@@ -1,6 +1,6 @@
 # Connecta (V2) plan
 
-**Connecta** turns V1's 3D study room (tag `v1.0.0`) into cosy 3D rooms where friend groups and
+**Connecta** grew out of V1's 3D study room (tag `v1.0.0`) into cosy 3D rooms where friend groups and
 communities hang out, study and play together. This page is the overview: status, the concept,
 what each feature is, and what's left. The details are in one spec per feature
 (`docs/v2/features/`), the reasons in [decisions.md](v2/decisions.md).
@@ -8,10 +8,11 @@ what each feature is, and what's left. The details are in one spec per feature
 ## Status (2026-11-21)
 
 - Features 1–12, 14 and 15 are decided and built in `demo/`, a frontend-only prototype with mock
-  data ([demo guide](v2/demo-guide.md)). 13 was dropped. **The port is next.**
+  data ([demo guide](v2/demo-guide.md)). 13 was dropped.
 - All three launch maps are built, each with its own layout. A polish pass covered phones, guests
   and dark mode.
-- Nothing is deployed. The real app (`apps/`) is still V1.
+- **The real app is being built fresh** in `apps/` and `packages/` (V1 was removed from `main`;
+  it's at tag `v1.0.0`). Step 1, the skeleton, is done. Nothing is deployed.
 
 | #   | Feature                                 | Status  | Spec                                                                   |
 | --- | --------------------------------------- | ------- | ---------------------------------------------------------------------- |
@@ -33,10 +34,21 @@ what each feature is, and what's left. The details are in one spec per feature
 
 ## What's left
 
-In order:
+Build the real app fresh, in order ([why fresh](v2/decisions.md#engineering-and-infra)). Each step
+moves the matching screens in `apps/web` from mock data onto the real backend, working through the
+[port checklist](#port-checklist) as it goes.
 
-1. **Port the demo to `apps/web`.** First move the stack to NestJS and Prisma, then work through the
-   [port checklist](#port-checklist), then the infra in spec 15, then a playtest, then launch.
+1. ~~**Skeleton:**~~ done 2026-11-21. V1 removed; `apps/web` copied from the demo; a NestJS API with
+   Prisma, config checks, logging, health and OpenAPI; `packages/shared` with only what V2 uses;
+   Postgres, Redis and LiveKit in Docker Compose; CI runs check and build.
+2. **The core:** accounts (Google, Discord, email code, guests), rooms, members and roles, invites.
+   The first Prisma models and the generated OpenAPI client for the web app.
+3. **The gateway:** room chat, DMs, friends, presence (the API's second entry point, Redis).
+4. **Walking in a room:** the Colyseus game server, with V1's movement prediction and
+   reconciliation copied in; voice and screen share; maps.
+5. **The rest, a feature at a time:** activities and table games, Plus, coins and quests, focus,
+   Common and open rooms, moderation, the editor and admin site.
+6. **Infra** (discuss first: moving to Azure is on the table), then a playtest, then launch.
 
 Deferred on purpose, no date yet:
 
@@ -113,14 +125,14 @@ summaries, AI-made rooms. Today AI only writes Pick a Side decks. No AI tutor or
 
 ## Engineering
 
-- **Stack (migrate first, then build):** NestJS with an OpenAPI-generated typed client (replacing
-  Hono), Prisma (replacing Drizzle), Colyseus for rooms, self-hosted LiveKit for media, a NestJS
-  WebSocket gateway for chat, DMs, presence and notifications, Redis between instances. Fresh data:
-  V1's isn't carried over.
+- **Stack, built fresh:** NestJS 12 with an OpenAPI-generated typed client, Prisma 7 on Postgres,
+  Colyseus for rooms, self-hosted LiveKit for media, a NestJS WebSocket gateway (a second entry
+  point of the API) for chat, DMs, presence and notifications, Redis between instances. Fresh data:
+  V1's isn't carried over. Layout and conventions: [`AGENTS.md`](../AGENTS.md#layout).
 - **Demo first:** new screens are built in `demo/` with mock data. Mock types stay API-shaped (they
   become the OpenAPI schema), one data-access layer per feature, and each spec notes its backend cost.
-- **Infra:** V1's architecture plus only what V2 needs (spec 15). Local development until the owner
-  says deploy; then AWS, Azure later.
+- **Infra:** spec 15 describes V1's architecture plus only what V2 needs, on AWS. The owner plans to
+  move to Azure; that's discussed at the infra step. Local development until the owner says deploy.
 
 ## Port checklist
 

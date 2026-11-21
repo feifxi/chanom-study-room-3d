@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import { Dices } from 'lucide-react';
-import { ACCESSORIES, HAIR_COLORS, OUTFIT_COLORS, randomLook, type AvatarLook } from '@study/shared';
+import { ACCESSORIES, HAIR_COLORS, OUTFIT_COLORS, randomLook, type AvatarLook } from '@connecta/shared';
 import { cn } from '@/lib/utils';
 
 const AvatarPreview = dynamic(() => import('./AvatarPreview').then((m) => m.AvatarPreview), { ssr: false });

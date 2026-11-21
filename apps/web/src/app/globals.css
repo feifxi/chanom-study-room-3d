@@ -1,113 +1,451 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
 
 /*
- * Cosy, cute palette: warm cream, strawberry-milk pink, milk-tea orange and
- * pastel lavender / peach / mint, with soft cocoa instead of black.
+ * Cosy and cute, but modern. Light: V1's warm cream and strawberry milk. Dark: a plum-cocoa night
+ * (Discord-dark modern, never pure black). Drink palettes swap only the brand colour family (strawberry is the default); Mono also
+ * turns the warm neutrals grey. Everything else reads these tokens.
  */
 :root {
-  color-scheme: light;
-  --bg-top: #fdf6ee;
-  --bg-bottom: #f8ecf2;
-  --surface: #ffffff;
-  --panel: rgb(255 255 255 / 0.96);
-  --ink: #45323d;
-  --muted: #8c7782;
-  --line: #f1e3e7;
-  --soft: #fcf2f4;
-  --accent: #df6392;
-  --accent-ink: #bd4373;
-  --accent-soft: #ffe7f0;
+  --radius: 1rem;
+
+  --background: #fbf4f1;
+  --background-2: #f7ebf0;
+  --foreground: #45323d;
+  --card: #ffffff;
+  --card-foreground: #45323d;
+  --popover: #ffffff;
+  --popover-foreground: #45323d;
+  --muted: #f8eef0;
+  --muted-foreground: #8c7782;
+  --accent: #fcf0f3;
+  --accent-foreground: #45323d;
+  --border: #f0e1e6;
+  --input: #ead9df;
+  --destructive: #d9435f;
+  --sidebar: #fffaf8;
+  --sidebar-foreground: #45323d;
+  --sidebar-border: #f0e1e6;
+  --rail: #f4e5ea;
+
+  /* Pastel tints for tiles and chips, each with a readable ink */
   --lavender: #f0e9fc;
   --lavender-ink: #7758c4;
   --peach: #ffeadc;
   --peach-ink: #b3612f;
   --mint: #e3f5ea;
   --mint-ink: #2f7d55;
-  --rose: #ffe3ec;
-  --rose-ink: #c03a72;
+  --sky: #e4f1fc;
+  --sky-ink: #2e6ea8;
   --tea: #e9955a;
   --cocoa: #4a3443;
+  --online: #3fbf7f;
+  --idle: #f2b84b;
+  --gold: #e8a93a;
+
+  /* Brand family (strawberry) */
+  --primary: #df6392;
+  --primary-foreground: #ffffff;
+  --primary-ink: #bd4373;
+  --secondary: #ffe7f0;
+  --secondary-foreground: #bd4373;
+  --ring: #df6392;
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-ring: var(--ring);
+  --chart-1: var(--primary);
+  --chart-2: var(--tea);
+  --chart-3: var(--lavender-ink);
+  --chart-4: var(--mint-ink);
+  --chart-5: var(--sky-ink);
+  --shadow-soft: 0 10px 30px rgb(110 60 85 / 0.1);
+}
+
+.dark {
+  --background: #18131c;
+  --background-2: #1f1724;
+  --foreground: #f5ecf1;
+  --card: #241c29;
+  --card-foreground: #f5ecf1;
+  --popover: #2a2130;
+  --popover-foreground: #f5ecf1;
+  --muted: #2e2534;
+  --muted-foreground: #a99aa3;
+  --accent: #32283a;
+  --accent-foreground: #f5ecf1;
+  --border: rgb(255 255 255 / 0.08);
+  --input: rgb(255 255 255 / 0.12);
+  --destructive: #f0647e;
+  --sidebar: #1e1823;
+  --sidebar-foreground: #f5ecf1;
+  --sidebar-border: rgb(255 255 255 / 0.06);
+  --rail: #140f18;
+
+  --lavender: #2f2843;
+  --lavender-ink: #c3b0ff;
+  --peach: #3d2b24;
+  --peach-ink: #ffbf94;
+  --mint: #1f3529;
+  --mint-ink: #8fe0b2;
+  --sky: #1e2c3d;
+  --sky-ink: #9fcdf5;
+  --cocoa: #120d15;
+
+  --primary: #f27aa7;
+  --primary-foreground: #2b0f1d;
+  --primary-ink: #ff9cc1;
+  --secondary: #3b2432;
+  --secondary-foreground: #ffb3cf;
+  --ring: #f27aa7;
+  --shadow-soft: 0 12px 34px rgb(0 0 0 / 0.35);
+}
+
+[data-palette='matcha'] {
+  --primary: #4f9e6c;
+  --primary-ink: #367a50;
+  --secondary: #e1f3e6;
+  --secondary-foreground: #367a50;
+  --ring: #4f9e6c;
+  --background-2: #eef4ec;
+}
+.dark[data-palette='matcha'] {
+  --primary: #7acb98;
+  --primary-foreground: #0e2417;
+  --primary-ink: #9ee0b6;
+  --secondary: #1f3328;
+  --secondary-foreground: #a8e6c0;
+  --ring: #7acb98;
+  --background-2: #141c18;
+}
+[data-palette='taro'] {
+  --primary: #8a6ad8;
+  --primary-ink: #6c4fc0;
+  --secondary: #eee8fd;
+  --secondary-foreground: #6c4fc0;
+  --ring: #8a6ad8;
+  --background-2: #f1ecfa;
+}
+.dark[data-palette='taro'] {
+  --primary: #ad94f5;
+  --primary-foreground: #1c1235;
+  --primary-ink: #c7b5ff;
+  --secondary: #2c2443;
+  --secondary-foreground: #cdbcff;
+  --ring: #ad94f5;
+  --background-2: #19152a;
+}
+
+[data-palette='thaitea'] {
+  --primary: #e8772e;
+  --primary-ink: #c25a14;
+  --secondary: #ffead9;
+  --secondary-foreground: #b4520f;
+  --ring: #e8772e;
+  --background-2: #fbeee3;
+}
+.dark[data-palette='thaitea'] {
+  --primary: #ff9a52;
+  --primary-foreground: #2e1404;
+  --primary-ink: #ffb784;
+  --secondary: #3a2618;
+  --secondary-foreground: #ffc196;
+  --ring: #ff9a52;
+  --background-2: #1f1712;
+}
+[data-palette='blueberry'] {
+  --primary: #4a7fd6;
+  --primary-ink: #2f62b5;
+  --secondary: #e3edfc;
+  --secondary-foreground: #2f62b5;
+  --ring: #4a7fd6;
+  --background-2: #ecf1fa;
+}
+.dark[data-palette='blueberry'] {
+  --primary: #7aa7f5;
+  --primary-foreground: #0c1a33;
+  --primary-ink: #a3c3ff;
+  --secondary: #1f2a40;
+  --secondary-foreground: #adc8ff;
+  --ring: #7aa7f5;
+  --background-2: #131826;
+}
+[data-palette='cocoa'] {
+  --primary: #a0674b;
+  --primary-ink: #7e4b33;
+  --secondary: #f4e6dd;
+  --secondary-foreground: #7e4b33;
+  --ring: #a0674b;
+  --background-2: #f5ece5;
+}
+.dark[data-palette='cocoa'] {
+  --primary: #d49a7a;
+  --primary-foreground: #26140b;
+  --primary-ink: #e8b799;
+  --secondary: #36261f;
+  --secondary-foreground: #f0c4a8;
+  --ring: #d49a7a;
+  --background-2: #1c1613;
+}
+
+[data-palette='lemon'] {
+  /* Yellow is too light for white text, so the button text goes dark */
+  --primary: #e8b10c;
+  --primary-foreground: #3a2a00;
+  --primary-ink: #a87a00;
+  --secondary: #fff4c9;
+  --secondary-foreground: #8a6400;
+  --ring: #e8b10c;
+  --background-2: #fbf5e0;
+}
+.dark[data-palette='lemon'] {
+  --primary: #ffd34d;
+  --primary-foreground: #2e2200;
+  --primary-ink: #ffe27f;
+  --secondary: #382f12;
+  --secondary-foreground: #ffe08a;
+  --ring: #ffd34d;
+  --background-2: #1d1a10;
+}
+[data-palette='mintchoco'] {
+  --primary: #23a594;
+  --primary-ink: #127a6d;
+  --secondary: #d9f4ef;
+  --secondary-foreground: #127a6d;
+  --ring: #23a594;
+  --background-2: #ecf3ee;
+  --cocoa: #4a3428;
+}
+.dark[data-palette='mintchoco'] {
+  --primary: #5fd6c4;
+  --primary-foreground: #06231f;
+  --primary-ink: #8be8da;
+  --secondary: #17332f;
+  --secondary-foreground: #9aeee0;
+  --ring: #5fd6c4;
+  --background-2: #1a1512;
+}
+[data-palette='cherry'] {
+  --primary: #c9344d;
+  --primary-ink: #a01f37;
+  --secondary: #fde0e5;
+  --secondary-foreground: #a01f37;
+  --ring: #c9344d;
+  --background-2: #f8e9e9;
+}
+.dark[data-palette='cherry'] {
+  --primary: #ff6b84;
+  --primary-foreground: #2c050d;
+  --primary-ink: #ff95a7;
+  --secondary: #3d1a22;
+  --secondary-foreground: #ffa3b3;
+  --ring: #ff6b84;
+  --background-2: #1e1215;
+}
+/* Mono: no brand colour at all, and the warm cream/plum neutrals turn to plain greys */
+[data-palette='mono'] {
+  --background: #f5f5f4;
+  --background-2: #ececeb;
+  --foreground: #1c1c1c;
+  --card-foreground: #1c1c1c;
+  --popover-foreground: #1c1c1c;
+  --muted: #f0f0ef;
+  --muted-foreground: #737373;
+  --accent: #f0f0ef;
+  --accent-foreground: #1c1c1c;
+  --border: #e4e4e3;
+  --input: #dcdcdb;
+  --sidebar: #fafafa;
+  --sidebar-foreground: #1c1c1c;
+  --sidebar-border: #e4e4e3;
+  --rail: #e9e9e8;
+  --primary: #1c1c1c;
+  --primary-foreground: #ffffff;
+  --primary-ink: #000000;
+  --secondary: #e9e9e8;
+  --secondary-foreground: #1c1c1c;
+  --ring: #1c1c1c;
+  --cocoa: #1c1c1c;
+  --shadow-soft: 0 10px 30px rgb(0 0 0 / 0.08);
+}
+.dark[data-palette='mono'] {
+  --background: #111111;
+  --background-2: #161616;
+  --foreground: #f2f2f2;
+  --card: #1b1b1b;
+  --card-foreground: #f2f2f2;
+  --popover: #202020;
+  --popover-foreground: #f2f2f2;
+  --muted: #242424;
+  --muted-foreground: #a3a3a3;
+  --accent: #262626;
+  --accent-foreground: #f2f2f2;
+  --border: rgb(255 255 255 / 0.09);
+  --input: rgb(255 255 255 / 0.13);
+  --sidebar: #161616;
+  --sidebar-foreground: #f2f2f2;
+  --sidebar-border: rgb(255 255 255 / 0.07);
+  --rail: #0b0b0b;
+  --primary: #f2f2f2;
+  --primary-foreground: #111111;
+  --primary-ink: #ffffff;
+  --secondary: #2a2a2a;
+  --secondary-foreground: #f2f2f2;
+  --ring: #f2f2f2;
+  --cocoa: #0a0a0a;
+  --shadow-soft: 0 12px 34px rgb(0 0 0 / 0.45);
 }
 
 @theme inline {
-  --color-ink: var(--ink);
+  --font-sans: var(--font-nunito), var(--font-thai), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-nunito), var(--font-thai), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-face), ui-monospace, monospace;
+  --color-background: var(--background);
+  --color-background-2: var(--background-2);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-ink: var(--primary-ink);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
-  --color-line: var(--line);
-  --color-soft: var(--soft);
-  --color-panel: var(--panel);
-  --color-surface: var(--surface);
+  --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
-  --color-accent-ink: var(--accent-ink);
-  --color-accent-soft: var(--accent-soft);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-rail: var(--rail);
   --color-lavender: var(--lavender);
   --color-lavender-ink: var(--lavender-ink);
   --color-peach: var(--peach);
   --color-peach-ink: var(--peach-ink);
   --color-mint: var(--mint);
   --color-mint-ink: var(--mint-ink);
-  --color-rose: var(--rose);
-  --color-rose-ink: var(--rose-ink);
+  --color-sky: var(--sky);
+  --color-sky-ink: var(--sky-ink);
   --color-tea: var(--tea);
   --color-cocoa: var(--cocoa);
-  --font-sans: var(--font-nunito), var(--font-thai), system-ui, sans-serif;
-  --font-mono: var(--font-mono-face), ui-monospace, monospace;
+  --color-online: var(--online);
+  --color-idle: var(--idle);
+  --color-gold: var(--gold);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.25);
+  --radius-2xl: calc(var(--radius) * 1.5);
+  --radius-3xl: calc(var(--radius) * 2);
+  --radius-4xl: calc(var(--radius) * 2.5);
+  --shadow-soft: var(--shadow-soft);
 }
 
-html,
-body {
-  height: 100%;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  /* No one-word last lines on phone-width headings ("…feels / it") */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
 }
 
-body {
-  background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom)) fixed;
-  color: var(--ink);
-  font-family: var(--font-sans);
+/* The app's backdrop: a soft gradient instead of a flat fill */
+.app-bg {
+  background: linear-gradient(180deg, var(--background), var(--background-2)) fixed;
 }
 
-/* White card: lobby sections and every in-room panel */
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  box-shadow: 0 10px 30px rgb(110 60 85 / 0.09);
+/* ---------- Kept from V1: floating room panels, the cocoa dock, labels ---------- */
+/* In the components layer so Tailwind utilities (e.g. min-w-0 on phones) can override them */
+@layer components {
+  .panel {
+    background: color-mix(in oklab, var(--card) 96%, transparent);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(8px);
+  }
+
+  /* Radius = the buttons' 14px + the 8px padding, so the corners run parallel instead of pinching */
+  .dock {
+    background: var(--cocoa);
+    border-radius: 22px;
+    box-shadow: 0 14px 36px rgb(20 10 18 / 0.4);
+  }
+
+  .dock-btn {
+    display: flex;
+    min-width: 64px;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    border-radius: 14px;
+    padding: 8px 10px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgb(255 255 255 / 0.08);
+    transition: background-color 0.15s ease;
+  }
+  .dock-btn:not(:disabled):hover {
+    background: rgb(255 255 255 / 0.17);
+  }
+  .dock-btn[aria-pressed='true'] {
+    background: rgb(255 255 255 / 0.24);
+  }
+  .dock-btn:disabled {
+    opacity: 0.4;
+  }
+  /* Talking to everyone: unmistakably "on air", not just pressed */
+  .dock-btn.dock-btn-live:not(:disabled) {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    animation: on-air 1.6s ease-out infinite;
+  }
 }
 
-/* The cocoa control dock at the bottom of the room */
-.dock {
-  background: var(--cocoa);
-  border-radius: 24px;
-  box-shadow: 0 14px 36px rgb(74 52 67 / 0.35);
+@keyframes on-air {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 70%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 10px transparent;
+  }
 }
 
-.dock-btn {
-  display: flex;
-  min-width: 68px;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  border-radius: 14px;
-  padding: 8px 12px;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  background: rgb(255 255 255 / 0.08);
-}
-
-/* Phones: square icon buttons */
-.dock-btn-compact {
-  min-width: 48px;
-  padding: 12px;
-}
-
-.dock-btn:not(:disabled):hover {
-  background: rgb(255 255 255 / 0.16);
-}
-
-.dock-btn:disabled {
-  opacity: 0.4;
-}
-
-/* "• • •" bubble above someone who is typing */
 .typing-dots {
   align-items: center;
   gap: 4px;
@@ -116,23 +454,19 @@ body {
   background: #fff;
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
 }
-
 .typing-dots span {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--primary);
   animation: typing-bounce 1s infinite ease-in-out;
 }
-
 .typing-dots span:nth-child(2) {
   animation-delay: 0.15s;
 }
-
 .typing-dots span:nth-child(3) {
   animation-delay: 0.3s;
 }
-
 @keyframes typing-bounce {
   0%,
   60%,
@@ -146,21 +480,12 @@ body {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .typing-dots span {
-    animation: none;
-    opacity: 0.8;
-  }
-}
-
-/* Name tag of someone talking on voice: a soft pulsing green ring */
 .speaking {
   box-shadow:
     0 0 0 2px #22c55e,
     0 0 12px rgb(34 197 94 / 0.6);
   animation: speaking-pulse 0.9s ease-in-out infinite alternate;
 }
-
 @keyframes speaking-pulse {
   from {
     box-shadow:
@@ -174,71 +499,6 @@ body {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .speaking {
-    animation: none;
-  }
-}
-
-/* ---------- Interaction states for every button ---------- */
-button:not(:disabled),
-a[href] {
-  cursor: pointer;
-}
-
-button,
-a[href] {
-  transition:
-    filter 0.15s ease,
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease,
-    box-shadow 0.15s ease,
-    transform 0.08s ease;
-}
-
-button:disabled {
-  cursor: not-allowed;
-}
-
-/* Filled primary buttons brighten and lift slightly */
-button.bg-accent:not(:disabled):hover,
-a.bg-accent:hover {
-  background-color: var(--accent-ink);
-  box-shadow: 0 8px 18px rgb(223 99 146 / 0.32);
-}
-
-/* White / outlined buttons get a soft tint and a primary border */
-button.bg-white:not(:disabled):hover,
-a.bg-white:hover {
-  background-color: var(--soft);
-  border-color: rgb(223 99 146 / 0.45);
-}
-
-button:not(:disabled):active,
-a[href]:active {
-  transform: translateY(1px);
-}
-
-button:focus-visible,
-a[href]:focus-visible,
-input:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  button,
-  a[href] {
-    transition: none;
-  }
-  button:not(:disabled):active,
-  a[href]:active {
-    transform: none;
-  }
-}
-
-/* Hearts / sparkles that float up from an NPC (e.g. after a head pat) */
 .emote-float {
   position: absolute;
   bottom: 100%;
@@ -246,7 +506,6 @@ input:focus-visible {
   text-shadow: 0 0 6px #fff;
   animation: emote-float 1.6s ease-out forwards;
 }
-
 @keyframes emote-float {
   0% {
     opacity: 0;
@@ -262,8 +521,68 @@ input:focus-visible {
   }
 }
 
+/* The little V1 bounce, for avatars and stickers in 2D */
+@keyframes hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+.hop:hover {
+  animation: hop 0.5s ease-in-out;
+}
+
+.camera-flash {
+  animation: camera-flash 0.45s ease-out;
+}
+@keyframes camera-flash {
+  from {
+    opacity: 0.9;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .emote-float {
-    animation-duration: 0.01s;
+  .typing-dots span,
+  .speaking,
+  .hop:hover {
+    animation: none;
+  }
+}
+
+/* Map change loading bar (feature 7): fills once over the loading screen */
+.map-move-bar {
+  animation: map-move linear forwards;
+}
+@keyframes map-move {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* Plus's animated name tag (feature 15): a pastel gradient sliding through the letters */
+.shimmer {
+  background: linear-gradient(90deg, #ffd1e6, #c9b8ff, #a8e6ff, #ffe7a8, #ffd1e6) 0 0 / 200% 100% repeat-x;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+@keyframes shimmer {
+  to {
+    background-position: 200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none;
   }
 }

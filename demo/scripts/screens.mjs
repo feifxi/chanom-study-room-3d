@@ -1,10 +1,10 @@
 // Screenshots demo pages at one width, theme and "View as", and reports pages that scroll sideways
-// or log errors. Needs the demo running (pnpm --filter @study/demo demo:dev). Pictures land in
+// or log errors. Needs the demo running (pnpm --filter @connecta/demo demo:dev). Pictures land in
 // demo/.screens/ (git-ignored): look at them, they catch what typecheck and lint can't.
 //
-//   pnpm --filter @study/demo demo:screens                     (390 px, light, as in the mock)
-//   pnpm --filter @study/demo demo:screens 390 dark guest      (width, theme, viewer)
-//   pnpm --filter @study/demo demo:screens 1280 light admin /admin /admin/money
+//   pnpm --filter @connecta/demo demo:screens                     (390 px, light, as in the mock)
+//   pnpm --filter @connecta/demo demo:screens 390 dark guest      (width, theme, viewer)
+//   pnpm --filter @connecta/demo demo:screens 1280 light admin /admin /admin/money
 //
 // Viewers: auto, guest, member, mod, owner, admin (lib/viewer.ts). Phone widths get touch.
 import { mkdirSync } from 'node:fs';

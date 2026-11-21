@@ -1,8 +1,9 @@
 # 15. Business and infra
 
 **Status:** decided; payments are mocked in the demo. **Try it:** http://localhost:3100/home/plus,
-`/checkout?plan=yearly`, and `/admin/money` (View as Connecta team). V1's infra:
-[`infra/README.md`](../../../infra/README.md).
+`/checkout?plan=yearly`, and `/admin/money` (View as Connecta team). V1's infra is at tag `v1.0.0`
+(`infra/README.md`). **The architecture below is on hold:** the owner plans to move to Azure, to be
+discussed at the infra step ([decision](../decisions.md#engineering-and-infra)).
 
 One subscription, **Connecta Plus**, plus earn-only coins for cosmetics. Infra is V1's single app
 server with only what V2 needs added, and monitoring on its own server for SRE practice.

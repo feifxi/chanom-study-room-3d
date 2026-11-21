@@ -1,103 +1,43 @@
-# Local development services. App processes (web, game) run on the host via `pnpm dev`.
+# Local development services. The apps run on the host via `pnpm dev`.
 #   docker compose up -d
-name: chanom-study-room
+name: connecta
 
 services:
   postgres:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: study
-      POSTGRES_PASSWORD: study
-      POSTGRES_DB: study
+      POSTGRES_USER: connecta
+      POSTGRES_PASSWORD: connecta
+      POSTGRES_DB: connecta
     ports:
       - '5433:5432' # 5433 on the host to avoid clashing with a local Postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U study']
+      test: ['CMD-SHELL', 'pg_isready -U connecta']
       interval: 5s
       retries: 10
 
-  # Voice + screen share. Single UDP port, advertised on localhost for local dev.
+  # Presence, rate limits, the job queue. Losable: nothing here needs a backup.
+  redis:
+    image: redis:8-alpine
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      retries: 10
+
+  # Voice, video and screen share. One UDP port, advertised on localhost for local dev.
   livekit:
     image: livekit/livekit-server:v1.13.11
     command: --dev --bind 0.0.0.0 --node-ip 127.0.0.1 --udp-port 7882
     environment:
       LIVEKIT_KEYS: 'devkey: secret'
     ports:
-      - '7880:7880' # API / signalling (WebSocket)
+      - '7880:7880' # API and signalling (WebSocket)
       - '7881:7881' # WebRTC over TCP (fallback)
       - '7882:7882/udp' # WebRTC media
 
-  # ---------- Observability (SRE practice) ----------
-  #   pnpm obs:up   ->  Grafana http://localhost:3001 · Prometheus :9090 · Alertmanager :9093 · Alloy :12345
-  # Opt-in via the "observability" profile so `docker compose up -d` stays light. Ports are bound to
-  # localhost only. See infra/observability/README.md for the SLOs, the exercises and the runbooks.
-  prometheus:
-    image: prom/prometheus:v3.5.0
-    profiles: [observability]
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --storage.tsdb.retention.time=30d
-      - --web.enable-lifecycle # POST /-/reload after editing rules
-    volumes:
-      - ./infra/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./infra/observability/prometheus/rules:/etc/prometheus/rules:ro
-      - prometheus-data:/prometheus
-    extra_hosts:
-      - 'host.docker.internal:host-gateway' # the game server runs on the host
-    ports:
-      - '127.0.0.1:9090:9090'
-
-  alertmanager:
-    image: prom/alertmanager:v0.28.1
-    profiles: [observability]
-    volumes:
-      - ./infra/observability/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
-      - ./infra/observability/alertmanager/secrets:/etc/alertmanager/secrets:ro # discord_webhook_url (not in git)
-    ports:
-      - '127.0.0.1:9093:9093'
-
-  loki:
-    image: grafana/loki:3.5.0
-    profiles: [observability]
-    command: -config.file=/etc/loki/loki.yml
-    volumes:
-      - ./infra/observability/loki/loki.yml:/etc/loki/loki.yml:ro
-      - loki-data:/loki
-
-  alloy:
-    image: grafana/alloy:v1.10.0
-    profiles: [observability]
-    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
-    volumes:
-      - ./infra/observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
-      - ./apps/game/logs:/logs:ro # pnpm dev writes the game server's JSON logs here
-      - ./apps/api/logs:/logs-api:ro # ...and the API server's
-      - /var/run/docker.sock:/var/run/docker.sock:ro # container logs
-    depends_on: [loki]
-    ports:
-      - '127.0.0.1:12345:12345'
-
-  grafana:
-    image: grafana/grafana:12.1.0
-    profiles: [observability]
-    environment:
-      # Local only: no login, you're an admin. Production needs real auth.
-      GF_AUTH_ANONYMOUS_ENABLED: 'true'
-      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
-      GF_AUTH_DISABLE_LOGIN_FORM: 'true'
-      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/service-overview.json
-    volumes:
-      - ./infra/observability/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./infra/observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
-      - grafana-data:/var/lib/grafana
-    depends_on: [prometheus, loki]
-    ports:
-      - '127.0.0.1:3001:3000'
-
 volumes:
   pgdata:
-  prometheus-data:
-  loki-data:
-  grafana-data:

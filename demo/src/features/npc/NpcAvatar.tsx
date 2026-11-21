@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { parseJson, sanitizeLook, type NpcView } from '@study/shared';
+import { parseJson, sanitizeLook, type NpcView } from '@connecta/shared';
 import { CharacterRig } from '../avatar/character';
 import { CHAIR_BACK } from '../room3d/Avatar';
 import type { LabelBoard } from '../room3d/labels';

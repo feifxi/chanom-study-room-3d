@@ -1,7 +1,19 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "types": ["node"]
+    // Node runs the build output as ES modules: relative imports end in .js
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "ES2023",
+    "types": ["node"],
+    // Nest's dependency injection reads constructor types from decorator metadata
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false,
+    "noEmit": false,
+    "outDir": "dist",
+    "sourceMap": true,
+    "incremental": true
   },
-  "include": ["src", "scripts"]
+  "include": ["src", "prisma.config.ts", "vitest.config.ts"]
 }

@@ -41,7 +41,7 @@ import {
   type StudyTable as StudyTableDef,
 } from '../map/library';
 import type { Area, RectArea, CushionCircle, Zone } from '../map/types';
-import type { Seat } from '@study/shared';
+import type { Seat } from '@connecta/shared';
 
 /**
  * The Cosy Library's look (layout in `features/map/library.ts`). Everything here is static and

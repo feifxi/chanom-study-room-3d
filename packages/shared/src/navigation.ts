@@ -1,26 +1,15 @@
-import { BOUNDS, OBSTACLES, type Obstacle } from './layout';
+import type { Bounds, Point, World } from './world';
 
 /**
  * Grid navigation for NPCs: a 0.4 m occupancy grid built from the furniture,
  * A* over it, then the path is shortened by skipping waypoints that are in
  * plain line of sight.
  */
-/** The walkable world a navigator or collision pass works in: a map's bounds and furniture. */
-export interface World {
-  bounds: { minX: number; maxX: number; minZ: number; maxZ: number };
-  obstacles: readonly Obstacle[];
-}
-
-export interface Point {
-  x: number;
-  z: number;
-}
-
 export interface Navigator {
   isWalkable(p: Point): boolean;
   nearestWalkable(p: Point): Point;
   findPath(from: Point, to: Point): Point[];
-  randomWalkable(rand: () => number, area?: { minX: number; maxX: number; minZ: number; maxZ: number }): Point;
+  randomWalkable(rand: () => number, area?: Bounds): Point;
 }
 
 const CELL = 0.4;
@@ -28,17 +17,14 @@ const CLEARANCE = 0.32;
 /** Extra margin for grid cells, so straight steps between cell centres never clip furniture. */
 const GRID_MARGIN = 0.14;
 
-/**
- * A navigator for one map. V1's library is bound below; V2 maps (one per template) build their own,
- * so the same A* serves every map file.
- */
-export function createNavigator({ bounds: BOUNDS, obstacles: OBSTACLES }: World): Navigator {
-  const COLS = Math.ceil((BOUNDS.maxX - BOUNDS.minX) / CELL) + 1;
-  const ROWS = Math.ceil((BOUNDS.maxZ - BOUNDS.minZ) / CELL) + 1;
+/** A navigator for one map: each map builds its own, so the same A* serves every map file. */
+export function createNavigator({ bounds, obstacles }: World): Navigator {
+  const COLS = Math.ceil((bounds.maxX - bounds.minX) / CELL) + 1;
+  const ROWS = Math.ceil((bounds.maxZ - bounds.minZ) / CELL) + 1;
 
   function blockedAt(x: number, z: number, margin = 0) {
     const c = CLEARANCE + margin;
-    return OBSTACLES.some((o) =>
+    return obstacles.some((o) =>
       o.kind === 'circle' ? Math.hypot(x - o.x, z - o.z) < o.r + c : x > o.minX - c && x < o.maxX + c && z > o.minZ - c && z < o.maxZ + c,
     );
   }
@@ -57,15 +43,15 @@ export function createNavigator({ bounds: BOUNDS, obstacles: OBSTACLES }: World)
   }
 
   const toCell = (p: Point): [number, number] => [
-    Math.min(COLS - 1, Math.max(0, Math.round((p.x - BOUNDS.minX) / CELL))),
-    Math.min(ROWS - 1, Math.max(0, Math.round((p.z - BOUNDS.minZ) / CELL))),
+    Math.min(COLS - 1, Math.max(0, Math.round((p.x - bounds.minX) / CELL))),
+    Math.min(ROWS - 1, Math.max(0, Math.round((p.z - bounds.minZ) / CELL))),
   ];
   function toWorld(c: number, r: number): [number, number] {
-    return [BOUNDS.minX + c * CELL, BOUNDS.minZ + r * CELL];
+    return [bounds.minX + c * CELL, bounds.minZ + r * CELL];
   }
 
   function isWalkable(p: Point) {
-    return p.x >= BOUNDS.minX && p.x <= BOUNDS.maxX && p.z >= BOUNDS.minZ && p.z <= BOUNDS.maxZ && !blockedAt(p.x, p.z);
+    return p.x >= bounds.minX && p.x <= bounds.maxX && p.z >= bounds.minZ && p.z <= bounds.maxZ && !blockedAt(p.x, p.z);
   }
 
   /** Nearest open grid-cell centre (A* only moves between these), optionally one in plain sight of `p`. */
@@ -127,7 +113,7 @@ export function createNavigator({ bounds: BOUNDS, obstacles: OBSTACLES }: World)
   function lineOfSight(a: Point, b: Point) {
     const dx = b.x - a.x;
     const dz = b.z - a.z;
-    for (const o of OBSTACLES) {
+    for (const o of obstacles) {
       if (o.kind === 'circle') {
         // Closest point on the segment to the circle centre
         const len2 = dx * dx + dz * dz || 1e-9;
@@ -233,7 +219,7 @@ export function createNavigator({ bounds: BOUNDS, obstacles: OBSTACLES }: World)
   }
 
   /** A random walkable spot, optionally inside an area. */
-  function randomWalkable(rand: () => number, area = BOUNDS as { minX: number; maxX: number; minZ: number; maxZ: number }): Point {
+  function randomWalkable(rand: () => number, area: Bounds = bounds): Point {
     for (let tries = 0; tries < 40; tries++) {
       const p = { x: area.minX + rand() * (area.maxX - area.minX), z: area.minZ + rand() * (area.maxZ - area.minZ) };
       if (isWalkable(p)) return p;
@@ -243,9 +229,3 @@ export function createNavigator({ bounds: BOUNDS, obstacles: OBSTACLES }: World)
 
   return { isWalkable, nearestWalkable, findPath, randomWalkable };
 }
-
-const V1 = createNavigator({ bounds: BOUNDS, obstacles: OBSTACLES });
-export const isWalkable: Navigator['isWalkable'] = (p) => V1.isWalkable(p);
-export const nearestWalkable: Navigator['nearestWalkable'] = (p) => V1.nearestWalkable(p);
-export const findPath: Navigator['findPath'] = (from, to) => V1.findPath(from, to);
-export const randomWalkable: Navigator['randomWalkable'] = (rand, area) => V1.randomWalkable(rand, area);

@@ -1,5 +1,6 @@
 packages:
   - apps/*
   - packages/*
-  # Temporary V2 UI demo (frontend only); scripts are named demo:* so turbo/CI skip it
+  # The design sandbox: every page and 3D design is built here first, with mock data. Its scripts are
+  # named demo:* so turbo and CI skip it.
   - demo

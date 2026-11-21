@@ -1,5 +1,5 @@
 /**
- * Background music, served from apps/web/public/music. Royalty-free tracks from Pixabay (Pixabay
+ * Background music, served from public/music. Royalty-free tracks from Pixabay (Pixabay
  * Content License: free to use, credit not required, but we credit the artist anyway). Don't add
  * tracks downloaded from YouTube or Spotify.
  */

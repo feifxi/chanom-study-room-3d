@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import type { Seat } from '@study/shared';
+import type { Seat } from '@connecta/shared';
 import type { DayLight } from './dayCycle';
 import { CHAIR_BACK } from './Avatar';
 import { StaticBatch } from './StaticBatch';

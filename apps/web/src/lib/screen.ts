@@ -23,6 +23,8 @@ function useMediaQuery(query: string) {
 export const useTouchScreen = () => useMediaQuery(TOUCH);
 /** Small screen: the HUD switches to its phone layout. Follows rotation and resizing. */
 export const useCompactScreen = () => useMediaQuery(COMPACT);
+/** Wide enough for a panel beside the open chat panel (the dock's own breakpoint). */
+export const useWideScreen = () => useMediaQuery('(min-width: 1080px)');
 
 /** One-off checks, for initial state. */
 export const isTouchScreen = () => typeof window !== 'undefined' && window.matchMedia(TOUCH).matches;

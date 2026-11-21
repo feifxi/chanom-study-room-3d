@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { Bell, Crown, Gamepad2, KeyRound, Mic, Palette, Shield, Shirt, User } from 'lucide-react';
 import { toast } from 'sonner';
-import type { AvatarLook } from '@study/shared';
+import type { AvatarLook } from '@connecta/shared';
 import { PALETTES, usePalette } from '@/components/Providers';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';

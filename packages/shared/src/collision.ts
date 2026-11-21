@@ -1,12 +1,9 @@
-import { PLAYER_RADIUS } from './constants';
-import { BOUNDS, OBSTACLES } from './layout';
-import type { World } from './navigation';
-
-const V1: World = { bounds: BOUNDS, obstacles: OBSTACLES };
+import { PLAYER_RADIUS } from './movement';
+import type { Point, Walker, World } from './world';
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
-function pushOutOfCircle(p: { x: number; z: number }, x: number, z: number, r: number) {
+function pushOutOfCircle(p: Point, x: number, z: number, r: number) {
   const dx = p.x - x;
   const dz = p.z - z;
   const d = Math.hypot(dx, dz);
@@ -19,19 +16,11 @@ function pushOutOfCircle(p: { x: number; z: number }, x: number, z: number, r: n
   p.z = z + (dz / d) * r;
 }
 
-/** Something else walking around: a player or an NPC, with an optional body radius. */
-export interface Walker {
-  x: number;
-  z: number;
-  r?: number;
-}
-
 /**
  * Push a walker of `radius` out of furniture, other walkers and the walls.
- * Mutates `p`. Used by clients (prediction) and the server (NPC movement). `world` is the map
- * (V1's library unless given), so V2 maps pass their own.
+ * Mutates `p`. Used by clients (prediction) and the game server (NPC movement).
  */
-export function resolveCollisions(p: { x: number; z: number }, others: Iterable<Walker>, radius = PLAYER_RADIUS, world: World = V1) {
+export function resolveCollisions(world: World, p: Point, others: Iterable<Walker>, radius = PLAYER_RADIUS) {
   const R = radius;
   for (const o of world.obstacles) {
     if (o.kind === 'circle') {

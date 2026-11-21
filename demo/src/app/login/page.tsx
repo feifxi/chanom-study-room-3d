@@ -4,7 +4,7 @@ import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, ArrowRight, AtSign, Check, Mail, Sprout } from 'lucide-react';
-import type { AvatarLook } from '@study/shared';
+import type { AvatarLook } from '@connecta/shared';
 import { RoomShot, SplitScreen } from '@/components/app/SplitScreen';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

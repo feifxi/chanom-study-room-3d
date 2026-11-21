@@ -1,18 +1,19 @@
 # Working in the demo
 
 `demo/` is Connecta's clickable prototype: a frontend-only Next.js 16 app with mock data, where every
-V2 page and 3D design is approved before backend work. It will be ported into `apps/web` (see the
-[port checklist](../v2-plan.md#port-checklist)). Nothing here talks to a server; "the server" in
-comments means what the real app will do.
+V2 page and 3D design is approved before backend work. `apps/web` started as a copy of it
+(2026-11-21) and moves onto the real backend feature by feature (see the
+[port checklist](../v2-plan.md#port-checklist)); new designs are still tried here first. Nothing here
+talks to a server; "the server" in comments means what the real app will do.
 
 ## Run and check
 
 ```bash
-pnpm --filter @study/demo demo:dev        # http://localhost:3100
-pnpm --filter @study/demo demo:typecheck
-pnpm --filter @study/demo demo:lint       # --max-warnings 0, React Compiler rules on
-pnpm --filter @study/demo demo:perf       # 3D budget, every map zoomed out (needs demo:dev running)
-pnpm --filter @study/demo demo:screens 390 dark guest   # screenshots + sideways-scroll and error check
+pnpm --filter @connecta/demo demo:dev        # http://localhost:3100
+pnpm --filter @connecta/demo demo:typecheck
+pnpm --filter @connecta/demo demo:lint       # --max-warnings 0, React Compiler rules on
+pnpm --filter @connecta/demo demo:perf       # 3D budget, every map zoomed out (needs demo:dev running)
+pnpm --filter @connecta/demo demo:screens 390 dark guest   # screenshots + sideways-scroll and error check
 pnpm format                               # Prettier covers demo/ too
 ```
 
@@ -36,20 +37,20 @@ localStorage keys used by scripts: `theme`, `connecta-demo:viewer`, `connecta-de
 
 ## Where things live
 
-| Path                          | What                                                                       |
-| ----------------------------- | -------------------------------------------------------------------------- |
-| `src/app/`                    | Routes. Rooms are still `/servers/[id]` and `/servers/[id]/rooms/[roomId]` |
-| `src/lib/mock.ts`             | All mock data (people, rooms, chats, Common rooms)                         |
-| `src/features/place/`         | Header, Home cards, a room's chat page, room settings, Inbox               |
-| `src/features/room/`          | The room screen: HUD, panels, people, chat, leaving                        |
-| `src/features/room3d/`        | The 3D scene: canvas, map scenes, player driver, mock room, labels, perf   |
-| `src/features/map/`           | Map data files and the active-map switch                                   |
-| `src/features/activities/`    | Activity framework (`spots.ts`, `hub.ts`) and each game                    |
-| `src/features/avatar/`        | Characters (merged skinned meshes)                                         |
-| `src/features/npc/`           | Cats, buddies and the Buddy Machine                                        |
-| `src/features/admin/`         | The team-only admin site                                                   |
-| `src/components/app/`         | App-level pieces: frames, settings, Plus, SplitScreen                      |
-| `packages/shared` (repo root) | Navigation (A\*) and collisions, shared with V1                            |
+| Path                          | What                                                                            |
+| ----------------------------- | ------------------------------------------------------------------------------- |
+| `src/app/`                    | Routes. Rooms are still `/servers/[id]` and `/servers/[id]/rooms/[roomId]`      |
+| `src/lib/mock.ts`             | All mock data (people, rooms, chats, Common rooms)                              |
+| `src/features/place/`         | Header, Home cards, a room's chat page, room settings, Inbox                    |
+| `src/features/room/`          | The room screen: HUD, panels, people, chat, leaving                             |
+| `src/features/room3d/`        | The 3D scene: canvas, map scenes, player driver, mock room, labels, perf        |
+| `src/features/map/`           | Map data files and the active-map switch                                        |
+| `src/features/activities/`    | Activity framework (`spots.ts`, `hub.ts`) and each game                         |
+| `src/features/avatar/`        | Characters (merged skinned meshes)                                              |
+| `src/features/npc/`           | Cats, buddies and the Buddy Machine                                             |
+| `src/features/admin/`         | The team-only admin site                                                        |
+| `src/components/app/`         | App-level pieces: frames, settings, Plus, SplitScreen                           |
+| `packages/shared` (repo root) | Avatars, world types, movement, collisions, A\*, NPC types (`@connecta/shared`) |
 
 The demo still says "server" inside (the `Server` type, routes, `components/server/`). That's the
 old concept; users never see it, and the port renames it. Don't add new "server" names.

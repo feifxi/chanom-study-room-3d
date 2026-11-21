@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import type { AvatarLook } from '@study/shared';
+import type { AvatarLook } from '@connecta/shared';
 import { CharacterRig } from './character';
 
 function Model({ look }: { look: AvatarLook }) {

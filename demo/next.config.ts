@@ -3,7 +3,7 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   devIndicators: false,
   // Workspace packages ship TypeScript source.
-  transpilePackages: ['@study/shared'],
+  transpilePackages: ['@connecta/shared'],
 };
 
 export default nextConfig;

@@ -1,11 +1,11 @@
-import { WALK_SPEED, randomLook, type AvatarLook, type NpcView, type PlayerView } from '@study/shared';
+import { WALK_SPEED, randomLook, type AvatarLook, type NpcView, type PlayerView } from '@connecta/shared';
 import { questProgress } from '@/lib/quests';
 import type { MapDef } from '../map/types';
 import type { StudyRoom } from './roomSession';
 
 /**
  * Plays the game server for the demo: holds the room state and answers the local player's
- * move / sit / stand like the real StudyRoom would, so the copied V1 driver works unchanged.
+ * move / sit / stand like the real game server would, so the local player driver works unchanged.
  * Other people are scripted: a few sit and study, one wanders around.
  */
 export interface MockPerson {

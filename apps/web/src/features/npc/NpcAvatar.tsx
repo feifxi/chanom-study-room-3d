@@ -3,13 +3,13 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { parseJson, sanitizeLook, type NpcView } from '@study/shared';
+import { parseJson, sanitizeLook, type NpcView } from '@connecta/shared';
 import { CharacterRig } from '../avatar/character';
-import { CHAIR_BACK } from '../room/Avatar';
-import type { LabelBoard } from '../room/labels';
-import { npcKey, type Bubble } from '../room/roomSession';
+import { CHAIR_BACK } from '../room3d/Avatar';
+import type { LabelBoard } from '../room3d/labels';
+import { npcKey, type Bubble } from '../room3d/roomSession';
 import { CatRig } from './CatRig';
-import { BlobShadow } from '../room/BlobShadow';
+import { BlobShadow } from '../room3d/BlobShadow';
 
 /** A cat or study buddy, eased toward the server's position each frame. */
 export function NpcAvatar({ id, npc, board, bubble }: { id: string; npc: NpcView; board: LabelBoard; bubble?: Bubble }) {

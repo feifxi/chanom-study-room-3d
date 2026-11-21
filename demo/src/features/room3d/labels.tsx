@@ -3,7 +3,7 @@
 import { useFrame } from '@react-three/fiber';
 import { HeadphoneOff } from 'lucide-react';
 import * as THREE from 'three';
-import type { NpcView, PlayerView } from '@study/shared';
+import type { NpcView, PlayerView } from '@connecta/shared';
 import { npcKey, type Bubble, type Reaction } from './roomSession';
 import { minutesSince, useNow } from '@/lib/time';
 import { STATUS_ICON } from '../focus/status';

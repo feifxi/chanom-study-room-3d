@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { sanitizeLook, type PlayerView } from '@study/shared';
+import { sanitizeLook, type PlayerView } from '@connecta/shared';
 import { activeMap } from '../map/active';
 import { CharacterRig, type CharacterDetail } from '../avatar/character';
 import type { LabelBoard } from './labels';

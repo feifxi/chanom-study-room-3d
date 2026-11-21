@@ -1,4 +1,4 @@
-import type { Navigator, Obstacle, Seat, Walker } from '@study/shared';
+import type { Navigator, Obstacle, Seat, Walker } from '@connecta/shared';
 import type { ReactNode } from 'react';
 import type { DayLight } from '../room3d/dayCycle';
 

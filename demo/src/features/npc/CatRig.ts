@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COAT_BY_ID, CAT_COATS } from '@study/shared';
+import { COAT_BY_ID, CAT_COATS } from '@connecta/shared';
 
 /*
  * A chibi cat in the same cel-shaded, ink-outlined style as the characters:

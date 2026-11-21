@@ -6,7 +6,7 @@ import {
   type Table,
   type Walker,
   type World,
-} from '@study/shared';
+} from '@connecta/shared';
 import { artSeats, cardSeats, circle, rect, circleSeats, zoneAtIn, type ArtTable, type CardTable, type MapData, type Zone } from './types';
 
 /**
@@ -15,8 +15,8 @@ import { artSeats, cardSeats, circle, rect, circleSeats, zoneAtIn, type ArtTable
  * TV lounge down the left wall, the open floor and the door in front, games and the art corner on the
  * right. Every activity and private zone is a rug: the rug *is* the area, so nothing floats.
  *
- * Units are metres; +z faces the camera (front), the camera looks in from +x +z. This replaces V1's
- * hard-coded layout in `@study/shared` for the demo; once maps are data it becomes the map file.
+ * Units are metres; +z faces the camera (front), the camera looks in from +x +z. Once maps are data,
+ * this becomes the map file.
  *
  * Not final art: odd props, overlapping rugs and other fixes are listed in the polish backlog in
  * docs/v2/features/07-maps.md.
@@ -343,7 +343,7 @@ const nav = createNavigator(WORLD);
 export const { isWalkable, nearestWalkable, findPath, randomWalkable } = nav;
 /** Push a walker out of this map's furniture, other walkers and the walls. */
 export const resolveCollisions = (p: { x: number; z: number }, others: Iterable<Walker>, radius?: number) =>
-  resolveIn(p, others, radius, WORLD);
+  resolveIn(WORLD, p, others, radius);
 
 /** Where every new room's resident cat starts: by the lounge rug. */
 export const STARTER_CAT = { x: -10.5, z: 3.5 } as const;

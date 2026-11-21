@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CLIENT_SEND_HZ, NPC_REACH, RUN_SPEED, SIT_REACH, WALK_SPEED, npcRadius, type PlayerView } from '@study/shared';
+import { CLIENT_SEND_HZ, NPC_REACH, RUN_SPEED, SIT_REACH, WALK_SPEED, npcRadius, type PlayerView } from '@connecta/shared';
 import { activeMap } from '../map/active';
 import type { LocalMotion } from './Avatar';
 import type { StudyRoom } from './roomSession';

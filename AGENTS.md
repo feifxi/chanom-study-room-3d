@@ -7,33 +7,34 @@ log. Keep them current in the same change that makes them stale.
 
 ## What this repo is
 
-Two things, at different stages:
+**Connecta**: cosy 3D rooms where friend groups and communities hang out, study and play together
+("Discord is a communication tool; this is a place").
 
-- **Connecta (V2), being designed now.** Cosy 3D rooms where friend groups and communities hang out,
-  study and play together ("Discord is a communication tool; this is a place"). Every page and 3D
-  design is built first in **`demo/`**, a frontend-only Next.js prototype with mock data, then
-  written up as a spec. Nothing is deployed.
-- **Chanom Study Room (V1), finished** (tag `v1.0.0`). The working multiplayer app in `apps/` and
-  `packages/`, with its AWS stack in `infra/`. It's the base the V2 backend will grow from, and is
-  live only during playtests.
+- **`demo/`**, the design sandbox: a frontend-only Next.js prototype with mock data. Every page and
+  3D design is built and approved here first, then written up as a spec. All features are built.
+- **`apps/` and `packages/`**, the real app, being built fresh (started 2026-11-21). `apps/web`
+  began as a copy of the demo; its mock data is replaced by real calls one feature at a time.
+- **V1 (Chanom Study Room)** is finished and no longer on `main`: it lives at tag `v1.0.0`. Look
+  something up there with `git show v1.0.0:<path>`, and copy a proven piece over on purpose, never
+  its structure (the [decision log](docs/v2/decisions.md#engineering-and-infra) lists what's worth
+  lifting).
 
 ## Read first
 
 1. [`docs/v2-plan.md`](docs/v2-plan.md): the overview: **status**, the concept, every feature in a
-   line, **What's left**, and the port checklist.
+   line, **What's left** (the build steps), and the port checklist.
 2. [`docs/v2/decisions.md`](docs/v2/decisions.md): why things are the way they are, reversals, and
    ideas that were turned down. Check it before proposing something "new".
 3. [`docs/v2/features/`](docs/v2/features/): one spec per feature, all in the same shape (status and
    try-it link, a summary, how it works, backend notes).
 4. [`docs/v2/demo-guide.md`](docs/v2/demo-guide.md): how the demo is laid out, how maps work, its
-   checks and gotchas.
-5. `README.md`, `infra/README.md`, `infra/observability/README.md`: V1 features, AWS, CI/CD, SLOs.
+   checks and gotchas. It applies to `apps/web` too until each part is ported.
 
 ## What's next
 
-Every feature is built in the demo (feature 12, chess and Slave, was the last). Next is **the port
-to `apps/web`**: the stack move to NestJS and Prisma first, then the port checklist. The
-plan's [status and What's left](docs/v2-plan.md#whats-left) is the source of truth.
+Build step 2 of the plan, **the core**: accounts (Google, Discord, email code, guests), rooms,
+members and roles, invites, with the web app's screens moved onto the real API. The plan's
+[What's left](docs/v2-plan.md#whats-left) is the source of truth.
 
 ## Working agreements
 
@@ -55,7 +56,7 @@ plan's [status and What's left](docs/v2-plan.md#whats-left) is the source of tru
 
 - **Attractive by default:** design pages like well-known products (Nitro, Spotify, Duolingo,
   Gather), not function-first. Check every UI change at phone and desktop width, light and dark, and
-  as a guest (`demo:screens`).
+  as a guest (the `screens` scripts).
 - **Simple and uniform:** one flow for every activity, simple rules, no extra modes or settings
   unless asked. Mood first in all copy. UI text is English.
 - **Inside a 3D room nothing navigates away silently:** only Leave leaves; links out confirm.
@@ -66,11 +67,21 @@ plan's [status and What's left](docs/v2-plan.md#whats-left) is the source of tru
 **Engineering**
 
 - **Comments explain why.** Match the surrounding style (Prettier, small modules).
-- **3D work runs `demo:perf`** and stays within the budget in
+- **Rooms are the top level.** Don't carry the demo's old "server" names into new code; the
+  [port checklist](docs/v2-plan.md#port-checklist) lists them.
+- **3D work runs the perf check** and stays within the budget in
   [06-3d-room.md](docs/v2/features/06-3d-room.md#performance).
-- **Don't carry the old "server" concept into new code.** Rooms are the top level now.
 - **Next.js 16 differs from older versions:** read `node_modules/next/dist/docs/` before using an
   unfamiliar Next API (`apps/web/AGENTS.md`, `demo/AGENTS.md`).
+- **NestJS 12 is ESM-only and newer than most training data:** relative imports end in `.js`,
+  validation uses Zod schemas through `StandardSchemaValidationPipe` (`@Body({ schema })`, no
+  class-validator), and Swagger reads the same schemas. Check Nest's first-party packages before
+  adding a library (the index is at https://docs.nestjs.com/llms.txt).
+- **Prisma 7:** the client is generated into `apps/api/src/generated/` (git-ignored; turbo runs
+  `generate` before dev, typecheck, lint, test and build). Every schema change is a migration
+  (`pnpm db:migrate`).
+- **Tests:** Vitest everywhere. API tests compile through SWC (Nest needs decorator metadata) and
+  boot the real module with fakes for outside services (`apps/api/src/health/*.spec.ts`).
 - **`.npmrc` uses `node-linker=hoisted` on purpose:** Colyseus packages peer-depend in a cycle, and
   an isolated layout installs two `@colyseus/core` copies ("seat reservation expired" on every join).
 - **Headless Chrome and Playwright always run with `--mute-audio`.**
@@ -79,118 +90,63 @@ plan's [status and What's left](docs/v2-plan.md#whats-left) is the source of tru
 
 **Infra and secrets**
 
-- **Only the owner provisions:** `terraform apply` and `pnpm infra:up | infra:deploy | infra:down`.
-  Agents suggest steps and run read-only AWS checks only.
-- **Local development only** until the owner says to deploy V2.
-- Never commit secrets (`.env` files are ignored; examples are `*.example`).
+- **Local development only** until the owner says to deploy. The cloud is being reconsidered (Azure
+  instead of AWS); it's discussed when the build reaches the infra step, so don't add cloud-specific
+  code before then.
+- **Only the owner provisions** cloud resources. Agents suggest steps and run read-only checks only.
+- Never commit secrets (`.env` files are ignored; examples are `.env.example`).
 
-## Connecta demo (`demo/`)
+## Commands
 
-```bash
-pnpm --filter @study/demo demo:dev        # http://localhost:3100
-pnpm --filter @study/demo demo:typecheck
-pnpm --filter @study/demo demo:lint
-pnpm --filter @study/demo demo:perf       # needs demo:dev running
-pnpm --filter @study/demo demo:screens 390 dark guest
-```
-
-These aren't part of `pnpm check` or CI, so run them yourself. More in the
-[demo guide](docs/v2/demo-guide.md).
-
-## Chanom Study Room (V1: `apps/`, `packages/`, `infra/`)
-
-A 3D multiplayer study room (cosy library, anime chibi avatars): walk around, sit at desks, chat,
-proximity voice, desk screen share, personal pomodoro, room NPCs. pnpm + Turborepo monorepo,
-TypeScript everywhere. **Status:** finished; the AWS stack is down unless a playtest is running.
-
-### Commands
+Node 24 (`.nvmrc`) and pnpm 9 (`packageManager`, via corepack).
 
 ```bash
 pnpm install
-docker compose up -d                 # Postgres :5433 + LiveKit :7880 (start before dev)
-pnpm dev                             # web :3000 + game server :2567 + API :2568
-pnpm check                           # what CI runs: prettier --check, then typecheck + lint + unit tests everywhere
-pnpm e2e                             # Playwright (starts dev servers if needed; Chrome, muted)
+docker compose up -d                 # Postgres :5433, Redis :6379, LiveKit :7880
+cp apps/api/.env.example apps/api/.env
+pnpm dev                             # web :3000, API :4000 (Swagger UI at /api/docs)
+pnpm check                           # what CI runs: prettier --check, then typecheck + lint + tests
+pnpm build
 pnpm format                          # prettier --write
-pnpm --filter @study/game smoke      # WebSocket checks against a running game server
-pnpm --filter @study/game bots 5     # wandering test players
-pnpm obs:up / obs:down               # local Prometheus/Grafana/Loki/Alertmanager (profile)
-pnpm infra:up | infra:deploy | infra:down   # AWS playtest stack (the owner runs these, never an agent)
+pnpm db:migrate                      # create and apply a migration after a schema change
+pnpm db:studio                       # browse the local database
+pnpm --filter @connecta/web screens 390 dark guest   # screenshots; needs the web app running
+pnpm --filter @connecta/web perf                     # 3D budget check; needs the web app running
 ```
 
-Single tests:
+Single tests: `cd apps/api && npx vitest run src/health`, `cd packages/shared && npx vitest run
+src/navigation.test.ts`.
+
+The demo has its own scripts, which turbo and CI skip:
 
 ```bash
-cd apps/web && npx vitest run src/features/room/reconcile.test.ts
-cd apps/web && npx playwright test e2e/touch.spec.ts          # or e2e/room.spec.ts:60 for one test
-CI=1 npx playwright test                                       # reproduce CI: Playwright's Chromium, retries
-cd apps/game && npx vitest run src/rooms/rules.test.ts
-cd apps/api && npx vitest run src/app.test.ts
+pnpm --filter @connecta/demo demo:dev        # http://localhost:3100
+pnpm --filter @connecta/demo demo:typecheck
+pnpm --filter @connecta/demo demo:lint
+pnpm --filter @connecta/demo demo:perf       # needs demo:dev running
+pnpm --filter @connecta/demo demo:screens 390 dark guest
 ```
 
-Lint is `--max-warnings 0`. Web typecheck runs `next typegen` first (route types like `LayoutProps`
-don't exist in a fresh clone otherwise). Runtime env vars only reach `pnpm dev` if listed under
-`passThroughEnv` in `turbo.json` — Turborepo 2 silently drops others.
+## Layout
 
-### Architecture
+```
+apps/
+  web/       Next.js 16, React Three Fiber, Tailwind v4. Started as a copy of demo/
+  api/       NestJS 12: REST + OpenAPI, sign-in, jobs; a second entry point will run the
+             WebSocket gateway (chat, DMs, presence). Owns the database: Prisma schema + migrations
+  game/      (build step 4) Colyseus rooms: movement, seats, NPCs, activities
+packages/
+  shared/    Consumed as TypeScript source: avatars, map world types, movement rules, collisions,
+             A* navigation, NPC types. Used by the web app, the demo and (later) the game server
+demo/        The design sandbox (mock data only)
+docs/        The plan, the decision log, the specs
+```
 
-- `apps/game` — Colyseus 0.18 server + express. `rooms/StudyRoom.ts` handles messages (zod-validated)
-  and join/leave; pure, unit-tested rules live in `rooms/rules.ts`; NPCs (cats, study buddies) are
-  simulated server-side in `npc/` with A* from shared. Rooms are in memory: a deploy disconnects
-  everyone (accepted). HTTP routes: `/rooms`, `/metrics`, `/health`, and `/internal/live` (admin
-  live data for the API; Caddy hides it). The transport is an explicit `WebSocketTransport` (needed
-  for the tsup bundle). It writes visits and focus sessions but doesn't run migrations.
-- `apps/api` — Hono REST API on :2568, same-origin under `/api` (Caddy in production, a Next
-  `rewrites()` in dev): `/api/stats/:visitorId`, `/api/leaderboard`, `/api/feedback`, `/api/admin/*`
-  (behind `ADMIN_PASSWORD`, signed HttpOnly cookie on `Path=/api`), `/api/health`; `/metrics` outside
-  `/api`. `createApp(deps)` takes the db, auth and the live-data fetcher, so tests use
-  `app.request()` with fakes. It owns the schema (runs the migrations; the prod game container waits
-  for it). Exports `AppType`; the web app's typed client is `lib/api.ts` (`hc<AppType>('/api')`).
-  The admin overview's 401 comes from middleware, which the client types don't include. Postgres is
-  optional: without `DATABASE_URL` rooms work, stats and feedback answer 503.
-- `apps/web` — Next.js 16 (App Router, Turbopack), React Three Fiber 9, Tailwind v4. The lobby, room
-  and admin render client-side only. `features/<feature>/` holds everything per feature;
-  `features/room/` is the 3D scene, HUD (`hud/`), connection (`useStudyRoom` + `roomSession`
-  reducer) and local player.
-- `packages/shared` — consumed as TypeScript source (`exports: ./src/index.ts`, no build step):
-  protocol types, room layout/seats/obstacles, collisions, A* navigation, constants such as
-  `WALK_SPEED`/`RUN_SPEED`. Every app imports it; change layout or protocol here.
-- `packages/db` — Drizzle schema, migrations (`pnpm db:generate`, `db:migrate`), stats/admin queries.
-
-Key cross-file mechanics:
-
-- **Server is authoritative; the client predicts its own movement.** `LocalPlayerDriver` (plain class,
-  outside React) reads keys/joystick, moves in ≤0.05 s sub-steps (long frames still cover full
-  distance), sends `move` at 15 Hz with a `seq`. The server applies it under a refilling speed budget
-  (`refillMoveBudget`/`spendMove`) and echoes `moveSeq`; `reconcile.ts` corrects only where the server
-  disagreed with the prediction for that seq. Before an action (E key / action button) the driver
-  flushes its latest position so the server's reach check sees it — but never while seated (a move
-  stands you up on the server).
-- **Render loop:** `<Canvas frameloop="never">` driven by `FrameDriver`, which caps fps and calls R3F
-  `advance()` with **seconds** (passing rAF milliseconds once made every animation 1000× fast).
-  `StaticBatch` merges static furniture meshes (skips named, transparent, emissive meshes or
-  `userData.dynamic`); `StaticShadows` redraws the shadow map only when the light changes; characters
-  use `BlobShadow`. `quality.ts`: battery saver (30 fps, 1×, no shadows) turns on automatically on slow
-  frames and by default on touch screens.
-- **Phones:** `lib/screen.ts` (`useTouchScreen`, `useCompactScreen`, `canShareScreen`) switches the HUD
-  to a compact layout (rail along the top with the Pomodoro inside, chat as a sheet, icon-only dock,
-  joystick + action button, no zoom buttons). The joystick always walks (never runs).
-- **Dev test handle:** in non-production builds the room exposes `window.__study` (`room`, `motion`,
-  `scene`, `camera`, `gl`, `clock`, `lk`); e2e helpers (`e2e/helpers.ts`: `enterRoom`, `walkTo`, `me`)
-  rely on it. `walkTo` moves through the client's predicted position, never by sending raw moves.
-- **e2e** tests share one public room, so they run serially (`workers: 1`); feedback tests skip
-  without a database. CI runners have no GPU (SwiftShader, 2–5 fps and slower on busy runners), so
-  timing-sensitive tests must not assume smooth frames. To reproduce a CI-only failure: `CI=1`, and
-  slow only the frames with `page.addInitScript` replacing `requestAnimationFrame` with a 500 ms
-  `setTimeout` (CPU throttling also slows the test's timers, so it doesn't reproduce it). There is
-  no `gh` CLI here; CI artifacts can't be downloaded, so make failing assertions print state
-  (`roomSnapshot` in `e2e/helpers.ts`).
-
-### Infra and deploys
-
-`infra/terraform/bootstrap` (Route 53 delegation set, GitHub OIDC deploy role) and
-`infra/terraform/app` (EC2 t4g + Docker Compose behind Caddy, RDS Postgres 17, ECR, S3 bundle, SSM),
-region `ap-southeast-7`, domain `studyroom.chanombude.me`. `.github/workflows/ci-cd.yml`: check →
-e2e → deploy on `main` (skips when the stack is down). `infra/scripts/deploy.sh` reads
-`/chanom/deploy/config` from SSM. Images are arm64; the web image copies `public/` (Next standalone
-output omits it; the lo-fi MP3s live there).
+- **API conventions:** one Nest module per feature (`src/<feature>/`: module, controller, service,
+  schemas, `*.spec.ts` beside the code). Config is validated with Zod at startup
+  (`src/config/env.ts`); add every new variable there and to `.env.example`. `src/setup.ts` holds
+  what `main.ts` applies (the `/api` prefix, CORS, validation, logging), so tests boot the app the
+  same way. Logs are pino (JSON in production, pretty locally).
+- **Web conventions:** `features/<feature>/` holds everything per feature. Mock data in `lib/mock.ts`
+  is the API boundary: each mock function becomes an API call as its feature is ported.
+- CI (`.github/workflows/ci.yml`) runs `pnpm check` and `pnpm build`. There's no deploy yet.

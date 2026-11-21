@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { DUCKED, TRACKS, nextIndex, prevIndex } from './tracks';
 
-const KEY = 'chanom-study:music';
+const KEY = 'connecta:music';
 const FADE_MS = 400;
 
 interface Saved {
@@ -123,7 +123,7 @@ export function useMusic(duck: boolean): Music {
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;
     const t = TRACKS[index]!;
-    navigator.mediaSession.metadata = new MediaMetadata({ title: t.title, artist: t.artist, album: 'Chanom Study Room' });
+    navigator.mediaSession.metadata = new MediaMetadata({ title: t.title, artist: t.artist, album: 'Connecta' });
     navigator.mediaSession.setActionHandler('play', () => play());
     navigator.mediaSession.setActionHandler('pause', pause);
     navigator.mediaSession.setActionHandler('nexttrack', next);

@@ -1,0 +1,13 @@
+// The Connecta database. The API owns it: every change is a migration (pnpm db:migrate).
+// Models arrive with the features that need them, starting with accounts and rooms.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}

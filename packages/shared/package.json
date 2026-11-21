@@ -1,14 +1,15 @@
 {
-  "name": "@study/shared",
+  "name": "@connecta/shared",
   "version": "0.0.0",
   "private": true,
+  "description": "Types and rules shared by the web app and the game server: avatars, maps, movement, navigation.",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "lint": "eslint --max-warnings 0 ."
+    "lint": "eslint --max-warnings 0 .",
+    "test": "vitest run"
   }
 }
