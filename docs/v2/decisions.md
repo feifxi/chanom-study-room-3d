@@ -158,6 +158,17 @@ decision is made or changed: one line, a date, and the reason.
   move list; resign and draw offers, no takebacks; watchers on the rug get a small board that grows;
   the 3D board shows the live game; our own pastel piece set. Not now: a computer opponent, clocks,
   ratings, Makruk.
+- **Slave, as proposed** (2026-11-21, the owner): a theater with your hand along the bottom, tap to
+  pick and Play only when legal; Thai rules with no straights, bombs or revolution; King, Queen,
+  Commoners and Slave, with the 2-card (and 1-card) swap when the same group plays again and the
+  Slave leading; 20 s turns (15 s with 5–6); leaving or away 30 s puts you last and the others play
+  on; a crown or broom on name labels. A hand tray with the room still visible was dropped for the
+  theater: a hand of up to 18 cards needs the width.
+- **Table games live only in their panels** (2026-11-21, the owner): no live 3D of chess or Slave
+  (pieces moving, cards on the table). The tables stay as decor (chess set up, a deck and dealt
+  cards), and people who want to follow a game step onto the rug and watch in a small view that
+  grows; Slave got the same watcher view as chess (never anyone's hand). The live 3D cost little
+  (8 draw calls), but one place for the game is simpler to build, port and keep in sync.
 - **Color Cards dropped; Slave is the only card game for now** (2026-11-21, the owner): one card game
   done well before a second. Chess covers pairs (the reason Color Cards' 2-player minimum mattered),
   and an Uno-like game sits close to someone else's product. Order for feature 12: chess first, then
@@ -226,8 +237,8 @@ decision is made or changed: one line, a date, and the reason.
 - **Draw & Guess** (renamed from Drawing telephone): panel only, no live 3D. Mode names are generic:
   never "Gartic Phone" or "Telestrations"; "Knock-off" became **Copycat**.
 - **Activities list names what you do**, not the place ("art corner" meant nothing to players).
-- **Feature 12 (cards)** is paused mid-discussion and goes last. Proposals so far:
-  [12-cards-draft.md](features/12-cards-draft.md).
+- **Feature 12 (table games)** went last: chess and Slave, in
+  [12-table-games.md](features/12-table-games.md).
 - **Werewolf is dropped** (2026-11-20, the owner): it's a whole second game inside the app (roles, a
   narrator, night and day, voting) for something that needs 6+ people, while most groups are 2–4
   friends who'd rather play cards. Feature 12 is card games only. The 12-cushion circle stays in

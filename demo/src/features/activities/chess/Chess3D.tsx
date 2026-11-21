@@ -1,11 +1,9 @@
 'use client';
 
-import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { Chess, type PieceSymbol } from 'chess.js';
-import { activeMap } from '../../map/active';
-import { engine, type ChessGame } from './game';
+import type { PieceSymbol } from 'chess.js';
 
 /** The board on the chess table: its size and how high its squares sit (see ChessTable in Activity3D). */
 export const BOARD = 0.56;
@@ -13,7 +11,6 @@ export const BOARD_TOP = 0.782;
 const SQ = BOARD / 8;
 const WHITE = new THREE.Color('#f6efe2');
 const BLACK = new THREE.Color('#3b2a24');
-const TYPES: PieceSymbol[] = ['p', 'n', 'b', 'r', 'q', 'k'];
 
 /** Simple but recognisable shapes, a bit bigger than life so they read from the room camera. */
 function pieceGeometry(t: PieceSymbol) {
@@ -55,70 +52,44 @@ function pieceGeometry(t: PieceSymbol) {
   return g;
 }
 
-const START = new Chess();
+const BACK_RANK: PieceSymbol[] = ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'];
+
+/** One colour's 16 pieces in the starting position, merged into a single geometry. */
+function startingSide(white: boolean) {
+  const parts: THREE.BufferGeometry[] = [];
+  for (let file = 0; file < 8; file++) {
+    for (const [rank, type] of [
+      [white ? 1 : 8, BACK_RANK[file]!],
+      [white ? 2 : 7, 'p'],
+    ] as const) {
+      const g = pieceGeometry(type);
+      // Knights face the other side
+      g.rotateY((white ? 1 : -1) * (Math.PI / 2) + Math.PI / 2);
+      // Rank 1 on the +x side; from there, the a-file is on White's left
+      g.translate(BOARD / 2 - SQ * (rank - 0.5), 0, BOARD / 2 - SQ * (file + 0.5));
+      parts.push(g);
+    }
+  }
+  const g = mergeGeometries(parts, false)!;
+  parts.forEach((p) => p.dispose());
+  return g;
+}
 
 /**
- * The pieces on the chess table, live: the real game while one is on (so people walking past see
- * how it's going), the starting position otherwise. White's side faces whichever stool White sits
- * on. One instanced mesh per piece type, coloured per piece: six draw calls for all 32.
+ * The pieces on the chess table, always in the starting position: the game itself is played in the
+ * panel (and watched from the rug), so the 3D set is decor. Plain meshes, so the room's static
+ * batch merges them with the table.
  */
-export function ChessPieces({ game, whiteSide }: { game: ChessGame | null; whiteSide: 1 | -1 }) {
-  const t = activeMap().chessTable;
-  const geometries = useMemo(
-    () => Object.fromEntries(TYPES.map((p) => [p, pieceGeometry(p)])) as Record<PieceSymbol, THREE.BufferGeometry>,
-    [],
-  );
-  const material = useMemo(() => new THREE.MeshStandardMaterial({ roughness: 0.5 }), []);
-  const meshes = useRef<Partial<Record<PieceSymbol, THREE.InstancedMesh>>>({});
-  const fen = game?.fen ?? START.fen();
-
-  useLayoutEffect(() => {
-    const board = game ? engine(game).board() : START.board();
-    const counts = Object.fromEntries(TYPES.map((p) => [p, 0])) as Record<PieceSymbol, number>;
-    const m = new THREE.Matrix4();
-    const q = new THREE.Quaternion();
-    const one = new THREE.Vector3(1, 1, 1);
-    // board()[0] is rank 8; files run a → h
-    board.forEach((row, ri) =>
-      row.forEach((p, fi) => {
-        if (!p) return;
-        const mesh = meshes.current[p.type];
-        if (!mesh) return;
-        const rank = 8 - ri;
-        // Rank 1 nearest White's stool; from there, the a-file is on White's left
-        const x = whiteSide * (BOARD / 2 - SQ * (rank - 0.5));
-        const z = whiteSide * (BOARD / 2 - SQ * (fi + 0.5));
-        // Knights face the other side
-        q.setFromAxisAngle(THREE.Object3D.DEFAULT_UP, (p.color === 'w' ? 1 : -1) * whiteSide * (Math.PI / 2) + Math.PI / 2);
-        m.compose(new THREE.Vector3(x, 0, z), q, one);
-        const i = counts[p.type]++;
-        mesh.setMatrixAt(i, m);
-        mesh.setColorAt(i, p.color === 'w' ? WHITE : BLACK);
-      }),
-    );
-    for (const p of TYPES) {
-      const mesh = meshes.current[p];
-      if (!mesh) continue;
-      mesh.count = counts[p];
-      mesh.instanceMatrix.needsUpdate = true;
-      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    }
-    // fen: the position; game: which engine to read it from
-  }, [fen, game, whiteSide]);
-
-  if (!t) return null;
+export function ChessSet() {
+  const sides = useMemo(() => [startingSide(true), startingSide(false)] as const, []);
   return (
-    <group position={[t.x, BOARD_TOP, t.z]}>
-      {TYPES.map((p) => (
-        <instancedMesh
-          key={p}
-          ref={(m) => {
-            if (m) meshes.current[p] = m;
-          }}
-          args={[geometries[p], material, 16]}
-          frustumCulled={false}
-        />
-      ))}
+    <group position={[0, BOARD_TOP, 0]}>
+      <mesh geometry={sides[0]} castShadow>
+        <meshStandardMaterial color={WHITE} roughness={0.5} />
+      </mesh>
+      <mesh geometry={sides[1]} castShadow>
+        <meshStandardMaterial color={BLACK} roughness={0.5} />
+      </mesh>
     </group>
   );
 }

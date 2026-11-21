@@ -53,6 +53,8 @@ export function LabelProjector({ board }: { board: LabelBoard }) {
 interface LayerProps {
   /** Activity spots' floating names (tables, the open floor, the TV). */
   spotTags?: SpotTag[];
+  /** A mark before someone's name from a game (Slave's 👑 King and 🧹 Slave). */
+  badges?: Record<string, string>;
   board: LabelBoard;
   ids: string[];
   players: Map<string, PlayerView>;
@@ -115,6 +117,7 @@ export function LabelLayer({
   npcs,
   reactions,
   spotTags = [],
+  badges = {},
 }: LayerProps) {
   // Re-render every second: status/subject come from synced state, which React doesn't watch
   const now = useNow(1000);
@@ -159,6 +162,7 @@ export function LabelLayer({
                 isLocal ? 'bg-primary' : 'bg-cocoa/85'
               } ${voice.speaking.has(id) ? 'speaking' : ''} ${voice.away?.has(id) ? 'opacity-55' : ''}`}
             >
+              {badges[id] && <span className="mr-1">{badges[id]}</span>}
               {voice.stage?.has(id) && <span className="mr-1">📢</span>}
               {voice.away?.has(id) && <span className="mr-1">💤</span>}
               {/* In a private zone you're not in: you can see them but can't hear them (feature 6) */}

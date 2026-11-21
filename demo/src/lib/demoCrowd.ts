@@ -181,6 +181,12 @@ export function startChess() {
   window.dispatchEvent(new Event(CHESS_EVENT));
 }
 
+/** Demo: three friends sit down at the card table and play Slave (feature 12). */
+export const SLAVE_EVENT = 'connecta-demo:slave';
+export function startSlave() {
+  window.dispatchEvent(new Event(SLAVE_EVENT));
+}
+
 /** Demo: someone walks to the big screen and puts a video on (feature 10). */
 export const WATCH_EVENT = 'connecta-demo:watch';
 export function putOnVideo() {

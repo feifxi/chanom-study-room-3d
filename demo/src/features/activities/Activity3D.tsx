@@ -12,8 +12,7 @@ import type { BoardStore } from './board/board';
 import { SideZones } from './pickASide/Side3D';
 import type { SideGame } from './pickASide/game';
 import { SPOTS, spotById, type SpotId } from './spots';
-import { BOARD, ChessPieces } from './chess/Chess3D';
-import type { ChessGame } from './chess/game';
+import { BOARD, ChessSet } from './chess/Chess3D';
 
 const OAK = '#8a6244';
 const OAK_DARK = '#6b4a33';
@@ -128,7 +127,7 @@ function chessBoardTexture() {
 
 /**
  * The chess table (maps with `chessTable`): a small round oak table with a board between two stools
- * that face each other. Static (in the room's batch): the pieces are ChessPieces, which follow the game.
+ * that face each other, the pieces set up. All static (in the room's batch): the game is in the panel.
  */
 export function ChessTable() {
   const t = activeMap().chessTable;
@@ -157,6 +156,7 @@ export function ChessTable() {
         <planeGeometry args={[B, B]} />
         <meshStandardMaterial map={chessBoardTexture()} roughness={0.7} />
       </mesh>
+      <ChessSet />
       <Stools table={t} />
     </group>
   );
@@ -333,8 +333,8 @@ const RING_COLOR: Record<string, string> = { gathering: '#ffb3cf', playing: '#ff
 
 /**
  * What passers-by see of each activity (the "3D world" layer): a glowing edge around a rug that's
- * gathering or playing, a soft flash of the rug's edge when you step onto one, cards on the card
- * table mid-round, and Pick a Side's zones on the floor.
+ * gathering or playing, a soft flash of the rug's edge when you step onto one, and Pick a Side's
+ * zones on the floor. Table games (chess, Slave) show only in their panels: the tables are decor.
  */
 export function ActivityLayer3D({
   spots,
@@ -343,8 +343,6 @@ export function ActivityLayer3D({
   side,
   board,
   motion,
-  chess = null,
-  chessWhiteSide = 1,
 }: {
   spots: Record<SpotId, SpotState>;
   watch: WatchState;
@@ -354,10 +352,6 @@ export function ActivityLayer3D({
   board: BoardStore;
   /** Your predicted position, for the step-on flash. */
   motion?: React.RefObject<LocalMotion>;
-  /** The chess game on the table, if one is on (or just ended). */
-  chess?: ChessGame | null;
-  /** Which side of the chess table White sits on (+1: the first stool, along +x). */
-  chessWhiteSide?: 1 | -1;
 }) {
   return (
     <>
@@ -373,8 +367,6 @@ export function ActivityLayer3D({
         />
       ))}
       {motion && <StepOnFlash motion={motion} spots={spots} />}
-      <ChessPieces game={spots.chess.phase === 'free' ? null : chess} whiteSide={chessWhiteSide} />
-      {spots.cards.phase === 'playing' && <TableCards players={spots.cards.players.length + spots.cards.out.length} />}
       {spots.floor.phase === 'playing' && side && side.stage !== 'done' && <SideZones game={side} area={spotById('floor').area} />}
     </>
   );
@@ -453,30 +445,5 @@ function StepOnFlash({ motion, spots }: { motion: React.RefObject<LocalMotion>; 
       <shapeGeometry args={[outlineShape(at.area, 0.12)]} />
       <meshBasicMaterial ref={mat} color={at.color} transparent opacity={0} depthWrite={false} />
     </mesh>
-  );
-}
-
-/** A pile in the middle and a few face-down cards in front of each seat (the first card table). */
-function TableCards({ players }: { players: number }) {
-  const table = activeMap().cardTables[0]!;
-  const cards: { x: number; z: number; r: number; color: string }[] = [];
-  for (let i = 0; i < 5; i++) cards.push({ x: (i - 2) * 0.03, z: (i % 2) * 0.04, r: i * 0.5, color: i === 4 ? '#ffffff' : '#f6f0ff' });
-  cardSeats(table)
-    .slice(0, Math.max(2, players))
-    .forEach((s, i) => {
-      const dx = (s.x - table.x) * 0.38;
-      const dz = (s.z - table.z) * 0.38;
-      for (let k = 0; k < 3; k++)
-        cards.push({ x: dx + (k - 1) * 0.07, z: dz, r: s.yaw + (k - 1) * 0.15, color: ['#e0457b', '#7c5cff', '#12a37f', '#ef8a3c'][i]! });
-    });
-  return (
-    <group position={[table.x, 0.77, table.z]}>
-      {cards.map((c, i) => (
-        <mesh key={i} position={[c.x, i * 0.002, c.z]} rotation={[-Math.PI / 2, 0, c.r]} userData={{ dynamic: true }}>
-          <planeGeometry args={[0.12, 0.17]} />
-          <meshStandardMaterial color={c.color} side={THREE.DoubleSide} />
-        </mesh>
-      ))}
-    </group>
   );
 }

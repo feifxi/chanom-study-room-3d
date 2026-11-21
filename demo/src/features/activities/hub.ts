@@ -19,6 +19,7 @@ import { BUILT_IN, deckKindFor, type Deck } from './pickASide/decks';
 import { ASK_MS, REVEAL_MS, newGame, sidesFor, zoneAt, zoneCenter, type SideGame, type SideMode } from './pickASide/game';
 import { SPOTS, spotById, type Game, type Spot, type SpotId } from './spots';
 import type { PieceSymbol, Square } from 'chess.js';
+import * as slave from './slave/game';
 import { answerDraw, forfeit, friendlyMove, newChess, offerDraw, play, resign, turnOf, type ChessGame } from './chess/game';
 import { areaEdgePoint, areaInnerPoint, inArea, isGameSeat } from '../map/types';
 
@@ -145,6 +146,8 @@ export class ActivityHub {
   telDraft: { text: string; strokes: Stroke[] } = { text: '', strokes: [] };
   /** Chess at the chess table, kept after it ends for the results (and the 3D board). */
   chess: ChessGame | null = null;
+  /** Slave at the card table, kept after it ends for the results; its titles carry into Play again. */
+  slave: slave.SlaveGame | null = null;
   private listeners = new Set<() => void>();
   private snapshot = '';
   version = 0;
@@ -177,6 +180,7 @@ export class ActivityHub {
       JSON.stringify(this.side) +
       (this.tel ? `${this.tel.rev}:${this.tel.stage}` : '') +
       (this.chess ? `${this.chess.rev}` : '-') +
+      (this.slave ? `${this.slave.rev}:${this.slave.stage}` : '-') +
       this.floorDeck.id +
       [...this.dismissed].join();
     if (snap === this.snapshot) return;
@@ -267,6 +271,7 @@ export class ActivityHub {
             if (spot.id === 'floor') this.sideStart(now);
             if (spot.id === 'art') this.telStart(now);
             if (spot.id === 'chess') this.chessStart();
+            if (spot.id === 'cards') this.slaveStart(now);
           } else st.startsAt = 0;
         }
       } else if (st.phase === 'playing') {
@@ -284,6 +289,7 @@ export class ActivityHub {
           const gone = [this.chess.white, this.chess.black].find((id) => !st.players.includes(id));
           if (gone) forfeit(this.chess, gone);
         }
+        if (spot.id === 'cards') this.slaveTick(now, st);
         // Pick a Side ends itself after the reveal, and telephone after its album, so they play out
         const sideRunning = (spot.id === 'floor' && this.side && this.side.stage !== 'done') || (spot.id === 'art' && !!this.tel);
         if (st.phase === 'playing' && !sideRunning && st.players.length <= 1) this.finish(spot.id, st.players);
@@ -606,24 +612,116 @@ export class ActivityHub {
 
   /** Demo: two friends sit down at the chess table and play; you can stand by the table and watch. */
   scriptChess() {
-    const spot = spotById('chess');
-    if (!spot.built || this.spots.chess.phase !== 'free') return;
-    const [a, b] = this.freePeople();
-    if (!a || !b) return;
+    this.scriptTableGame('chess', 2);
+  }
+
+  /** Demo: three friends sit down at the card table and play Slave; stand by the table to watch. */
+  scriptSlave3() {
+    this.scriptTableGame('cards', 3);
+  }
+
+  private scriptTableGame(spotId: 'chess' | 'cards', n: number) {
+    const spot = spotById(spotId);
+    if (!spot.built || this.spots[spotId].phase !== 'free') return;
+    const people = this.freePeople().slice(0, n);
+    if (people.length < n) return;
     const seats = spot.seats!.filter((s) => this.room.seatFree(s));
-    [a, b].forEach((id, i) => {
+    people.forEach((id, i) => {
       const p = this.room.state.players.get(id);
       if (p?.seatId) this.home.set(id, p.seatId);
       this.later(i * 1500, () => this.room.sendTo(id, ringSpot(spot, i), seats[i]));
     });
     const wait = setInterval(() => {
-      const st = this.spots.chess;
-      if (st.phase === 'gathering' && st.players.length >= 2) {
+      const st = this.spots[spotId];
+      if (st.phase === 'gathering' && st.players.length >= n) {
         clearInterval(wait);
-        this.later(2500, () => this.spots.chess.phase === 'gathering' && this.begin('chess'));
+        this.later(2500, () => this.spots[spotId].phase === 'gathering' && this.begin(spotId));
       }
     }, 500);
     this.timers.push(wait as unknown as ReturnType<typeof setTimeout>);
+  }
+
+  // --- Slave (feature 12) ---
+
+  private slaveStart(now: number) {
+    // Seat order around the table, so turns go round it
+    const seats = spotById('cards').seats ?? [];
+    const seatOf = (id: string) => seats.indexOf(this.room.state.players.get(id)?.seatId ?? '');
+    const players = [...this.spots.cards.players].sort((a, b) => seatOf(a) - seatOf(b));
+    // The same group playing again keeps its titles (and swaps); anyone new and it starts fresh
+    const last = this.slave?.stage === 'done' ? this.slave.titles : undefined;
+    this.slave = slave.newSlave(players, now, last);
+    this.slaveSeen = this.slave.rev;
+    this.scriptSlave();
+  }
+
+  private slaveTick(now: number, st: SpotState) {
+    const g = this.slave;
+    if (!g) return;
+    // Gone from the table (Leave, or away 30 s): out as last, the others play on
+    for (const id of [...g.players]) if (!st.players.includes(id)) slave.drop(g, id, now);
+    if (g.stage !== 'done' && now >= g.until) slave.timeout(g, now);
+    this.slaveAfter();
+  }
+
+  slavePlay(id: string, cards: slave.Card[]) {
+    const g = this.slave;
+    if (!g || !slave.play(g, id, cards, Date.now())) return false;
+    this.slaveAfter();
+    return true;
+  }
+
+  slavePass(id: string) {
+    const g = this.slave;
+    if (!g || !slave.pass(g, id, Date.now())) return;
+    this.slaveAfter();
+  }
+
+  slaveGiveBack(id: string, cards: slave.Card[]) {
+    const g = this.slave;
+    if (!g || !slave.giveBack(g, id, cards, Date.now())) return;
+    this.slaveAfter();
+  }
+
+  private slaveSeen = -1;
+  /** After any change: end the round when the game ends, otherwise let a scripted player act. */
+  private slaveAfter() {
+    const g = this.slave;
+    if (!g) return;
+    if (g.stage === 'done') {
+      // finish() adds the ones who left (st.out) at the bottom itself
+      const st = this.spots.cards;
+      if (st.phase === 'playing')
+        this.finish(
+          'cards',
+          g.finished.filter((id) => !st.out.includes(id)),
+        );
+    } else if (g.rev !== this.slaveSeen) {
+      this.slaveSeen = g.rev;
+      this.scriptSlave();
+    }
+    this.changed();
+  }
+
+  /** Demo: scripted players think for a moment, then play, pass, or send their swap cards back. */
+  private scriptSlave() {
+    const g = this.slave;
+    if (!g || g.stage === 'done') return;
+    const rev = g.rev;
+    if (g.stage === 'swap') {
+      for (const s of g.swap)
+        if (s.giver !== 'me')
+          this.later(2000 + Math.random() * 2000, () => this.slaveGiveBack(s.giver, g.hands[s.giver]!.slice(0, s.count)));
+      return;
+    }
+    const id = g.turn;
+    if (id === 'me') return;
+    this.later(1200 + Math.random() * 2300, () => {
+      if (this.slave !== g || g.rev !== rev || g.stage !== 'play' || g.turn !== id) return;
+      const cards = slave.friendlyPlay(g, id);
+      if (cards) this.slavePlay(id, cards);
+      else if (g.pile) this.slavePass(id);
+    });
   }
 
   // --- Whiteboard ---
@@ -779,6 +877,7 @@ export class ActivityHub {
     if (spotId === 'floor') this.side = null;
     if (spotId === 'art') this.tel = null;
     if (spotId === 'chess') this.chess = null;
+    if (spotId === 'cards') this.slave = null;
     Object.assign(st, { phase: 'gathering', out: [], nextRound: [], awaySince: {}, since: now });
     this.changed();
   }
@@ -808,13 +907,6 @@ export class ActivityHub {
     Object.assign(st, { phase: 'results', resultsUntil: Date.now() + RESULTS_MS, startsAt: 0, awaySince: {} });
     this.changed();
     if (spotId === 'floor') this.later(RESULTS_MS - 1500, () => this.scriptGoHome());
-  }
-
-  /** Demo: someone else gets up and leaves mid-round. */
-  someoneLeaves(spotId: SpotId) {
-    const st = this.spots[spotId];
-    const other = st.players.find((id) => id !== 'me');
-    if (other) this.leave(spotId, other);
   }
 
   private knockOut(st: SpotState, id: string, why: 'left' | 'away' | 'idle') {

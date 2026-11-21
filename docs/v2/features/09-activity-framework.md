@@ -102,12 +102,14 @@ maps without an art table still stand at easels and press E.
 
 | Layer         | What goes here                                                   | Example                                         |
 | ------------- | ---------------------------------------------------------------- | ----------------------------------------------- |
-| **3D world**  | anything people should see from a distance; bodies and positions | Pick a Side halves, cards on the table, the TV  |
+| **3D world**  | anything people should see from a distance; bodies and positions | Pick a Side halves, the TV                      |
 | **Small HUD** | the room stays fully visible: question, timer, scores            | Pick a Side's question and countdown            |
 | **Big panel** | needs detail or precise input; voice and the room keep going     | your hand of cards, the drawing canvas, a video |
 
-Rule: **what you see up close goes in 2D, what others see from afar shows in 3D.** Some games need map
-pieces too (the card tables, the art table); only the Connecta team builds maps.
+Rule: **what you see up close goes in 2D, what others see from afar shows in 3D.** Table games
+(chess, Slave) are the exception: they live only in their panel, and people who want to follow one
+step onto the table's rug to watch ([spec 12](12-table-games.md)); the tables in 3D are decor. Some
+games need map pieces too (the card tables, the art table); only the Connecta team builds maps.
 
 **A big panel opens as a theater; a game played by moving around keeps the room.** The theater fills
 the screen above the dock (below a game's top strip), dims the room and hides the other panels (room

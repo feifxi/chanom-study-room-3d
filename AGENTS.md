@@ -24,15 +24,15 @@ Two things, at different stages:
 2. [`docs/v2/decisions.md`](docs/v2/decisions.md): why things are the way they are, reversals, and
    ideas that were turned down. Check it before proposing something "new".
 3. [`docs/v2/features/`](docs/v2/features/): one spec per feature, all in the same shape (status and
-   try-it link, a summary, how it works, backend notes). Feature 12 is an undecided draft.
+   try-it link, a summary, how it works, backend notes).
 4. [`docs/v2/demo-guide.md`](docs/v2/demo-guide.md): how the demo is laid out, how maps work, its
    checks and gotchas.
 5. `README.md`, `infra/README.md`, `infra/observability/README.md`: V1 features, AWS, CI/CD, SLOs.
 
 ## What's next
 
-Feature 12 (table games): chess is built; **Slave** is next, resuming from
-[the draft](docs/v2/features/12-cards-draft.md); then the port to `apps/web`. The
+Every feature is built in the demo (feature 12, chess and Slave, was the last). Next is **the port
+to `apps/web`**: the stack move to NestJS and Prisma first, then the port checklist. The
 plan's [status and What's left](docs/v2-plan.md#whats-left) is the source of truth.
 
 ## Working agreements
