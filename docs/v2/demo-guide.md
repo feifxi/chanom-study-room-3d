@@ -96,5 +96,12 @@ problems are in that file's "Map polish backlog".
   `useLeaveRoom().ask(href)` from `features/room/LeaveRoom.tsx`.
 - **A press that only closes a panel or leaves a text box never walks** (`features/room/useDismiss.ts`).
 - **Headless Chrome always runs with `--mute-audio`.**
+- **Scripted demo starts can steal the friends a test needs:** 25 s after you arrive in a room,
+  someone starts Pick a Side and pulls free people onto the open floor (skipped while you're already
+  at a game). A test that calls friends to a table should sit down quickly, or replace that 25 s
+  timer in an init script. The other players in table games are scripted (`hub.ts`, `scriptSlave`,
+  `scriptChessTurn`); a group with someone new starts Slave fresh, with no swap.
+- **The activity hub isn't on `window`.** To drive a game state from a test (say, make yourself
+  King), add a temporary `window.__hub = hub` in `RoomView`, and remove it before committing.
 - **Next.js 16 differs from older versions:** read `node_modules/next/dist/docs/` before using an
   unfamiliar API (`demo/AGENTS.md`).

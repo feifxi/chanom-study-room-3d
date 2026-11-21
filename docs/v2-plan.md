@@ -40,6 +40,9 @@ In order:
 
 Deferred on purpose, no date yet:
 
+- **Small watch views hide the "Press E" hint on phones:** chess and Slave watchers get a small
+  view in the bottom-right corner, over the hint above the joystick. Noticed 2026-11-21, not fixed.
+
 - **Café and Rooftop catch up with the Library:** they stay selectable for variety but are behind
   (zone tags, card tables, square open floor, the 6-stool card table and chess table). Then the rest
   of the map polish: odd furniture, overlapping rugs, more café cats, overlapping name labels
