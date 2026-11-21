@@ -54,7 +54,6 @@ export interface InviteLink {
   kind: 'member' | 'guest';
   by: string;
   uses: number;
-  maxUses: number | null;
   /** "in 6 days", "in 23 h", "never" */
   expires: string;
 }
@@ -76,23 +75,15 @@ export const BANS: RoomBan[] = [
 ];
 
 export const INVITE_LINKS: InviteLink[] = [
-  { code: 'k3y9', kind: 'member', by: 'feifei', uses: 4, maxUses: null, expires: 'in 6 days' },
-  { code: 'p2ql', kind: 'member', by: 'Mai', uses: 9, maxUses: 10, expires: 'in 2 days' },
-  { code: 'g7aa', kind: 'guest', by: 'feifei', uses: 2, maxUses: null, expires: 'in 23 h' },
+  { code: 'k3y9', kind: 'member', by: 'feifei', uses: 4, expires: 'in 6 days' },
+  { code: 'p2ql', kind: 'member', by: 'Mai', uses: 9, expires: 'in 2 days' },
+  { code: 'g7aa', kind: 'guest', by: 'feifei', uses: 2, expires: 'in 23 h' },
 ];
 
 export const EXPIRY_OPTIONS = [
   ['1d', '1 day'],
   ['7d', '7 days'],
   ['never', 'Never'],
-] as const;
-
-export const USE_OPTIONS = [
-  ['0', 'No limit'],
-  ['1', '1 use'],
-  ['5', '5 uses'],
-  ['10', '10 uses'],
-  ['25', '25 uses'],
 ] as const;
 
 export const TIMEOUTS = [

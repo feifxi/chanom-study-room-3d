@@ -21,22 +21,23 @@ A room-wide game on the **open floor** (feature 9's rounds flow). A question and
 **walking into a zone** of the floor's rug. When the timer ends, answers lock where people stand; the reveal
 shows for 4 s; then the next question. Standing outside every zone = no answer.
 
-| Mode                     | Zones | Right answer                                | Timer | Ends                                         |
-| ------------------------ | ----- | ------------------------------------------- | ----- | -------------------------------------------- |
-| 🤔 **Would you rather**  | 2     | none; the reveal shows the split ("7 vs 3") | 10 s  | after 10 questions; no winner                |
-| 🧠 **Quiz**              | 4     | yes, +1 each                                | 15 s  | after 10 questions; highest score wins       |
-| 💀 **Last one standing** | 4     | yes, wrong or no answer = out               | 15 s  | when one is left (or after 15: all left win) |
+| Mode                    | Zones | Right answer                                | Timer | Ends                                   |
+| ----------------------- | ----- | ------------------------------------------- | ----- | -------------------------------------- |
+| 🤔 **Would you rather** | 2     | none; the reveal shows the split ("7 vs 3") | 10 s  | after 10 questions; no winner          |
+| 🧠 **Quiz**             | 4     | yes, +1 each                                | 15 s  | after 10 questions; highest score wins |
 
-- **Last one standing:** if everyone is wrong, nobody is out. People who are out step to the edge and
-  watch (the HUD stays, marked "You're out").
+- **Nobody is knocked out for a wrong answer:** everyone plays the whole game.
 - Ties in Quiz share the win. Leaving mid-game is a loss, as in every activity; one player left wins.
 - Would you rather ends with "that's a wrap", and who stood with you most ("Jod thinks most like you").
+- **Both modes can be played alone** (1–50 players). Solo there's no winner: Would you rather just
+  shows your picks ("Play with friends to see how the room splits"); Quiz ends with your score ("you
+  got 7 of 10 right").
 
 ### Questions: decks
 
 A **deck** is one topic. The host picks **mode, then deck**; the game draws the questions. Nothing else
 to set (question count and timer are fixed above). Opinion decks (2 answers) go with Would you rather;
-quiz decks (4 answers, one right) go with Quiz and Last one standing. Changing the mode switches to a
+quiz decks (4 answers, one right) go with Quiz. Changing the mode switches to a
 deck that fits.
 
 - **Built in**, by topic. Would you rather: Food, Pets, Love & dating, Study life, Weird. Quiz: General
@@ -61,9 +62,9 @@ deck that fits.
   fade.
 - **Small HUD** under the top strip (the room stays visible): question number, deck, timer bar, the
   question, the answers with **live counts** of who's standing where, "You're on B · you can still
-  move". Quiz shows the top three scores; Last one standing shows how many are left.
-- **Reveal:** the right answer ticked; the split as bars; your result ("✓ Right! +1", "💀 Wrong side,
-  you're out", "7 vs 3 · you're with the few 😎 · Mai picked with you").
+  move". Quiz shows the top three scores.
+- **Reveal:** the right answer ticked; the split as bars; your result ("✓ Right! +1", "Not this time · it was
+  B", "7 vs 3 · you're with the few 😎 · Mai picked with you").
 - **Lobby:** the mode picker plus a **Deck** button (tabs: Built in · My decks · ✨ AI); non-hosts see
   the deck's name.
 - **Results card:** Would you rather lists who stood with you; the quizzes list right answers, with
@@ -105,8 +106,11 @@ board, the rooftop's chalk wall), the same flow as the big screen.
 
 ### The panel
 
-- **Big panel** for drawing (precise input, phones too), opened from the small board. Like the watch
-  panel: a press anywhere else shrinks it to the corner (that press doesn't walk you); a click on the small board makes it big.
+- **Big panel** for drawing (precise input, phones too), opened from the small board. A theater like
+  the watch panel's: it fills the screen above the dock, the room dims and the other panels step
+  aside, the chat too. **Chat** opens the chat beside the board (the board moves over to make room).
+  A press on the room, Escape or Activities shrinks it to the corner (that press doesn't walk you); a
+  click on the small board makes it big.
 - **One fixed board** (16:9, like the wall). No pan or zoom.
 - **Tools:** pen, 6 colours, 3 sizes, eraser, **undo** (your own last stroke, Ctrl/Cmd+Z), **clear**
   (anyone at the board; asks "Clear the whole board for everyone?").
@@ -139,6 +143,9 @@ name is **Copycat**. Never use Gartic Phone, Telestrations or their mode names (
 
 ### How it works
 
+- **A theater while you play** ([spec 9](09-activity-framework.md)): the step's panel fills the screen
+  and the room dims. It opens with the chat closed, like the whiteboard; **Chat** opens it beside the
+  panel, which moves over to make room. The room comes back after the album, between rounds.
 - Everyone plays at once. Each player starts a **chain**; every step, each chain moves on to the next
   player. **Chain length = players, capped at 8** steps (with more players, not everyone sees every
   chain).

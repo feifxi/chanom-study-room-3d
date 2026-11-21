@@ -20,17 +20,23 @@ export function TelephonePanel({
   st,
   name,
   now,
+  width,
+  shift = 0,
 }: {
   hub: ActivityHub;
   game: TelGame;
   st: SpotState;
   name: (id: string) => string;
   now: number;
+  /** The theater's width (the room makes space for the chat panel when it's open). */
+  width: string;
+  /** Pixels to move right of centre: with the chat panel open it centres in the space beside it. */
+  shift?: number;
 }) {
   return (
     <section
-      className="panel flex max-h-[calc(100dvh-170px)] max-w-[calc(100vw-1.5rem)] flex-col gap-2.5 p-3"
-      style={{ width: 'min(860px, calc(100vw - 160px))' }}
+      className="panel flex max-h-[calc(100dvh-160px)] max-w-[calc(100vw-1.5rem)] flex-col gap-2.5 overflow-y-auto p-3"
+      style={{ width, transform: shift ? `translateX(${shift}px)` : undefined }}
       aria-label={game.mode === 'tel' ? 'Draw & Guess' : 'Copycat'}
     >
       {game.stage === 'turn' ? (
@@ -122,13 +128,19 @@ function Turn({ hub, game, st, now }: { hub: ActivityHub; game: TelGame; st: Spo
               </>
             )}
           </p>
-          <DrawingPad board={pad} active clearText="Clear your drawing?" />
-          <button
-            onClick={send}
-            className="flex items-center justify-center gap-1.5 self-end rounded-full bg-primary px-5 py-2 text-sm font-extrabold text-primary-foreground hover:bg-primary-ink"
-          >
-            <Send className="size-4" /> Done
-          </button>
+          <DrawingPad
+            board={pad}
+            active
+            clearText="Clear your drawing?"
+            action={
+              <button
+                onClick={send}
+                className="ml-1.5 flex items-center justify-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-extrabold text-primary-foreground hover:bg-primary-ink"
+              >
+                <Send className="size-4" /> Done
+              </button>
+            }
+          />
         </>
       )}
     </>

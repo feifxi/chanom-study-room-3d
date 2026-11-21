@@ -48,7 +48,6 @@ export function SideHud({
         <span className="truncate">
           {game.deck.emoji} {game.deck.name}
         </span>
-        {game.mode === 'last' && <span className="ml-auto">{st.players.length} left</span>}
         {game.mode === 'quiz' && <Leaders game={game} name={name} />}
         <span
           className={cn(
@@ -143,6 +142,8 @@ function Verdict({ game, name, counts }: { game: SideGame; name: (id: string) =>
   const a = game.answers.me;
   if (game.mode === 'wyr') {
     if (a == null) return <>You didn’t pick a side this time</>;
+    // Alone there's no split to show
+    if (game.solo) return <>Picked! Play with friends to see how the room splits</>;
     const withMe = Object.entries(game.answers)
       .filter(([id, x]) => id !== 'me' && x === a)
       .map(([id]) => name(id));
@@ -156,15 +157,8 @@ function Verdict({ game, name, counts }: { game: SideGame; name: (id: string) =>
       </>
     );
   }
-  if (game.everyoneWrong) return <>Everyone was wrong, so nobody’s out 😅</>;
-  if (a == null)
-    return (
-      <>
-        {game.mode === 'last' ? '💀 No answer, you’re out' : 'No answer'} · it was {LETTERS[q.right!]}
-      </>
-    );
-  if (a === q.right) return <span className="text-emerald-600">✓ Right! {game.mode === 'quiz' ? '+1' : 'You’re still in'}</span>;
-  if (game.mode === 'last') return <>💀 Wrong side, you’re out · it was {LETTERS[q.right!]}</>;
+  if (a == null) return <>No answer · it was {LETTERS[q.right!]}</>;
+  if (a === q.right) return <span className="text-emerald-600">✓ Right! +1</span>;
   return <>Not this time · it was {LETTERS[q.right!]}</>;
 }
 

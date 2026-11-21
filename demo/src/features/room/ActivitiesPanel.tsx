@@ -103,7 +103,7 @@ export function ActivitiesPanel({
 const NOT_IN_COMMON: SpotId[] = ['tv'];
 
 /** The list's order (the user's pick): the most inviting first. */
-const ORDER: SpotId[] = ['tv', 'cards', 'art', 'floor'];
+const ORDER: SpotId[] = ['tv', 'cards', 'chess', 'art', 'floor'];
 
 /**
  * A lobby you can join floats to the top, then anything live; the rest keep their fixed order. The
@@ -114,5 +114,7 @@ function listed(states: Record<SpotId, SpotState>) {
     const phase = spot.built ? states[spot.id].phase : 'free';
     return phase === 'gathering' ? 0 : phase === 'free' ? 2 : 1;
   };
-  return SPOTS.filter((s) => !s.freeZone).sort((a, b) => rank(a) - rank(b) || ORDER.indexOf(a.id) - ORDER.indexOf(b.id));
+  return SPOTS.filter((s) => !s.freeZone && s.inMap !== false).sort(
+    (a, b) => rank(a) - rank(b) || ORDER.indexOf(a.id) - ORDER.indexOf(b.id),
+  );
 }

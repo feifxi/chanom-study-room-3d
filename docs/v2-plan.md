@@ -26,7 +26,7 @@ what each feature is, and what's left. The details are in one spec per feature
 | 9   | Activity framework                      | done             | [09-activity-framework.md](v2/features/09-activity-framework.md)       |
 | 10  | Watch together and photo mode           | done             | [10-watch-and-photo.md](v2/features/10-watch-and-photo.md)             |
 | 11  | Pick a Side, whiteboard, Draw & Guess   | done             | [11-party-games.md](v2/features/11-party-games.md)                     |
-| 12  | Card games                              | **next** (draft) | [12-cards-draft.md](v2/features/12-cards-draft.md)                     |
+| 12  | Table games: cards, chess               | **next** (draft) | [12-cards-draft.md](v2/features/12-cards-draft.md)                     |
 | 13  | ~~AI flashcards~~                       | dropped          |                                                                        |
 | 14  | Common rooms, open rooms and moderation | done             | [14-open-rooms-moderation.md](v2/features/14-open-rooms-moderation.md) |
 | 15  | Business and infra                      | done             | [15-business-infra.md](v2/features/15-business-infra.md)               |
@@ -35,15 +35,17 @@ what each feature is, and what's left. The details are in one spec per feature
 
 In order:
 
-1. **Feature 12: card games.** Card proposals are in the draft. Card tables already sit in every
-   map. (Werewolf was dropped on 2026-11-20.)
+1. **Feature 12: table games (cards and chess).** Proposals are in the draft. The Library has a
+   6-stool card table and a chess table; the Café and Rooftop catch up later. (Werewolf was dropped
+   on 2026-11-20.)
 2. **Port the demo to `apps/web`.** First move the stack to NestJS and Prisma, then work through the
    [port checklist](#port-checklist), then the infra in spec 15, then a playtest, then launch.
 
 Deferred on purpose, no date yet:
 
-- **Map polish:** the library's 2026-11-20 fixes for the Café and Rooftop (zone tags, card tables,
-  square open floor), odd furniture, overlapping rugs, more café cats, overlapping name labels
+- **Café and Rooftop catch up with the Library:** they stay selectable for variety but are behind
+  (zone tags, card tables, square open floor, the 6-stool card table and chess table). Then the rest
+  of the map polish: odd furniture, overlapping rugs, more café cats, overlapping name labels
   ([07-maps.md](v2/features/07-maps.md#map-polish-backlog)).
 - **Cheaper cats:** merge each resident cat into skinned meshes before adding more
   ([06-3d-room.md](v2/features/06-3d-room.md#performance)).
@@ -99,7 +101,7 @@ screen. They loved the cosy theme and the chibi bounce, and asked for games and 
 - **Study (8):** a personal focus timer (25/5, 50/10), a private to-do list, Friends and Everyone
   rankings. No streaks.
 - **Activities (9–12):** one flow for every activity: Watch together (YouTube or a screen share, with
-  sound), Card games, Draw & Guess, Pick a Side; the whiteboard is a free zone; photo mode
+  sound), Card games, Chess, Draw & Guess, Pick a Side; the whiteboard is a free zone; photo mode
   works anywhere. No jukebox.
 - **Open and Common rooms (14):** open rooms are run by their owners; Common rooms are run by
   Connecta, text only and safe for strangers. Cheap, pluggable moderation and a team admin site.

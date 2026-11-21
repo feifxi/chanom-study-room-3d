@@ -42,7 +42,9 @@ export function useDismiss<T extends HTMLElement>(open: boolean, onClose: () => 
     if (!open) return;
     const overlayOpen = () => !!document.querySelector('[role="menu"], [role="dialog"], [role="alertdialog"]');
     const onDown = (e: PointerEvent) => {
-      if (ref.current?.contains(e.target as Node) || overlayOpen()) return;
+      // Controls marked data-keep-open (the dock while watching big) work without closing the panel
+      const keep = (e.target as Element | null)?.closest?.('[data-keep-open]');
+      if (ref.current?.contains(e.target as Node) || keep || overlayOpen()) return;
       closingPress = presses;
       close.current();
     };

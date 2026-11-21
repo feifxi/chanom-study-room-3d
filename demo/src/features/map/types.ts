@@ -60,28 +60,39 @@ export interface CardTable {
   z: number;
   r: number;
   area: Area;
+  /** Stools round it (4 when unset; the Library's card table has 6, its chess table 2). */
+  stools?: number;
+  /** How far the stools stand from the middle (1 m when unset). */
+  stoolR?: number;
 }
 
 const STOOL_DISTANCE = 1.0;
 const STAND_BACK = 0.5;
-/** Four stools on the diagonals (they read better from the isometric camera than a plus shape). */
-export const cardSeats = (t: CardTable): Seat[] =>
-  [0, 1, 2, 3].map((i) => {
-    const a = Math.PI / 4 + (i * Math.PI) / 2;
+/**
+ * Stools evenly round a table, facing the middle. Four sit on the diagonals (they read better from
+ * the isometric camera than a plus shape); other counts are turned half a step, so two face each
+ * other across the table from left and right.
+ */
+export const cardSeats = (t: CardTable): Seat[] => {
+  const n = t.stools ?? 4;
+  return Array.from({ length: n }, (_, i): Seat => {
+    const a = n === 4 ? Math.PI / 4 + (i * Math.PI) / 2 : ((i + 0.5) / n) * Math.PI * 2;
+    const r = t.stoolR ?? STOOL_DISTANCE;
     const dx = Math.sin(a);
     const dz = Math.cos(a);
     return {
       id: `${t.id}-${i}`,
       kind: 'chair',
       tableId: t.id,
-      x: t.x + dx * STOOL_DISTANCE,
-      z: t.z + dz * STOOL_DISTANCE,
+      x: t.x + dx * r,
+      z: t.z + dz * r,
       yaw: a + Math.PI,
-      out: { x: t.x + dx * (STOOL_DISTANCE + STAND_BACK), z: t.z + dz * (STOOL_DISTANCE + STAND_BACK) },
+      out: { x: t.x + dx * (r + STAND_BACK), z: t.z + dz * (r + STAND_BACK) },
     };
   });
+};
 /** Seats that belong to an activity (card tables, the art table): sitting there joins it. */
-export const isGameSeat = (seatId: string) => seatId.startsWith('game') || seatId.startsWith('art-');
+export const isGameSeat = (seatId: string) => seatId.startsWith('game') || seatId.startsWith('art-') || seatId.startsWith('chess-');
 
 /** A round art table with stools all round: Draw & Guess sits here in maps that have one. */
 export interface ArtTable {
@@ -172,6 +183,8 @@ export interface MapDef {
   artArea: Area;
   /** Draw & Guess at a round table with stools (sit to join) instead of standing at easels. */
   artTable?: ArtTable;
+  /** A two-stool chess table (the Library for now; the other maps get theirs when they're redone). */
+  chessTable?: CardTable;
   tv: WallPanel;
   board: WallPanel;
   gacha: { x: number; z: number; yaw: number; reach: number };

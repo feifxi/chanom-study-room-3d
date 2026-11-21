@@ -39,13 +39,13 @@ Fixed roles, no custom ones (they're much of why Discord feels complicated; our 
 One **Invite** dialog (room "…", the Room card, the room's page):
 
 - **Member invite** (`connecta.app/i/<code>`): whoever opens it joins. Expires after **7 days**
-  (or 1 day, or never), optionally after **1 / 5 / 10 / 25 uses**. New options make a new link; old
-  links keep their rules.
+  (or 1 day, or never). **No use limits** (to invite one person, invite them as a friend). A new
+  expiry makes a new link; old links keep theirs.
 - **Guest pass** (`connecta.app/g/<code>`): 24 hours without an account, if the room allows guests.
 - **Invite a friend:** friends who aren't members, sent in a DM.
 
 **Room settings → Invites:** Members can invite, Allow guests, Guests can use voice, and the active
-links (kind, made by, uses, expiry, **Cancel**).
+links (kind, made by, times used, expiry, **Cancel**).
 
 ## Kick, ban, time out
 
@@ -61,7 +61,7 @@ The same actions in Members & roles and in the in-room people list:
 
 - **Tables:** room; membership (room, user, role, joined at, timed out until); join request (room,
   user, note, status, decided by and at); ban (room, user, by, reason, at); invite link (code, room,
-  kind, created by, max uses, uses, expires at, cancelled at).
+  kind, created by, uses, expires at, cancelled at).
 - **Server checks:** every action goes through the role rules (`canActOn(me, them)`); the client only
   hides buttons. Bans are checked on join, invite use and guest pass use.
 - **Timeouts** are enforced by the chat gateway and by Colyseus and LiveKit (no publish permission).

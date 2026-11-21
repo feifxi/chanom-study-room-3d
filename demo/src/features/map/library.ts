@@ -221,12 +221,11 @@ export const COAT_STAND = { x: 3.0, z: 8.75 } as const;
 
 // ---------- G. Card tables ----------
 
-/** Two round oak tables with a felt inlay, four stools each; room is kept for a third. */
-export const CARD_TABLES: CardTable[] = [
-  { id: 'game1', x: 4.3, z: 3.6, r: 0.62, area: rect(4.3, 3.6, 3.0, 3.0) },
-  { id: 'game2', x: 4.3, z: 7.0, r: 0.62, area: rect(4.3, 7.0, 3.0, 3.0) },
-];
-const CARD_SEATS: Seat[] = CARD_TABLES.flatMap(cardSeats);
+/** One big round oak table with a felt inlay and six stools, so a whole friend group plays together. */
+export const CARD_TABLES: CardTable[] = [{ id: 'game1', x: 4.3, z: 3.4, r: 0.85, stools: 6, stoolR: 1.25, area: rect(4.3, 3.4, 3.8, 3.8) }];
+/** Where the second card table stood: a small chess table for two, the game for a pair. */
+export const CHESS_TABLE: CardTable = { id: 'chess', x: 4.3, z: 7.0, r: 0.5, stools: 2, stoolR: 0.85, area: rect(4.3, 7.0, 2.8, 2.2) };
+const CARD_SEATS: Seat[] = [...CARD_TABLES, CHESS_TABLE].flatMap(cardSeats);
 
 // ---------- H. Lantern circle ----------
 
@@ -329,7 +328,7 @@ export const OBSTACLES: Obstacle[] = [
   box(TEA_CART.minX, TEA_CART.maxX, TEA_CART.minZ, TEA_CART.maxZ),
   disc(GACHA_MACHINE.x, GACHA_MACHINE.z, 0.5),
   disc(COAT_STAND.x, COAT_STAND.z, 0.25),
-  ...CARD_TABLES.map((t) => disc(t.x, t.z, t.r)),
+  ...[...CARD_TABLES, CHESS_TABLE].map((t) => disc(t.x, t.z, t.r)),
   disc(CIRCLE.x, CIRCLE.z, CIRCLE.tableR),
   disc(ART_TABLE.x, ART_TABLE.z, ART_TABLE.tableR),
   disc(PAINT_CART.x, PAINT_CART.z, 0.3),
@@ -377,6 +376,7 @@ export const LIBRARY: MapData = {
   zones: ZONES,
   floatingZoneTags: true,
   cardTables: CARD_TABLES,
+  chessTable: CHESS_TABLE,
   circle: CIRCLE,
   floorArea: FLOOR_AREA,
   tvArea: LOUNGE.area,

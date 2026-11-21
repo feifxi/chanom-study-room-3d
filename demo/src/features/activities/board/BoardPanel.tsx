@@ -12,8 +12,9 @@ import { ASPECT, COLORS, ERASER, SIZES, boardPng, drawBoard, type BoardStore } f
  * live, while the wall shows it to the room. Pen, six colours, three sizes, eraser, undo (your own
  * strokes), clear (asks first), save or share to Room chat.
  *
- * Like the watch panel: a press anywhere else shrinks it to the corner (that press doesn't walk you),
- * and a click on the small board makes it big again.
+ * Like the watch panel: big is a theater (it fills the screen above the dock, the room dims and the
+ * other panels step aside); a press on the room shrinks it to the corner (that press doesn't walk
+ * you), and a click on the small board makes it big again.
  */
 export function BoardPanel({
   board,
@@ -40,8 +41,10 @@ export function BoardPanel({
   return (
     <section
       ref={panel}
-      className={cn('panel flex flex-col gap-2 p-2.5', mini ? 'w-[300px]' : 'max-w-[calc(100vw-1.5rem)]')}
-      style={mini ? undefined : { width: 'min(1040px, calc(100vw - 160px), calc((100dvh - 250px) * 16 / 9))' }}
+      className={cn('panel flex flex-col gap-2 p-2.5', mini ? 'w-[300px]' : 'max-h-full w-full self-start overflow-y-auto')}
+      // Theater: as wide as the stage allows while the board still fits its height (the stage is the
+      // screen less the dock, 96 px; the header, tools and padding take about 110 px more)
+      style={mini ? undefined : { maxWidth: `min(1440px, calc((100dvh - 206px) * ${ASPECT} + 24px))` }}
       aria-label="Whiteboard"
     >
       <div className="flex items-center gap-2 px-1">
@@ -101,12 +104,15 @@ export function DrawingPad({
   active,
   clearText,
   overlay,
+  action,
 }: {
   board: BoardStore;
   /** Off: just the picture (the small board in the corner). */
   active: boolean;
   clearText: string;
   overlay?: React.ReactNode;
+  /** A button at the end of the tools row (Draw & Guess's Done), so it costs no row of its own. */
+  action?: React.ReactNode;
 }) {
   const [color, setColor] = useState(COLORS[0]!);
   const [size, setSize] = useState(1);
@@ -198,6 +204,7 @@ export function DrawingPad({
             <ToolBtn label="Clear" onClick={() => setConfirmClear(true)}>
               <Trash2 className="size-4" />
             </ToolBtn>
+            {action}
           </div>
         ))}
     </>

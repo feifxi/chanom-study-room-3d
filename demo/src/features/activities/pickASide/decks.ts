@@ -4,7 +4,7 @@ import { ME } from '@/lib/mock';
 /**
  * Pick a Side's question decks (feature 11). A deck is one topic; the game draws the questions.
  * - **Opinion** decks (Would you rather): two answers, no right one.
- * - **Quiz** decks (Quiz, Last one standing): four answers, one right.
+ * - **Quiz** decks: four answers, one right.
  * Decks come from three places: built in, your own (saved to your account), or made by AI.
  */
 

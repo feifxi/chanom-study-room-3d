@@ -1,5 +1,5 @@
 import { activeMap } from '../map/active';
-import { artSeats, cardSeats, type Area } from '../map/types';
+import { artSeats, cardSeats, rect, type Area } from '../map/types';
 
 /**
  * Activity spots: the places in a map where activities happen (standard kit, feature 7). Every
@@ -11,7 +11,7 @@ import { artSeats, cardSeats, type Area } from '../map/types';
 export { isGameSeat } from '../map/types';
 export type { Area } from '../map/types';
 
-export type SpotId = 'cards' | 'floor' | 'tv' | 'board' | 'art';
+export type SpotId = 'cards' | 'chess' | 'floor' | 'tv' | 'board' | 'art';
 
 export interface Game {
   id: string;
@@ -42,6 +42,8 @@ export interface Spot {
   seats?: string[];
   /** Built in the demo's map; the rest arrive with their features. */
   built: boolean;
+  /** Not every map has every spot yet (the chess table is the Library's for now): absent spots are unlisted. */
+  inMap?: boolean;
   feature: number;
   tint: string;
 }
@@ -55,10 +57,11 @@ export const SPOTS: Spot[] = [
     kind: 'rounds',
     roomWide: false,
     games: [
-      { id: 'slave', name: 'Slave', emoji: '🃏', min: 3, max: 4 },
-      { id: 'uno', name: 'Color Cards', emoji: '🎴', min: 2, max: 4 },
+      // Up to the table's stools: the Library's card table seats 6, the Café's and Rooftop's 4 for now
+      { id: 'slave', name: 'Slave', emoji: '🃏', min: 3, max: 6 },
+      { id: 'uno', name: 'Color Cards', emoji: '🎴', min: 2, max: 6 },
     ],
-    // The first card table; the second one's stools are plain seats until feature 12 runs a game per table
+    // The first card table (the Café and Rooftop still have a second, its stools plain seats)
     get area() {
       return activeMap().cardTables[0]!.area;
     },
@@ -69,6 +72,32 @@ export const SPOTS: Spot[] = [
     feature: 12,
     tint: 'bg-mint',
   },
+  {
+    id: 'chess',
+    name: 'Chess table',
+    activity: 'Chess',
+    emoji: '♟️',
+    kind: 'rounds',
+    roomWide: false,
+    // The game for a pair: everyone else at the table watches
+    games: [{ id: 'chess', name: 'Chess', emoji: '♟️', min: 2, max: 2 }],
+    // Maps without a chess table get an area nobody can stand in (off the map), and no listing
+    get area() {
+      return activeMap().chessTable?.area ?? rect(1e4, 1e4, 0, 0);
+    },
+    get seats() {
+      const t = activeMap().chessTable;
+      return t ? cardSeats(t).map((s) => s.id) : undefined;
+    },
+    get built() {
+      return !!activeMap().chessTable;
+    },
+    get inMap() {
+      return !!activeMap().chessTable;
+    },
+    feature: 12,
+    tint: 'bg-sky',
+  },
 
   {
     id: 'floor',
@@ -78,9 +107,8 @@ export const SPOTS: Spot[] = [
     kind: 'rounds',
     roomWide: true,
     games: [
-      { id: 'wyr', name: 'Would you rather', emoji: '🤔', min: 2, max: 50 },
-      { id: 'quiz', name: 'Quiz', emoji: '🧠', min: 2, max: 50 },
-      { id: 'last', name: 'Last one standing', emoji: '💀', min: 2, max: 50 },
+      { id: 'wyr', name: 'Would you rather', emoji: '🤔', min: 1, max: 50 },
+      { id: 'quiz', name: 'Quiz', emoji: '🧠', min: 1, max: 50 },
     ],
     // The four-colour rug: one quarter per zone, eight to ten people in each
     get area() {

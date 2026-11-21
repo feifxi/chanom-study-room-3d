@@ -2,7 +2,7 @@
 
 **Status:** decided and built in the demo. **Try it:** http://localhost:3100/servers/chanom/rooms/library
 
-- Activities → Watch together → **Go there**, press **E**, paste a YouTube link (e.g.
+- Activities → Watch together → **Go there**, click the orange **Put something on**, paste a YouTube link (e.g.
   `https://youtu.be/lTRiuFIWV54`). Click outside the panel to shrink it; click the small player to
   grow it.
 - Demo tab → **Someone puts a video on the big screen**, to see the 3D screen from across the room.
@@ -22,12 +22,19 @@ library's TV lounge, the café's lounge, the rooftop's cinema sheet with floor c
 
 ### How it works
 
-1. Walk up (or **Go there**) and press **E**: "Put something on" → paste a **YouTube link** (Shorts,
-   live streams and `youtu.be` links work). It plays at once. Next to the sofa, **E sits** and
-   "Put something on" is an orange button above the seat's hint, so you can always sit down.
+1. Walk up (or **Go there**): anyone in the zone, standing or on the sofa, gets the orange **Put
+   something on** button (click or tap only, never E: at the lounge **E always means the sofa**) →
+   paste a **YouTube link** (Shorts, live streams and `youtu.be` links work). It plays at once.
+   **No top strip, no Leave, no End** (like the whiteboard): walking away stops your watching, skip
+   moves Up next on, and the screen turns off by itself once everyone has left. Stopping something
+   unsuitable is a moderation tool.
 2. **Being in front of the screen is watching.** Step into the area and the big panel opens, in sync;
-   step out and it closes. The big panel is like Discord's activity view: the video takes most of the
-   screen, with Now playing and Up next beside it (below it on narrow screens). No lobby, no rounds, nobody is "out".
+   step out and it closes. The big panel is a **theater**, like Discord's activity view: it fills the
+   screen above the dock, the room dims behind it, and everything else (room
+   card, tools rail, people, invites, chat panel, zoom, joystick, hints) steps aside until it shrinks.
+   Beside the video (below it on narrow screens): Now playing and **Up next**. It opens with the chat
+   closed, like every theater; **Chat** opens it beside the player, which moves over (on phones, the
+   usual chat sheet). No lobby, no rounds, nobody is "out".
 3. The **3D screen** shows the video's thumbnail and glows (dimmer when paused), so people walking past
    see what's on. The video itself plays only in the panel.
 4. When nobody has been watching for 30 s, the screen turns off and the queue clears.
@@ -53,11 +60,12 @@ library's TV lounge, the café's lounge, the rooftop's cinema sheet with floor c
 - **Anyone watching controls everything:** play/pause, seek, skip, add to the queue, remove from it.
   It's your room; mods can kick anyone who's a pain.
 - **Up next:** anyone adds a link; videos play in order; skip or the end of a video plays the next.
-- **Big ↔ small:** a click anywhere outside the panel (the room, the chat) shrinks it to a small player
-  in the bottom-right corner; that click doesn't walk you. Clicking the small player's picture makes
+- **Big ↔ small:** a click on the dimmed room (or Escape, or Activities) shrinks it to a small player
+  in the bottom-right corner and brings everything back; that click doesn't walk you. Mic, Sound,
+  Chat work without shrinking it. Clicking the small player's picture makes
   it big again. ⤡ / ⤢ do the same. The small player keeps play/pause and skip, stays in sync, and you
   stay in the area.
-- The top strip (the same one every activity has): "📺 Watch together · 3 watching · Leave".
+- How many are watching shows under the title: "put on by Ploy · 3 watching".
 - **YouTube only.** TikTok and Instagram embeds can't be synced. **Paste, no search:** YouTube's free
   search quota is about 100 searches a day for the whole app.
 

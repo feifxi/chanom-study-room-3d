@@ -8,20 +8,27 @@ import type { CharacterDetail } from '../avatar/character';
  * keep up; "saver" is the viewer's choice. Remembered in this browser (the room page is client-only).
  */
 export type QualityMode = 'auto' | 'saver';
-export type QualityTier = 'smooth' | 'saver';
+/** steady: battery saver on a device that still can't keep up, so the frame rate is capped too. */
+export type QualityTier = 'smooth' | 'saver' | 'steady';
 
 export interface Quality {
   /** Cap on device pixels per CSS pixel: 2x retina renders 4x the pixels for little visible gain here */
   dpr: number;
+  /** While you're doing something: walking, moving or zooming the camera, pressing things. */
   fps: number;
+  /** While you're still (sitting, watching, reading): nobody sees 30 vs 60 when little moves, and it halves the work. */
+  idleFps: number;
   shadows: boolean;
   /** Battery saver builds characters with fewer segments (about a third of the triangles). */
   characters: CharacterDetail;
 }
 
 export const QUALITY: Record<QualityTier, Quality> = {
-  smooth: { dpr: 1.5, fps: 60, shadows: true, characters: 'full' },
-  saver: { dpr: 1, fps: 30, shadows: false, characters: 'low' },
+  smooth: { dpr: 1.5, fps: 60, idleFps: 60, shadows: true, characters: 'full' },
+  // Battery saver gives up looks before smoothness: what you do stays at 60
+  saver: { dpr: 1, fps: 60, idleFps: 30, shadows: false, characters: 'low' },
+  // Only if that's still too slow: a steady 30 beats a stuttering 45
+  steady: { dpr: 1, fps: 30, idleFps: 30, shadows: false, characters: 'low' },
 };
 
 const KEY = 'connecta:quality';
@@ -65,3 +72,12 @@ export class SlowFrameDetector {
     return avg > this.targetMs * 1.6;
   }
 }
+
+/** How long after your last input the frame rate stays up (covers the camera easing to a stop). */
+const ACTIVE_MS = 1500;
+let lastInput = -Infinity;
+/** You did something (pointer, wheel, key): render at the full rate for a moment. */
+export const markActive = () => {
+  lastInput = performance.now();
+};
+export const recentlyActive = (now: number) => now - lastInput < ACTIVE_MS;

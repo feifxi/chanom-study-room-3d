@@ -63,12 +63,13 @@ maps without an art table still stand at easels and press E.
 
 - Whoever started it. If the host leaves, the next player (in arrival order) becomes host.
 - The host picks the game (when a spot has several), calls everyone, starts, and can **End** a
-  round early (back to the lobby, no winner).
+  round early (back to the lobby, no winner). Drop-in spots (the TV) have no rounds, so no End.
 
 ### Leaving
 
 - **Leave** is always in the same place: on the lobby card, the results card, and the strip at the top
-  while playing. Standing up or walking off the rug works too.
+  while playing. Standing up or walking off the rug works too. Drop-in spots (the TV, the
+  whiteboard) have no strip and no Leave: being there is taking part, so you leave by walking away.
 - **Out of the area for 30 s** (walked off, connection dropped) also counts as leaving; a banner shows
   "Come back to stay in the game · 0:24". One rule for both, which matters on phones.
 - **Leaving mid-round = you're out** (a loss). When only one player is left, they win.
@@ -107,6 +108,17 @@ maps without an art table still stand at easels and press E.
 
 Rule: **what you see up close goes in 2D, what others see from afar shows in 3D.** Some games need map
 pieces too (the card tables, the art table); only the Connecta team builds maps.
+
+**A big panel opens as a theater; a game played by moving around keeps the room.** The theater fills
+the screen above the dock (below a game's top strip), dims the room and hides the other panels (room
+card, tools rail, people, invites, zoom, joystick, hints); the dock and a game's strip stay, so you
+can always mute or leave. Watch together and the whiteboard shrink to a corner player (a click on the
+room, Escape); a game panel (Draw & Guess) stays big while you play and the room comes back between
+rounds. **Chat in a theater, the same in all of them** (Watch together, the whiteboard, Draw & Guess): it
+opens with the chat closed, so the stage is as big as it gets, and Chat opens it beside the panel,
+which moves over (on phones, the usual chat sheet). Lobby, results and next-round cards stay small cards
+over the room. Pick a Side, played by
+walking onto a colour, never dims the room.
 
 ## The shared UI pieces
 

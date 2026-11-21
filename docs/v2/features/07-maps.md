@@ -1,6 +1,8 @@
 # 7. Map templates and the editor
 
-**Status:** decided; all three launch maps built in the demo; the editor is a mock. **Try it:**
+**Status:** decided; all three launch maps built in the demo; the editor is a mock. **The Library is
+the finished reference; the Café and Rooftop are behind it** (kept selectable for variety, finished
+later: see the [backlog](#map-polish-backlog)). **Try it:**
 
 - http://localhost:3100/servers/chanom/rooms/library, `/cafe` and `/rooftop`: the three maps.
 - In a room: Room card → Room settings → Map & look; change the map and it switches live.
@@ -12,20 +14,21 @@ kit, so every activity works in every map, but each map has its own layout**, so
 
 ## The standard kit
 
-| Kit piece      | Needs                       | Cosy Library             | Cat Café                   | Starry Rooftop       |
-| -------------- | --------------------------- | ------------------------ | -------------------------- | -------------------- |
-| Study spots    | 12+ seats (Cosy), 24+ (Big) | 4-seat and long tables   | bar, window bar, tables    | picnic desks         |
-| Lounge         | a corner to hang out        | TV lounge                | TV lounge, cat tower       | campfire circle      |
-| Private zones  | at least 2                  | Fireside, Window booth   | Window booth, Corner booth | Tent, Telescope deck |
-| Big screen     | watch together              | TV on a console          | TV on the back wall        | outdoor cinema sheet |
-| Card tables    | card games                  | 2                        | 2                          | 2                    |
-| Lantern circle | 12 cushions to hang out     | cushions round a lantern | front left                 | right side           |
-| Open floor     | 12 m²+ for Pick a Side      | four-colour rug          | dance floor by the bar     | four-colour deck     |
-| Whiteboard     | draw together               | board in an oak frame    | menu board                 | chalk wall           |
-| Art corner     | Draw & Guess                | round table, 10 stools   | under the cat photo wall   | front left           |
-| Buddy Machine  | study buddies               | by the door              | by the till                | by the stairwell     |
-| Nap spots      | where the cats sleep        | hearth, shelf, sofa      | cat beds, cat tower        | hammock, tent, fire  |
-| Spawn point    | where you walk in           | front door               | side door with a bell      | stairwell door       |
+| Kit piece      | Needs                       | Cosy Library             | Cat Café                   | Starry Rooftop           |
+| -------------- | --------------------------- | ------------------------ | -------------------------- | ------------------------ |
+| Study spots    | 12+ seats (Cosy), 24+ (Big) | 4-seat and long tables   | bar, window bar, tables    | picnic desks             |
+| Lounge         | a corner to hang out        | TV lounge                | TV lounge, cat tower       | campfire circle          |
+| Private zones  | at least 2                  | Fireside, Window booth   | Window booth, Corner booth | Tent, Telescope deck     |
+| Big screen     | watch together              | TV on a console          | TV on the back wall        | outdoor cinema sheet     |
+| Card tables    | card games                  | 1, six stools            | 2, four stools (to redo)   | 2, four stools (to redo) |
+| Chess table    | chess for two               | where a card table was   | not yet                    | not yet                  |
+| Lantern circle | 12 cushions to hang out     | cushions round a lantern | front left                 | right side               |
+| Open floor     | 12 m²+ for Pick a Side      | four-colour rug          | dance floor by the bar     | four-colour deck         |
+| Whiteboard     | draw together               | board in an oak frame    | menu board                 | chalk wall               |
+| Art corner     | Draw & Guess                | round table, 10 stools   | under the cat photo wall   | front left               |
+| Buddy Machine  | study buddies               | by the door              | by the till                | by the stairwell         |
+| Nap spots      | where the cats sleep        | hearth, shelf, sofa      | cat beds, cat tower        | hammock, tent, fire      |
+| Spawn point    | where you walk in           | front door               | side door with a bell      | stairwell door           |
 
 ## Templates and sizes
 
@@ -60,12 +63,12 @@ The numbers are in each data file: `demo/src/features/map/library.ts`, `cafe.ts`
 
 **📚 Cosy Library** (76 seats for a room capped at 50)
 
-| Where | Places                                                                                                                                                               |
-| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Back  | Study block: 4 small tables and a 10-seat and an 8-seat long table under the arched window; the **Window booth** in the bay                                          |
-| Left  | A 3 m whiteboard (no rug); the **Fireside** (fireplace, armchairs, loveseat); the **TV lounge** (TV, a sofa, beanbags and floor cushions to look at)                 |
-| Front | The **open floor** (5.4 m square four-colour rug); the door with a mat, tea cart, coat stand and the Buddy Machine                                                   |
-| Right | Two **card tables** (walnut, burgundy leather, a deck and score pad); the **lantern circle**; the **art corner** (a round table with 10 stools, paint cart, gallery) |
+| Where | Places                                                                                                                                                                                                                       |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Back  | Study block: 4 small tables and a 10-seat and an 8-seat long table under the arched window; the **Window booth** in the bay                                                                                                  |
+| Left  | A 3 m whiteboard (no rug); the **Fireside** (fireplace, armchairs, loveseat); the **TV lounge** (TV, a sofa, beanbags and floor cushions to look at)                                                                         |
+| Front | The **open floor** (5.4 m square four-colour rug); the door with a mat, tea cart, coat stand and the Buddy Machine                                                                                                           |
+| Right | The **card table** (6 stools, walnut, burgundy leather, a deck and score pad) and the **chess table** (2 stools) by the door; the **lantern circle**; the **art corner** (a round table with 10 stools, paint cart, gallery) |
 
 **🐈 Cat Café**
 
@@ -141,7 +144,8 @@ what blocks playtests before the Blender models (which redo most of it):
   ([06-3d-room.md](06-3d-room.md#performance)).
 - **Name labels overlap** when two people stand together (Mook on the café doormat). Start scripted
   people apart; labels could nudge apart.
-- **Café and Rooftop, as the library got on 2026-11-20:** floating zone tags instead of plaques
+- **Café and Rooftop, as the library got on 2026-11-20 and 2026-11-21:** one 6-stool card table and a
+  chess table (`chessTable`) instead of two 4-stool card tables; floating zone tags instead of plaques
   (`floatingZoneTags`), card tables in the map's own style instead of casino felt (`CardTables`
   `look`), a square open-floor rug so Pick a Side's quarters are squares, a seated art table instead
   of easels (`artTable`), the whiteboard bigger, with no rug and its area cut to a strip in front of it, no hanging lamps cluttering the camera's view, and table props checked to

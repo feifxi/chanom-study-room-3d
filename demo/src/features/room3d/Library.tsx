@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import type { DayLight } from './dayCycle';
 import { CHAIR_BACK } from './Avatar';
 import { StaticBatch } from './StaticBatch';
-import { BigScreen, CardTables } from '../activities/Activity3D';
+import { BigScreen, CardTables, ChessTable } from '../activities/Activity3D';
 import { WhiteboardFrame } from '../activities/board/Board3D';
 import { zoneShapes } from '../activities/pickASide/Side3D';
 import { ArtCorner } from '../activities/telephone/ArtCorner3D';
@@ -18,6 +18,7 @@ import {
   BIG_WINDOW,
   BOOTH,
   CARD_TABLES,
+  CHESS_TABLE,
   CAT_TOWER,
   CHALK_CART,
   COAT_STAND,
@@ -1039,7 +1040,7 @@ export function Library({ light, shadows = true }: { light: DayLight; shadows?: 
         <Rug area={FIRESIDE.zone} color={RUG_RED} border={RUG_RED_EDGE} />
         <Rug area={LOUNGE.area} color={LAVENDER} border={RUG_LAVENDER_EDGE} />
         <FourColourRug area={FLOOR_AREA} />
-        {CARD_TABLES.map((t) => (
+        {[...CARD_TABLES, CHESS_TABLE].map((t) => (
           <Rug key={t.id} area={t.area} color={RUG_CREAM} border={RUG_RED_EDGE} />
         ))}
         <Rug area={ART_AREA} color={RUG_CREAM} border={RUG_CREAM_EDGE} />
@@ -1061,6 +1062,7 @@ export function Library({ light, shadows = true }: { light: DayLight; shadows?: 
         <Lounge lamps={lamps} />
         <Entrance />
         <CardTables look="library" />
+        <ChessTable />
         <LanternCircle circle={CIRCLE} seats={CIRCLE_SEATS} lamps={lamps} />
         {NIGHT_FILLS.map((f) => (
           <pointLight

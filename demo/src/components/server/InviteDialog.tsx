@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { EXPIRY_OPTIONS, USE_OPTIONS } from '@/features/place/membership';
+import { EXPIRY_OPTIONS } from '@/features/place/membership';
 import { cn } from '@/lib/utils';
 import { USERS, type Server } from '@/lib/mock';
 
@@ -18,7 +18,7 @@ const newCode = () => Array.from({ length: 4 }, () => CODE_CHARS[Math.floor(Math
 /**
  * Two kinds of link:
  * - **Member invite**: whoever opens it joins the room (they need an account). Expires after 7 days
- *   by default (or 1 day, or never), optionally after a number of uses.
+ *   by default (or 1 day, or never). No use limits: to invite one person, invite them as a friend.
  * - **Guest pass**: walk into the 3D room without an account, for 24 hours. Only if the room allows guests.
  * Plus "Invite a friend", which sends the invite in a DM. The owner and mods see and cancel active
  * links in Room settings → Invites.
@@ -26,7 +26,6 @@ const newCode = () => Array.from({ length: 4 }, () => CODE_CHARS[Math.floor(Math
 export function InviteDialog({ server, open, onOpenChange }: { server: Server; open: boolean; onOpenChange: (o: boolean) => void }) {
   const [kind, setKind] = useState<'member' | 'guest'>('member');
   const [expiry, setExpiry] = useState<string>('7d');
-  const [uses, setUses] = useState<string>('0');
   const [code, setCode] = useState('k3y9');
   const [sent, setSent] = useState<Set<string>>(new Set());
   const guestRooms = server.rooms.filter((r) => r.allowGuests);
@@ -37,13 +36,12 @@ export function InviteDialog({ server, open, onOpenChange }: { server: Server; o
     navigator.clipboard?.writeText(`https://${link}`).catch(() => {});
     toast.success('Link copied');
   };
-  // Changing the options makes a new link; the old one keeps its own rules until it runs out
+  // Changing the expiry makes a new link; the old one keeps its own until it runs out
   const remake = (apply: () => void) => {
     apply();
     setCode(newCode());
   };
   const expiryLabel = EXPIRY_OPTIONS.find((o) => o[0] === expiry)![1];
-  const usesLabel = USE_OPTIONS.find((o) => o[0] === uses)![1];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -105,18 +103,6 @@ export function InviteDialog({ server, open, onOpenChange }: { server: Server; o
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={uses} onValueChange={(v) => remake(() => setUses(v))}>
-                <SelectTrigger size="sm" className="rounded-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {USE_OPTIONS.map(([id, label]) => (
-                    <SelectItem key={id} value={id}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
               <button
                 onClick={() => remake(() => {})}
                 className="ml-auto grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-muted"
@@ -126,8 +112,7 @@ export function InviteDialog({ server, open, onOpenChange }: { server: Server; o
               </button>
             </div>
             <p className="-mt-2 text-xs text-muted-foreground">
-              {expiry === 'never' ? 'Never expires' : `Stops working after ${expiryLabel.toLowerCase()}`}
-              {uses === '0' ? '' : ` or ${usesLabel}`}.
+              {expiry === 'never' ? 'Never expires' : `Stops working after ${expiryLabel.toLowerCase()}`}.
             </p>
 
             <div>

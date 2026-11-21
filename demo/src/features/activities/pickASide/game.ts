@@ -8,10 +8,12 @@ import type { Deck, Question } from './decks';
  * Modes (the spot's "games"):
  * - **Would you rather** (`wyr`): 2 zones, no right answer, the reveal shows the split.
  * - **Quiz** (`quiz`): 4 zones, +1 for the right one, highest score wins.
- * - **Last one standing** (`last`): 4 zones, wrong = out (unless everyone was wrong).
+ *
+ * Nobody is knocked out for a wrong answer: everyone plays the whole game. Both modes can be played
+ * alone (`solo`, decided at the start): Would you rather just shows your picks, Quiz your score.
  */
 
-export type SideMode = 'wyr' | 'quiz' | 'last';
+export type SideMode = 'wyr' | 'quiz';
 
 export interface SideGame {
   mode: SideMode;
@@ -25,15 +27,15 @@ export interface SideGame {
   scores: Record<string, number>;
   /** Would you rather: how often each person stood on your side. */
   agree: Record<string, number>;
-  /** Last one standing: everyone was wrong this time, so nobody went out. */
-  everyoneWrong: boolean;
   /** Who won at the end (several when they tie, or when the deck ran out with people left). */
   winners: string[];
+  /** Started with one player: no split and no winner, just how you did. */
+  solo: boolean;
 }
 
-export const ASK_MS: Record<SideMode, number> = { wyr: 10_000, quiz: 15_000, last: 15_000 };
+export const ASK_MS: Record<SideMode, number> = { wyr: 10_000, quiz: 15_000 };
 export const REVEAL_MS = 4_000;
-export const QUESTIONS: Record<SideMode, number> = { wyr: 10, quiz: 10, last: 15 };
+export const QUESTIONS: Record<SideMode, number> = { wyr: 10, quiz: 10 };
 export const sidesFor = (mode: SideMode) => (mode === 'wyr' ? 2 : 4);
 
 export const ZONE_COLORS = ['#ff8fb8', '#7ab8ff', '#ffd166', '#7fd8b6'];
@@ -87,7 +89,7 @@ export function draw(deck: Deck, count: number): Question[] {
   return out;
 }
 
-export function newGame(mode: SideMode, deck: Deck, now: number): SideGame {
+export function newGame(mode: SideMode, deck: Deck, now: number, solo = false): SideGame {
   return {
     mode,
     deck,
@@ -98,7 +100,7 @@ export function newGame(mode: SideMode, deck: Deck, now: number): SideGame {
     answers: {},
     scores: {},
     agree: {},
-    everyoneWrong: false,
     winners: [],
+    solo,
   };
 }

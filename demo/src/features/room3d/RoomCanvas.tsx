@@ -38,7 +38,7 @@ interface Props {
   onZoom: (percent: number) => void;
   /** Extra 3D layers from features (activities). */
   children?: React.ReactNode;
-  /** Frames have been too slow for a while: time for battery saver. */
+  /** Frames have been too slow for a while: time for a lighter quality tier. */
   onSlow?: () => void;
   /** Bumps when you save a new look (Settings → My character): your character swaps live. */
   myLookVersion?: number;
@@ -77,7 +77,7 @@ export function RoomCanvas({
       camera={{ position: [SPAWN.x + 20, 18, SPAWN.z + 20], zoom: startZoom(), near: 0.1, far: 200 }}
       gl={{ preserveDrawingBuffer: true }}
     >
-      <FrameDriver fps={quality.fps} onSlow={onSlow} />
+      <FrameDriver fps={quality.fps} idleFps={quality.idleFps} motion={motion} onSlow={onSlow} />
       <StaticShadows lightKey={`${light.sunPosition.join(',')}|${light.sunIntensity.toFixed(2)}|${quality.shadows}`} />
       <map.Scene light={light} shadows={quality.shadows} />
       <OrbitControls

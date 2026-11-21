@@ -605,7 +605,7 @@ export class ActivityHub {
   // --- Pick a Side (feature 11) ---
 
   private sideStart(now: number) {
-    this.side = newGame(this.spots.floor.game.id as SideMode, this.floorDeck, now);
+    this.side = newGame(this.spots.floor.game.id as SideMode, this.floorDeck, now, this.spots.floor.players.length === 1);
     this.scriptAnswers();
   }
 
@@ -626,19 +626,13 @@ export class ActivityHub {
       } else {
         const right = st.players.filter((id) => g.answers[id] === q.right);
         for (const id of right) g.scores[id] = (g.scores[id] ?? 0) + 1;
-        g.everyoneWrong = g.mode === 'last' && right.length === 0;
-        if (g.mode === 'last' && right.length)
-          for (const id of st.players.filter((x) => !right.includes(x))) {
-            this.knockOut(st, id, 'wrong');
-            // Scripted people step to the edge to watch
-            if (id !== 'me') this.room.sendTo(id, edgeSpot(spot, id));
-          }
+        // Alone, "everyone was wrong" would mean you could never go out
       }
       Object.assign(g, { stage: 'reveal', until: now + REVEAL_MS });
       return;
     }
     // Reveal over: the next question, unless that was the last one (or only one is left standing)
-    if (g.i + 1 >= g.questions.length || st.players.length <= 1) {
+    if (g.i + 1 >= g.questions.length || st.players.length <= (g.solo ? 0 : 1)) {
       const score = (id: string) => g.scores[id] ?? 0;
       const standing = g.mode === 'quiz' ? [...st.players].sort((a, b) => score(b) - score(a)) : [...st.players];
       const top = standing[0] ? score(standing[0]) : 0;
@@ -647,7 +641,7 @@ export class ActivityHub {
       this.finish('floor', standing);
       return;
     }
-    Object.assign(g, { i: g.i + 1, stage: 'ask', until: now + ASK_MS[g.mode], answers: {}, everyoneWrong: false });
+    Object.assign(g, { i: g.i + 1, stage: 'ask', until: now + ASK_MS[g.mode], answers: {} });
     this.scriptAnswers();
   }
 
@@ -726,11 +720,11 @@ export class ActivityHub {
     if (other) this.leave(spotId, other);
   }
 
-  private knockOut(st: SpotState, id: string, why: 'left' | 'away' | 'wrong' | 'idle') {
+  private knockOut(st: SpotState, id: string, why: 'left' | 'away' | 'idle') {
     st.players = st.players.filter((x) => x !== id);
     if (!st.out.includes(id)) st.out.push(id);
     delete st.awaySince[id];
-    if (id === 'me' && why !== 'wrong')
+    if (id === 'me')
       this.onNews(
         why === 'away'
           ? 'You were away from the game for 30 s, so you’re out'
@@ -785,7 +779,7 @@ export class ActivityHub {
     go(host, 0);
     this.start('floor', host);
     // A different mode each time the demo runs it, with a deck to match
-    const mode = (['wyr', 'quiz', 'last'] as const)[this.scripted++ % 3]!;
+    const mode = (['wyr', 'quiz'] as const)[this.scripted++ % 2]!;
     this.pickGame('floor', mode);
     const decks = BUILT_IN.filter((d) => d.kind === deckKindFor(mode));
     this.pickDeck(decks[Math.floor(Math.random() * decks.length)]!);
@@ -813,12 +807,6 @@ export class ActivityHub {
       this.home.delete(id);
     }
   }
-}
-
-/** Just outside the ring, where people knocked out stand and watch. */
-function edgeSpot(spot: Spot, id: string) {
-  const a = 2.2 + (id.charCodeAt(0) % 5) * 0.5;
-  return areaEdgePoint(spot.area, a, 0.6);
 }
 
 /** A place inside a spot's ring for the i-th person to stand. */

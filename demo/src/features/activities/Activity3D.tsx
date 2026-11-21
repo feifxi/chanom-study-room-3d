@@ -5,7 +5,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { CHAIR_BACK, type LocalMotion } from '../room3d/Avatar';
 import { activeMap } from '../map/active';
-import { cardSeats, inArea, type Area } from '../map/types';
+import { cardSeats, inArea, type Area, type CardTable } from '../map/types';
 import type { SpotState, WatchState } from './hub';
 import { BoardSurface } from './board/Board3D';
 import type { BoardStore } from './board/board';
@@ -74,30 +74,119 @@ export function CardTables({ look = 'felt' }: { look?: keyof typeof TABLE_LOOKS 
             </>
           )}
           {L.props && <TableTop flip={ti % 2 === 1} />}
-          {cardSeats(t).map((s) => {
-            // The stool sits where a chair's seat would, a little behind the seat point
-            const bx = s.x - t.x - Math.sin(s.yaw) * CHAIR_BACK;
-            const bz = s.z - t.z - Math.cos(s.yaw) * CHAIR_BACK;
-            return (
-              <group key={s.id} position={[bx, 0, bz]}>
-                <mesh position={[0, 0.44, 0]} castShadow>
-                  <cylinderGeometry args={[0.22, 0.22, 0.07, 20]} />
-                  <meshStandardMaterial color={LEATHER} roughness={0.6} />
-                </mesh>
-                <mesh position={[0, 0.2, 0]}>
-                  <cylinderGeometry args={[0.04, 0.07, 0.4, 8]} />
-                  <meshStandardMaterial color={OAK_DARK} />
-                </mesh>
-                <mesh position={[0, 0.04, 0]}>
-                  <cylinderGeometry args={[0.16, 0.16, 0.03, 12]} />
-                  <meshStandardMaterial color={OAK_DARK} />
-                </mesh>
-              </group>
-            );
-          })}
+          <Stools table={t} />
         </group>
       ))}
     </>
+  );
+}
+
+/** A table's leather-topped stools, each where a chair's seat would be, a little behind the seat point. */
+function Stools({ table: t }: { table: CardTable }) {
+  return (
+    <>
+      {cardSeats(t).map((s) => (
+        <group key={s.id} position={[s.x - t.x - Math.sin(s.yaw) * CHAIR_BACK, 0, s.z - t.z - Math.cos(s.yaw) * CHAIR_BACK]}>
+          <mesh position={[0, 0.44, 0]} castShadow>
+            <cylinderGeometry args={[0.22, 0.22, 0.07, 20]} />
+            <meshStandardMaterial color={LEATHER} roughness={0.6} />
+          </mesh>
+          <mesh position={[0, 0.2, 0]}>
+            <cylinderGeometry args={[0.04, 0.07, 0.4, 8]} />
+            <meshStandardMaterial color={OAK_DARK} />
+          </mesh>
+          <mesh position={[0, 0.04, 0]}>
+            <cylinderGeometry args={[0.16, 0.16, 0.03, 12]} />
+            <meshStandardMaterial color={OAK_DARK} />
+          </mesh>
+        </group>
+      ))}
+    </>
+  );
+}
+
+let boardTexture: THREE.CanvasTexture | null = null;
+/** An 8×8 board in cream and walnut squares, drawn once. */
+function chessBoardTexture() {
+  if (boardTexture) return boardTexture;
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const g = c.getContext('2d')!;
+  for (let y = 0; y < 8; y++)
+    for (let x = 0; x < 8; x++) {
+      g.fillStyle = (x + y) % 2 ? '#6b4430' : '#f1e3c8';
+      g.fillRect(x * 16, y * 16, 16, 16);
+    }
+  boardTexture = new THREE.CanvasTexture(c);
+  boardTexture.colorSpace = THREE.SRGBColorSpace;
+  boardTexture.magFilter = THREE.NearestFilter;
+  return boardTexture;
+}
+
+/** A pawn-shaped piece: a base and a round head (drawn a bit big so it reads from the room camera). */
+function Piece({ x, z, dark, tall = false }: { x: number; z: number; dark: boolean; tall?: boolean }) {
+  const color = dark ? '#3b2a24' : '#f6efe2';
+  return (
+    <group position={[x, 0, z]}>
+      <mesh position={[0, tall ? 0.04 : 0.025, 0]} castShadow>
+        <cylinderGeometry args={[0.018, 0.026, tall ? 0.08 : 0.05, 10]} />
+        <meshStandardMaterial color={color} roughness={0.5} />
+      </mesh>
+      <mesh position={[0, tall ? 0.095 : 0.062, 0]} castShadow>
+        <sphereGeometry args={[tall ? 0.024 : 0.019, 10, 8]} />
+        <meshStandardMaterial color={color} roughness={0.5} />
+      </mesh>
+    </group>
+  );
+}
+
+/**
+ * The chess table (maps with `chessTable`): a small round oak table with a board between two stools
+ * that face each other, a game set up on it. Static: feature 12 brings the moves.
+ */
+export function ChessTable() {
+  const t = activeMap().chessTable;
+  if (!t) return null;
+  const B = 0.56;
+  const sq = B / 8;
+  // Square centres along the board, seen from the side the first player sits on
+  const at = (i: number) => -B / 2 + sq * (i + 0.5);
+  return (
+    <group position={[t.x, 0, t.z]}>
+      <mesh position={[0, 0.72, 0]} castShadow receiveShadow>
+        <cylinderGeometry args={[t.r, t.r, 0.06, 32]} />
+        <meshStandardMaterial color={OAK} roughness={0.8} />
+      </mesh>
+      <mesh position={[0, 0.36, 0]} castShadow>
+        <cylinderGeometry args={[0.07, 0.14, 0.72, 12]} />
+        <meshStandardMaterial color={OAK_DARK} />
+      </mesh>
+      <mesh position={[0, 0.02, 0]}>
+        <cylinderGeometry args={[0.3, 0.3, 0.04, 16]} />
+        <meshStandardMaterial color={OAK_DARK} />
+      </mesh>
+      {/* The board: a walnut frame with the squares on top (rows run between the two players) */}
+      <mesh position={[0, 0.765, 0]} castShadow receiveShadow>
+        <boxGeometry args={[B + 0.05, 0.03, B + 0.05]} />
+        <meshStandardMaterial color={OAK_DARK} roughness={0.7} />
+      </mesh>
+      <mesh position={[0, 0.781, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[B, B]} />
+        <meshStandardMaterial map={chessBoardTexture()} roughness={0.7} />
+      </mesh>
+      <group position={[0, 0.782, 0]}>
+        {/* Each side's pawns and back row, a couple of pawns already moved */}
+        {Array.from({ length: 8 }, (_, i) => (
+          <group key={i}>
+            <Piece x={at(0)} z={at(i)} dark={false} tall />
+            <Piece x={at(i === 4 ? 3 : 1)} z={at(i)} dark={false} />
+            <Piece x={at(i === 3 ? 4 : 6)} z={at(i)} dark />
+            <Piece x={at(7)} z={at(i)} dark tall />
+          </group>
+        ))}
+      </group>
+      <Stools table={t} />
+    </group>
   );
 }
 

@@ -150,15 +150,13 @@ export function LobbyCard({
 
 export function PlayStrip({
   st,
-  verb,
   onLeave,
   onEnd,
   isHost,
 }: {
   st: SpotState;
-  /** "playing" for games, "watching" for the big screen. */
-  verb: string;
   onLeave: () => void;
+  /** The host ends the round early. */
   onEnd: () => void;
   isHost: boolean;
 }) {
@@ -168,7 +166,7 @@ export function PlayStrip({
         {st.game.emoji} {st.game.name}
       </span>
       <span className="font-semibold text-muted-foreground">
-        · {st.players.length} {verb}
+        · {st.players.length} playing
         {st.nextRound.length > 0 && ` · ${st.nextRound.length} next round`}
       </span>
       {isHost && (

@@ -153,6 +153,48 @@ decision is made or changed: one line, a date, and the reason.
   from overhead with nothing to see (floor lamps standing there looked out of place, and banker's
   lamps didn't suit low tables). Every banker's lamp has its own light: a long table's second lamp
   used to sit dark.
+- **Battery saver keeps 60 fps while you do things** (2026-11-21, the owner): a fixed 30 fps was the
+  part people notice (walking, moving the camera). Now saver renders 60 while you're active and 30
+  only while you're still, where it isn't visible and where a study room spends most of its hours.
+  A slow device gives up looks (shadows, resolution, character detail) before smoothness, and is
+  capped at 30 only if it still can't keep up (a steady 30 beats a stuttering 45). The "switched to
+  battery saver" toast is gone: it only worried people.
+- **Invite links have no use limit** (2026-11-21, the owner): only an expiry (1 day, 7 days, never),
+  New link and Cancel. "1 use" was for inviting one person, which inviting them as a friend does
+  better; expiry and cancelling cover a link that spread, and room moderation covers who got in.
+  Discord's limits are for big public servers. The invites list still shows how often a link was used.
+- **The TV starts only from the orange button; no End there** (2026-11-21, the owner): "Press E to put
+  something on" in the open zone and the orange button by the sofa were two ways to do one thing;
+  now it's always the button (sofa included) and E always sits. The host's End came from the games'
+  strip: at the TV it froze the screen (no lobby to return to) and one person stopping a shared screen
+  for everyone doesn't fit, so it's gone; skip and the screen turning off when empty cover it. Then
+  Leave and the whole top strip went too, like the whiteboard: being in the zone is watching and
+  walking away stops it; "3 watching" moved under the title, and the big player got the strip's
+  space. Games keep the strip, because leaving mid-round is a loss and must be deliberate.
+- **One 6-seat card table and a chess table, in the Library first** (2026-11-21, the owner): friend
+  groups are often 5–6, so the card table seats 6 (one table instead of two of 4). A pair had only one
+  head-to-head game (Slave and Draw & Guess need 3), so chess joins feature 12, at a two-stool table
+  where the second card table stood. Only the Library has them for now: the Café and Rooftop stay
+  selectable for variety and catch up later. Turned down for now: chess as a big standalone feature
+  (it's 2 players and long; Chess.com and Lichess exist), so it's casual, no clock, at a table.
+- **Last one standing dropped** (2026-11-21, the owner): Pick a Side is two modes, Would you rather
+  and Quiz. Knocking people out on a wrong answer left them watching for the rest of the game; with
+  nobody out, everyone plays to the end, and there's one less mode to explain.
+- **Pick a Side can be played alone, in both modes** (2026-11-21, the owner): a quiz or a deck is fun
+  on your own while you wait for friends. Solo has no winner, just how you did.
+- **Watch together's big view is a theater** (2026-11-20, the owner): the big player sat over the
+  chat panel, the tools rail and the room card. Big now owns the screen between the top strip and
+  the dock, with the room dimmed and the other panels hidden; chat moved into the player's sidebar
+  (Up next | Chat) so watching and talking go together. The whiteboard's big view works the same way
+  (Chat opens beside it, see below). Rejected: squeezing the player around
+  the open panels (small video, still crowded). The rule now covers every activity (spec 9): a big
+  panel is a theater (Draw & Guess too, while you play); games played by moving around (Pick a Side)
+  keep the room. Drawing theaters behave alike: they open with the chat closed (the biggest canvas)
+  and Chat opens it beside the canvas; the board no longer shrinks to the corner for Chat. Rejected:
+  keeping the chat open by default (both canvases start smaller). Then (2026-11-21, the owner) Watch
+  together followed the same rule: it opens with the chat closed and Chat opens it beside the
+  player; the sidebar's Up next | Chat tabs are gone. One chat behaviour in every theater beats a
+  special case, and people mostly talk by voice anyway.
 - **Floor cushions seat you on the floor** (2026-11-20, the owner): the lantern circle's and the
   Rooftop cinema's cushions held you at chair height, floating. Seats can be `low`; the circle's
   cushions are lounge seats (no laptop, no table screen share).

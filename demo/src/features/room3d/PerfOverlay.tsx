@@ -8,7 +8,7 @@ import { PERF_BUDGET, budgetFor, perfMeter, usePerfSample } from './perf';
  * Developer overlay: frame rate, our JavaScript time per frame, the worst stutter, and what the GPU
  * was asked to draw, against the budget. Red means over budget.
  */
-export function PerfOverlay({ fpsCap, mode }: { fpsCap: number; mode: string }) {
+export function PerfOverlay({ mode }: { mode: string }) {
   const s = usePerfSample();
   // For scripts/perf-check.mjs: the latest sample and the budget it's checked against
   useEffect(() => {
@@ -18,6 +18,7 @@ export function PerfOverlay({ fpsCap, mode }: { fpsCap: number; mode: string }) 
   }, []);
   if (!s) return null;
   const b = budgetFor(s.avatars);
+  const fpsCap = perfMeter.cap;
   const rows: [string, string, boolean][] = [
     ['FPS', `${s.fps} / ${fpsCap}`, s.fps < fpsCap * 0.85],
     ['JS / frame', `${s.cpuMs.toFixed(1)} ms`, s.cpuMs > PERF_BUDGET.cpuMs],

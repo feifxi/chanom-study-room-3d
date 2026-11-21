@@ -24,10 +24,11 @@ export function GamePlaceholder({
     <section className="panel flex w-[560px] max-w-[calc(100vw-1.5rem)] flex-col gap-3 p-4" aria-label={st.game.name}>
       <div className="grid h-36 place-items-center rounded-2xl bg-gradient-to-br from-mint/70 to-secondary text-center">
         <div>
-          <p className="text-3xl">🂠 🂠 🂠 🂠 🂠</p>
+          <p className="text-3xl">{spot.id === 'chess' ? '♜ ♞ ♝ ♛ ♚' : '🂠 🂠 🂠 🂠 🂠'}</p>
           <p className="mt-1 text-sm font-black">Your hand goes here</p>
           <p className="text-xs text-muted-foreground">
-            Placeholder · {st.game.name} is designed in feature {spot.feature}. Cards played land on the 3D table.
+            Placeholder · {st.game.name} is designed in feature {spot.feature}.{' '}
+            {spot.id === 'chess' ? 'Moves show on the 3D board.' : 'Cards played land on the 3D table.'}
           </p>
         </div>
       </div>

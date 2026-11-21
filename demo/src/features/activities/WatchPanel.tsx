@@ -107,6 +107,7 @@ function savedVolume() {
 export function WatchPanel({
   watch,
   who,
+  watchers,
   mini,
   onMini,
   onPause,
@@ -120,6 +121,8 @@ export function WatchPanel({
 }: {
   watch: WatchState;
   who: (id: string) => string;
+  /** Everyone in front of the screen (the TV has no top strip: being there is watching). */
+  watchers: number;
   mini: boolean;
   onMini: (mini: boolean) => void;
   onPause: (paused: boolean) => void;
@@ -231,13 +234,16 @@ export function WatchPanel({
     <section
       ref={panel}
       className={cn(
-        'panel flex max-h-[calc(100dvh-80px)] flex-col gap-2 overflow-y-auto p-2.5',
-        mini ? 'w-[300px]' : 'max-w-[calc(100vw-1.5rem)]',
+        'panel flex flex-col gap-2 overflow-y-auto p-2.5',
+        mini ? 'max-h-[calc(100dvh-80px)] w-[300px]' : 'max-h-full w-full self-start',
       )}
-      style={mini ? undefined : { width: 'min(1180px, calc(100vw - 160px), calc((100dvh - 190px) * 16 / 9 + 300px))' }}
+      // Theater: as wide as the stage allows while the video still fits its height (the stage is the
+      // screen less the top strip and the dock, 144 px; the controls and padding take 64 px more; the
+      // sidebar 308 px)
+      style={mini ? undefined : { maxWidth: 'min(1440px, calc((100dvh - 160px) * 16 / 9 + 308px))' }}
       aria-label="Watch together"
     >
-      <div className={cn('flex flex-col gap-2', !mini && 'lg:flex-row')}>
+      <div className={cn('flex flex-col gap-2', !mini && 'min-h-0 flex-1 lg:flex-row')}>
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <div className="relative aspect-video overflow-hidden rounded-xl bg-black">
             <div ref={host} className="absolute inset-0 [&>*]:h-full [&>*]:w-full" />
@@ -315,18 +321,23 @@ export function WatchPanel({
         </div>
 
         {!mini && (
-          <aside className="flex flex-col gap-2 lg:w-[280px] lg:flex-none">
+          <aside className="flex min-h-0 flex-1 flex-col gap-2 lg:w-[280px] lg:flex-none">
             {share ? (
               <div className="px-1">
                 <p className="text-[11px] font-black text-muted-foreground">Sharing now</p>
                 <p className="text-sm font-extrabold">{shareName} screen</p>
+                <p className="text-[11px] text-muted-foreground">{watchers} watching</p>
                 {watch.now && <p className="line-clamp-2 text-[11px] text-muted-foreground">Then “{watch.now.title}” carries on</p>}
               </div>
             ) : (
               <div className="px-1">
                 <p className="text-[11px] font-black text-muted-foreground">Now playing</p>
                 <p className="line-clamp-2 text-sm font-extrabold">{watch.now?.title}</p>
-                {watch.now && <p className="text-[11px] text-muted-foreground">put on by {who(watch.now.by)}</p>}
+                {watch.now && (
+                  <p className="text-[11px] text-muted-foreground">
+                    put on by {who(watch.now.by)} · {watchers} watching
+                  </p>
+                )}
               </div>
             )}
             <div className="flex min-h-0 flex-1 flex-col gap-1 rounded-xl bg-muted/60 p-2">
@@ -434,7 +445,8 @@ function VolumeControl({ volume, onChange }: { volume: number; onChange: (v: num
         onChange={(e) => onChange(Number(e.target.value))}
         aria-label="Your TV volume"
         title="Your TV volume (only you)"
-        className="w-20 accent-[var(--primary)]"
+        // Phones use their volume buttons; the slider would squeeze the seek bar to nothing
+        className="w-20 accent-[var(--primary)] max-sm:hidden"
       />
     </span>
   );

@@ -53,6 +53,8 @@ class PerfMeter {
   private lastFrame = 0;
   private counts = { drawCalls: 0, triangles: 0, geometries: 0, textures: 0, programs: 0, avatars: 0, labels: 0 };
   sample: PerfSample | null = null;
+  /** The frame rate the driver aims for right now (it drops while you're still in battery saver). */
+  cap = 60;
   private listeners = new Set<() => void>();
 
   frame(t: number, cpuMs: number) {

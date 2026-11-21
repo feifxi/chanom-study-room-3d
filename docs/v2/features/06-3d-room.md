@@ -107,8 +107,12 @@ Checked while features are built, not at the end.
   person sharing 4 materials. At 100 people: draw calls 3,530 → ~480, JS 17 ms → 2.6 ms.
 - **Furniture merges into a few batches** (`room3d/StaticBatch.tsx`), colours stored per vertex: about
   8 draw calls for a whole map. Repeated small things (books, bulbs, flames, stars) are instanced.
-- **Battery saver:** half-detail characters (~1.46M → ~0.42M triangles at 100 people), 30 fps, 1×
-  pixels, no shadows. On by default on touch screens; slow devices switch to it once, with a toast.
+- **Battery saver:** half-detail characters (~1.46M → ~0.42M triangles at 100 people), 1× pixels, no
+  shadows, and a **smart frame rate**: 60 fps while you're doing something (walking, or for 1.5 s
+  after a drag, touch, wheel or key) and 30 while you're still (sitting, watching, reading), where
+  nobody sees the difference. On by default on touch screens. A slow device steps down quietly (no
+  toast; the switch is under More): first to battery saver, and only if that's still too slow, to a
+  steady 30 fps. Switching it by hand starts fresh. Code: `room3d/quality.ts`, `FrameDriver.tsx`.
 - **Tools:** the overlay (Demo tab → 📈, or `?perf`) and `demo:perf`, which loads **every map zoomed
   all the way out** (the worst case) with 0, 50 and 100 extra people, smooth and battery saver, and
   fails over budget. `MAPS=cafe` runs one map.

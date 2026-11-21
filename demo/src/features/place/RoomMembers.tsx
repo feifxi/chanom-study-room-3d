@@ -350,8 +350,7 @@ export function InvitesPanel({ toggles }: { toggles: ReactNode }) {
                 connecta.app/{l.kind === 'guest' ? 'g' : 'i'}/{l.code}
               </span>
               <span className="block text-xs text-muted-foreground">
-                by {l.by} · {l.uses}
-                {l.maxUses ? `/${l.maxUses}` : ''} uses · expires {l.expires}
+                by {l.by} · used {l.uses} {l.uses === 1 ? 'time' : 'times'} · expires {l.expires}
               </span>
             </span>
             <Button
