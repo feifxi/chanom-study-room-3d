@@ -28,6 +28,10 @@ export interface RoomPerson {
   userId?: string;
   /** '' for guests */
   handle?: string;
+  /** Muted for everyone by the owner or a mod */
+  mutedByMod?: boolean;
+  /** You muted them for yourself */
+  mutedForMe?: boolean;
 }
 
 type Filter = 'all' | 'talking' | 'focusing' | 'friends' | 'guests';
@@ -59,6 +63,8 @@ type PeopleProps = {
   roomId?: string;
   /** You're a guest: no messages, friends or blocks (those need an account) */
   youGuest?: boolean;
+  /** A real room: Mute for everyone through the game server */
+  onMuteForEveryone?: (p: RoomPerson, on: boolean) => void;
   onMessage: (p: RoomPerson) => void;
 };
 
@@ -108,6 +114,7 @@ export function RoomPeople({
   myRole,
   roomId,
   youGuest,
+  onMuteForEveryone,
   onMessage,
   onClose,
   className,
@@ -200,6 +207,7 @@ export function RoomPeople({
                           myRole={myRole}
                           roomId={roomId}
                           youGuest={youGuest}
+                          onMuteForEveryone={onMuteForEveryone && ((on) => onMuteForEveryone(p, on))}
                           onFind={() => onFind(p.id)}
                           onMessage={() => onMessage(p)}
                           onRemove={() => setRemoved((r) => new Set(r).add(p.id))}

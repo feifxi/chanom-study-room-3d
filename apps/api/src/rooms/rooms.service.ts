@@ -148,6 +148,9 @@ export class RoomsService {
     await this.prisma.room.update({ where: { id: roomId }, data });
     // Live switch (feature 7): everyone inside moves to the new map's door
     if (input.mapId && input.mapId !== room.mapId) this.game.roomEvent({ roomId, type: 'map', mapId: input.mapId });
+    // Guests inside can start or stop talking at once
+    if (input.guestVoice !== undefined && input.guestVoice !== room.guestVoice)
+      this.game.roomEvent({ roomId, type: 'guestVoice', on: input.guestVoice });
     return this.get(roomId, userId, now);
   }
 
@@ -376,6 +379,7 @@ export class RoomsService {
       capacity: Math.min(room.capacity ?? max, max),
       mapId: room.mapId,
       timedOutUntil: member?.timedOutUntil && member.timedOutUntil > now ? member.timedOutUntil.getTime() : 0,
+      guestVoice: room.guestVoice,
     });
     return { ticket, place: roomId };
   }

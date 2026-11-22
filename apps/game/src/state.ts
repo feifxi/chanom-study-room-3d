@@ -23,6 +23,11 @@ export const Player = schema(
     typing: t.boolean().default(false),
     /** Talk to everyone (owner and mods) */
     stage: t.boolean().default(false),
+    /** Can't use voice right now (a guest without guest voice, muted for everyone, timed out) */
+    hushed: t.boolean().default(false),
+    /** Muted for everyone by the owner or a mod */
+    mutedByMod: t.boolean().default(false),
+    deaf: t.boolean().default(false),
     /** The last move applied (its client sequence number), so the client can reconcile its prediction */
     moveSeq: t.number().default(0),
   },

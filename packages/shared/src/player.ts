@@ -30,6 +30,12 @@ export interface PlayerView {
   typing: boolean;
   /** Talk to everyone (owner and mods): heard everywhere, and bubbles reach private zones */
   stage: boolean;
+  /** Can't use voice right now: a guest in a room without guest voice, muted for everyone, or timed out */
+  hushed: boolean;
+  /** Muted for everyone by the owner or a mod (until they lift it or the room empties) */
+  mutedByMod: boolean;
+  /** Deafened: hears nobody (their mic is off too) */
+  deaf: boolean;
   /** seq of the last move the server applied, for reconciling the client's prediction. */
   moveSeq: number;
 }

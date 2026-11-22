@@ -40,6 +40,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { friendsApi } from '@/features/friends/useFriends';
 import { TIMEOUTS } from '@/features/place/membership';
 import { problem, roomsApi } from '@/features/rooms/useRooms';
+import { setMutedForMe as rememberMutedForMe } from '@/features/voice/mutedForMe';
 import { cn } from '@/lib/utils';
 import type { RoomPerson, RoomRole } from './RoomPeople';
 
@@ -52,7 +53,8 @@ import type { RoomPerson, RoomRole } from './RoomPeople';
  *   make someone a mod
  *
  * In a real room (`roomId`) the actions go to the API: friends, blocks and moderation, which the
- * game server applies at once. Mute for me and mute for everyone come with voice (step 4, part 3).
+ * game server applies at once. Mute for everyone goes to the game server (LiveKit stops their mic);
+ * Mute for me is remembered in this browser.
  */
 export function PersonMenu({
   p,
@@ -62,6 +64,7 @@ export function PersonMenu({
   onFind,
   onMessage,
   onRemove,
+  onMuteForEveryone,
 }: {
   p: RoomPerson;
   myRole?: RoomRole;
@@ -73,6 +76,8 @@ export function PersonMenu({
   onMessage: () => void;
   /** Kicked or banned: they drop out of the room. */
   onRemove: () => void;
+  /** A real room: Mute for everyone through the game server */
+  onMuteForEveryone?: (on: boolean) => void;
 }) {
   const [mutedForMe, setMutedForMe] = useState(false);
   const [mutedForAll, setMutedForAll] = useState(false);
@@ -139,11 +144,12 @@ export function PersonMenu({
                 <UserPlus /> {requested ? 'Friend request sent' : 'Add friend'}
               </DropdownMenuItem>
             )}
-            {!live && (
+            {!p.you && (
               <DropdownMenuCheckboxItem
-                checked={mutedForMe}
+                checked={live ? !!p.mutedForMe : mutedForMe}
                 onCheckedChange={(v) => {
-                  setMutedForMe(v);
+                  if (live) rememberMutedForMe(live.userId, v);
+                  else setMutedForMe(v);
                   toast(v ? `You won't hear ${p.name}. Only you.` : `You can hear ${p.name} again`);
                 }}
               >
@@ -196,11 +202,12 @@ export function PersonMenu({
                 Moderate · you’re {myRole === 'Owner' ? 'the owner' : 'a mod'}
               </DropdownMenuLabel>
               <DropdownMenuGroup>
-                {!live && (
+                {(!live || onMuteForEveryone) && (
                   <DropdownMenuCheckboxItem
-                    checked={mutedForAll}
+                    checked={live ? !!p.mutedByMod : mutedForAll}
                     onCheckedChange={(v) => {
-                      setMutedForAll(v);
+                      if (live) onMuteForEveryone?.(v);
+                      else setMutedForAll(v);
                       toast(v ? `${p.name}'s mic is off for everyone in this room` : `${p.name} can talk again`);
                     }}
                   >

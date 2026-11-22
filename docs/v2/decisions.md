@@ -402,6 +402,14 @@ decision is made or changed: one line, a date, and the reason.
   which room through Redis for the gateway to write, so the gateway stays presence's one writer.
   Rejected: the game server reading Postgres or cookies (a second copy of the rules, and of the auth
   setup).
+- **Step 4 part 3: voice** (2026-11-22, the owner): private zones are enforced by each speaker's
+  own client telling LiveKit who may receive its voice (LiveKit's server API can't set who receives
+  someone else's track; a LiveKit room per zone was turned down because walking onto a rug would
+  drop and reconnect your voice, and it complicates Talk to everyone and screen share). Mute for
+  everyone lasts until a mod lifts it or the room empties, tied to the account so rejoining
+  doesn't undo it (time out is the one that ends by itself, and it takes the mic too). Mute for me
+  is remembered in this browser per person, like Discord. The game server, not the API, gives out
+  voice passes, as in V1: it knows who's inside and their session id.
 - **Step 4 part 2 choices** (2026-11-22, the owner): floating reactions (hearts over a petted cat)
   move to part 5 with the cats, since people have no emotes; Report stays a mock dialog until
   feature 14; a bubble reaches the whole room at any distance, except from inside a private zone

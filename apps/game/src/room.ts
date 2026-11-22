@@ -26,6 +26,7 @@ import { log } from './log.js';
 import { Player, RoomState } from './state.js';
 import { clamp, refillMoveBudget, spendMove } from './rules.js';
 import { readTicket } from './ticket.js';
+import { voice } from './voice.js';
 
 /** Set by the entry point from GAME_SECRET. */
 export const secrets = { ticket: '' };
@@ -70,6 +71,10 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
   private clients_ = new Map<string, Client>();
   /** Full when someone was turned away; the next leave tells the waiting list */
   private turnedAway = false;
+  /** Room settings → Guests can use voice (the newest ticket, then live changes) */
+  private guestVoice = false;
+  /** Muted for everyone, by account, so walking out and back in doesn't lift it; gone when the room empties */
+  private muted = new Set<string>();
 
   messages = {
     move: validate(
@@ -151,15 +156,50 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
         p.status = msg.status;
         p.subject = (msg.subject ?? '').trim().slice(0, SUBJECT_MAX);
         p.statusEndsAt = msg.endsAt && msg.endsAt > Date.now() ? msg.endsAt : 0;
-        if (msg.status === 'away') p.stage = false;
+        if (msg.status === 'away') {
+          p.stage = false;
+          // A forgotten tab shouldn't broadcast the room: the mic goes off in LiveKit too
+          voice.current?.muteMic(this.connectaId, client.sessionId);
+        }
       },
     ),
+
+    /** A pass to the room's voice, listening only when you can't talk */
+    voice: async (client: Client) => {
+      const p = this.state.players.get(client.sessionId);
+      if (!p || !voice.current) return;
+      client.send('voice', await voice.current.pass(this.connectaId, client.sessionId, p.name, !p.hushed));
+    },
+
+    /** Deafened: shown by your name (hearing nobody is up to your own client) */
+    deaf: validate(z.object({ on: z.boolean() }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (p) p.deaf = msg.on;
+    }),
+
+    /** Mute for everyone: the owner on anyone, a mod on members and guests; lasts until lifted or the room empties */
+    mute: validate(z.object({ id: z.string().max(64), on: z.boolean() }), (client, msg) => {
+      const actor = this.state.players.get(client.sessionId);
+      const target = this.state.players.get(msg.id);
+      if (!actor || !target || target === actor) return;
+      const canAct =
+        actor.role === 'owner'
+          ? target.role !== 'owner'
+          : actor.role === 'mod'
+            ? target.role === 'member' || target.role === 'guest'
+            : false;
+      if (!canAct) return;
+      if (msg.on) this.muted.add(target.userId);
+      else this.muted.delete(target.userId);
+      for (const sessionId of this.sessionsOf(target.userId)) this.refreshVoice(sessionId);
+      log.info({ roomId: this.connectaId, by: actor.userId, userId: target.userId, on: msg.on }, 'muted for everyone');
+    }),
 
     /** Talk to everyone: the owner and mods only */
     stage: validate(z.object({ on: z.boolean() }), (client, msg) => {
       const p = this.state.players.get(client.sessionId);
       if (!p) return;
-      p.stage = msg.on && (p.role === 'owner' || p.role === 'mod') && p.status !== 'away';
+      p.stage = msg.on && (p.role === 'owner' || p.role === 'mod') && p.status !== 'away' && !p.hushed;
     }),
 
     /** A new look from Settings → My character, live for everyone (guests keep the one they picked) */
@@ -178,8 +218,9 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     const ticket = await readTicket(options.ticket, secrets.ticket);
     if (!ticket || ticket.roomId !== options.place) throw new ServerError(401, 'unauthorized');
     if (this.connectaId && ticket.roomId !== this.connectaId) throw new ServerError(401, 'unauthorized');
-    // A newer ticket carries the latest capacity (the owner changed it in Room settings)
+    // A newer ticket carries the latest capacity and guest voice (the owner changed Room settings)
     this.capacity = ticket.capacity;
+    this.guestVoice = ticket.guestVoice ?? false;
     const staff = ticket.role === 'owner' || ticket.role === 'mod';
     const others = [...this.priv.values()].filter((s) => s.userId !== ticket.sub).length;
     if (!staff && others >= this.capacity) {
@@ -196,12 +237,13 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     this.clock.setInterval(() => {
       for (const [sessionId, s] of this.priv) links.presence({ userId: s.userId, tabId: tabId(sessionId), roomId: this.connectaId });
     }, 60_000);
-    // Typing dots from a tab that went quiet
+    // Typing dots from a tab that went quiet, and voice back when a time out ends
     this.clock.setInterval(() => {
       const now = Date.now();
       for (const [sessionId, s] of this.priv) {
         const p = this.state.players.get(sessionId);
         if (p?.typing && now - s.typingAt > TYPING_TIMEOUT_MS) p.typing = false;
+        if (p?.hushed) this.refreshVoice(sessionId);
       }
     }, 1000);
   }
@@ -240,6 +282,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       quietUntil: ticket.timedOutUntil ?? 0,
     });
     this.clients_.set(client.sessionId, client);
+    for (const sessionId of this.priv.keys()) this.refreshVoice(sessionId);
     links.presence({ userId: ticket.sub, tabId: tabId(client.sessionId), roomId: this.connectaId });
     log.info({ roomId: this.connectaId, userId: ticket.sub, role: ticket.role }, 'walked in');
   }
@@ -285,6 +328,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
           if (!p) continue;
           p.role = event.role;
           if (event.role !== 'owner' && event.role !== 'mod') p.stage = false;
+          this.refreshVoice(sessionId);
         }
         break;
       case 'timeout':
@@ -293,7 +337,12 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
           const p = this.state.players.get(sessionId);
           if (s) s.quietUntil = event.until;
           if (p) p.typing = false;
+          this.refreshVoice(sessionId);
         }
+        break;
+      case 'guestVoice':
+        this.guestVoice = event.on;
+        for (const sessionId of this.priv.keys()) this.refreshVoice(sessionId);
         break;
       case 'map':
         if (event.mapId !== this.state.mapId) this.setMap(event.mapId);
@@ -309,6 +358,19 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
 
   // ── Helpers ───────────────────────────────────────────────────────────────────────────────────
 
+  /** Whether they may talk right now; LiveKit is told when it changes. */
+  private refreshVoice(sessionId: string) {
+    const p = this.state.players.get(sessionId);
+    const s = this.priv.get(sessionId);
+    if (!p || !s) return;
+    p.mutedByMod = this.muted.has(s.userId);
+    const hushed = (p.role === 'guest' && !this.guestVoice) || p.mutedByMod || s.quietUntil > Date.now();
+    if (hushed === p.hushed) return;
+    p.hushed = hushed;
+    if (hushed) p.stage = false;
+    voice.current?.allow(this.connectaId, sessionId, !hushed);
+  }
+
   private sessionsOf(userId: string) {
     return [...this.priv].filter(([, s]) => s.userId === userId).map(([id]) => id);
   }
@@ -321,6 +383,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     this.priv.delete(sessionId);
     this.clients_.delete(sessionId);
     this.state.players.delete(sessionId);
+    voice.current?.remove(this.connectaId, sessionId);
     links.presence({ userId: s.userId, tabId: tabId(sessionId), roomId: null });
     if (wasFull && this.turnedAway && this.priv.size < this.capacity) {
       this.turnedAway = false;

@@ -1,5 +1,5 @@
 import { Callbacks } from '@colyseus/sdk';
-import type { AvatarLook, PlayerView, Quiet, Said } from '@connecta/shared';
+import type { AvatarLook, PlayerView, Quiet, Said, VoicePass } from '@connecta/shared';
 import type { GameRoom } from '@/features/game/useGame';
 import type { MapDef } from '../map/types';
 import { MockRoom, player } from './mockRoom';
@@ -23,8 +23,14 @@ const FIELDS = [
   'todayMin',
   'typing',
   'stage',
+  'hushed',
+  'mutedByMod',
+  'deaf',
   'moveSeq',
 ] as const satisfies readonly (keyof PlayerView)[];
+
+/** Fields the HUD shows (your role and tools, mic rights, 💤, 📢); positions are read every frame instead */
+const SHOWN = ['role', 'status', 'stage', 'hushed', 'mutedByMod', 'deaf'] as const satisfies readonly (typeof FIELDS)[number][];
 
 /**
  * A real room (build step 4) behind the same surface the 3D view and the demo's scripts use: the
@@ -100,6 +106,31 @@ export class LiveRoom extends MockRoom {
     this.game.send('stage', { on });
   }
 
+  /** Your session id: your voice's identity in LiveKit (everyone else's is their key in `state.players`) */
+  get voiceId() {
+    return this.game.sessionId;
+  }
+
+  /** A pass to the room's voice (listening only when you can't talk) */
+  voicePass() {
+    return new Promise<VoicePass>((resolve) => {
+      const off = this.game.onMessage('voice', (pass: VoicePass) => {
+        off?.();
+        resolve(pass);
+      });
+      this.game.send('voice', {});
+    });
+  }
+
+  setDeaf(on: boolean) {
+    this.game.send('deaf', { on });
+  }
+
+  /** Mute for everyone (the owner and mods; the server checks), by session id */
+  muteForEveryone(id: string, on: boolean) {
+    this.game.send('mute', { id, on });
+  }
+
   /** Your new look, for everyone (at most once every 5 s). */
   setLook(look: AvatarLook) {
     this.game.send('look', { look });
@@ -130,6 +161,8 @@ export class LiveRoom extends MockRoom {
         this.state.players.set(id, local);
         changed = true;
       }
+      // The HUD re-renders on a version bump: for what the people list and the dock show
+      if (SHOWN.some((f) => local[f] !== remote[f])) changed = true;
       for (const f of FIELDS) (local as unknown as Record<string, unknown>)[f] = remote[f];
     }
     for (const id of [...this.state.players.keys()]) {

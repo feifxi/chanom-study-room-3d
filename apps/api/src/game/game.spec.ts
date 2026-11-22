@@ -66,6 +66,7 @@ describe('join tickets', () => {
       capacity: 25,
       mapId: 'library',
       timedOutUntil: 0,
+      guestVoice: false,
     } satisfies Partial<GameTicket>);
     expect(payload.exp! - payload.iat!).toBe(60);
   });
@@ -110,7 +111,7 @@ describe('join tickets', () => {
 });
 
 describe('room events for the game server', () => {
-  it('kick, ban, leave, a new role and a new map reach the people inside', async () => {
+  it('kick, ban, leave, a new role, a new map and guest voice reach the people inside', async () => {
     const { mai, id } = await maisRoom();
     const ken = await joinByInvite(mai, id, 'kenken');
     const jod = await joinByInvite(mai, id, 'jod');
@@ -118,13 +119,16 @@ describe('room events for the game server', () => {
 
     await mai.put(`/api/rooms/${id}/members/${ken.id}/role`, { role: 'mod' }).expect(204);
     await mai.patch(`/api/rooms/${id}`, { mapId: 'cafe' }).expect(200);
+    await mai.patch(`/api/rooms/${id}`, { guestVoice: true }).expect(200);
+    await mai.patch(`/api/rooms/${id}`, { guestVoice: true }).expect(200);
     await mai.delete(`/api/rooms/${id}/members/${jod.id}`).expect(204);
     await mai.put(`/api/rooms/${id}/bans/${pim.id}`, {}).expect(204);
     await ken.delete(`/api/rooms/${id}/me`).expect(204);
-    await eventually(() => events.length >= 5);
+    await eventually(() => events.length >= 6);
     expect(events).toEqual([
       { roomId: id, type: 'role', userId: ken.id, role: 'mod' },
       { roomId: id, type: 'map', mapId: 'cafe' },
+      { roomId: id, type: 'guestVoice', on: true },
       { roomId: id, type: 'kick', userId: jod.id },
       { roomId: id, type: 'ban', userId: pim.id },
       { roomId: id, type: 'left', userId: ken.id },

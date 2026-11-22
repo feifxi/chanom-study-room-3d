@@ -30,6 +30,8 @@ import { LabelBoard, LabelLayer, type SpotTag } from '../room3d/labels';
 import type { Hint } from '../room3d/LocalController';
 import type { LocalPlayerDriver } from '../room3d/LocalPlayerDriver';
 import { useFriendIds } from '@/features/friends/useFriends';
+import { useMutedForMe } from '@/features/voice/mutedForMe';
+import { useVoice } from '@/features/voice/useVoice';
 import { MockRoom, type MockPerson } from '../room3d/mockRoom';
 import { LiveRoom } from '../room3d/liveRoom';
 import type { GameRoom } from '@/features/game/useGame';
@@ -337,7 +339,45 @@ export default function RoomView({
     setWatchMini(false);
     if (!got.audio) toast('Sharing without sound. For sound, share a tab and tick “Share tab audio”');
   };
-  const music = useMusic(speaking.size > 0 || watchingTv);
+  // Voice in a real room (the demo fakes who's talking)
+  const mutedForMe = useMutedForMe();
+  const meNow = game ? room.state.players.get('me') : undefined;
+  const hushed = !!meNow?.hushed;
+  const voice = useVoice({
+    room: room instanceof LiveRoom ? room : null,
+    motion,
+    mic,
+    deaf,
+    stage,
+    zoneOf: (x, z) => zoneAt(x, z)?.id,
+    mutedForMe,
+    onMicFailed: (message) => {
+      setMic(false);
+      toast(`${message}. Check your browser’s mic permission and try again.`);
+    },
+  });
+  const talking = game ? voice.speaking : speaking;
+  // A dev-only handle for browser tests: walk somewhere as if clicked, and see where you are
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') return;
+    const w = window as unknown as { __connecta?: Record<string, unknown> };
+    w.__connecta = {
+      ...w.__connecta,
+      goTo: (x: number, z: number) => driverRef.current?.goTo(x, z, true),
+      here: () => ({ ...motion.current }),
+    };
+  }, []);
+  // The server took your mic (a mod, a time out): the switch follows, once
+  const mutedByMod = !!meNow?.mutedByMod;
+  const [wasHushed, setWasHushed] = useState(hushed);
+  if (hushed !== wasHushed) {
+    setWasHushed(hushed);
+    if (hushed) setMic(false);
+  }
+  useEffect(() => {
+    if (mutedByMod) toast('A mod turned your mic off for everyone in this room');
+  }, [mutedByMod]);
+  const music = useMusic(talking.size > 0 || watchingTv);
   const [watchMini, setWatchMini] = useState(false);
   const [puttingOn, setPuttingOn] = useState(false);
   const atBoard = hub.mine('me')?.id === 'board';
@@ -478,9 +518,11 @@ export default function RoomView({
         handle: p.handle,
         // Literals, not the value from server.roles: React Compiler would treat the list as aliasing the server
         role: role === 'owner' ? 'Owner' : role === 'mod' ? 'Mod' : undefined,
-        micOn: id === 'me' ? mic && !deaf : id === 'mai' || speaking.has(id),
-        deafened: id === 'me' ? deaf : id === 'jod',
-        speaking: speaking.has(id),
+        micOn: id === 'me' ? mic && !deaf && !hushed : game ? voice.micOn.has(id) : id === 'mai' || speaking.has(id),
+        deafened: id === 'me' ? deaf : game ? p.deaf : id === 'jod',
+        speaking: talking.has(id),
+        mutedByMod: p.mutedByMod,
+        mutedForMe: mutedForMe.has(p.userId),
       };
     });
 
@@ -599,6 +641,7 @@ export default function RoomView({
     myRole,
     roomId: game ? server.id : undefined,
     youGuest: guest,
+    onMuteForEveryone: room instanceof LiveRoom ? (p: RoomPerson, on: boolean) => room.muteForEveryone(p.id, on) : undefined,
     onMessage: (p: RoomPerson) => {
       setSheet(false);
       // A real person: their chat by @handle (the Messages tab opens it, made on first open if you're friends)
@@ -724,7 +767,7 @@ export default function RoomView({
           <span>
             <button
               onClick={() => (deaf ? (setDeaf(false), setMic(true)) : setMic(!mic))}
-              disabled={guest || common}
+              disabled={common || (game ? hushed : guest)}
               aria-pressed={mic && !deaf}
               className={cn('dock-btn', compact && 'min-w-0 px-3', mic && !deaf ? '!bg-[#2f8f62]' : '!bg-[#7a3442]')}
             >
@@ -735,6 +778,16 @@ export default function RoomView({
         </TooltipTrigger>
         {common ? (
           <TooltipContent>Common rooms are text only: no voice, pictures or videos</TooltipContent>
+        ) : game ? (
+          hushed && (
+            <TooltipContent>
+              {meNow?.mutedByMod
+                ? 'A mod turned your mic off for everyone'
+                : guest
+                  ? 'Guests can’t use voice in this room'
+                  : 'You’re timed out, so your mic is off for now'}
+            </TooltipContent>
+          )
         ) : (
           guest && <TooltipContent>Guests can’t use voice in this room</TooltipContent>
         )}
@@ -849,7 +902,7 @@ export default function RoomView({
               localId="me"
               bubbles={bubbles}
               voice={{
-                speaking,
+                speaking: talking,
                 micEnabled: micIds,
                 deafened: new Set(realPeople.filter((p) => p.deafened).map((p) => p.id)),
                 sharing: sharing && seated ? new Set(['me']) : new Set(),

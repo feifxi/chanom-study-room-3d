@@ -5,7 +5,9 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from
 import { GAME_CLOSE, GAME_ROOM, TICKET_AUDIENCE, type GamePresence, type GameTicket, type PlayerView, type Said } from '@connecta/shared';
 import { mapDataFor } from '@connecta/shared/maps';
 import { dispatch, links } from './links.js';
+import { decodeJwt } from 'jose';
 import { gameServer } from './server.js';
+import { liveKitVoice, voice } from './voice.js';
 
 const SECRET = process.env.GAME_SECRET!;
 const PORT = 4092;
@@ -59,7 +61,17 @@ let server: ReturnType<typeof gameServer>;
 const open: GameRoom[] = [];
 const track = (r: GameRoom) => (open.push(r), r);
 
+/** What the room asked of LiveKit (the passes are real; the calls to LiveKit's API are recorded) */
+const lk: string[] = [];
+const passes = liveKitVoice({ url: 'http://localhost:7880', publicUrl: 'ws://lk.test', key: 'devkey', secret: 'secret' });
+
 beforeAll(async () => {
+  voice.current = {
+    pass: passes.pass,
+    allow: (room, id, talk) => lk.push(`${talk ? 'allow' : 'hush'} ${id}`),
+    muteMic: (room, id) => lk.push(`mic off ${id}`),
+    remove: (room, id) => lk.push(`remove ${id}`),
+  };
   links.presence = (p) => presence.push(p);
   links.space = (id) => spaces.push(id);
   server = gameServer(SECRET);
@@ -72,6 +84,7 @@ afterEach(async () => {
   await Promise.allSettled(open.splice(0).map((r) => r.leave()));
   presence.length = 0;
   spaces.length = 0;
+  lk.length = 0;
   await new Promise((r) => setTimeout(r, 50));
 });
 afterAll(async () => {
@@ -311,5 +324,76 @@ describe('bubbles and status', () => {
     const b = track(await walkIn());
     expect(b.roomId).not.toBe(first);
     expect(b.state.players.size).toBe(1);
+  });
+
+  describe('voice', () => {
+    const passOf = async (room: GameRoom) => {
+      const got = new Promise<{ url: string; token: string }>((resolve) => room.onMessage('voice', resolve));
+      room.send('voice', {});
+      const { url, token } = await got;
+      return { url, claims: decodeJwt(token) as { sub: string; video: { room: string; canPublish: boolean; canSubscribe: boolean } } };
+    };
+
+    it('gives a pass to the room’s voice as your session; guests listen only unless the room lets them talk', async () => {
+      const a = track(await walkIn());
+      const { url, claims } = await passOf(a);
+      expect(url).toBe('ws://lk.test');
+      expect(claims.sub).toBe(a.sessionId);
+      expect(claims.video).toMatchObject({ room: ROOM, canPublish: true, canSubscribe: true });
+
+      const g = track(await walkIn({ sub: 'u-guest', role: 'guest', name: 'Mint', handle: null }));
+      expect(me(g).hushed).toBe(true);
+      expect((await passOf(g)).claims.video).toMatchObject({ canPublish: false, canSubscribe: true });
+      // The owner turns on Guests can use voice: allowed at once, in LiveKit too
+      dispatch({ roomId: ROOM, type: 'guestVoice', on: true });
+      await until(() => !me(g).hushed);
+      expect(lk).toContain(`allow ${g.sessionId}`);
+    });
+
+    it('Mute for everyone: the owner or a mod, kept when they walk back in, lifted by them', async () => {
+      const owner = track(await walkIn({ sub: 'u-owner', role: 'owner', name: 'Owner' }));
+      const mod = track(await walkIn({ sub: 'u-mod', role: 'mod', name: 'Mod' }));
+      let ken = track(await walkIn({ sub: 'u-ken', name: 'Ken' }));
+      await until(() => owner.state.players.size === 3);
+
+      // A member can't, and a mod can't mute the owner
+      ken.send('mute', { id: mod.sessionId, on: true });
+      mod.send('mute', { id: owner.sessionId, on: true });
+      await quietly();
+      expect([...owner.state.players.values()].some((p) => p.hushed)).toBe(false);
+
+      mod.send('mute', { id: ken.sessionId, on: true });
+      await until(() => me(ken).hushed && me(ken).mutedByMod);
+      expect(lk).toContain(`hush ${ken.sessionId}`);
+      expect((await passOf(ken)).claims.video.canPublish).toBe(false);
+
+      // Walking out and back in doesn't lift it
+      await ken.leave();
+      ken = track(await walkIn({ sub: 'u-ken', name: 'Ken' }));
+      expect(me(ken).mutedByMod).toBe(true);
+      owner.send('mute', { id: ken.sessionId, on: false });
+      await until(() => !me(ken).hushed);
+      expect(lk).toContain(`allow ${ken.sessionId}`);
+    });
+
+    it('a time out takes the mic until it ends', async () => {
+      const a = track(await walkIn());
+      dispatch({ roomId: ROOM, type: 'timeout', userId: 'u-mai', until: Date.now() + 1200 });
+      await until(() => me(a).hushed);
+      expect(lk).toContain(`hush ${a.sessionId}`);
+      await until(() => !me(a).hushed, 3000);
+      expect(lk).toContain(`allow ${a.sessionId}`);
+    });
+
+    it('away turns the mic off; deafened shows; leaving takes you out of voice', async () => {
+      const a = track(await walkIn());
+      a.send('status', { status: 'away' });
+      await until(() => lk.includes(`mic off ${a.sessionId}`));
+      a.send('deaf', { on: true });
+      await until(() => me(a).deaf);
+      const id = a.sessionId;
+      await a.leave();
+      await until(() => lk.includes(`remove ${id}`));
+    });
   });
 });

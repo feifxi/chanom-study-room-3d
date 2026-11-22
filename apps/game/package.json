@@ -19,6 +19,7 @@
     "dotenv": "^17",
     "ioredis": "^6",
     "jose": "^6.2.18",
+    "livekit-server-sdk": "^2.20.1",
     "pino": "^10",
     "zod": "^4"
   },

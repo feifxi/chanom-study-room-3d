@@ -166,3 +166,27 @@ Three people in a room: the owner and two members.
 - [ ] A guest's "…" on others shows only Find and Report.
 - [ ] Everyone leaves; walking back in a few seconds later starts fresh (nobody seated, no typing
       dots).
+
+### Proximity voice (part 3)
+
+Real microphones and headphones, three people in a room (the owner and two members); LiveKit runs
+in `docker compose`.
+
+- [ ] Turn your mic on (the browser asks once): people near you hear you, louder the closer they
+      stand, and from the side you're on; past about 9 m they don't. Their face in the people list
+      gets a ring while they talk; the 🎙️ mark by their name shows their mic is on, and "· deafened"
+      and a crossed-out headphone badge show when they're deafened.
+- [ ] Block the mic in the browser, then press Mic: it turns back off with a note about the
+      permission.
+- [ ] Step onto the Fireside rug: you hear only people on the rug (at full volume), and people off
+      it don't hear you. The owner talking to everyone is heard on the rug too.
+- [ ] Sound (deafen): you hear nobody, your mic goes off, others see "· deafened" by your name;
+      undeafen brings the mic back as it was.
+- [ ] Go away (Demo tab → "Go away now"): your mic turns off and stays off when you come back.
+- [ ] "…" → Mute for me on someone: you stop hearing them, only you; it's still on after a reload.
+- [ ] As the owner or a mod, "…" → Mute for everyone: their mic goes off and its button greys out
+      ("A mod turned your mic off…"); walking out and back in keeps it; unticking lets them talk.
+      A mod can't mute the owner or another mod.
+- [ ] Time out someone talking: their mic goes off until it ends.
+- [ ] A guest listens but can't turn the mic on ("Guests can't use voice in this room"); the owner
+      turns on Room settings → Invites → Guests can use voice and the guest's mic works at once.
