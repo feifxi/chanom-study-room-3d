@@ -7,7 +7,8 @@ import { UserAvatar } from '@/components/UserAvatar';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { DMS, channelMessages, userById, type Server } from '@/lib/mock';
+import { DMS, userById, type Server } from '@/lib/mock';
+import { RoomChat } from '@/features/chat/RoomChat';
 import { roleIn } from '@/lib/viewer';
 
 /** What the big chat panel shows: one of the server's chats, or a DM. */
@@ -53,7 +54,7 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
   const dmUnread = DMS.reduce((n, d) => n + (d.unread ?? 0), 0);
   const dm = current.kind === 'dm' ? DMS.find((d) => d.id === current.id) : undefined;
   const friend = dm ? userById(dm.with) : undefined;
-  const base = dm ? dm.messages : channelMessages(server.id, current.id);
+  const base = dm ? dm.messages : [];
   const unread = dm ? dm.unread : server.channels.find((c) => c.id === current.id)?.unread;
   const is = (kind: ChatTarget['kind'], id: string) => current.kind === kind && current.id === id;
 
@@ -121,19 +122,23 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
                   ))}
             </div>
           </div>
-          <ChatThread
-            key={key(current)}
-            initial={base}
-            unread={unread}
-            members={friend ? ['me', friend.id] : server.members}
-            moderator={!friend && !!roleIn(server)}
-            placeholder={friend ? `Message ${friend.name}` : 'Message the room'}
-            locked={
-              friend && dm?.unfriended ? (
-                <DmLocked name={friend.name} state="unfriended" onAction={() => toast.success(`Friend request sent to ${friend.name}`)} />
-              ) : undefined
-            }
-          />
+          {current.kind === 'channel' ? (
+            <RoomChat key={key(current)} roomId={server.id} moderator={!!roleIn(server)} />
+          ) : (
+            <ChatThread
+              key={key(current)}
+              initial={base}
+              unread={unread}
+              members={friend ? ['me', friend.id] : server.members}
+              moderator={!friend && !!roleIn(server)}
+              placeholder={friend ? `Message ${friend.name}` : 'Message the room'}
+              locked={
+                friend && dm?.unfriended ? (
+                  <DmLocked name={friend.name} state="unfriended" onAction={() => toast.success(`Friend request sent to ${friend.name}`)} />
+                ) : undefined
+              }
+            />
+          )}
         </div>
       </div>
     </DialogContent>

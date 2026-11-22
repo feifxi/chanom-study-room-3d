@@ -55,6 +55,8 @@ model User {
   friendOf         Friendship[]    @relation("friend")
   sentRequests     FriendRequest[] @relation("sent")
   receivedRequests FriendRequest[] @relation("received")
+  messages         Message[]
+  reactions        Reaction[]
   blocks           Block[]         @relation("blocker")
   blockedBy        Block[]         @relation("blocked")
 
@@ -198,6 +200,7 @@ model Room {
   bans     RoomBan[]
   invites  Invite[]
   guests   GuestVisit[]
+  messages Message[]
 
   @@index([visibility])
   @@map("rooms")
@@ -218,6 +221,8 @@ model Membership {
   notify        String    @default("mentions")
   /// Can't talk or type until then
   timedOutUntil DateTime? @map("timed_out_until")
+  /// The last room chat message you\'ve seen: "New messages" and the unread count start after it
+  lastReadId    String?   @map("last_read_id")
 
   @@id([roomId, userId])
   @@index([userId])
@@ -326,4 +331,59 @@ model Block {
   @@id([userId, blockedId])
   @@index([blockedId])
   @@map("blocks")
+}
+
+// ── Chat (docs/v2/features/04-chat-and-dms.md) ─────────────────────────────────────────────────
+
+/// A chat message. Ids are UUIDv7, so they sort by time: pages, read markers and unread counts
+/// compare ids. DMs add their own column when they come.
+model Message {
+  id           String     @id @default(uuid(7))
+  roomId       String?    @map("room_id")
+  room         Room?      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  authorId     String     @map("author_id")
+  author       User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  text         String
+  replyToId    String?    @map("reply_to_id")
+  replyTo      Message?   @relation("replies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies      Message[]  @relation("replies")
+  /// Who it @mentions (user ids, members only), and whether it pings the whole room
+  mentions     String[]
+  mentionsRoom Boolean    @default(false) @map("mentions_room")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  editedAt     DateTime?  @map("edited_at")
+  /// Deleted messages keep their row (text emptied) so replies can say the original is gone
+  deletedAt    DateTime?  @map("deleted_at")
+  pictures     Picture[]
+  reactions    Reaction[]
+
+  @@index([roomId, id])
+  @@map("messages")
+}
+
+/// A picture in a message (up to 4), stored in S3 as WebP.
+model Picture {
+  id        String  @id @default(uuid(7))
+  messageId String  @map("message_id")
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  key       String
+  width     Int
+  height    Int
+  bytes     Int
+  position  Int
+
+  @@index([messageId])
+  @@map("pictures")
+}
+
+model Reaction {
+  messageId String   @map("message_id")
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emoji     String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([messageId, userId, emoji])
+  @@map("reactions")
 }

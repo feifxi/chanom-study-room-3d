@@ -43,6 +43,10 @@ export const MyPlaceSchema = z
     visitedAt: z.iso.datetime().nullable(),
     /** Can't talk or type until then */
     timedOutUntil: z.iso.datetime().nullable(),
+    /** Room chat messages since you last read it (Home and the room's page only) */
+    unread: z.number().int(),
+    /** One of those mentions you or @room */
+    mentioned: z.boolean(),
   })
   .meta({ id: 'MyPlace' });
 export type MyPlace = z.infer<typeof MyPlaceSchema>;

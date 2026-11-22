@@ -38,11 +38,12 @@ export function useMyRooms() {
 }
 
 /** One room; `initial` comes from the server render so the page doesn't wait. */
-export function useRoom(id: string, initial?: Room) {
+export function useRoom(id: string, initial?: Room, enabled = true) {
   return useQuery({
     queryKey: [...ROOMS_KEY, id],
     queryFn: async () => ok(await api.GET('/api/rooms/{id}', { params: { path: { id } } })),
     initialData: initial,
+    enabled,
   });
 }
 

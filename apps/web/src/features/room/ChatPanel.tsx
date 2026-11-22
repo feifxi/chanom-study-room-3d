@@ -6,7 +6,9 @@ import { Composer } from '@/components/chat/Chat';
 import { BUBBLE_MAX } from '../room3d/roomSession';
 import { UserAvatar } from '@/components/UserAvatar';
 import { cn } from '@/lib/utils';
-import { DMS, channelMessages, userById, type Message, type Server } from '@/lib/mock';
+import { DMS, userById, type Message, type Server } from '@/lib/mock';
+import { MiniRoomChat } from '@/features/chat/MiniRoomChat';
+import { useRoom } from '@/features/rooms/useRooms';
 import type { ChatTarget } from './ChannelOverlay';
 
 /** A line of Bubbles: what someone said out loud in the room (it also pops over their head). */
@@ -68,16 +70,17 @@ export function ChatPanel({
   const dm = DMS.find((d) => d.id === dmId);
   const dmUnread = DMS.reduce((n, d) => n + (seen.has(`dm:${d.id}`) ? 0 : (d.unread ?? 0)), 0);
 
-  const roomUnread = roomChat && !seen.has('room') ? (roomChat.unread ?? 0) : 0;
+  // The room's real unread count and @ (looking at the tab marks it read)
+  const room = useRoom(server.id, undefined, !!roomChat);
+  const roomUnread = roomChat && tab !== 'room' ? (room.data?.me.unread ?? 0) : 0;
   const tabs: [Tab, string, number | boolean][] = [
     ['bubbles', 'Bubbles', tab !== 'bubbles' && lines.length > seenLines],
     ...(roomChat ? [['room', 'Room chat', roomUnread] as [Tab, string, number]] : []),
     ...(guest ? [] : [['dms', 'Messages', dmUnread] as [Tab, string, number]]),
   ];
-  const mentioned = !!roomChat?.mention && roomUnread > 0;
+  const mentioned = !!room.data?.me.mentioned && roomUnread > 0;
   const open = (t: Tab) => {
     setTab(t);
-    if (t === 'room') look('room');
     if (t === 'bubbles') setSeenLines(lines.length);
   };
   const expandTarget: ChatTarget | null =
@@ -129,11 +132,7 @@ export function ChatPanel({
       {tab === 'room' && roomChat && (
         <>
           <p className="px-1.5 text-[11px] text-muted-foreground">Saved · also readable from outside the room</p>
-          <Thread
-            messages={[...channelMessages(server.id, roomChat.id), ...(sent.room ?? [])]}
-            onOpen={() => onExpand({ kind: 'channel', id: roomChat.id })}
-          />
-          <Composer compact pictures placeholder="Message the room" onSend={send('room')} />
+          <MiniRoomChat roomId={server.id} onOpen={() => onExpand({ kind: 'channel', id: roomChat.id })} />
         </>
       )}
 

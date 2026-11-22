@@ -10,7 +10,7 @@ import {
 import { FRIEND_REQUEST_DAYS, FRIEND_REQUESTS_PER_DAY, FRIENDS_MAX, type RequestsFrom } from '@connecta/shared';
 import { requireSignedUp } from '../accounts/signed-up.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { toPerson } from '../rooms/rooms.service.js';
+import { toPerson } from '../rooms/person.js';
 import type { AddFriendResult, Blocked, Friend, FriendRequests } from './friends.schemas.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;

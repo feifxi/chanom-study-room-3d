@@ -6,6 +6,11 @@ import type { Mail } from '../src/mail/mail.service.js';
 import { MailService } from '../src/mail/mail.service.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { APP_OPTIONS, configureApp } from '../src/setup.js';
+import { GatewayModule } from '../src/gateway/gateway.module.js';
+import { LIVE_PATH } from '../src/gateway/live.gateway.js';
+import { RedisIoAdapter } from '../src/gateway/redis-io.adapter.js';
+import type { AddressInfo } from 'node:net';
+import { io, type Socket as ClientSocket } from 'socket.io-client';
 
 export const ORIGIN = 'http://localhost:3000';
 
@@ -34,6 +39,8 @@ export async function resetAccounts(prisma: PrismaService) {
 export function browser(app: INestApplication) {
   const agent = request.agent(app.getHttpServer());
   return {
+    /** The session cookie after signing in, for the live gateway's handshake */
+    cookie: '',
     get: (path: string) => agent.get(path).set('Origin', ORIGIN),
     post: (path: string, body: object = {}) => agent.post(path).set('Origin', ORIGIN).send(body),
     put: (path: string, body: object = {}) => agent.put(path).set('Origin', ORIGIN).send(body),
@@ -50,7 +57,50 @@ export async function signInWithCode(b: Browser, sent: Mail[], email: string) {
   const mail = sent.findLast((m) => m.to === email);
   const otp = mail?.subject.match(/^(\d{6})/)?.[1];
   if (!otp) throw new Error(`No code was sent to ${email}`);
-  await b.post('/api/auth/sign-in/email-otp', { email, otp }).expect(200);
+  const res = await b.post('/api/auth/sign-in/email-otp', { email, otp }).expect(200);
+  b.cookie = ([] as string[])
+    .concat(res.headers['set-cookie'] ?? [])
+    .map((c) => c.split(';')[0])
+    .join('; ');
+}
+
+/**
+ * The live gateway on a free port, sharing Redis with the API under test. `connect` opens a socket
+ * as a signed-in browser.
+ */
+export async function createTestGateway() {
+  const moduleRef = await Test.createTestingModule({ imports: [GatewayModule] }).compile();
+  const gateway = moduleRef.createNestApplication({ logger: false });
+  const adapter = new RedisIoAdapter(gateway);
+  await adapter.connect();
+  gateway.useWebSocketAdapter(adapter);
+  await gateway.listen(0);
+  const { port } = gateway.getHttpServer().address() as AddressInfo;
+  const connect = (b: Browser) =>
+    new Promise<ClientSocket>((resolve, reject) => {
+      const socket = io(`http://localhost:${port}`, {
+        path: LIVE_PATH,
+        addTrailingSlash: false,
+        transports: ['websocket'],
+        extraHeaders: { cookie: b.cookie },
+        reconnection: false,
+      });
+      // Resolves the moment it's open: the gateway must be ready for "watch" straight away
+      socket.on('connect', () => resolve(socket));
+      socket.on('connect_error', reject);
+    });
+  return { gateway, connect };
+}
+
+/** Waits for one live event (or fails after a second). */
+export function nextEvent<T = unknown>(socket: ClientSocket, event: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`No ${event} event`)), 1000);
+    socket.once(event, (payload: T) => {
+      clearTimeout(timer);
+      resolve(payload);
+    });
+  });
 }
 
 /** A browser signed in to a finished account (birthday, character and @handle done). */

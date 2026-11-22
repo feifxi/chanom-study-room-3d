@@ -3,6 +3,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, type Me } from '@/lib/api/client';
 import { authClient } from '@/lib/auth-client';
+import { closeLive } from '@/features/chat/live';
 import { ME as MOCK_ME, type User } from '@/lib/mock';
 
 export const ME_KEY = ['me'] as const;
@@ -53,6 +54,7 @@ export function useSignOut() {
   const client = useQueryClient();
   return async () => {
     await authClient.signOut();
+    closeLive();
     client.clear();
   };
 }

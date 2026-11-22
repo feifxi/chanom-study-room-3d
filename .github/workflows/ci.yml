@@ -18,7 +18,7 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-24.04
-    # The API's tests run against a real Postgres (the same image as compose.yaml)
+    # The API's tests run against a real Postgres and Redis (the same images as compose.yaml)
     services:
       postgres:
         image: postgres:17-alpine
@@ -28,6 +28,11 @@ jobs:
           POSTGRES_DB: connecta
         ports: ['5433:5432']
         options: --health-cmd "pg_isready -U connecta" --health-interval 5s --health-retries 10
+      # Live chat events go from the API to the gateway through Redis (the chat tests run both)
+      redis:
+        image: redis:8-alpine
+        ports: ['6379:6379']
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-retries 10
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6

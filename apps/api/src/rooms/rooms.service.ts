@@ -9,7 +9,6 @@ import {
   maxInside,
   planOf,
   REQUEST_COOLDOWN_DAYS,
-  sanitizeLook,
   TIMEOUT_MINUTES,
   type InviteExpiry,
   type MapId,
@@ -18,8 +17,11 @@ import {
   type Timeout,
 } from '@connecta/shared';
 import { requireSignedUp } from '../accounts/signed-up.js';
-import { Prisma, type Membership, type User } from '../generated/prisma/client.js';
+import { Prisma, type Membership } from '../generated/prisma/client.js';
+import { ChatService } from '../chat/chat.service.js';
+import { LiveService } from '../live/live.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { toPerson } from './person.js';
 import {
   MOD_SETTINGS,
   type Ban,
@@ -63,10 +65,6 @@ const roomInclude = (userId: string) =>
   }) satisfies Prisma.RoomInclude;
 type RoomRow = Prisma.RoomGetPayload<{ include: ReturnType<typeof roomInclude> }>;
 
-export function toPerson(user: Pick<User, 'id' | 'name' | 'handle' | 'look'>): Person {
-  return { id: user.id, name: user.name, handle: user.handle, look: user.look ? sanitizeLook(user.look) : null };
-}
-
 /**
  * Rooms and membership (docs/v2/features/03-rooms-membership.md): making and setting up rooms,
  * the three roles, Ask to join, invites and guest passes, kick, ban and time out. Every action is
@@ -74,7 +72,11 @@ export function toPerson(user: Pick<User, 'id' | 'name' | 'handle' | 'look'>): P
  */
 @Injectable()
 export class RoomsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly chat: ChatService,
+    private readonly live: LiveService,
+  ) {}
 
   // ── Your rooms ────────────────────────────────────────────────────────────────────────────────
 
@@ -85,7 +87,7 @@ export class RoomsService {
       where: { members: { some: { userId } } },
       include: roomInclude(userId),
     });
-    return rooms.map((r) => this.toRoom(r, userId, now));
+    return Promise.all(rooms.map((r) => this.withUnread(this.toRoom(r, userId, now), r, userId)));
   }
 
   async make(userId: string, input: { name: string; mapId: MapId }, now = new Date()): Promise<Room> {
@@ -115,7 +117,7 @@ export class RoomsService {
     const mine = room.members.some((m) => m.userId === userId);
     const guest = room.guests.some((g) => g.until > now);
     if (!mine && !guest && room.visibility === 'private') throw new NotFoundException();
-    return this.toRoom(room, userId, now);
+    return this.withUnread(this.toRoom(room, userId, now), room, userId);
   }
 
   /** Room settings: the owner changes anything, mods only the invite and safety settings. */
@@ -179,6 +181,7 @@ export class RoomsService {
     const me = await this.membership(roomId, userId);
     if (me.role === 'owner') throw new ConflictException({ code: 'owner_leaves', message: 'Hand the room over or delete it first' });
     await this.prisma.membership.delete({ where: { roomId_userId: { roomId, userId } } });
+    this.live.leaveRoom(userId, roomId);
   }
 
   // ── Getting in ────────────────────────────────────────────────────────────────────────────────
@@ -274,6 +277,7 @@ export class RoomsService {
       this.prisma.membership.delete({ where: { roomId_userId: { roomId, userId: whoId } } }),
       this.prisma.guestVisit.deleteMany({ where: { roomId, userId: whoId } }),
     ]);
+    this.live.leaveRoom(whoId, roomId);
   }
 
   /** They stay, but can't talk or type until it runs out. */
@@ -298,6 +302,7 @@ export class RoomsService {
         update: data,
       }),
     ]);
+    this.live.leaveRoom(whoId, roomId);
   }
 
   async bans(roomId: string, userId: string): Promise<Ban[]> {
@@ -531,6 +536,13 @@ export class RoomsService {
 
   // ── Helpers ───────────────────────────────────────────────────────────────────────────────────
 
+  /** Adds your unread count when you're a member (a few small counts per room). */
+  private async withUnread(view: Room, room: RoomRow, userId: string): Promise<Room> {
+    const mine = room.members.find((m) => m.userId === userId);
+    if (!mine) return view;
+    return { ...view, me: { ...view.me, ...(await this.chat.unread(userId, mine)) } };
+  }
+
   private toRoom(room: RoomRow, userId: string, now: Date): Room {
     const plus = OWNER_PLUS;
     const owner = room.members.find((m) => m.role === 'owner');
@@ -548,6 +560,8 @@ export class RoomsService {
       guestUntil: guest && guest.until > now ? guest.until.toISOString() : null,
       visitedAt: mine?.visitedAt?.toISOString() ?? null,
       timedOutUntil: mine?.timedOutUntil && mine.timedOutUntil > now ? mine.timedOutUntil.toISOString() : null,
+      unread: 0,
+      mentioned: false,
     };
     return {
       id: room.id,

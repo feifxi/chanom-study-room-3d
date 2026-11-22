@@ -1,8 +1,11 @@
 # 4. Room chat and DMs
 
-**Status:** decided and built in the demo. **Try it:** http://localhost:3100/servers/chanom (a room's
-chat), http://localhost:3100/home/messages/mai (Mai types back), /home/messages/ken (unfriended). In
-3D: Chat → Room chat → ⤢.
+**Status:** room chat is built in the real app (2026-11-22): messages, replies, edits, deletes with
+Undo, reactions, @mentions and @room, "is typing", "New messages", unread counts and "@ you" on Home,
+live in every open tab, on the room's page and in 3D (the Chat panel and ⤢). Still to come in step 3:
+pictures, DMs, notifications. **Try it:** open a room at http://localhost:3000/home in two browsers
+after `pnpm dev`. The demo: http://localhost:3100/home/messages/mai (Mai types back),
+/home/messages/ken (unfriended).
 
 Each room has one saved chat, every DM is 1-to-1 between friends, and every thread works the same
 way: react, reply, edit, delete, @mentions and pictures. No threads and no read receipts.
@@ -64,11 +67,19 @@ Hover (or long-press on phones) shows a small toolbar:
 
 ## Backend notes
 
-- **Gateway:** the NestJS WebSocket gateway carries messages, edits,
-  deletes, reactions and typing; Redis pub/sub between instances. Typing is not stored.
-- **Tables:** message (id, room or DM, author, text, reply to, edited at, deleted at), attachment
-  (message, key, width, height, bytes), reaction (message, user, emoji; unique per user and emoji),
-  read marker (user, room or DM, last read message id). The read marker drives "New messages" and
+- **Gateway:** the API's second entry point (`apps/api/src/gateway.ts`, port 4001; the web app
+  reaches it at `/live`) runs Socket.IO with the Redis adapter. Writes go through REST, and the API
+  publishes the result through Redis (`LiveService`, the Socket.IO Redis emitter); the gateway
+  only checks the session, lets members watch a room and passes "typing", which is never stored.
+  A tab that reconnects reloads the chat to catch up.
+- **API** (`apps/api/src/chat/`): `GET/POST /api/rooms/:id/messages` (pages by id, `before`),
+  `PUT /api/rooms/:id/read`, `PATCH/DELETE /api/messages/:id`, `PUT/DELETE
+/api/messages/:id/reactions`. Live events: `message` (new or changed), `message:deleted`,
+  `typing`.
+- **Tables:** `messages` (UUIDv7 ids, so they sort by time; room, author, text, reply to,
+  mentions, edited and deleted at; a deleted message keeps its row so replies can say so),
+  `pictures` (message, key, width, height, bytes), `reactions` (message, user, emoji), and the read
+  marker is `memberships.last_read_id` for rooms. The read marker drives "New messages" and
   unread counts; it's never shown to others (no "Seen").
 - **Rules on the server:** DMs only between friends; delete others' messages only as owner or mod of
   that room; @room only as owner or mod; blocked users' messages are filtered for the blocker;

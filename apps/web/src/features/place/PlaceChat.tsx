@@ -3,14 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Bell, MessageCircle, Play, Crown, UserPlus } from 'lucide-react';
-import { ChatThread } from '@/components/chat/Chat';
+import { RoomChat } from '@/features/chat/RoomChat';
 import { InviteDialog } from '@/features/rooms/InviteDialog';
 import { UserAvatar } from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { roomsApi, useMembers, useRoom, useRoomAction, type Room } from '@/features/rooms/useRooms';
 import { cn } from '@/lib/utils';
-import { channelMessages } from '@/lib/mock';
 import { ROLE_LABEL, placeRoom, walkInHref } from './model';
 import { RoomMenu } from './RoomMenu';
 import { Scene } from './Scene';
@@ -106,13 +105,14 @@ export function PlaceChat({ initial }: { initial: Room }) {
             <p className="flex-1 text-sm font-black">Room chat</p>
             <p className="hidden text-xs text-muted-foreground sm:block">You’re reading from outside · nobody sees you</p>
           </div>
-          {/* The room chat is still mock data: it moves to the API with build step 3 */}
-          <ChatThread
-            key={room.id}
-            initial={channelMessages(room.id, 'chat')}
-            members={[]}
-            moderator={room.canEdit}
-            placeholder="Message the room"
+          <RoomChat
+            roomId={room.id}
+            moderator={room.myRole === 'owner' || room.myRole === 'mod'}
+            intro={
+              <p className="mx-3 mt-4 rounded-2xl bg-secondary/60 px-3 py-2 text-center text-sm text-muted-foreground">
+                This is the start of {room.name}’s chat. Say hi 👋
+              </p>
+            }
           />
         </section>
 

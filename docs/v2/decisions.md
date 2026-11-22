@@ -345,5 +345,13 @@ decision is made or changed: one line, a date, and the reason.
   memberships until presence adds "inside the same room right now". The 20 a day counts requests
   sent in the last 24 hours. Until presence and DMs, the Friends page is one list (no Online or
   Offline, no message or invite buttons).
+- **Room chat on the API: the details the spec left open** (2026-11-22): writes go through REST
+  (validated and typed like every other call) and come back live; the gateway never writes. Sign-in
+  is checked in Socket.IO middleware, before a connection opens, because a tab asks to watch a room
+  the moment it connects. Deleting hides the message at once and only deletes it when the Undo toast
+  closes. Before you've read a room's chat, only messages after you joined count as unread. @room
+  from a member is plain text rather than an error. Slow mode, the word filter and "new members
+  wait" are stored but wait for moderation (feature 14). `pnpm dev` runs one compiler and both
+  entry points (`apps/api/scripts/dev.mjs`).
 - **Only the owner provisions** cloud resources. Agents suggest steps and do read-only checks.
 - **Music must be royalty-free** (Pixabay). Never rips from YouTube or Spotify.

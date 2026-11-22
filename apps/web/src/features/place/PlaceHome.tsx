@@ -13,7 +13,9 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/compone
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useMe } from '@/features/account/useMe';
-import { roomsApi, useListedRooms, useMyRooms, useRoomAction } from '@/features/rooms/useRooms';
+import { ROOMS_KEY, roomsApi, useListedRooms, useMyRooms, useRoomAction } from '@/features/rooms/useRooms';
+import { api } from '@/lib/api/client';
+import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { ago, COMMON_ROOMS, MAPS, userById } from '@/lib/mock';
 import { chatHref, placeRoom, walkInHref, type PlaceRoom } from './model';
@@ -51,10 +53,10 @@ export function PlaceHome() {
   const mine = useMyRooms();
   const listed = useListedRooms();
   const pin = useRoomAction(roomsApi.myPlace);
+  const client = useQueryClient();
 
   const rooms = (mine.data ?? []).map(placeRoom);
-  // Unread counts come with the room chat (build step 3)
-  const unread = 0;
+  const unread = (r: PlaceRoom) => r.room.me.unread;
   const busy = (r: PlaceRoom) => r.inside > 0;
   const pinned = (r: PlaceRoom) => r.room.me.pinned;
   const idleDays = (r: PlaceRoom) => (r.room.me.visitedAt ? daysSince(r.room.me.visitedAt) : 0);
@@ -79,8 +81,8 @@ export function PlaceHome() {
       room={r}
       pinned={pinned(r)}
       onPin={() => pin.mutate({ id: r.id, pinned: !pinned(r) })}
-      unread={unread}
-      onRead={() => {}}
+      unread={unread(r)}
+      onRead={() => void markAllRead(r.id).then(() => client.invalidateQueries({ queryKey: ROOMS_KEY }))}
       className={className}
     />
   );
@@ -152,7 +154,7 @@ export function PlaceHome() {
                 key={r.id}
                 room={r}
                 pinned={pinned(r)}
-                unread={unread}
+                unread={unread(r)}
                 menu={menu(r, 'bg-black/35 text-white backdrop-blur hover:bg-black/55')}
               />
             ))}
@@ -187,7 +189,12 @@ export function PlaceHome() {
               ))}
             </div>
             {recentShown.map((r) => (
-              <RoomRow key={r.id} room={r} unread={unread} menu={menu(r, 'text-muted-foreground hover:bg-muted hover:text-foreground')} />
+              <RoomRow
+                key={r.id}
+                room={r}
+                unread={unread(r)}
+                menu={menu(r, 'text-muted-foreground hover:bg-muted hover:text-foreground')}
+              />
             ))}
             {recent.length > recentShown.length && (
               <button onClick={() => setAllRows(true)} className="w-full py-2.5 text-sm font-extrabold text-primary hover:bg-muted/50">
@@ -214,7 +221,12 @@ export function PlaceHome() {
             </button>
             {showQuiet &&
               quiet.map((r) => (
-                <RoomRow key={r.id} room={r} unread={unread} menu={menu(r, 'text-muted-foreground hover:bg-muted hover:text-foreground')} />
+                <RoomRow
+                  key={r.id}
+                  room={r}
+                  unread={unread(r)}
+                  menu={menu(r, 'text-muted-foreground hover:bg-muted hover:text-foreground')}
+                />
               ))}
           </div>
         )}
@@ -273,7 +285,8 @@ function RoomCard({ room, pinned, unread, menu }: { room: PlaceRoom; pinned: boo
         </Chip>
         {unread > 0 && (
           <Chip>
-            <MessageCircle className="size-3" /> {unread} new
+            <MessageCircle className="size-3" /> {room.room.me.mentioned ? '@ you · ' : ''}
+            {unread} new
           </Chip>
         )}
         {/* Owners and mods of an Ask-to-join room see who's waiting (approve in Room settings → Members) */}
@@ -478,4 +491,11 @@ function partOfWeek(d = new Date()) {
   const h = d.getHours();
   const part = h < 5 ? 'night 🌌' : h < 12 ? 'morning ☀️' : h < 17 ? 'afternoon 🍵' : h < 21 ? 'evening 🌙' : 'night 🌌';
   return `${day} ${part}`;
+}
+
+/** "Mark as read" in a room's "…": read up to its latest message. */
+async function markAllRead(roomId: string) {
+  const { data } = await api.GET('/api/rooms/{id}/messages', { params: { path: { id: roomId }, query: { limit: 1 } } });
+  const latest = data?.messages[0];
+  if (latest) await api.PUT('/api/rooms/{id}/read', { params: { path: { id: roomId } }, body: { messageId: latest.id } });
 }

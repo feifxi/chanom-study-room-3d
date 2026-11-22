@@ -88,7 +88,7 @@ done. The plan's
 - **Tests:** Vitest everywhere. API tests compile through SWC (Nest needs decorator metadata) and
   boot the whole app (`apps/api/test/test-app.ts`) against a real test database, `connecta_test`
   in the compose Postgres (created and migrated on each run), with fakes only for what leaves the
-  machine (email). So `pnpm check` needs `docker compose up -d`; CI runs Postgres as a service.
+  machine (email). So `pnpm check` needs `docker compose up -d`; CI runs Postgres and Redis as services.
 - **Sign-in is Better Auth** (`apps/api/src/auth/auth.ts`), served under `/api/auth/*`. A global
   guard protects every route: mark public ones `@AllowAnonymous()`, read the user with
   `@Session()`. Better Auth owns the users, sessions, accounts and verifications tables; Connecta's
@@ -123,7 +123,7 @@ docker compose up -d                 # Postgres :5433, Redis :6379, LiveKit :788
                                      # AWS Emulator :9297 (the first run builds its image)
 cp apps/api/.env.example apps/api/.env
 pnpm db:migrate && pnpm db:seed      # schema, then the demo people and the S3 bucket
-pnpm dev                             # web :3000, API :4000 (Swagger UI at /api/docs)
+pnpm dev                             # web :3000, API :4000 (Swagger UI at /api/docs), gateway :4001
 pnpm check                           # what CI runs: prettier --check, then typecheck + lint + tests
 pnpm build
 pnpm format                          # prettier --write
@@ -158,8 +158,9 @@ pnpm --filter @connecta/demo demo:screens 390 dark guest
 ```
 apps/
   web/       Next.js 16, React Three Fiber, Tailwind v4. Started as a copy of demo/
-  api/       NestJS 12: REST + OpenAPI, sign-in, jobs; a second entry point will run the
-             WebSocket gateway (chat, DMs, presence). Owns the database: Prisma schema + migrations
+  api/       NestJS 12: REST + OpenAPI, sign-in, jobs, and a second entry point, the live
+             gateway (src/gateway.ts: Socket.IO at /live, chat and typing; presence next). Owns the
+             database: Prisma schema + migrations
   game/      (build step 4) Colyseus rooms: movement, seats, NPCs, activities
 packages/
   shared/    Built to dist/ (tsc; `pnpm dev` watches it): account rules (handles, age), avatars, map
@@ -170,6 +171,9 @@ demo/        The design sandbox (mock data only)
 docs/        The plan, the decision log, the specs
 ```
 
+- **Live events:** a REST write that others should see live calls `LiveService` (`toRoom`,
+  `toUser`); the gateway delivers it through Redis. The gateway itself only reads. API tests boot
+  the gateway too (`createTestGateway`), so they need Redis as well as Postgres.
 - **API conventions:** one Nest module per feature (`src/<feature>/`: module, controller, service,
   schemas, `*.spec.ts` beside the code). Config is validated with Zod at startup
   (`src/config/env.ts`); add every new variable there and to `.env.example`. `src/setup.ts` holds

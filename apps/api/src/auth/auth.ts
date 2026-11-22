@@ -1,3 +1,4 @@
+import type { ConfigService } from '@nestjs/config';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { anonymous, emailOTP } from 'better-auth/plugins';
@@ -105,3 +106,21 @@ export function createAuth({ env, prisma, mail }: AuthDeps) {
 }
 
 export type Auth = ReturnType<typeof createAuth>;
+
+/** Better Auth from the app's config: the API serves it; the gateway uses it to read sessions. */
+export function authFromConfig(config: ConfigService<Env, true>, prisma: PrismaClient, mail: AuthDeps['mail']) {
+  const get = <K extends keyof Env>(key: K) => config.get(key, { infer: true });
+  return createAuth({
+    env: {
+      NODE_ENV: get('NODE_ENV'),
+      WEB_ORIGIN: get('WEB_ORIGIN'),
+      AUTH_SECRET: get('AUTH_SECRET'),
+      GOOGLE_CLIENT_ID: get('GOOGLE_CLIENT_ID'),
+      GOOGLE_CLIENT_SECRET: get('GOOGLE_CLIENT_SECRET'),
+      DISCORD_CLIENT_ID: get('DISCORD_CLIENT_ID'),
+      DISCORD_CLIENT_SECRET: get('DISCORD_CLIENT_SECRET'),
+    },
+    prisma,
+    mail,
+  });
+}

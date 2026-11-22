@@ -18,6 +18,10 @@ export const envSchema = z
     WEB_ORIGIN: z.url().default('http://localhost:3000'),
     DATABASE_URL: z.url(),
     LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error', 'silent']).default('info'),
+    /** The live gateway (chat, presence) listens here; the web app proxies /live to it */
+    GATEWAY_PORT: z.coerce.number().int().positive().default(4001),
+    /** Carries live events from the API to the gateway, and between gateways */
+    REDIS_URL: z.url().default('redis://localhost:6379'),
 
     /** Signs session cookies and encrypts OAuth tokens: 32+ random characters (openssl rand -base64 32) */
     AUTH_SECRET: z.string().min(32),
