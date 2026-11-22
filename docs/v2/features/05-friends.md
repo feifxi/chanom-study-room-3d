@@ -1,6 +1,10 @@
 # 5. Friends
 
-**Status:** decided and built in the demo. **Try it:** http://localhost:3100/home/friends
+**Status:** friends, requests, blocking, the friend link and "Who can send me friend requests" are
+built in the real app (2026-11-22). Waiting on the rest of step 3: presence ("Out in rooms",
+Online, Offline, "Ask to join"), the message button and "Invite to a room" (DMs), and "Add friend"
+in a room's people list (the 3D room, step 4). Gift Plus waits for Plus. **Try it:**
+http://localhost:3000/home/friends after `pnpm dev` (the demo: http://localhost:3100/home/friends).
 
 Friends are how you find each other: only friends can DM, and only friends see where you are. You
 add people by exact @handle, from a room, or by a friend link; nothing is ever pushed at you.
@@ -52,8 +56,16 @@ Sorted by "who can I go hang out with", not A–Z:
 
 ## Backend notes
 
-- **Tables:** friendship (user pair, since), friend request (from, to, created, expires; ignored
-  ones just stay until they expire), block (feature 4).
+- **Tables** (`apps/api/prisma/schema.prisma`): `friendships` (one row each way), `friend_requests`
+  (from, to, created, expires, ignored at), `blocks`; who can send you requests is
+  `users.requests_from`.
+- **API** (`apps/api/src/friends/`): `GET /api/friends`, `DELETE /api/friends/:userId`, `GET/POST
+/api/friends/requests` (POST takes an exact handle; rate-limited), `POST
+/api/friends/requests/:userId/accept|ignore`, `DELETE /api/friends/requests/:userId` (cancel),
+  `GET /api/blocks`, `PUT/DELETE /api/blocks/:userId`, `PATCH /api/me/privacy`.
+- **Silent by design:** an ignored request stays "Pending" for the sender until it expires, and
+  asking again doesn't put it back in front of them. A request to someone who blocked you is kept
+  but never shown to them, so it looks the same as being ignored.
 - **Presence:** the gateway keeps who's online and in which room in Redis and pushes changes only to
   that person's friends (and to rooms they're in), respecting "Appear offline" and "Show what I'm
   doing". Nothing is stored long-term except "last seen".

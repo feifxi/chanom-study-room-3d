@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { FriendsModule } from '../friends/friends.module.js';
 import { RoomsModule } from '../rooms/rooms.module.js';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config/env.js';
@@ -9,7 +10,7 @@ import { HandlesService } from './handles.service.js';
 import { MeController } from './me.controller.js';
 
 @Module({
-  imports: [RoomsModule],
+  imports: [RoomsModule, FriendsModule],
   controllers: [MeController, HandlesController],
   providers: [
     AccountsService,

@@ -256,6 +256,37 @@
         ]
       }
     },
+    "/api/me/privacy": {
+      "patch": {
+        "operationId": "MeController_privacy",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrivacyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "me"
+        ]
+      }
+    },
     "/api/me/handle": {
       "put": {
         "operationId": "MeController_handle",
@@ -1339,6 +1370,256 @@
           "invites"
         ]
       }
+    },
+    "/api/friends": {
+      "get": {
+        "operationId": "FriendsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Friend"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "friends"
+        ]
+      }
+    },
+    "/api/friends/{userId}": {
+      "delete": {
+        "operationId": "FriendsController_remove",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "friends"
+        ]
+      }
+    },
+    "/api/friends/requests": {
+      "get": {
+        "operationId": "FriendsController_requests",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FriendRequests"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "friends"
+        ]
+      },
+      "post": {
+        "operationId": "FriendsController_add",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddFriendBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddFriendResult"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "already_friends"
+          }
+        },
+        "tags": [
+          "friends"
+        ]
+      }
+    },
+    "/api/friends/requests/{userId}/accept": {
+      "post": {
+        "operationId": "FriendsController_accept",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Friend"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "friends"
+        ]
+      }
+    },
+    "/api/friends/requests/{userId}/ignore": {
+      "post": {
+        "operationId": "FriendsController_ignore",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "friends"
+        ]
+      }
+    },
+    "/api/friends/requests/{userId}": {
+      "delete": {
+        "operationId": "FriendsController_cancel",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "friends"
+        ]
+      }
+    },
+    "/api/blocks": {
+      "get": {
+        "operationId": "FriendsController_blocks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Blocked"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "friends"
+        ]
+      }
+    },
+    "/api/blocks/{userId}": {
+      "put": {
+        "operationId": "FriendsController_block",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "friends"
+        ]
+      },
+      "delete": {
+        "operationId": "FriendsController_unblock",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "friends"
+        ]
+      }
     }
   },
   "info": {
@@ -1491,6 +1772,14 @@
             "type": "string",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "requestsFrom": {
+            "type": "string",
+            "enum": [
+              "anyone",
+              "rooms",
+              "nobody"
+            ]
           }
         },
         "required": [
@@ -1502,7 +1791,8 @@
           "isGuest",
           "ageChecked",
           "signedUp",
-          "deleteAt"
+          "deleteAt",
+          "requestsFrom"
         ],
         "additionalProperties": false
       },
@@ -1649,6 +1939,19 @@
               {
                 "$ref": "#/components/schemas/Look"
               }
+            ]
+          }
+        }
+      },
+      "PrivacyBody": {
+        "type": "object",
+        "properties": {
+          "requestsFrom": {
+            "type": "string",
+            "enum": [
+              "anyone",
+              "rooms",
+              "nobody"
             ]
           }
         }
@@ -2617,6 +2920,147 @@
         "required": [
           "roomId",
           "guestUntil"
+        ],
+        "additionalProperties": false
+      },
+      "Friend": {
+        "type": "object",
+        "properties": {
+          "person": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "person",
+          "since"
+        ],
+        "additionalProperties": false
+      },
+      "FriendRequests": {
+        "type": "object",
+        "properties": {
+          "incoming": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IncomingRequest"
+            }
+          },
+          "sent": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SentRequest"
+            }
+          },
+          "leftToday": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "incoming",
+          "sent",
+          "leftToday"
+        ],
+        "additionalProperties": false
+      },
+      "IncomingRequest": {
+        "type": "object",
+        "properties": {
+          "person": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "shared": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "person",
+          "at",
+          "shared"
+        ],
+        "additionalProperties": false
+      },
+      "SentRequest": {
+        "type": "object",
+        "properties": {
+          "person": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "person",
+          "at"
+        ],
+        "additionalProperties": false
+      },
+      "AddFriendBody": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40,
+            "description": "Exact @handle, with or without the @"
+          }
+        },
+        "required": [
+          "handle"
+        ]
+      },
+      "AddFriendResult": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "sent",
+              "friends"
+            ]
+          },
+          "person": {
+            "$ref": "#/components/schemas/Person"
+          }
+        },
+        "required": [
+          "status",
+          "person"
+        ],
+        "additionalProperties": false
+      },
+      "Blocked": {
+        "type": "object",
+        "properties": {
+          "person": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "person",
+          "at"
         ],
         "additionalProperties": false
       }

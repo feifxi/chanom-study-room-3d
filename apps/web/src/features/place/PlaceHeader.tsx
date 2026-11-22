@@ -19,17 +19,24 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { useMeAsUser, useSignOut } from '@/features/account/useMe';
-import { DMS, FRIEND_REQUESTS, userById } from '@/lib/mock';
+import { DMS, userById } from '@/lib/mock';
+import { useFriendRequests } from '@/features/friends/useFriends';
 import { useQuests } from '@/lib/quests';
 import { useViewer } from '@/lib/viewer';
 
 const NAV = [
   { href: '/home', label: 'Home', icon: House },
-  { href: '/home/friends', label: 'Friends', icon: Users, badge: FRIEND_REQUESTS.length },
+  { href: '/home/friends', label: 'Friends', icon: Users, badge: 0 },
   { href: '/home/focus', label: 'Focus', icon: BarChart3 },
   { href: '/discover', label: 'Discover', icon: Compass },
   { href: '/home/shop', label: 'Shop', icon: ShoppingBag },
 ];
+
+/** The nav with live badges: Friends counts the requests waiting for you. */
+function useNav() {
+  const waiting = useFriendRequests().data?.incoming.length ?? 0;
+  return NAV.map((n) => (n.href === '/home/friends' ? { ...n, badge: waiting } : n));
+}
 
 /**
  * Place layout's only chrome outside a room: a slim header. There are no server or channel lists;
@@ -39,7 +46,8 @@ export function PlaceHeader() {
   const path = usePathname();
   const viewer = useViewer();
   // Guests only reach Discover (Common rooms take anyone); everything else needs an account
-  const nav = viewer === 'guest' ? NAV.filter((n) => n.href === '/discover') : NAV;
+  const all = useNav();
+  const nav = viewer === 'guest' ? all.filter((n) => n.href === '/discover') : all;
   return (
     <header className="flex h-14 flex-none items-center gap-2 px-1 sm:gap-4 sm:px-2">
       {/* Guests have no Home (it needs an account), so the logo takes them to Discover */}
@@ -96,6 +104,7 @@ const isActive = (href: string, path: string) => (href === '/home' ? path === '/
 export function PhoneTabs() {
   const path = usePathname();
   const guest = useViewer() === 'guest';
+  const nav = useNav();
   // Inside a DM thread the composer owns the bottom edge (Instagram hides its tabs there too)
   if (guest || /^\/home\/messages\/./.test(path)) return null;
   return (
@@ -103,7 +112,7 @@ export function PhoneTabs() {
       className="flex flex-none items-stretch justify-around rounded-3xl border bg-card px-1 pt-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] shadow-soft sm:hidden"
       aria-label="App"
     >
-      {NAV.map((n) => {
+      {nav.map((n) => {
         const active = isActive(n.href, path);
         return (
           <Link

@@ -1,8 +1,9 @@
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { ageOn, DELETE_GRACE_DAYS, HANDLE_CHANGE_DAYS, HANDLE_HOLD_DAYS, MIN_AGE, sanitizeLook } from '@connecta/shared';
+import { ageOn, DELETE_GRACE_DAYS, HANDLE_CHANGE_DAYS, HANDLE_HOLD_DAYS, MIN_AGE, sanitizeLook, type RequestsFrom } from '@connecta/shared';
 import { Prisma, type User } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { AccountDetails, Me } from './accounts.schemas.js';
+import { FriendsService } from '../friends/friends.service.js';
 import { RoomsService } from '../rooms/rooms.service.js';
 import { HandlesService } from './handles.service.js';
 import { requireSignedUp } from './signed-up.js';
@@ -23,6 +24,7 @@ export function toMe(user: User): Me {
     ageChecked: user.birthday !== null,
     signedUp: user.handle !== null,
     deleteAt: user.deleteAt?.toISOString() ?? null,
+    requestsFrom: user.requestsFrom as RequestsFrom,
   };
 }
 
@@ -42,6 +44,7 @@ export class AccountsService {
     private readonly prisma: PrismaService,
     private readonly handles: HandlesService,
     private readonly rooms: RoomsService,
+    private readonly friends: FriendsService,
     @Inject(SIGN_IN_PROVIDERS) private readonly providers: SignInProviders,
   ) {}
 
@@ -72,6 +75,12 @@ export class AccountsService {
     }
 
     return toMe(await this.prisma.user.update({ where: { id: userId }, data: { birthday: new Date(birthday) } }));
+  }
+
+  /** Settings → Privacy & safety. */
+  async updatePrivacy(userId: string, input: { requestsFrom?: RequestsFrom }): Promise<Me> {
+    await this.signedUp(userId);
+    return toMe(await this.prisma.user.update({ where: { id: userId }, data: input }));
   }
 
   /** The last step: character, display name and @handle. Then the app opens Home. */
@@ -202,6 +211,7 @@ export class AccountsService {
     for (const user of due) {
       // Their rooms pass to the picked members first (or go, when nobody else is in them)
       await this.rooms.handOverAll(user.id);
+      await this.friends.forget(user.id);
       await this.prisma.$transaction([
         this.prisma.session.deleteMany({ where: { userId: user.id } }),
         this.prisma.account.deleteMany({ where: { userId: user.id } }),

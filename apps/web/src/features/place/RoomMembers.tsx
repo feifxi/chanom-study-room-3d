@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react';
 import { Ban, Check, Clock, MoreHorizontal, ShieldCheck, ShieldOff, UserMinus, X } from 'lucide-react';
 import { canActOn, REQUEST_COOLDOWN_DAYS, type RoomRole, type Timeout } from '@connecta/shared';
 import { toast } from 'sonner';
-import { UserAvatar } from '@/components/UserAvatar';
+import { PersonFace } from '@/components/PersonFace';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useMe } from '@/features/account/useMe';
-import { inviteUrl, roomsApi, useBans, useInvites, useMembers, useRequests, useRoomAction, type Person } from '@/features/rooms/useRooms';
+import { inviteUrl, roomsApi, useBans, useInvites, useMembers, useRequests, useRoomAction } from '@/features/rooms/useRooms';
 import { ago } from '@/lib/mock';
 import { cn } from '@/lib/utils';
 import { ROLE_RULES, TIMEOUTS } from './membership';
@@ -27,10 +27,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const since = (iso: string) => ago(Math.floor((Date.now() - Date.parse(iso)) / DAY_MS));
 const until = (iso: string) => new Date(iso).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' });
 
-/** Someone's face from their account (the colour is their outfit). */
-function Face({ who, size = 34 }: { who: Person; size?: number }) {
-  return <UserAvatar user={{ name: who.name, color: who.look?.outfit ?? '#9c8aa0', presence: 'offline' }} size={size} />;
-}
+const Face = PersonFace;
 
 /**
  * Members & roles: who belongs, join requests (Ask to join rooms) and the banned list. Kick, ban,

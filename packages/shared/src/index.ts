@@ -1,6 +1,7 @@
 export * from './account.js';
 export * from './avatar.js';
 export * from './collision.js';
+export * from './friends.js';
 export * from './movement.js';
 export * from './navigation.js';
 export * from './npc.js';

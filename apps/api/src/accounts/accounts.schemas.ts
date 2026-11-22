@@ -1,4 +1,4 @@
-import { ACCESSORIES, DISPLAY_NAME_MAX, HAIR_COLORS, OUTFIT_COLORS } from '@connecta/shared';
+import { ACCESSORIES, DISPLAY_NAME_MAX, HAIR_COLORS, OUTFIT_COLORS, REQUESTS_FROM } from '@connecta/shared';
 import { z } from 'zod';
 
 /** A colour from one of the palettes. Typed as a plain string, like AvatarLook in @connecta/shared. */
@@ -32,6 +32,8 @@ export const MeSchema = z
     signedUp: z.boolean(),
     /** Asked to be deleted: the app only offers "Keep my account" until this time */
     deleteAt: z.iso.datetime().nullable(),
+    /** Privacy & safety: who can send you a friend request */
+    requestsFrom: z.enum(REQUESTS_FROM),
   })
   .meta({ id: 'Me' });
 export type Me = z.infer<typeof MeSchema>;
@@ -57,6 +59,11 @@ export type HandleCheck = z.infer<typeof HandleCheckSchema>;
 export const TooYoungSchema = z.object({ code: z.literal('too_young'), until: z.iso.datetime() }).meta({ id: 'TooYoung' });
 
 export const ProfileBodySchema = z.object({ name: DisplayName.optional(), look: LookSchema.optional() }).meta({ id: 'ProfileBody' });
+
+export const PrivacyBodySchema = z
+  .object({ requestsFrom: z.enum(REQUESTS_FROM) })
+  .partial()
+  .meta({ id: 'PrivacyBody' });
 
 export const HandleBodySchema = z.object({ handle: z.string() }).meta({ id: 'HandleBody' });
 

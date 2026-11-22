@@ -100,6 +100,22 @@ export interface paths {
         patch: operations["MeController_profile"];
         trace?: never;
     };
+    "/api/me/privacy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["MeController_privacy"];
+        trace?: never;
+    };
     "/api/me/handle": {
         parameters: {
             query?: never;
@@ -468,6 +484,134 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/friends": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FriendsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/friends/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["FriendsController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/friends/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FriendsController_requests"];
+        put?: never;
+        post: operations["FriendsController_add"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/friends/requests/{userId}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FriendsController_accept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/friends/requests/{userId}/ignore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FriendsController_ignore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/friends/requests/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["FriendsController_cancel"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/blocks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FriendsController_blocks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/blocks/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["FriendsController_block"];
+        post?: never;
+        delete: operations["FriendsController_unblock"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -533,6 +677,8 @@ export interface components {
             signedUp: boolean;
             /** Format: date-time */
             deleteAt: string | null;
+            /** @enum {string} */
+            requestsFrom: "anyone" | "rooms" | "nobody";
         };
         Look: {
             hair: string;
@@ -571,6 +717,10 @@ export interface components {
         ProfileBody: {
             name?: string;
             look?: components["schemas"]["Look"];
+        };
+        PrivacyBody: {
+            /** @enum {string} */
+            requestsFrom?: "anyone" | "rooms" | "nobody";
         };
         HandleBody: {
             handle: string;
@@ -809,6 +959,41 @@ export interface components {
             /** Format: date-time */
             guestUntil: string | null;
         };
+        Friend: {
+            person: components["schemas"]["Person"];
+            /** Format: date-time */
+            since: string;
+        };
+        FriendRequests: {
+            incoming: components["schemas"]["IncomingRequest"][];
+            sent: components["schemas"]["SentRequest"][];
+            leftToday: number;
+        };
+        IncomingRequest: {
+            person: components["schemas"]["Person"];
+            /** Format: date-time */
+            at: string;
+            shared: string[];
+        };
+        SentRequest: {
+            person: components["schemas"]["Person"];
+            /** Format: date-time */
+            at: string;
+        };
+        AddFriendBody: {
+            /** @description Exact @handle, with or without the @ */
+            handle: string;
+        };
+        AddFriendResult: {
+            /** @enum {string} */
+            status: "sent" | "friends";
+            person: components["schemas"]["Person"];
+        };
+        Blocked: {
+            person: components["schemas"]["Person"];
+            /** Format: date-time */
+            at: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -1008,6 +1193,29 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ProfileBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+        };
+    };
+    MeController_privacy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrivacyBody"];
             };
         };
         responses: {
@@ -1728,6 +1936,209 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Accepted"];
                 };
+            };
+        };
+    };
+    FriendsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Friend"][];
+                };
+            };
+        };
+    };
+    FriendsController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FriendsController_requests: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FriendRequests"];
+                };
+            };
+        };
+    };
+    FriendsController_add: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddFriendBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddFriendResult"];
+                };
+            };
+            /** @description already_friends */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FriendsController_accept: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Friend"];
+                };
+            };
+        };
+    };
+    FriendsController_ignore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FriendsController_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FriendsController_blocks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Blocked"][];
+                };
+            };
+        };
+    };
+    FriendsController_block: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FriendsController_unblock: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

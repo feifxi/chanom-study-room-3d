@@ -54,7 +54,12 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
      member invites and guest passes, kick, ban, time out, Discover's listed rooms, new owners when
      an account is deleted. Rooms live at `/r/<id>`; the room's chat and the 3D room still run on
      mock data until steps 3 and 4.
-3. **The gateway:** room chat, DMs, friends, presence (the API's second entry point, Redis).
+3. **The gateway:** friends, room chat, DMs, presence, in that order, plus pictures in chat and the
+   in-app notification bell; Socket.IO with Redis between instances
+   ([how](v2/decisions.md#engineering-and-infra)).
+   - ~~Friends~~ done 2026-11-22: requests by exact @handle and friend link (`/f/<handle>`),
+     accept, ignore, cancel, remove, block, "Who can send me friend requests".
+   - Next: room chat.
 4. **Walking in a room:** the Colyseus game server, with V1's movement prediction and
    reconciliation copied in; voice and screen share; maps.
 5. **The rest, a feature at a time:** activities and table games, Plus, coins and quests, focus,

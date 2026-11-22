@@ -331,5 +331,19 @@ decision is made or changed: one line, a date, and the reason.
   guest, someone asking). Handing a room over makes the old owner a mod. "Allow guests" starts on.
   An account being deleted names who takes each room it owns; nobody named means the
   longest-serving mod, then the longest-standing member.
+- **How step 3 (the gateway) is built** (2026-11-22, the owner): in this order: friends, room chat,
+  DMs, presence. Pictures in chat come in this step (S3 through the AWS Emulator locally, shrunk on
+  the way; the moderation check is a stand-in until feature 14). The notification bell becomes
+  real, inside the app only (no email or push). The live connection is Socket.IO in the API's
+  gateway with the Redis adapter between instances, for reconnecting and catching up after a
+  dropped connection; plain WebSockets would mean writing that ourselves.
+- **Friends on the API: the details the spec left open** (2026-11-22): adding someone who already
+  asked you makes you friends at once. A friend link sends the request on a tap, not on opening, so a
+  link preview or a stray click sends nothing. Blocking someone ends the friendship and your request
+  to them; their requests to you are kept but never shown, so to them it looks like being ignored.
+  You can't send a request to someone you've blocked. "People from my rooms" counts shared
+  memberships until presence adds "inside the same room right now". The 20 a day counts requests
+  sent in the last 24 hours. Until presence and DMs, the Friends page is one list (no Online or
+  Offline, no message or invite buttons).
 - **Only the owner provisions** cloud resources. Agents suggest steps and do read-only checks.
 - **Music must be royalty-free** (Pixabay). Never rips from YouTube or Spotify.

@@ -35,6 +35,8 @@ model User {
   birthday        DateTime? @db.Date
   /// The character (AvatarLook from @connecta/shared)
   look            Json?
+  /// Who can send a friend request: anyone, rooms (people who share a room) or nobody
+  requestsFrom    String    @default("anyone") @map("requests_from")
   /// Asked to be deleted: goes at this time unless they sign in and keep it (7 days)
   deleteAt        DateTime? @map("delete_at")
   /// Deleted: the row stays as "Deleted user" so their messages still read; everything personal is gone
@@ -42,13 +44,19 @@ model User {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  sessions    Session[]
-  accounts    Account[]
-  handleHolds HandleHold[]
-  memberships Membership[]
-  requests    JoinRequest[]
-  bans        RoomBan[]     @relation("banned")
-  guestPasses GuestVisit[]
+  sessions         Session[]
+  accounts         Account[]
+  handleHolds      HandleHold[]
+  memberships      Membership[]
+  requests         JoinRequest[]
+  bans             RoomBan[]       @relation("banned")
+  guestPasses      GuestVisit[]
+  friends          Friendship[]    @relation("friendOf")
+  friendOf         Friendship[]    @relation("friend")
+  sentRequests     FriendRequest[] @relation("sent")
+  receivedRequests FriendRequest[] @relation("received")
+  blocks           Block[]         @relation("blocker")
+  blockedBy        Block[]         @relation("blocked")
 
   @@index([deleteAt])
   @@map("users")
@@ -274,4 +282,48 @@ model GuestVisit {
 
   @@id([roomId, userId])
   @@map("guest_visits")
+}
+
+// ── Friends (docs/v2/features/05-friends.md) ───────────────────────────────────────────────────
+
+/// A friendship is two rows, one each way, so "my friends" is one simple lookup.
+model Friendship {
+  userId   String   @map("user_id")
+  user     User     @relation("friendOf", fields: [userId], references: [id], onDelete: Cascade)
+  friendId String   @map("friend_id")
+  friend   User     @relation("friend", fields: [friendId], references: [id], onDelete: Cascade)
+  since    DateTime @default(now())
+
+  @@id([userId, friendId])
+  @@index([friendId])
+  @@map("friendships")
+}
+
+/// A friend request. Ignoring just leaves it to expire (30 days); nobody is told.
+model FriendRequest {
+  fromId    String    @map("from_id")
+  from      User      @relation("sent", fields: [fromId], references: [id], onDelete: Cascade)
+  toId      String    @map("to_id")
+  to        User      @relation("received", fields: [toId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now()) @map("created_at")
+  expiresAt DateTime  @map("expires_at")
+  /// Ignored by the receiver: gone from their list, still "Pending" for the sender until it expires
+  ignoredAt DateTime? @map("ignored_at")
+
+  @@id([fromId, toId])
+  @@index([toId])
+  @@map("friend_requests")
+}
+
+/// Blocked: no requests or DMs from them, and their room messages fold away (feature 4).
+model Block {
+  userId    String   @map("user_id")
+  user      User     @relation("blocker", fields: [userId], references: [id], onDelete: Cascade)
+  blockedId String   @map("blocked_id")
+  blocked   User     @relation("blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([userId, blockedId])
+  @@index([blockedId])
+  @@map("blocks")
 }

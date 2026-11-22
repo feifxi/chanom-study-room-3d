@@ -5,6 +5,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
 import { LoggerModule } from 'nestjs-pino';
 import { AccountsModule } from './accounts/accounts.module.js';
+import { FriendsModule } from './friends/friends.module.js';
 import { RoomsModule } from './rooms/rooms.module.js';
 import { createAuth } from './auth/auth.js';
 import { validateEnv, type Env } from './config/env.js';
@@ -59,6 +60,7 @@ import { PrismaService } from './prisma/prisma.service.js';
     HealthModule,
     AccountsModule,
     RoomsModule,
+    FriendsModule,
   ],
 })
 export class AppModule {}

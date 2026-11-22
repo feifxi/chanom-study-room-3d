@@ -17,6 +17,8 @@ import { Switch } from '@/components/ui/switch';
 import { HandleField, useHandleCheck } from '@/features/account/HandleField';
 import { useAccountDetails, useMe, useSetMe } from '@/features/account/useMe';
 import { CharacterEditor } from '@/features/avatar/CharacterEditor';
+import { PersonFace } from '@/components/PersonFace';
+import { friendsApi, useBlocks, useFriendAction } from '@/features/friends/useFriends';
 import { api } from '@/lib/api/client';
 import { AccountTab } from './AccountTab';
 import { PlusBillingTab } from './PlusBillingTab';
@@ -351,9 +353,7 @@ function Toggles({ tab }: { tab: Tab }) {
       <Row label="Show what I’m doing to friends" hint="“Focusing · Calculus”, “Playing Slave”" defaultChecked />
       <GlobalRankRow />
       <Row label="Filter rude words in chats" defaultChecked />
-      <Button variant="outline" className="w-fit rounded-full font-bold">
-        Blocked people (0)
-      </Button>
+      <BlockedPeople />
     </div>
   );
 }
@@ -363,7 +363,15 @@ function Toggles({ tab }: { tab: Tab }) {
  * Plain choices instead of an on/off whose "off" needed explaining. DMs are friends-only either way.
  */
 function FriendRequestsRow() {
-  const [who, setWho] = useState<'anyone' | 'rooms' | 'nobody'>('anyone');
+  const { data: me } = useMe();
+  const setMe = useSetMe();
+  const who = me?.requestsFrom ?? 'anyone';
+  const setWho = async (requestsFrom: typeof who) => {
+    const { data } = await api.PATCH('/api/me/privacy', { body: { requestsFrom } });
+    if (!data) return toast.error('Couldn’t save that. Try again?');
+    setMe(data);
+    toast.success('Saved');
+  };
   const options = [
     ['anyone', 'Anyone', 'Anyone with your @handle or friend link, or who meets you in a room'],
     ['rooms', 'People from my rooms', 'Members of rooms you’re in, and people inside the same room as you right now'],
@@ -380,7 +388,7 @@ function FriendRequestsRow() {
           <button
             key={id}
             type="button"
-            onClick={() => setWho(id)}
+            onClick={() => void setWho(id)}
             aria-pressed={who === id}
             className={cn('rounded-2xl border-2 p-2.5 text-left', who === id ? 'border-primary bg-secondary/40' : 'border-border')}
           >
@@ -390,6 +398,41 @@ function FriendRequestsRow() {
         ))}
       </div>
     </section>
+  );
+}
+
+/** Who you've blocked, with Unblock. Blocking happens from a friend's or a person's "…". */
+function BlockedPeople() {
+  const [open, setOpen] = useState(false);
+  const { data: me } = useMe();
+  const blocks = useBlocks(!!me?.signedUp && !me.isGuest);
+  const unblock = useFriendAction(friendsApi.unblock);
+  return (
+    <>
+      <Button variant="outline" className="w-fit rounded-full font-bold" onClick={() => setOpen(true)}>
+        Blocked people ({blocks.data?.length ?? 0})
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-[calc(100%-2rem)] rounded-3xl sm:max-w-sm">
+          <DialogTitle className="text-xl font-black">Blocked people</DialogTitle>
+          <DialogDescription>They can’t message you or send you a friend request. They aren’t told.</DialogDescription>
+          <div className="flex flex-col gap-2">
+            {blocks.data?.length === 0 && <p className="py-4 text-center text-sm text-muted-foreground">Nobody. Lovely 🌷</p>}
+            {blocks.data?.map(({ person }) => (
+              <div key={person.id} className="flex items-center gap-3 rounded-2xl border p-2.5">
+                <PersonFace who={person} size={34} />
+                <span className="min-w-0 flex-1 truncate font-extrabold">
+                  {person.name} <span className="text-xs font-semibold text-muted-foreground">@{person.handle}</span>
+                </span>
+                <Button size="sm" variant="ghost" className="rounded-full font-bold" onClick={() => unblock.mutate(person.id)}>
+                  Unblock
+                </Button>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

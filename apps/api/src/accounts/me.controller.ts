@@ -9,6 +9,7 @@ import {
   BirthdayBodySchema,
   DeletionBodySchema,
   HandleBodySchema,
+  PrivacyBodySchema,
   ProfileBodySchema,
   TooSoonSchema,
   type AccountDetails,
@@ -74,6 +75,13 @@ export class MeController {
   @ApiOkResponse({ standardSchema: MeSchema })
   profile(@Session() session: UserSession, @Body({ schema: ProfileBodySchema }) body: z.infer<typeof ProfileBodySchema>): Promise<Me> {
     return this.accounts.updateProfile(session.user.id, body);
+  }
+
+  /** Settings → Privacy & safety: who can send you a friend request. */
+  @Patch('privacy')
+  @ApiOkResponse({ standardSchema: MeSchema })
+  privacy(@Session() session: UserSession, @Body({ schema: PrivacyBodySchema }) body: z.infer<typeof PrivacyBodySchema>): Promise<Me> {
+    return this.accounts.updatePrivacy(session.user.id, body);
   }
 
   /** A new @handle: once every 30 days (409 too_soon), and it must be free (409 handle_unavailable). */
