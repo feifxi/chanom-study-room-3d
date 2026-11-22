@@ -49,6 +49,8 @@ export function useFriendAction<A, R>(call: (args: A) => Promise<R>, done?: (res
     mutationFn: call,
     onSuccess: (result, args) => {
       void client.invalidateQueries({ queryKey: FRIENDS_KEY });
+      // Who you can message changes with it
+      void client.invalidateQueries({ queryKey: ['dms'] });
       done?.(result, args);
     },
     onError: (error) => !quiet && toast.error(problem(error)),

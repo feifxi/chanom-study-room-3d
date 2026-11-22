@@ -75,6 +75,17 @@ export class LiveGateway implements OnGatewayInit, OnGatewayConnection {
     return { ok: true };
   }
 
+  /** "Mai is typing…" in a DM, to the other person's tabs. */
+  @SubscribeMessage('typing:dm')
+  async typingDm(@ConnectedSocket() socket: LiveSocket, @MessageBody() dmId: unknown) {
+    if (typeof dmId !== 'string' || !socket.data?.userId) return;
+    const dm = await this.prisma.dm.findUnique({ where: { id: dmId } });
+    const people = dm?.pair.split(':') ?? [];
+    if (!people.includes(socket.data.userId)) return;
+    const other = people.find((id) => id !== socket.data.userId)!;
+    socket.to(liveRoom.user(other)).emit('typing' as never, { dmId, person: socket.data.person } as never);
+  }
+
   /** "Mai is typing…" to the others watching the room. Sent again every few seconds while typing. */
   @SubscribeMessage('typing')
   typing(@ConnectedSocket() socket: LiveSocket, @MessageBody() roomId: unknown) {

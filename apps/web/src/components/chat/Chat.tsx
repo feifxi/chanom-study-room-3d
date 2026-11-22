@@ -638,7 +638,12 @@ function FullComposer({
     input.current?.focus();
   };
 
-  const addFiles = (list: FileList | null) => setImages((all) => [...all, ...takeImages(list, all.length)]);
+  // Taken now, not inside the state update: the input is cleared right after, and a deferred
+  // update would find its file list empty (pictures picked after typing were dropped)
+  const addFiles = (list: FileList | null) => {
+    const taken = takeImages(list, images.length);
+    if (taken.length) setImages((all) => [...all, ...taken]);
+  };
 
   return (
     <div className="relative">
@@ -800,7 +805,11 @@ export function Composer({
   const [images, setImages] = useState<string[]>([]);
   const files = useRef<HTMLInputElement>(null);
   const input = useRef<HTMLInputElement>(null);
-  const add = (list: FileList | File[] | null) => setImages((all) => [...all, ...takeImages(list, all.length)]);
+  // Taken now, not inside the state update (see FullComposer)
+  const add = (list: FileList | File[] | null) => {
+    const taken = takeImages(list, images.length);
+    if (taken.length) setImages((all) => [...all, ...taken]);
+  };
   return (
     <form
       className={cn('flex flex-col rounded-2xl border bg-card p-1.5 shadow-sm focus-within:border-primary', compact && 'rounded-xl p-1')}

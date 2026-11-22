@@ -42,7 +42,9 @@ export const PictureUploadSchema = z
 export const ChatMessageSchema = z
   .object({
     id: z.string(),
-    roomId: z.string(),
+    /** One of the two: room chat, or a DM */
+    roomId: z.string().nullable(),
+    dmId: z.string().nullable(),
     author: PersonSchema,
     text: z.string(),
     /** The message this one answers, quoted above it */

@@ -1965,6 +1965,184 @@
           "friends"
         ]
       }
+    },
+    "/api/dms": {
+      "get": {
+        "operationId": "DmsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DmSummary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "dms"
+        ]
+      }
+    },
+    "/api/dms/with/{handle}": {
+      "put": {
+        "operationId": "DmsController_open",
+        "parameters": [
+          {
+            "name": "handle",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DmOpen"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "dms"
+        ]
+      }
+    },
+    "/api/dms/{id}/messages": {
+      "get": {
+        "operationId": "DmsController_page",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "before",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagePage"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "dms"
+        ]
+      },
+      "post": {
+        "operationId": "DmsController_send",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessage"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "not_friends"
+          }
+        },
+        "tags": [
+          "dms"
+        ]
+      }
+    },
+    "/api/dms/{id}/read": {
+      "put": {
+        "operationId": "DmsController_read",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReadBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "dms"
+        ]
+      }
     }
   },
   "info": {
@@ -3324,6 +3502,11 @@
             "type": "string"
           },
           "roomId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "dmId": {
+            "nullable": true,
             "type": "string"
           },
           "author": {
@@ -3400,6 +3583,7 @@
         "required": [
           "id",
           "roomId",
+          "dmId",
           "author",
           "text",
           "replyTo",
@@ -3707,6 +3891,121 @@
         "required": [
           "person",
           "at"
+        ],
+        "additionalProperties": false
+      },
+      "DmSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "with": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "friend": {
+            "type": "boolean"
+          },
+          "blocked": {
+            "type": "boolean"
+          },
+          "last": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "mine": {
+                "type": "boolean"
+              },
+              "pictures": {
+                "type": "boolean"
+              },
+              "deleted": {
+                "type": "boolean"
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              }
+            },
+            "required": [
+              "text",
+              "mine",
+              "pictures",
+              "deleted",
+              "createdAt"
+            ],
+            "additionalProperties": false
+          },
+          "unread": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "with",
+          "friend",
+          "blocked",
+          "last",
+          "unread"
+        ],
+        "additionalProperties": false
+      },
+      "DmOpen": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "nullable": true,
+            "type": "string"
+          },
+          "with": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "friend": {
+            "type": "boolean"
+          },
+          "blocked": {
+            "type": "boolean"
+          },
+          "sharedRooms": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "emoji": {
+                  "type": "string"
+                },
+                "mapId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "emoji",
+                "mapId"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "with",
+          "friend",
+          "blocked",
+          "sharedRooms"
         ],
         "additionalProperties": false
       }

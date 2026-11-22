@@ -2,16 +2,16 @@
 
 import { useMemo, type ReactNode } from 'react';
 import { toast } from 'sonner';
-import { ChatView, pickedFile, type ChatMessageView } from '@/components/chat/Chat';
+import { ChatView, pickedFile, type ChatMessageView, type Mentionable } from '@/components/chat/Chat';
 import { useMe } from '@/features/account/useMe';
 import { useBlocks } from '@/features/friends/useFriends';
 import { useMembers } from '@/features/rooms/useRooms';
-import { useRoomChat, type ChatMessage } from './useRoomChat';
+import { useChat, type ChatMessage, type Thread } from './useRoomChat';
 
-const colorOf = (p: { look: { outfit: string } | null }) => p.look?.outfit ?? '#9c8aa0';
+export const colorOf = (p: { look: { outfit: string } | null }) => p.look?.outfit ?? '#9c8aa0';
 
 /** "20:41" today, "Yesterday 20:41", else "Nov 18, 20:41". Outside components: render can't read the clock. */
-function chatTime(iso: string, now = new Date()) {
+export function chatTime(iso: string, now = new Date()) {
   const d = new Date(iso);
   const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   const day = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
@@ -37,8 +37,42 @@ export function RoomChat({
   className?: string;
 }) {
   const { data: me } = useMe();
-  const chat = useRoomChat(roomId);
   const members = useMembers(roomId);
+  return (
+    <ThreadChat
+      thread={{ room: roomId }}
+      className={className}
+      placeholder="Message the room"
+      moderator={moderator}
+      intro={intro}
+      mentionables={(members.data ?? [])
+        .filter((x) => x.person.id !== me?.id && x.person.handle)
+        .map((x) => ({ id: x.person.id, handle: x.person.handle!, name: x.person.name, color: colorOf(x.person) }))}
+    />
+  );
+}
+
+/** Any saved chat on the API (a room's or a DM), live, in the full chat view. */
+export function ThreadChat({
+  thread,
+  placeholder,
+  mentionables,
+  moderator = false,
+  intro,
+  locked,
+  className,
+}: {
+  thread: Thread;
+  placeholder: string;
+  mentionables: Mentionable[];
+  moderator?: boolean;
+  intro?: ReactNode;
+  /** Replaces the message box (an unfriended or blocked DM) */
+  locked?: ReactNode;
+  className?: string;
+}) {
+  const { data: me } = useMe();
+  const chat = useChat(thread);
   const blocks = useBlocks(!!me?.signedUp);
   const blocked = useMemo(() => new Set(blocks.data?.map((b) => b.person.id)), [blocks.data]);
   const byId = useMemo(() => new Map(chat.messages.map((m) => [m.id, m])), [chat.messages]);
@@ -71,14 +105,13 @@ export function RoomChat({
 
   return (
     <ChatView
-      key={roomId}
+      key={'room' in thread ? thread.room : thread.dm}
       className={className}
       messages={chat.messages.map(view)}
-      placeholder="Message the room"
-      mentionables={(members.data ?? [])
-        .filter((x) => x.person.id !== me?.id && x.person.handle)
-        .map((x) => ({ id: x.person.id, handle: x.person.handle!, name: x.person.name, color: colorOf(x.person) }))}
+      placeholder={placeholder}
+      mentionables={mentionables}
       moderator={moderator}
+      locked={locked}
       dividerAt={firstUnread(chat.messages, chat.lastReadId, me?.id)}
       typing={chat.typing}
       intro={intro}

@@ -3,8 +3,11 @@
 **Status:** room chat is built in the real app (2026-11-22): messages, replies, edits, deletes with
 Undo, reactions, @mentions and @room, "is typing", "New messages", unread counts and "@ you" on Home,
 live in every open tab, on the room's page and in 3D (the Chat panel and ⤢). Pictures
-too (up to 4 a message). Still to come in step 3: DMs, notifications. **Try it:** open a room at http://localhost:3000/home in two browsers
-after `pnpm dev`. The demo: http://localhost:3100/home/messages/mai (Mai types back),
+too (up to 4 a message). DMs too (2026-11-22): the Messages page, the header's popover and the
+Messages tab in 3D, with the same messages, pictures and typing, and read-only history once
+unfriended. Still to come in step 3: muting a DM and the notification bell; "Ask to join" and
+"Invite to a room" cards come with presence. **Try it:** open a room, or Friends → 💬 on a friend,
+at http://localhost:3000/home in two browsers after `pnpm dev`. The demo: http://localhost:3100/home/messages/mai (Mai types back),
 /home/messages/ken (unfriended).
 
 Each room has one saved chat, every DM is 1-to-1 between friends, and every thread works the same
@@ -15,8 +18,10 @@ way: react, reply, edit, delete, @mentions and pictures. No threads and no read 
 - **Room chat:** the room's one permanent chat, for members. Same thread on the room's Chat page
   (outside 3D), in the big chat window in 3D, and in the small Chat panel's "Room chat" tab.
 - **Bubbles:** in 3D only, over the speaker's head, reset when the room empties (feature 6).
-- **DMs:** 1-to-1, friends only, text only (no calls; to talk, meet in a room). Messages page, the
-  header's DM popover and the Messages tab in 3D.
+- **DMs:** 1-to-1, friends only, no calls (to talk, meet in a room); pictures like any chat. The
+  Messages page (`/home/messages/<handle>`), the header's DM popover and the Messages tab in 3D.
+  Start one from a friend (💬 on Friends, or the Messages list). A chat only joins the lists once a
+  message is sent, so opening one and leaving it empty leaves no trace.
 
 Every thread works the same (`ChatThread` in the demo).
 
@@ -72,6 +77,15 @@ Hover (or long-press on phones) shows a small toolbar:
   publishes the result through Redis (`LiveService`, the Socket.IO Redis emitter); the gateway
   only checks the session, lets members watch a room and passes "typing", which is never stored.
   A tab that reconnects reloads the chat to catch up.
+- **DMs** (`apps/api/src/dms/`): `GET /api/dms` (your chats with a message, newest first, with
+  unread counts), `PUT /api/dms/with/:handle` (opens the pair's one chat, made on first open if
+  you're friends; also says whether you're friends, whether you blocked them, and the rooms you
+  share), `GET/POST /api/dms/:id/messages`, `PUT /api/dms/:id/read`. Editing, deleting and
+  reacting use the same `/api/messages/:id` routes; a DM's events go to both people's own tabs, and
+  typing is `typing:dm`. Tables: `dms` (one per pair, `pair` = the two user ids sorted, `last_id`
+  for sorting) and `dm_members` (each person's read marker); messages carry `dm_id` instead of
+  `room_id`. Not friends any more (unfriended or blocked either way): sending, editing and
+  reacting are refused (`not_friends`), deleting your own still works.
 - **API** (`apps/api/src/chat/`): `GET/POST /api/rooms/:id/messages` (pages by id, `before`),
   `PUT /api/rooms/:id/read`, `PATCH/DELETE /api/messages/:id`, `PUT/DELETE
 /api/messages/:id/reactions`. Live events: `message` (new or changed), `message:deleted`,

@@ -1,19 +1,36 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Composer, pickedFile } from '@/components/chat/Chat';
 import { cn } from '@/lib/utils';
 import { UserAvatar } from '@/components/UserAvatar';
 import { useMe } from '@/features/account/useMe';
-import { useRoomChat } from './useRoomChat';
+import { useChat, type Thread } from './useRoomChat';
+
+/** The room chat in the small Chat panel in 3D. */
+export function MiniRoomChat({ roomId, onOpen }: { roomId: string; onOpen: () => void }) {
+  return <MiniChat thread={{ room: roomId }} placeholder="Message the room" onOpen={onOpen} />;
+}
 
 /**
- * The room chat in the small Chat panel in 3D: the latest messages in a narrow column and a small
- * message box. Reacting, replying and older messages are in the big window (⤢), which `onOpen` opens.
+ * A saved chat (room or DM) in the small Chat panel in 3D: the latest messages in a narrow column
+ * and a small message box. Reacting, replying and older messages are in the big window (⤢), which
+ * `onOpen` opens.
  */
-export function MiniRoomChat({ roomId, onOpen }: { roomId: string; onOpen: () => void }) {
+export function MiniChat({
+  thread,
+  placeholder,
+  locked,
+  onOpen,
+}: {
+  thread: Thread;
+  placeholder: string;
+  /** Replaces the message box (an unfriended or blocked DM) */
+  locked?: ReactNode;
+  onOpen: () => void;
+}) {
   const { data: me } = useMe();
-  const chat = useRoomChat(roomId);
+  const chat = useChat(thread);
   const last = chat.messages[chat.messages.length - 1];
 
   // Looking at the tab is reading it
@@ -91,13 +108,15 @@ export function MiniRoomChat({ roomId, onOpen }: { roomId: string; onOpen: () =>
         </div>
       </div>
       <p className="h-4 px-1.5 text-[11px] text-muted-foreground">{chat.typing && `${chat.typing} is typing…`}</p>
-      <Composer
-        compact
-        pictures
-        placeholder="Message the room"
-        onSend={(text, images) => chat.send.mutate({ text, files: images.map(pickedFile).filter((f): f is File => !!f) })}
-        onTyping={(on) => on && chat.sendTyping()}
-      />
+      {locked ?? (
+        <Composer
+          compact
+          pictures
+          placeholder={placeholder}
+          onSend={(text, images) => chat.send.mutate({ text, files: images.map(pickedFile).filter((f): f is File => !!f) })}
+          onTyping={(on) => on && chat.sendTyping()}
+        />
+      )}
     </>
   );
 }

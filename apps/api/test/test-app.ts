@@ -59,7 +59,7 @@ export async function createTestApp() {
 
 /** Empties the tables between tests (rooms and everything in them go with their users). */
 export async function resetAccounts(prisma: PrismaService) {
-  await prisma.$executeRawUnsafe('TRUNCATE users, sessions, accounts, verifications, age_locks, handle_holds, rooms CASCADE');
+  await prisma.$executeRawUnsafe('TRUNCATE users, sessions, accounts, verifications, age_locks, handle_holds, rooms, dms CASCADE');
 }
 
 /**

@@ -19,7 +19,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { useMeAsUser, useSignOut } from '@/features/account/useMe';
-import { DMS, userById } from '@/lib/mock';
+import { PersonFace } from '@/components/PersonFace';
+import { dmUnread, lastLine, useDms } from '@/features/dms/useDms';
 import { useFriendRequests } from '@/features/friends/useFriends';
 import { useQuests } from '@/lib/quests';
 import { useViewer } from '@/lib/viewer';
@@ -143,13 +144,14 @@ export function PhoneTabs() {
 /** DMs aren't tied to a place, so they're one button away from anywhere. */
 function Messages() {
   const [open, setOpen] = useState(false);
-  const unread = DMS.reduce((n, d) => n + (d.unread ?? 0), 0);
+  const dms = useDms();
+  const unread = dmUnread(dms.data);
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
           className="relative grid size-10 place-items-center rounded-full border bg-card text-muted-foreground shadow-sm hover:text-foreground"
-          aria-label="Messages"
+          aria-label={unread ? `Messages, ${unread} unread` : 'Messages'}
         >
           <MessageCircle className="size-[18px]" />
           {unread > 0 && (
@@ -161,28 +163,26 @@ function Messages() {
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 rounded-3xl p-2">
         <p className="px-2 pt-1 pb-1.5 text-[11px] font-black tracking-wider text-muted-foreground uppercase">Messages</p>
-        {DMS.map((d) => {
-          const u = userById(d.with);
-          return (
-            <Link
-              key={d.id}
-              href={`/home/messages/${d.id}`}
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 rounded-2xl px-2 py-1.5 hover:bg-muted"
-            >
-              <UserAvatar user={u} size={34} presence />
-              <span className="min-w-0 flex-1">
-                <span className={cn('block truncate text-sm', d.unread ? 'font-black' : 'font-semibold')}>{u.name}</span>
-                <span className="block truncate text-xs text-muted-foreground">{d.messages.at(-1)?.text}</span>
+        {dms.data?.length === 0 && <p className="px-2 py-2 text-sm text-muted-foreground">No messages yet. Say hi to a friend 👋</p>}
+        {dms.data?.slice(0, 6).map((d) => (
+          <Link
+            key={d.id}
+            href={`/home/messages/${d.with.handle}`}
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2.5 rounded-2xl px-2 py-1.5 hover:bg-muted"
+          >
+            <PersonFace who={d.with} size={34} />
+            <span className="min-w-0 flex-1">
+              <span className={cn('block truncate text-sm', d.unread ? 'font-black' : 'font-semibold')}>{d.with.name}</span>
+              <span className="block truncate text-xs text-muted-foreground">{lastLine(d)}</span>
+            </span>
+            {d.unread > 0 && (
+              <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-black text-primary-foreground">
+                {d.unread}
               </span>
-              {!!d.unread && (
-                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-black text-primary-foreground">
-                  {d.unread}
-                </span>
-              )}
-            </Link>
-          );
-        })}
+            )}
+          </Link>
+        ))}
         <Link
           href="/home/messages"
           onClick={() => setOpen(false)}

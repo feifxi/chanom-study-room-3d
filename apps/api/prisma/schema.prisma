@@ -60,6 +60,7 @@ model User {
   blocks           Block[]         @relation("blocker")
   blockedBy        Block[]         @relation("blocked")
   pictures         Picture[]
+  dmMembers        DmMember[]
 
   @@index([deleteAt])
   @@map("users")
@@ -337,11 +338,13 @@ model Block {
 // ── Chat (docs/v2/features/04-chat-and-dms.md) ─────────────────────────────────────────────────
 
 /// A chat message. Ids are UUIDv7, so they sort by time: pages, read markers and unread counts
-/// compare ids. DMs add their own column when they come.
+/// compare ids. A message is in a room's chat or in a DM (exactly one of the two).
 model Message {
   id           String     @id @default(uuid(7))
   roomId       String?    @map("room_id")
   room         Room?      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  dmId         String?    @map("dm_id")
+  dm           Dm?        @relation(fields: [dmId], references: [id], onDelete: Cascade)
   authorId     String     @map("author_id")
   author       User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
   text         String
@@ -361,7 +364,36 @@ model Message {
   reactions    Reaction[]
 
   @@index([roomId, id])
+  @@index([dmId, id])
   @@map("messages")
+}
+
+/// A 1-to-1 chat between two people (friends to send; the history stays if they stop being).
+/// Made when the first message is sent, so opening an empty one leaves no trace.
+model Dm {
+  id        String     @id @default(uuid(7))
+  /// The two user ids, sorted and joined with ":", so each pair has one DM
+  pair      String     @unique
+  /// The newest message's id, to sort the list
+  lastId    String?    @map("last_id")
+  createdAt DateTime   @default(now()) @map("created_at")
+  members   DmMember[]
+  messages  Message[]
+
+  @@map("dms")
+}
+
+model DmMember {
+  dmId       String  @map("dm_id")
+  dm         Dm      @relation(fields: [dmId], references: [id], onDelete: Cascade)
+  userId     String  @map("user_id")
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// The newest message you've seen: drives "New messages" and unread counts, never shown to them
+  lastReadId String? @map("last_read_id")
+
+  @@id([dmId, userId])
+  @@index([userId])
+  @@map("dm_members")
 }
 
 /// A picture in a message (up to 4). The browser uploads the original straight to S3

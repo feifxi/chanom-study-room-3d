@@ -65,14 +65,16 @@ export class PicturesService {
 
   /** A short-lived link to the picture, for the room's members (or its uploader before it's sent). */
   async open(userId: string, id: string): Promise<string> {
-    const picture = await this.prisma.picture.findUnique({ where: { id }, include: { message: true } });
+    const picture = await this.prisma.picture.findUnique({ where: { id }, include: { message: { include: { dm: true } } } });
     if (!picture?.key || picture.status !== 'ready') throw new NotFoundException();
-    const roomId = picture.message?.roomId;
-    const allowed = picture.message
-      ? !picture.message.deletedAt &&
-        !!roomId &&
-        !!(await this.prisma.membership.findUnique({ where: { roomId_userId: { roomId, userId } } }))
-      : picture.uploaderId === userId;
+    const message = picture.message;
+    const roomId = message?.roomId;
+    const allowed = !message
+      ? picture.uploaderId === userId
+      : !message.deletedAt &&
+        (roomId
+          ? !!(await this.prisma.membership.findUnique({ where: { roomId_userId: { roomId, userId } } }))
+          : !!message.dm?.pair.split(':').includes(userId));
     if (!allowed) throw new NotFoundException();
     return this.storage.downloadUrl(picture.key);
   }

@@ -2,16 +2,16 @@
 
 import { useState } from 'react';
 import { MessageCircle, X } from 'lucide-react';
-import { ChatThread, DmLocked } from '@/components/chat/Chat';
-import { UserAvatar } from '@/components/UserAvatar';
+import { PersonFace } from '@/components/PersonFace';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
-import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { DMS, userById, type Server } from '@/lib/mock';
+import type { Server } from '@/lib/mock';
+import { DmChat } from '@/features/dms/DmChat';
+import { dmUnread, useDms } from '@/features/dms/useDms';
 import { RoomChat } from '@/features/chat/RoomChat';
 import { roleIn } from '@/lib/viewer';
 
-/** What the big chat panel shows: one of the server's chats, or a DM. */
+/** What the big chat panel shows: the room's chat, or a DM (by the other person's @handle). */
 export interface ChatTarget {
   kind: 'channel' | 'dm';
   id: string;
@@ -35,10 +35,11 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
   // A room has one main chat (the mock servers' first chat stands in for it)
   const channels = server.channels.slice(0, 1);
   const [current, setCurrent] = useState(initial);
+  const dms = useDms();
   // Switching tabs goes back to the chat you last had open there (or the first one)
   const [last, setLast] = useState<Record<ChatTarget['kind'], string | undefined>>({
     channel: server.channels[0]?.id,
-    dm: DMS[0]?.id,
+    dm: dms.data?.[0]?.with.handle ?? undefined,
     [initial.kind]: initial.id,
   });
   const open = (t: ChatTarget) => {
@@ -47,15 +48,12 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
   };
   const switchTab = (kind: ChatTarget['kind']) => {
     if (kind === current.kind) return;
-    const id = last[kind];
+    const id = last[kind] ?? (kind === 'dm' ? dms.data?.[0]?.with.handle : undefined) ?? undefined;
     if (id) setCurrent({ kind, id });
   };
   const serverUnread = channels.reduce((n, c) => n + (c.unread ?? 0), 0);
-  const dmUnread = DMS.reduce((n, d) => n + (d.unread ?? 0), 0);
-  const dm = current.kind === 'dm' ? DMS.find((d) => d.id === current.id) : undefined;
-  const friend = dm ? userById(dm.with) : undefined;
-  const base = dm ? dm.messages : [];
-  const unread = dm ? dm.unread : server.channels.find((c) => c.id === current.id)?.unread;
+  const unreadDms = dmUnread(dms.data);
+  const friend = current.kind === 'dm' ? dms.data?.find((d) => d.with.handle === current.id)?.with : undefined;
   const is = (kind: ChatTarget['kind'], id: string) => current.kind === kind && current.id === id;
 
   return (
@@ -64,15 +62,17 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
       className="flex h-[min(760px,88dvh)] max-w-[calc(100%-1.5rem)] flex-col gap-0 overflow-hidden rounded-[2rem] p-0 sm:max-w-5xl"
     >
       <header className="flex items-center gap-3 border-b px-5 py-4">
-        {friend ? (
-          <UserAvatar user={friend} size={44} presence />
+        {current.kind === 'dm' ? (
+          friend && <PersonFace who={friend} size={44} />
         ) : (
           <span className={cn('grid size-11 place-items-center rounded-2xl text-xl', server.tint)}>{server.emoji}</span>
         )}
         <div className="min-w-0 flex-1">
-          <DialogTitle className="text-xl font-black">{friend ? friend.name : 'Room chat'}</DialogTitle>
+          <DialogTitle className="text-xl font-black">
+            {current.kind === 'dm' ? (friend?.name ?? `@${current.id}`) : 'Room chat'}
+          </DialogTitle>
           <DialogDescription className="text-sm">
-            {friend ? (friend.activity ?? 'Direct message') : server.name} · you’re still in the room
+            {current.kind === 'dm' ? 'Direct message' : server.name} · you’re still in the room
           </DialogDescription>
         </div>
         <DialogClose
@@ -84,7 +84,7 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
       </header>
       <div className="flex min-h-0 flex-1">
         <aside className="hidden w-60 flex-none flex-col gap-2 overflow-y-auto bg-secondary/40 p-3 sm:flex">
-          <Tabs tab={current.kind} onTab={switchTab} server={server} serverUnread={serverUnread} dmUnread={dmUnread} />
+          <Tabs tab={current.kind} onTab={switchTab} server={server} serverUnread={serverUnread} dmUnread={unreadDms} />
           <div className="flex flex-col gap-0.5">
             {current.kind === 'channel'
               ? channels.map((c) => (
@@ -93,21 +93,23 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
                     <span className="flex-1 truncate">Room chat</span>
                   </SideItem>
                 ))
-              : DMS.map((d) => {
-                  const u = userById(d.with);
-                  return (
-                    <SideItem key={d.id} active={is('dm', d.id)} onClick={() => open({ kind: 'dm', id: d.id })} dot={!!d.unread}>
-                      <UserAvatar user={u} size={24} presence />
-                      <span className="flex-1 truncate">{u.name}</span>
-                    </SideItem>
-                  );
-                })}
+              : dms.data?.map((d) => (
+                  <SideItem
+                    key={d.id}
+                    active={is('dm', d.with.handle ?? '')}
+                    onClick={() => d.with.handle && open({ kind: 'dm', id: d.with.handle })}
+                    dot={d.unread > 0}
+                  >
+                    <PersonFace who={d.with} size={24} />
+                    <span className="flex-1 truncate">{d.with.name}</span>
+                  </SideItem>
+                ))}
           </div>
         </aside>
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Phones: no sidebar, so the tabs sit on top and the list becomes chips */}
           <div className="flex flex-col gap-2 border-b p-2 sm:hidden">
-            <Tabs tab={current.kind} onTab={switchTab} server={server} serverUnread={serverUnread} dmUnread={dmUnread} />
+            <Tabs tab={current.kind} onTab={switchTab} server={server} serverUnread={serverUnread} dmUnread={unreadDms} />
             <div className="flex gap-1 overflow-x-auto">
               {current.kind === 'channel'
                 ? channels.map((c) => (
@@ -115,9 +117,13 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
                       Room chat
                     </Chip>
                   ))
-                : DMS.map((d) => (
-                    <Chip key={d.id} active={is('dm', d.id)} onClick={() => open({ kind: 'dm', id: d.id })}>
-                      {userById(d.with).name}
+                : dms.data?.map((d) => (
+                    <Chip
+                      key={d.id}
+                      active={is('dm', d.with.handle ?? '')}
+                      onClick={() => d.with.handle && open({ kind: 'dm', id: d.with.handle })}
+                    >
+                      {d.with.name}
                     </Chip>
                   ))}
             </div>
@@ -125,19 +131,7 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
           {current.kind === 'channel' ? (
             <RoomChat key={key(current)} roomId={server.id} moderator={!!roleIn(server)} />
           ) : (
-            <ChatThread
-              key={key(current)}
-              initial={base}
-              unread={unread}
-              members={friend ? ['me', friend.id] : server.members}
-              moderator={!friend && !!roleIn(server)}
-              placeholder={friend ? `Message ${friend.name}` : 'Message the room'}
-              locked={
-                friend && dm?.unfriended ? (
-                  <DmLocked name={friend.name} state="unfriended" onAction={() => toast.success(`Friend request sent to ${friend.name}`)} />
-                ) : undefined
-              }
-            />
+            <DmChat key={key(current)} handle={current.id} />
           )}
         </div>
       </div>

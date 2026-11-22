@@ -6,11 +6,11 @@ import { cn } from '@/lib/utils';
 
 /** Messages: conversations on the left, the open one on the right. Phones show one at a time. */
 export default function MessagesLayout({ children }: LayoutProps<'/home/messages'>) {
-  const { id } = useParams<{ id?: string }>();
+  const { handle } = useParams<{ handle?: string }>();
   return (
     <div className="flex h-full">
-      <MessagesSidebar className={cn('w-full flex-none md:flex md:w-80', id && 'hidden')} />
-      <div className={cn('min-w-0 flex-1', !id && 'hidden md:block')}>{children}</div>
+      <MessagesSidebar className={cn('w-full flex-none md:flex md:w-80', handle && 'hidden')} />
+      <div className={cn('min-w-0 flex-1', !handle && 'hidden md:block')}>{children}</div>
     </div>
   );
 }

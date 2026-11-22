@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Copy, MoreHorizontal, UserPlus, X } from 'lucide-react';
+import Link from 'next/link';
+import { Check, Copy, MessageCircle, MoreHorizontal, UserPlus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { PersonFace } from '@/components/PersonFace';
 import { Button } from '@/components/ui/button';
@@ -114,6 +115,11 @@ function FriendRow({ friend }: { friend: Friend }) {
         </p>
         <p className="truncate text-sm text-muted-foreground">Friends since {since}</p>
       </div>
+      <Button asChild size="icon" variant="ghost" className="rounded-full" aria-label={`Message ${person.name}`}>
+        <Link href={`/home/messages/${person.handle}`}>
+          <MessageCircle />
+        </Link>
+      </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button size="icon" variant="ghost" className="rounded-full" aria-label={`More for ${person.name}`}>

@@ -8,30 +8,37 @@ import { PicturesService, pictureUrl } from './pictures.service.js';
 import { toPerson } from '../rooms/person.js';
 import type { ChatMessage, MessagePage } from './chat.schemas.js';
 
-const messageInclude = {
+export type SendInput = { text: string; replyToId?: string; pictureIds?: string[] };
+
+export const messageInclude = {
   author: true,
+  dm: { select: { pair: true } },
   replyTo: { include: { author: true, pictures: { select: { id: true } } } },
   pictures: { orderBy: { position: 'asc' } },
   reactions: { orderBy: { createdAt: 'asc' } },
 } satisfies Prisma.MessageInclude;
-type MessageRow = Prisma.MessageGetPayload<{ include: typeof messageInclude }>;
+export type MessageRow = Prisma.MessageGetPayload<{ include: typeof messageInclude }>;
 
 /** Live events the web app listens for. */
 export const CHAT_EVENTS = {
   /** A new or changed message (edit, reaction): replace it by id */
   message: 'message',
-  /** { roomId, id } */
+  /** { roomId, dmId, id } */
   deleted: 'message:deleted',
-  /** To the author: { roomId, messageId } — a picture couldn't be sent and was left out */
+  /** To the author: { roomId, dmId, messageId } — a picture couldn't be sent and was left out */
   pictureFailed: 'picture:failed',
 } as const;
 
-function toMessage(m: MessageRow): ChatMessage {
+/** A DM's two people, from its pair key (no query needed). */
+export const dmPeople = (pair: string) => pair.split(':');
+
+export function toMessage(m: MessageRow): ChatMessage {
   const reactions = new Map<string, string[]>();
   for (const r of m.reactions) reactions.set(r.emoji, [...(reactions.get(r.emoji) ?? []), r.userId]);
   return {
     id: m.id,
-    roomId: m.roomId!,
+    roomId: m.roomId,
+    dmId: m.dmId,
     author: toPerson(m.author),
     text: m.text,
     replyTo: m.replyTo && {
@@ -53,7 +60,8 @@ function toMessage(m: MessageRow): ChatMessage {
 
 /**
  * Room chat (docs/v2/features/04-chat-and-dms.md): each room's one saved chat, for members. Writes
- * happen here and go out live through the gateway; reading history is paged by message id.
+ * happen here and go out live through the gateway; reading history is paged by message id. What you
+ * do to a message (edit, delete, react) works the same in a DM; DmsService has the DM-only parts.
  */
 @Injectable()
 export class ChatService {
@@ -79,7 +87,7 @@ export class ChatService {
     };
   }
 
-  async send(userId: string, roomId: string, input: { text: string; replyToId?: string; pictureIds?: string[] }): Promise<ChatMessage> {
+  async send(userId: string, roomId: string, input: SendInput): Promise<ChatMessage> {
     const member = await this.member(userId, roomId);
     if (member.timedOutUntil && member.timedOutUntil > new Date()) {
       throw new ForbiddenException({ message: 'You’re timed out in this room for now.', code: 'timed_out', until: member.timedOutUntil });
@@ -89,9 +97,31 @@ export class ChatService {
       if (!original) throw new NotFoundException('That message is gone');
     }
     const { mentions, mentionsRoom } = await this.mentions(roomId, input.text, member.role !== 'member');
+    const message = await this.create(userId, { roomId }, input, mentions, mentionsRoom);
+    // Sending means you've read up to here
+    await this.prisma.membership.update({ where: { roomId_userId: { roomId, userId } }, data: { lastReadId: message.id } });
+    return message;
+  }
+
+  /** A new message in a room or a DM: pictures attached, then out live (once they're ready). */
+  async create(
+    userId: string,
+    thread: { roomId: string } | { dmId: string },
+    input: SendInput,
+    mentions: string[],
+    mentionsRoom: boolean,
+  ): Promise<ChatMessage> {
     const pictureIds = input.pictureIds ?? [];
     const created = await this.prisma.message.create({
-      data: { roomId, authorId: userId, text: input.text, replyToId: input.replyToId, mentions, mentionsRoom, ready: !pictureIds.length },
+      data: {
+        ...thread,
+        authorId: userId,
+        text: input.text,
+        replyToId: input.replyToId,
+        mentions,
+        mentionsRoom,
+        ready: !pictureIds.length,
+      },
     });
     try {
       await this.pictures.attach(userId, pictureIds, created.id);
@@ -99,8 +129,6 @@ export class ChatService {
       await this.prisma.message.delete({ where: { id: created.id } });
       throw error;
     }
-    // Sending means you've read up to here
-    await this.prisma.membership.update({ where: { roomId_userId: { roomId, userId } }, data: { lastReadId: created.id } });
     if (!pictureIds.length)
       return this.publish(await this.prisma.message.findUniqueOrThrow({ where: { id: created.id }, include: messageInclude }));
     // With pictures it shows once they're all ready: now, or when the worker finishes the last one
@@ -114,12 +142,12 @@ export class ChatService {
    */
   async release(messageId: string, { droppedPicture = false } = {}): Promise<void> {
     const row = await this.prisma.message.findUnique({ where: { id: messageId }, include: messageInclude });
-    if (!row || row.deletedAt || !row.roomId) return;
-    const roomId = row.roomId;
-    if (droppedPicture) this.live.toUser(row.authorId, CHAT_EVENTS.pictureFailed, { roomId, messageId });
+    if (!row || row.deletedAt) return;
+    const { roomId, dmId } = row;
+    if (droppedPicture) this.live.toUser(row.authorId, CHAT_EVENTS.pictureFailed, { roomId, dmId, messageId });
     if (!row.text && !row.pictures.length) {
       await this.prisma.message.delete({ where: { id: messageId } });
-      this.live.toUser(row.authorId, CHAT_EVENTS.deleted, { roomId, id: messageId });
+      this.live.toUser(row.authorId, CHAT_EVENTS.deleted, { roomId, dmId, id: messageId });
       return;
     }
     if (row.pictures.some((p) => p.status !== 'ready')) {
@@ -133,9 +161,11 @@ export class ChatService {
 
   async edit(userId: string, messageId: string, text: string): Promise<ChatMessage> {
     const message = await this.message(messageId);
-    const member = await this.member(userId, message.roomId!);
+    const { moderator } = await this.access(userId, message);
     if (message.authorId !== userId) throw new ForbiddenException('You can only edit your own messages');
-    const { mentions, mentionsRoom } = await this.mentions(message.roomId!, text, member.role !== 'member');
+    const { mentions, mentionsRoom } = message.roomId
+      ? await this.mentions(message.roomId, text, moderator)
+      : await this.dmMentions(message.dm!.pair, text);
     const row = await this.prisma.message.update({
       where: { id: messageId },
       data: { text, mentions, mentionsRoom, editedAt: new Date() },
@@ -144,12 +174,12 @@ export class ChatService {
     return this.publish(row);
   }
 
-  /** Your own, or anyone's if you're the owner or a mod of the room. */
+  /** Your own, or anyone's if you're the owner or a mod of the room (in a DM, only your own). */
   async remove(userId: string, messageId: string): Promise<void> {
     const message = await this.message(messageId);
-    const member = await this.member(userId, message.roomId!);
-    if (message.authorId !== userId && member.role === 'member')
-      throw new ForbiddenException('Only the owner and mods can delete others’ messages');
+    // Your own words are always yours to take back, friends or not
+    const { moderator } = await this.access(userId, message, false);
+    if (message.authorId !== userId && !moderator) throw new ForbiddenException('Only the owner and mods can delete others’ messages');
     await this.prisma.$transaction([
       this.prisma.message.update({
         where: { id: messageId },
@@ -158,12 +188,12 @@ export class ChatService {
       this.prisma.reaction.deleteMany({ where: { messageId } }),
     ]);
     await this.pictures.removeFor(messageId);
-    this.live.toRoom(message.roomId!, CHAT_EVENTS.deleted, { roomId: message.roomId, id: messageId });
+    this.deliver(message, CHAT_EVENTS.deleted, { roomId: message.roomId, dmId: message.dmId, id: messageId });
   }
 
   async react(userId: string, messageId: string, emoji: string, on: boolean): Promise<ChatMessage> {
     const message = await this.message(messageId);
-    await this.member(userId, message.roomId!);
+    await this.access(userId, message);
     if (on) {
       await this.prisma.reaction.upsert({
         where: { messageId_userId_emoji: { messageId, userId, emoji } },
@@ -215,9 +245,40 @@ export class ChatService {
   }
 
   private async message(id: string) {
-    const message = await this.prisma.message.findUnique({ where: { id } });
-    if (!message || message.deletedAt || !message.roomId) throw new NotFoundException();
+    const message = await this.prisma.message.findUnique({ where: { id }, include: { dm: { select: { pair: true } } } });
+    if (!message || message.deletedAt) throw new NotFoundException();
     return message;
+  }
+
+  /**
+   * You can see the message's chat: a member of its room, or one of its DM's two people. Changing
+   * things in a DM (edit, react) needs you to still be friends: otherwise it's read-only history.
+   */
+  private async access(userId: string, message: { roomId: string | null; dm: { pair: string } | null }, write = true) {
+    if (message.roomId) return { moderator: (await this.member(userId, message.roomId)).role !== 'member' };
+    await requireSignedUp(this.prisma, userId);
+    const people = message.dm ? dmPeople(message.dm.pair) : [];
+    if (!people.includes(userId)) throw new NotFoundException();
+    const other = people.find((id) => id !== userId)!;
+    if (write && !(await this.prisma.friendship.findUnique({ where: { userId_friendId: { userId, friendId: other } } }))) {
+      throw new ForbiddenException({ message: 'You’re not friends any more, so this chat is read-only.', code: 'not_friends' });
+    }
+    return { moderator: false };
+  }
+
+  /** In a DM you can only mention the other person. */
+  async dmMentions(pair: string, text: string) {
+    const handles = mentionedHandles(text);
+    const people = handles.length
+      ? await this.prisma.user.findMany({ where: { id: { in: dmPeople(pair) }, handle: { in: handles } }, select: { id: true } })
+      : [];
+    return { mentions: people.map((p) => p.id), mentionsRoom: false };
+  }
+
+  /** To the room's watchers, or to both people in a DM. */
+  private deliver(message: { roomId: string | null; dm: { pair: string } | null }, event: string, payload: unknown) {
+    if (message.roomId) this.live.toRoom(message.roomId, event, payload);
+    else if (message.dm) this.live.toUsers(dmPeople(message.dm.pair), event, payload);
   }
 
   /** Mentions are members only; @room only counts from the owner and mods. */
@@ -229,10 +290,10 @@ export class ChatService {
     return { mentions: people.map((p) => p.userId), mentionsRoom: moderator && handles.includes('room') };
   }
 
-  /** To the room, or only to its author while its pictures are still on their way. */
+  /** To the room (or the DM), or only to its author while its pictures are still on their way. */
   private publish(row: MessageRow): ChatMessage {
     const message = toMessage(row);
-    if (row.ready) this.live.toRoom(message.roomId, CHAT_EVENTS.message, message);
+    if (row.ready) this.deliver(row, CHAT_EVENTS.message, message);
     else this.live.toUser(row.authorId, CHAT_EVENTS.message, message);
     return message;
   }

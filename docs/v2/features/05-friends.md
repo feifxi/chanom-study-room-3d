@@ -1,8 +1,8 @@
 # 5. Friends
 
 **Status:** friends, requests, blocking, the friend link and "Who can send me friend requests" are
-built in the real app (2026-11-22). Waiting on the rest of step 3: presence ("Out in rooms",
-Online, Offline, "Ask to join"), the message button and "Invite to a room" (DMs), and "Add friend"
+built in the real app (2026-11-22), and so is the message button (DMs). Waiting on the rest of
+step 3: presence ("Out in rooms", Online, Offline, "Ask to join"), "Invite to a room", and "Add friend"
 in a room's people list (the 3D room, step 4). Gift Plus waits for Plus. **Try it:**
 http://localhost:3000/home/friends after `pnpm dev` (the demo: http://localhost:3100/home/friends).
 

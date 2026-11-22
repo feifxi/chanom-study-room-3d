@@ -34,6 +34,11 @@ export class LiveService implements OnModuleDestroy {
     this.io.to(liveRoom.user(userId)).emit(event, payload);
   }
 
+  /** Each person once, however many tabs they have open (a DM's two people). */
+  toUsers(userIds: string[], event: string, payload: unknown) {
+    this.io.to(userIds.map(liveRoom.user)).emit(event, payload);
+  }
+
   /** Someone left, was kicked or banned: their open tabs stop getting the room's chat. */
   leaveRoom(userId: string, roomId: string) {
     this.io.in(liveRoom.user(userId)).socketsLeave(liveRoom.room(roomId));

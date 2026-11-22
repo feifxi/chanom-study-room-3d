@@ -362,6 +362,11 @@ decision is made or changed: one line, a date, and the reason.
   through the API (puts every byte and resize on the API server) and a second local S3 (LocalStack
   or MinIO) just for browsers. The cost: bucket CORS is only tested against real S3, once before
   launch.
+- **DMs as built** (2026-11-22, the owner): pictures in DMs (the spec's "text only" meant no calls);
+  muting a DM comes with the notification bell; plain messages first, with "Ask to join" and
+  "Invite to a room" cards coming with presence and the gift card with the shop; a DM appears in
+  the lists only once a message is sent. DM messages share the `messages` table with room chat, so
+  reactions, replies, edits, pictures and live updates are the same code.
 - **Background jobs are BullMQ on Redis** (2026-11-22): the pictures worker is the first; it runs
   inside the API process for now, with a per-environment prefix so tests never hand jobs to a
   running dev server. Redis was already there for the gateway.
