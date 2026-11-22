@@ -396,4 +396,50 @@ describe('bubbles and status', () => {
       await until(() => lk.includes(`remove ${id}`));
     });
   });
+
+  describe('screen share', () => {
+    const library = mapDataFor('library');
+    const tv = { x: -10.45, z: 6.05 };
+
+    it('on the TV: one at a time, while you stand on its rug', async () => {
+      const a = track(await walkIn());
+      const b = track(await walkIn({ sub: 'u-jod', name: 'Jod' }));
+      a.send('share', { where: 'tv', audio: true });
+      await quietly();
+      expect(me(a).share).toBe(''); // not on the rug
+      await walkTo(a, tv);
+      await walkTo(b, { x: tv.x + 0.5, z: tv.z });
+      a.send('share', { where: 'tv', audio: true });
+      await until(() => me(a).share === 'tv' && me(a).shareAudio);
+      b.send('share', { where: 'tv', audio: false });
+      await quietly();
+      expect(me(b).share).toBe('');
+      // Walking off the rug ends it; then it's Jod's turn
+      await walkTo(a, library.spawn);
+      await until(() => me(a).share === '');
+      b.send('share', { where: 'tv', audio: false });
+      await until(() => me(b).share === 'tv');
+    });
+
+    it('to your table while you sit at a desk; standing up ends it; guests without voice can’t', async () => {
+      const seat = library.deskSeats[0]!;
+      const a = track(await walkIn());
+      a.send('share', { where: 'table', audio: false });
+      await quietly();
+      expect(me(a).share).toBe(''); // not seated
+      await walkTo(a, seat.out);
+      a.send('sit', { seatId: seat.id });
+      await until(() => me(a).seatId === seat.id);
+      a.send('share', { where: 'table', audio: false });
+      await until(() => me(a).share === `table:${seat.tableId}`);
+      a.send('stand', {});
+      await until(() => me(a).share === '');
+
+      const g = track(await walkIn({ sub: 'u-guest', role: 'guest', name: 'Mint', handle: null }));
+      await walkTo(g, tv);
+      g.send('share', { where: 'tv', audio: false });
+      await quietly();
+      expect(me(g).share).toBe('');
+    });
+  });
 });

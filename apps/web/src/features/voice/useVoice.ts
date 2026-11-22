@@ -35,6 +35,10 @@ export interface VoiceOptions {
   mutedForMe: ReadonlySet<string>;
   /** The mic couldn't start (no permission, no device): the caller turns its switch back off */
   onMicFailed: (message: string) => void;
+  /** Your screen share's capture while the game server has you sharing; null otherwise */
+  share: MediaStream | null;
+  /** Whether someone standing or sitting like `p` watches a share at `share` ('tv', 'table:…') */
+  watches: (share: string, p: { x: number; z: number; seatId: string }) => boolean;
 }
 
 export interface Voice {
@@ -43,11 +47,15 @@ export interface Voice {
   speaking: Set<string>;
   /** Whose mic is on */
   micOn: ReadonlySet<string>;
+  /** Screen shares you're watching, by sharer (a session id): picture and, if shared, sound */
+  screens: ReadonlyMap<string, MediaStream>;
 }
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const sameSet = (a: ReadonlySet<string>, b: ReadonlySet<string>) => a.size === b.size && [...a].every((x) => b.has(x));
 const EMPTY: Set<string> = new Set();
+const NO_SCREENS: ReadonlyMap<string, MediaStream> = new Map();
+const SCREEN_SOURCES = [Track.Source.ScreenShare, Track.Source.ScreenShareAudio];
 
 /** RMS level above which a voice counts as talking, and how long the mark lingers after. */
 const TALK_LEVEL = 0.03;
@@ -65,16 +73,19 @@ const PAN_METRES = 6;
  *   not), so a tampered client outside can't receive voices from inside.
  * - **Who may talk** is the game server's call (guests, Mute for everyone, time outs): it sets
  *   LiveKit's publish permission, and this only turns the mic on when that allows it.
+ * - **Screen shares** (part 4) go the same way: the sharer's client lets only the people on the TV
+ *   rug or at its table receive the picture and sound, and those people subscribe to it.
  */
-export function useVoice({ room, motion, mic, deaf, stage, zoneOf, mutedForMe, onMicFailed }: VoiceOptions): Voice {
+export function useVoice({ room, motion, mic, deaf, stage, zoneOf, mutedForMe, onMicFailed, share, watches }: VoiceOptions): Voice {
   const [connected, setConnected] = useState(false);
   const [speaking, setSpeaking] = useState<Set<string>>(EMPTY);
   const [micOn, setMicOn] = useState<Set<string>>(EMPTY);
+  const [screens, setScreens] = useState<ReadonlyMap<string, MediaStream>>(NO_SCREENS);
   const lk = useRef<LiveKitRoom | null>(null);
   // The loop reads the latest settings without reconnecting
-  const live = useRef({ deaf, stage, zoneOf, mutedForMe });
+  const live = useRef({ deaf, stage, zoneOf, mutedForMe, watches });
   useEffect(() => {
-    live.current = { deaf, stage, zoneOf, mutedForMe };
+    live.current = { deaf, stage, zoneOf, mutedForMe, watches };
   });
 
   useEffect(() => {
@@ -107,10 +118,31 @@ export function useVoice({ room, motion, mic, deaf, stage, zoneOf, mutedForMe, o
       );
       setMicOn((prev) => (sameSet(prev, on) ? prev : on));
     };
+    // One stream per share, kept while its tracks stay the same (a new object would restart the video)
+    const streams = new Map<string, { key: string; stream: MediaStream }>();
+    const syncScreens = () => {
+      const next = new Map<string, MediaStream>();
+      for (const p of lkRoom.remoteParticipants.values()) {
+        const [video, audio] = SCREEN_SOURCES.map((src) => {
+          const pub = p.getTrackPublication(src);
+          return pub?.isSubscribed ? pub.track?.mediaStreamTrack : undefined;
+        });
+        if (!video) continue;
+        const key = `${video.id}:${audio?.id ?? ''}`;
+        let got = streams.get(p.identity);
+        if (got?.key !== key) {
+          got = { key, stream: new MediaStream(audio ? [video, audio] : [video]) };
+          streams.set(p.identity, got);
+        }
+        next.set(p.identity, got.stream);
+      }
+      setScreens((prev) => (prev.size === next.size && [...next].every(([k, v]) => prev.get(k) === v) ? prev : next));
+    };
 
     lkRoom
-      .on(RoomEvent.TrackSubscribed, (track: RemoteTrack, _pub, participant: RemoteParticipant) => {
-        if (track.kind !== Track.Kind.Audio) return;
+      .on(RoomEvent.TrackSubscribed, (track: RemoteTrack, pub: RemoteTrackPublication, participant: RemoteParticipant) => {
+        // A share's picture and sound play in its panel, not through the room's voices
+        if (pub.source !== Track.Source.Microphone) return syncScreens();
         const panner = ctx.createStereoPanner();
         panners.set(participant.identity, panner);
         (track as RemoteAudioTrack).setWebAudioPlugins([panner]);
@@ -118,7 +150,8 @@ export function useVoice({ room, motion, mic, deaf, stage, zoneOf, mutedForMe, o
         watch(participant.identity, track.mediaStreamTrack);
         syncMics();
       })
-      .on(RoomEvent.TrackUnsubscribed, (track: RemoteTrack, _pub, participant: RemoteParticipant) => {
+      .on(RoomEvent.TrackUnsubscribed, (track: RemoteTrack, pub: RemoteTrackPublication, participant: RemoteParticipant) => {
+        if (pub.source !== Track.Source.Microphone) return syncScreens();
         track.detach();
         panners.delete(participant.identity);
         meters.delete(participant.identity);
@@ -133,7 +166,10 @@ export function useVoice({ room, motion, mic, deaf, stage, zoneOf, mutedForMe, o
       .on(RoomEvent.TrackPublished, syncMics)
       .on(RoomEvent.TrackUnpublished, syncMics)
       .on(RoomEvent.LocalTrackUnpublished, syncMics)
-      .on(RoomEvent.ParticipantDisconnected, syncMics)
+      .on(RoomEvent.ParticipantDisconnected, () => {
+        syncMics();
+        syncScreens();
+      })
       .on(RoomEvent.Disconnected, () => !cancelled && setConnected(false));
 
     void room.voicePass().then(async ({ url, token }) => {
@@ -160,23 +196,41 @@ export function useVoice({ room, motion, mic, deaf, stage, zoneOf, mutedForMe, o
     let allowed = '';
     const loop = setInterval(() => {
       if (lkRoom.state !== 'connected') return;
-      const { deaf, stage, zoneOf, mutedForMe } = live.current;
+      const { deaf, stage, zoneOf, mutedForMe, watches } = live.current;
       const me = motion.current;
       const myZone = zoneOf(me.x, me.z);
+      const meNow = { x: me.x, z: me.z, seatId: room.state.players.get('me')?.seatId ?? '' };
+      const myShare = room.state.players.get('me')?.share ?? '';
 
-      // Who may receive my voice: enforced by LiveKit
-      const may: string[] = [];
+      // Who may receive my voice and my screen: enforced by LiveKit
+      const local = lkRoom.localParticipant;
+      const micSid = local.getTrackPublication(Track.Source.Microphone)?.trackSid;
+      const screenSids = SCREEN_SOURCES.map((src) => local.getTrackPublication(src)?.trackSid).filter((sid): sid is string => !!sid);
+      const perms: { participantIdentity: string; allowedTrackSids: string[] }[] = [];
       for (const p of lkRoom.remoteParticipants.values()) {
         const other = room.state.players.get(p.identity);
-        if (other && (stage || zoneOf(other.x, other.z) === myZone)) may.push(p.identity);
+        if (!other) continue;
+        const sids = [
+          ...(micSid && (stage || zoneOf(other.x, other.z) === myZone) ? [micSid] : []),
+          ...(myShare && watches(myShare, other) ? screenSids : []),
+        ];
+        if (sids.length) perms.push({ participantIdentity: p.identity, allowedTrackSids: sids.sort() });
       }
-      const key = stage ? '*' : may.sort().join(',');
+      perms.sort((a, b) => a.participantIdentity.localeCompare(b.participantIdentity));
+      const key = JSON.stringify(perms);
       if (key !== allowed) {
         allowed = key;
-        lkRoom.localParticipant.setTrackSubscriptionPermissions(
-          stage,
-          may.map((id) => ({ participantIdentity: id, allowAll: true })),
-        );
+        local.setTrackSubscriptionPermissions(false, perms);
+      }
+
+      // Screens: the share at your TV rug or your table
+      for (const p of lkRoom.remoteParticipants.values()) {
+        const other = room.state.players.get(p.identity);
+        const want = !!other?.share && watches(other.share, meNow);
+        for (const src of SCREEN_SOURCES) {
+          const pub = p.getTrackPublication(src);
+          if (pub && pub.isDesired !== want) pub.setSubscribed(want);
+        }
       }
 
       // Whom I hear: the nearest I can hear, at their distance's volume
@@ -235,6 +289,7 @@ export function useVoice({ room, motion, mic, deaf, stage, zoneOf, mutedForMe, o
       setConnected(false);
       setSpeaking(EMPTY);
       setMicOn(EMPTY);
+      setScreens(NO_SCREENS);
     };
   }, [room, motion]);
 
@@ -260,5 +315,19 @@ export function useVoice({ room, motion, mic, deaf, stage, zoneOf, mutedForMe, o
     if (connected) room?.setDeaf(deaf);
   }, [connected, room, deaf]);
 
-  return { connected, speaking, micOn };
+  // Your share goes out while the server has you sharing (the capture belongs to the caller)
+  useEffect(() => {
+    const local = lk.current?.localParticipant;
+    if (!connected || !local || !share) return;
+    const tracks = share.getTracks();
+    for (const t of tracks)
+      local
+        .publishTrack(t, { source: t.kind === 'video' ? Track.Source.ScreenShare : Track.Source.ScreenShareAudio })
+        .catch(() => undefined);
+    return () => {
+      for (const t of tracks) void local.unpublishTrack(t, false).catch(() => undefined);
+    };
+  }, [connected, share]);
+
+  return { connected, speaking, micOn, screens };
 }

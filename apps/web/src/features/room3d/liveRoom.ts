@@ -26,11 +26,23 @@ const FIELDS = [
   'hushed',
   'mutedByMod',
   'deaf',
+  'share',
+  'shareAudio',
   'moveSeq',
 ] as const satisfies readonly (keyof PlayerView)[];
 
 /** Fields the HUD shows (your role and tools, mic rights, 💤, 📢); positions are read every frame instead */
-const SHOWN = ['role', 'status', 'stage', 'hushed', 'mutedByMod', 'deaf'] as const satisfies readonly (typeof FIELDS)[number][];
+const SHOWN = [
+  'role',
+  'status',
+  'stage',
+  'hushed',
+  'mutedByMod',
+  'deaf',
+  'share',
+  'shareAudio',
+  'seatId',
+] as const satisfies readonly (typeof FIELDS)[number][];
 
 /**
  * A real room (build step 4) behind the same surface the 3D view and the demo's scripts use: the
@@ -129,6 +141,11 @@ export class LiveRoom extends MockRoom {
   /** Mute for everyone (the owner and mods; the server checks), by session id */
   muteForEveryone(id: string, on: boolean) {
     this.game.send('mute', { id, on });
+  }
+
+  /** Share your screen on the TV or to your table ('' stops); the server checks you're there */
+  setShare(where: 'tv' | 'table' | '', audio = false) {
+    this.game.send('share', { where, audio });
   }
 
   /** Your new look, for everyone (at most once every 5 s). */

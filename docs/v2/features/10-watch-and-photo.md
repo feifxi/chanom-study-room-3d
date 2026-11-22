@@ -1,6 +1,9 @@
 # 10. Watch together and photo mode
 
-**Status:** decided and built in the demo. **Try it:** http://localhost:3100/servers/chanom/rooms/library
+**Status:** decided and built in the demo. In the real app (2026-11-22, build step 4 part 4) a
+screen share on the TV is real (over LiveKit, to the people on the rug); YouTube Watch together is
+still each browser's own until step 5, so a share pausing a video and the video carrying on after
+come then. **Try it:** http://localhost:3100/servers/chanom/rooms/library
 
 - Activities → Watch together → **Go there**, click the orange **Put something on**, paste a YouTube link (e.g.
   `https://youtu.be/lTRiuFIWV54`). Click outside the panel to shrink it; click the small player to
@@ -88,10 +91,11 @@ library's TV lounge, the café's lounge, the rooftop's cinema sheet with floor c
   player seeks back in line when it's more than 2 s off. Play/pause/seek set a new offset and time.
 - The first player to report "ended" moves the queue on (the server ignores reports for an old video).
 - Titles come from YouTube's oEmbed (free, no key).
-- **Screen share:** room state holds only `share: { by, audio }` and whether the video should resume.
-  The picture and sound are LiveKit tracks (`getDisplayMedia` with `audio: true`; V1 sends
-  `audio: false`); the game server lets only people in the TV area subscribe, as private zones do. It
-  ends the share when the sharer leaves the area.
+- **Screen share** (built): the game server holds who shares (the player's `share` is 'tv', with
+  `shareAudio`) and ends it when the sharer leaves the rug; whether the video should resume comes
+  with Watch together in step 5. The picture and sound are LiveKit tracks (`getDisplayMedia` with
+  `audio: true`), and the sharer's client lets only people on the rug receive them, as private
+  zones do ([06-3d-room.md](06-3d-room.md#backend-notes)).
 
 ## 📸 Photo mode
 

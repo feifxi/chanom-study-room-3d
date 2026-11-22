@@ -29,6 +29,8 @@ const player = (p: Partial<PlayerView> & Pick<PlayerView, 'name' | 'look' | 'x' 
   hushed: false,
   mutedByMod: false,
   deaf: false,
+  share: '',
+  shareAudio: false,
   yaw: 0,
   moving: false,
   seatId: '',

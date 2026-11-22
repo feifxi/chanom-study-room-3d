@@ -3,7 +3,8 @@
 The owner tests every feature by hand **at the end**, once everything is on the API and the
 [seed](../v2-plan.md#whats-left) fills the data. Each feature adds its checks here in the same
 change that builds it (newest step last). Tick them off then; until then the API tests and the
-builder's own browser runs are the safety net.
+builder's own browser runs are the safety net. What changed in each part, the bugs found along the
+way and what's still open are in the [review notes](review-notes.md).
 
 **Setup:** `docker compose up -d`, `pnpm db:reset` (migrate and seed), `pnpm dev`. Use two browsers
 (or one normal and one private window) as two people; email codes arrive in Mailpit
@@ -190,3 +191,21 @@ in `docker compose`.
 - [ ] Time out someone talking: their mic goes off until it ends.
 - [ ] A guest listens but can't turn the mic on ("Guests can't use voice in this room"); the owner
       turns on Room settings → Invites → Guests can use voice and the guest's mic works at once.
+
+### Screen share (part 4)
+
+Desktop Chrome or Edge to share (phones only watch); three people in a room.
+
+- [ ] Two people sit at the same desk table; one presses **Share screen to table** and picks a tab
+      with "Share tab audio": the other gets the big share panel ("…'s screen · your table · 🔊
+      with sound"), hears its sound, and can change their own volume or shrink it to the corner.
+      🖥️ shows by the sharer's name for everyone.
+- [ ] The third person, not at that table, never sees or hears it. Someone else at the table can't
+      share at the same time (the button waits).
+- [ ] The sharer stands up (or presses Stop sharing, or the browser's own Stop bar): the share ends
+      for everyone and the sharer sees "Your screen share ended".
+- [ ] On the TV rug: Put something on → Share your screen: people on the rug watch it in the Watch
+      together panel; people off the rug don't get it. Walking off the rug ends it.
+- [ ] A share without sound says "🔇 no sound", and the sharer gets the tip to share a tab with its
+      audio.
+- [ ] On a phone at the table: the share panel fits, big and small; there's no share button.

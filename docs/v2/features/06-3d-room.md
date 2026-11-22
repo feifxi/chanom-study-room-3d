@@ -1,11 +1,11 @@
 # 6. The 3D room
 
-**Status:** decided and built in the demo. In the real app (2026-11-22, build step 4 parts 1–3)
+**Status:** decided and built in the demo. In the real app (2026-11-22, build step 4 parts 1–4)
 you walk in for real: the game server (`apps/game`) holds who's here, movement, seats, capacity,
 live kick, ban, role and map changes, bubbles and typing, Away, Talk to everyone, live looks, and
 the people list's actions; proximity voice runs on LiveKit (distance, stereo, the 12 nearest,
-private zones, deafen, guest voice, Mute for me and Mute for everyone). Still to come: screen
-share (part 4), the cats and study buddies
+private zones, deafen, guest voice, Mute for me and Mute for everyone), and so do screen shares
+at a desk and on the TV. Still to come: the cats and study buddies
 with their hearts when petted (part 5; each browser has its own cats until then), and activities,
 focus and the study panel (step 5); Report stays a mock dialog until feature 14. **Try it:** http://localhost:3000/home → a room → Walk in, in two browsers after
 `pnpm dev` (the demo: http://localhost:3100/servers/chanom/rooms/library: click the floor to walk,
@@ -195,6 +195,16 @@ under 0.6M.
 - **Mute for everyone** (`mute`): the owner on anyone, a mod on members and guests. It's kept by
   account, so walking out and back in doesn't lift it, until a mod lifts it or the room empties;
   for something that ends by itself there's time out. Everyone sees their mic as off.
+- **Desk screen share** (step 4 part 4, 2026-11-22): seated at a desk (not a sofa), **Share screen
+  to table**. One share per table at a time; the others' button waits ("… is sharing with your
+  table"). People seated at that table watch it in **the same panel as a share on the TV**: big over
+  the room, ⤡ to the corner, with the sharer's name, 🔊 or 🔇, their own volume and, for the sharer,
+  Stop sharing; 🖥️ shows by the sharer's name for everyone. Standing up ends it. The game server
+  holds who shares where (`share` { where: 'tv' | 'table' | '', audio } → the player's `share`,
+  'tv' or 'table:<tableId>'): it checks you're on the TV rug or at a desk, allows one per place,
+  and ends a share when you leave the spot, stand up, the map changes or you can't talk any more.
+  The picture and sound go over LiveKit, and the sharer's client lets only that audience receive
+  them (the same enforcement as private zones; `watchesShare` in `@connecta/shared/maps`).
 - **Browser tests** use a dev-only handle, `window.__connecta` (`goTo(x, z)`, `here()`, and `voice`,
   the LiveKit room), and Chrome's fake microphone (`--use-fake-device-for-media-stream`, still
   with `--mute-audio`).

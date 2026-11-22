@@ -30,13 +30,16 @@ log. Keep them current in the same change that makes them stale.
 4. [`docs/v2/demo-guide.md`](docs/v2/demo-guide.md): how the demo is laid out, how maps work, its
    checks and gotchas. It applies to `apps/web` too until each part is ported.
 5. [`docs/v2/manual-tests.md`](docs/v2/manual-tests.md): the owner's hand-test list, run at the end.
+6. [`docs/v2/review-notes.md`](docs/v2/review-notes.md): for the owner's final review: per build
+   part, what changed, bugs found and fixed while building, and what was noticed but not fixed.
 
 ## What's next
 
-Step 4 of the plan, **walking in a room**, in five parts. Parts 1–3 are done: the Colyseus game
+Step 4 of the plan, **walking in a room**, in five parts. Parts 1–4 are done: the Colyseus game
 server (`apps/game`) with a signed join ticket from the API, V1's movement, capacity, presence and
 live room changes; bubbles, Away, Talk to everyone and the people list's real actions; LiveKit
-proximity voice with private zones. Next is part 4, screen share; then server-run cats. Steps 1–3 (the skeleton; accounts and rooms; the
+proximity voice with private zones; screen share at a desk or on the TV. Next is part 5,
+server-run cats and study buddies. Steps 1–3 (the skeleton; accounts and rooms; the
 gateway: friends, chat, pictures, DMs, presence and the 🔔 inbox) are done. The plan's
 [What's left](docs/v2-plan.md#whats-left) is the source of truth.
 
@@ -51,6 +54,9 @@ gateway: friends, chat, pictures, DMs, presence and the 🔔 inbox) are done. Th
 - **The owner tests by hand at the end:** every feature you build adds its checks to
   [`docs/v2/manual-tests.md`](docs/v2/manual-tests.md) in the same change (what to try and what
   should happen). Tell the owner in your summary which checks you added.
+- **Review notes in the same change:** each build part adds its entry to
+  [`docs/v2/review-notes.md`](docs/v2/review-notes.md) (what changed, bugs found and fixed while
+  building) and puts anything you noticed but didn't fix in its Open list, not only in your summary.
 - **The seed is written once, at the end:** when every feature is on the API, one seed fills all
   the data (people, rooms, members, friends, DMs…) for the owner to test with. Don't grow it feature
   by feature; until then it holds only the demo people (to sign in) and the S3 bucket. Test a new

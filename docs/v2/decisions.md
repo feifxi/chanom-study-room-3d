@@ -402,6 +402,11 @@ decision is made or changed: one line, a date, and the reason.
   which room through Redis for the gateway to write, so the gateway stays presence's one writer.
   Rejected: the game server reading Postgres or cookies (a second copy of the rules, and of the auth
   setup).
+- **Step 4 part 4: screen share** (2026-11-22, the owner): people at a desk share's table watch it in
+  the TV's share panel (big, or small in the corner), not V1's strip of tiles, so watching any share
+  is one flow; one share per table at a time, like the TV. The TV share is real now while YouTube
+  stays each browser's own until step 5, which wires a share pausing the video and the video
+  carrying on after.
 - **Step 4 part 3: voice** (2026-11-22, the owner): private zones are enforced by each speaker's
   own client telling LiveKit who may receive its voice (LiveKit's server API can't set who receives
   someone else's track; a LiveKit room per zone was turned down because walking onto a rug would

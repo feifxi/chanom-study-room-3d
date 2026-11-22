@@ -93,7 +93,8 @@ export interface GamePresence {
  * What a client sends: `move`, `sit`, `stand` (movement), `say` { text }, `typing` { typing },
  * `status` { status, subject?, endsAt? } (focus, break, away), `stage` { on }, `look` { look },
  * `voice` (asks for a {@link VoicePass}), `deaf` { on }, `mute` { id, on } (owner and mods: Mute
- * for everyone, by session id).
+ * for everyone, by session id), `share` { where: 'tv' | 'table' | '', audio } (a screen share at
+ * the TV or the desk you sit at; '' stops it).
  * What the server sends besides state: `said`, `quiet` and `voice`.
  */
 export interface VoicePass {

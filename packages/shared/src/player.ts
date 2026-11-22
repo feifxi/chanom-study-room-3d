@@ -36,6 +36,10 @@ export interface PlayerView {
   mutedByMod: boolean;
   /** Deafened: hears nobody (their mic is off too) */
   deaf: boolean;
+  /** Sharing their screen: 'tv', 'table:<tableId>', or '' */
+  share: string;
+  /** Their share carries its sound */
+  shareAudio: boolean;
   /** seq of the last move the server applied, for reconciling the client's prediction. */
   moveSeq: number;
 }

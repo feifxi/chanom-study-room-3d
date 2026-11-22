@@ -32,6 +32,7 @@ import type { LocalPlayerDriver } from '../room3d/LocalPlayerDriver';
 import { useFriendIds } from '@/features/friends/useFriends';
 import { useMutedForMe } from '@/features/voice/mutedForMe';
 import { useVoice } from '@/features/voice/useVoice';
+import { watchesShare } from '@connecta/shared/maps';
 import { MockRoom, type MockPerson } from '../room3d/mockRoom';
 import { LiveRoom } from '../room3d/liveRoom';
 import type { GameRoom } from '@/features/game/useGame';
@@ -60,8 +61,8 @@ import { TITLE, type SlaveGame } from '../activities/slave/game';
 import { END_TEXT, type ChessGame } from '../activities/chess/game';
 import { SPOTS, isGameSeat, spotById, type Spot } from '../activities/spots';
 import { BOARD_EVENT, PICK_A_SIDE_EVENT, SHARE_EVENT, TELEPHONE_EVENT, WATCH_EVENT, CHESS_EVENT, SLAVE_EVENT } from '@/lib/demoCrowd';
-import { AddVideo, ShareScreenButton, WatchPanel } from '../activities/WatchPanel';
-import { startMyShare, stopMyShare } from '../activities/screenShare';
+import { AddVideo, SharePanel, ShareScreenButton, WatchPanel } from '../activities/WatchPanel';
+import { myShareStream, startMyShare, stopMyShare } from '../activities/screenShare';
 import { ChannelOverlay, type ChatTarget } from './ChannelOverlay';
 import { PhotoMode } from './PhotoMode';
 import { ChatPanel, type RoomLine } from './ChatPanel';
@@ -323,6 +324,8 @@ export default function RoomView({
   const sharingTv = hub.watch.share?.by === 'me';
   const sharedTv = useRef(false);
   useEffect(() => {
+    // A real room's shares end through the game server (see below)
+    if (game) return;
     if (sharingTv) {
       sharedTv.current = true;
       return;
@@ -330,13 +333,60 @@ export default function RoomView({
     stopMyShare();
     if (sharedTv.current) toast('Your screen share on the TV ended');
     sharedTv.current = false;
-  }, [sharingTv]);
+  }, [sharingTv, game]);
+
+  // A real room's screen shares (step 4 part 4): the game server says who shares where; the picture
+  // and sound go over LiveKit to the TV rug or the table only
+  const [myShare, setMyShare] = useState<MediaStream | null>(null);
+  const myShareWhere = game ? (room.state.players.get('me')?.share ?? '') : '';
+  const shareWhereRef = useRef(myShareWhere);
+  const sharedLive = useRef(false);
+  useEffect(() => {
+    shareWhereRef.current = myShareWhere;
+    if (myShareWhere) sharedLive.current = true;
+    else if (sharedLive.current) {
+      // Walked off the rug, stood up, Stop sharing, or the browser's own Stop bar
+      sharedLive.current = false;
+      stopMyShare();
+      setMyShare(null);
+      toast('Your screen share ended');
+    }
+  }, [myShareWhere]);
+  const stopLiveShare = () => (room instanceof LiveRoom ? room.setShare('') : undefined);
+  const startLiveShare = async (where: 'tv' | 'table') => {
+    if (!(room instanceof LiveRoom)) return;
+    if (room.state.players.get('me')?.hushed) return void toast('You can’t share your screen in this room right now');
+    const got = await startMyShare(stopLiveShare);
+    if (!got) return;
+    setMyShare(myShareStream());
+    room.setShare(where, got.audio);
+    if (!got.audio) toast('Sharing without sound. For sound, share a tab and tick “Share tab audio”');
+    // Someone else got there first (one share at a time): let the capture go
+    setTimeout(() => {
+      if (shareWhereRef.current || sharedLive.current) return;
+      stopMyShare();
+      setMyShare(null);
+      toast('Someone else is sharing here right now');
+    }, 3000);
+  };
+  // The TV's share comes from the game server; the Watch together panel shows it as usual
+  const tvSharer = game ? [...room.state.players].find(([, p]) => p.share === 'tv') : undefined;
+  const tvBy = tvSharer?.[0];
+  const tvAudio = !!tvSharer?.[1].shareAudio;
+  useEffect(() => {
+    if (!game) return;
+    const cur = hub.watch.share;
+    if (cur && (cur.by !== tvBy || cur.audio !== tvAudio)) hub.stopShare(cur.by);
+    if (tvBy && !hub.watch.share) hub.startShare({ by: tvBy, audio: tvAudio });
+  }, [game, hub, tvBy, tvAudio]);
+
   const shareOnTv = async () => {
+    setPuttingOn(false);
+    setWatchMini(false);
+    if (game) return void startLiveShare('tv');
     const got = await startMyShare(() => hub.stopShare('me'));
     if (!got) return;
     hub.startShare({ by: 'me', audio: got.audio });
-    setPuttingOn(false);
-    setWatchMini(false);
     if (!got.audio) toast('Sharing without sound. For sound, share a tab and tick “Share tab audio”');
   };
   // Voice in a real room (the demo fakes who's talking)
@@ -355,6 +405,8 @@ export default function RoomView({
       setMic(false);
       toast(`${message}. Check your browser’s mic permission and try again.`);
     },
+    share: myShareWhere ? myShare : null,
+    watches: (where, p) => watchesShare(activeMap(), where, p),
   });
   const talking = game ? voice.speaking : speaking;
   // A dev-only handle for browser tests: walk somewhere as if clicked, and see where you are
@@ -719,7 +771,18 @@ export default function RoomView({
     if (slaveWatching) setSlaveMini(true);
   }
   const slaveTheater = !photo && (slavePlayer || (slaveWatching && !slaveMini));
-  const bigView = theater || boardTheater || drawTheater || chessTheater || slaveTheater;
+  // A desk share at your table (a real room): the same panel as the TV's, big until you shrink it
+  const myTable = me.seatId ? activeMap().seatById.get(me.seatId)?.tableId : undefined;
+  const deskSharer = game && myTable ? [...room.state.players].find(([, p]) => p.share === `table:${myTable}`) : undefined;
+  const deskBy = deskSharer?.[0];
+  const [deskMini, setDeskMini] = useState(false);
+  const [wasDeskBy, setWasDeskBy] = useState(deskBy);
+  if (deskBy !== wasDeskBy) {
+    setWasDeskBy(deskBy);
+    if (deskBy) setDeskMini(false);
+  }
+  const deskTheater = !!deskBy && !deskMini && !photo;
+  const bigView = theater || boardTheater || drawTheater || chessTheater || slaveTheater || deskTheater;
   const toggleChat = () => {
     if (compact) setSheet(true);
     else setChatOpen(!chatOpen);
@@ -730,15 +793,17 @@ export default function RoomView({
   const chatClosedFor = useRef<string | null>(null);
   const drawingStage = theater
     ? 'tv'
-    : boardTheater
-      ? 'board'
-      : drawTheater
-        ? 'art'
-        : chessTheater
-          ? 'chess'
-          : slaveTheater
-            ? 'cards'
-            : null;
+    : deskTheater
+      ? 'desk'
+      : boardTheater
+        ? 'board'
+        : drawTheater
+          ? 'art'
+          : chessTheater
+            ? 'chess'
+            : slaveTheater
+              ? 'cards'
+              : null;
   useEffect(() => {
     if (!mySpot && !chessWatching && !slaveWatching) chatClosedFor.current = null;
   }, [mySpot, chessWatching, slaveWatching]);
@@ -814,6 +879,7 @@ export default function RoomView({
         onClick={() => {
           // Activities opens over the stage, so the big player steps aside to the corner
           if (theater) setWatchMini(true);
+          if (deskTheater) setDeskMini(true);
           if (boardTheater) setBoardMini(true);
           if (chessWatching) setChessMini(true);
           if (slaveWatching) setSlaveMini(true);
@@ -905,7 +971,11 @@ export default function RoomView({
                 speaking: talking,
                 micEnabled: micIds,
                 deafened: new Set(realPeople.filter((p) => p.deafened).map((p) => p.id)),
-                sharing: sharing && seated ? new Set(['me']) : new Set(),
+                sharing: game
+                  ? new Set(ids.filter((id) => room.state.players.get(id)?.share))
+                  : sharing && seated
+                    ? new Set(['me'])
+                    : new Set(),
                 away: new Set(ids.filter((id) => (id === 'me' ? away : room.state.players.get(id)?.status === 'away'))),
                 stage: new Set(ids.filter((id) => (id === 'me' ? stage : room.state.players.get(id)?.stage))),
               }}
@@ -976,7 +1046,7 @@ export default function RoomView({
               {!compact && chatOpen && (
                 <div
                   className="absolute bottom-3 left-3 z-20 max-[1079px]:bottom-[92px]"
-                  data-keep-open={theater || boardTheater || undefined}
+                  data-keep-open={theater || boardTheater || deskTheater || undefined}
                 >
                   {chat}
                 </div>
@@ -1129,7 +1199,30 @@ export default function RoomView({
                     onAdd={(v) => hub.putOn({ ...v, by: 'me' })}
                     onRemove={(i) => hub.removeQueued(i)}
                     onShare={() => void shareOnTv()}
-                    onStopShare={() => hub.stopShare('me')}
+                    onStopShare={() => (game ? stopLiveShare() : hub.stopShare('me'))}
+                    shareStream={game ? (by) => voice.screens.get(by) ?? null : undefined}
+                    deaf={deaf}
+                  />
+                </div>
+              )}
+              {/* A desk share at your table: big over the room, or small in the corner */}
+              {deskSharer && deskBy && (
+                <div
+                  className={cn(
+                    'absolute z-20',
+                    deskMini
+                      ? 'right-3 bottom-[72px]'
+                      : cn('top-3 right-3 bottom-[84px] flex justify-center', wide && chatOpen ? 'left-[400px]' : 'left-3'),
+                  )}
+                >
+                  <SharePanel
+                    share={{ by: deskBy, audio: deskSharer[1].shareAudio }}
+                    name={who(deskBy).name}
+                    stream={voice.screens.get(deskBy) ?? null}
+                    deaf={deaf}
+                    mini={deskMini}
+                    onMini={setDeskMini}
+                    onStop={stopLiveShare}
                   />
                 </div>
               )}
@@ -1296,15 +1389,21 @@ export default function RoomView({
                   {seated && seatKind !== 'sofa' && !guest && !common && !compact && (
                     <button
                       onClick={() => {
+                        if (game) return void (myShareWhere ? stopLiveShare() : startLiveShare('table'));
                         setSharing(!sharing);
                         toast(sharing ? 'Stopped sharing' : 'Sharing your screen with your table 🖥️');
                       }}
+                      // One share per table: someone else's is on
+                      disabled={!!deskBy && deskBy !== 'me'}
+                      title={deskBy && deskBy !== 'me' ? `${who(deskBy).name} is sharing with your table` : undefined}
                       className={cn(
-                        'flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-extrabold shadow-soft',
-                        sharing ? 'bg-destructive text-white' : 'bg-primary text-primary-foreground hover:bg-primary-ink',
+                        'flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-extrabold shadow-soft disabled:opacity-50',
+                        (game ? myShareWhere : sharing)
+                          ? 'bg-destructive text-white'
+                          : 'bg-primary text-primary-foreground hover:bg-primary-ink',
                       )}
                     >
-                      <MonitorUp className="size-4" /> {sharing ? 'Stop sharing' : 'Share screen to table'}
+                      <MonitorUp className="size-4" /> {(game ? myShareWhere : sharing) ? 'Stop sharing' : 'Share screen to table'}
                     </button>
                   )}
                 </div>

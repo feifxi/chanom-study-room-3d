@@ -195,3 +195,13 @@ export interface MapData {
 }
 
 export const zoneAtIn = (map: { zones: Zone[] }, x: number, z: number): Zone | undefined => map.zones.find((zn) => inArea(zn.area, x, z));
+
+/** Who receives a screen share: people on the TV rug, or seated at the sharer's table (feature 10). */
+export function watchesShare(
+  map: Pick<MapData, 'tvArea' | 'seatById'>,
+  share: string,
+  p: { x: number; z: number; seatId: string },
+): boolean {
+  if (share === 'tv') return inArea(map.tvArea, p.x, p.z);
+  return !!share && share === `table:${map.seatById.get(p.seatId)?.tableId ?? '-'}`;
+}

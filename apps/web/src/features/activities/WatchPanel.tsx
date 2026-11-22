@@ -118,6 +118,8 @@ export function WatchPanel({
   onRemove,
   onShare,
   onStopShare,
+  shareStream,
+  deaf,
 }: {
   watch: WatchState;
   who: (id: string) => string;
@@ -133,6 +135,10 @@ export function WatchPanel({
   onRemove: (i: number) => void;
   onShare: () => void;
   onStopShare: () => void;
+  /** Someone else's share as it arrives over LiveKit (a real room); none in the demo */
+  shareStream?: (by: string) => MediaStream | null;
+  /** Deafened: a share's sound is off too */
+  deaf?: boolean;
 }) {
   const panel = useDismiss<HTMLElement>(!mini, () => onMini(true));
   const host = useRef<HTMLDivElement>(null);
@@ -247,7 +253,14 @@ export function WatchPanel({
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <div className="relative aspect-video overflow-hidden rounded-xl bg-black">
             <div ref={host} className="absolute inset-0 [&>*]:h-full [&>*]:w-full" />
-            {share && <SharePicture share={share} name={who(share.by)} />}
+            {share && (
+              <SharePicture
+                share={share}
+                name={who(share.by)}
+                stream={shareStream ? (share.by === 'me' ? myShareStream() : shareStream(share.by)) : undefined}
+                volume={deaf ? 0 : volume}
+              />
+            )}
             {mini ? (
               // The small player's picture is one big "make it bigger" button
               <button onClick={() => onMini(false)} aria-label="Make it bigger" className="absolute inset-0 hover:bg-white/10" />
@@ -374,15 +387,37 @@ export function WatchPanel({
 
 /**
  * A shared screen on the stage. Your own share shows your live capture (muted: you'd hear yourself
- * twice). In the demo nobody else really shares, so their screens are a pretend slide.
+ * twice); someone else's plays with its sound at your volume. In the demo nobody else really
+ * shares, so their screens are a pretend slide (`stream` undefined); in a real room it's null until
+ * the picture arrives.
  */
-function SharePicture({ share, name }: { share: ScreenShare; name: string }) {
+function SharePicture({
+  share,
+  name,
+  stream,
+  volume = 80,
+}: {
+  share: ScreenShare;
+  name: string;
+  stream?: MediaStream | null;
+  volume?: number;
+}) {
   const video = useRef<HTMLVideoElement>(null);
-  const stream = share.by === 'me' ? myShareStream() : null;
+  const mine = share.by === 'me';
+  const shown = stream === undefined && mine ? myShareStream() : stream;
   useEffect(() => {
-    if (video.current) video.current.srcObject = stream;
-  }, [stream]);
-  if (stream) return <video ref={video} autoPlay muted playsInline className="absolute inset-0 size-full bg-black object-contain" />;
+    if (video.current) video.current.srcObject = shown ?? null;
+  }, [shown]);
+  useEffect(() => {
+    if (video.current) video.current.volume = volume / 100;
+  }, [volume, shown]);
+  if (shown) return <video ref={video} autoPlay muted={mine} playsInline className="absolute inset-0 size-full bg-black object-contain" />;
+  if (stream === null)
+    return (
+      <div className="absolute inset-0 grid place-items-center bg-black text-sm font-bold text-white/70">
+        <span className="animate-pulse">{name}’s screen is on its way…</span>
+      </div>
+    );
   return (
     <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#2b2f5c] to-[#4b2d55] p-6 text-white">
       <div className="w-full max-w-[520px] rounded-xl bg-white/10 p-4 shadow-lg ring-1 ring-white/15">
@@ -510,5 +545,67 @@ export function AddVideo({ onAdd, compact }: { onAdd: (v: Omit<Video, 'by'>) => 
       </div>
       {error && <p className="px-2 text-[11px] font-bold text-destructive">{error}</p>}
     </form>
+  );
+}
+
+/**
+ * A desk share (feature 6): the same picture and controls as a share on the TV, for the people
+ * seated at the sharer's table. Big over the room, or small in the corner.
+ */
+export function SharePanel({
+  share,
+  name,
+  stream,
+  deaf,
+  mini,
+  onMini,
+  onStop,
+}: {
+  share: ScreenShare;
+  name: string;
+  stream: MediaStream | null;
+  deaf: boolean;
+  mini: boolean;
+  onMini: (mini: boolean) => void;
+  onStop: () => void;
+}) {
+  const panel = useDismiss<HTMLElement>(!mini, () => onMini(true));
+  const [volume, setVolume] = useState(savedVolume);
+  const mine = share.by === 'me';
+  useEffect(() => {
+    try {
+      localStorage.setItem(VOLUME_KEY, String(volume));
+    } catch {
+      // Not remembered, that's all
+    }
+  }, [volume]);
+  return (
+    <section
+      ref={panel}
+      className={cn('panel flex flex-col gap-2 p-2.5', mini ? 'w-[300px]' : 'max-h-full w-full self-start')}
+      style={mini ? undefined : { maxWidth: 'min(1440px, calc((100dvh - 160px) * 16 / 9))' }}
+      aria-label="Screen share"
+    >
+      <div className="relative aspect-video overflow-hidden rounded-xl bg-black">
+        <SharePicture share={share} name={name} stream={mine ? myShareStream() : stream} volume={deaf ? 0 : volume} />
+        {mini && <button onClick={() => onMini(false)} aria-label="Make it bigger" className="absolute inset-0 hover:bg-white/10" />}
+      </div>
+      <div className="flex items-center gap-1.5">
+        <MonitorUp className="ml-1.5 size-4 flex-none text-primary" />
+        <span className="min-w-0 flex-1 truncate text-xs font-bold">
+          {mine ? 'Your' : `${name}’s`} screen · your table
+          {!mini && <span className="font-semibold text-muted-foreground"> · {share.audio ? '🔊 with sound' : '🔇 no sound'}</span>}
+        </span>
+        {!mini && !mine && share.audio && <VolumeControl volume={volume} onChange={setVolume} />}
+        {mine && (
+          <button onClick={onStop} className="flex-none rounded-full bg-destructive px-3 py-1.5 text-xs font-extrabold text-white">
+            Stop sharing
+          </button>
+        )}
+        <IconBtn label={mini ? 'Make it bigger' : 'Shrink to the corner'} onClick={() => onMini(!mini)}>
+          {mini ? <Maximize2 className="size-4" /> : <Minimize2 className="size-4" />}
+        </IconBtn>
+      </div>
+    </section>
   );
 }

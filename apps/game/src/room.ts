@@ -20,7 +20,7 @@ import {
   type GameTicket,
   type PlayerRole,
 } from '@connecta/shared';
-import { mapDataFor, zoneAtIn, type MapData } from '@connecta/shared/maps';
+import { inArea, mapDataFor, zoneAtIn, type MapData } from '@connecta/shared/maps';
 import { links, liveRooms } from './links.js';
 import { log } from './log.js';
 import { Player, RoomState } from './state.js';
@@ -95,6 +95,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
         if (msg.seq !== undefined) p.moveSeq = msg.seq;
         p.yaw = msg.yaw;
         p.moving = msg.moving;
+        this.checkShare(p);
       },
     ),
 
@@ -109,12 +110,33 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       p.z = seat.z;
       p.yaw = seat.yaw;
       p.moving = false;
+      this.checkShare(p);
     }),
 
     stand: (client: Client) => {
       const p = this.state.players.get(client.sessionId);
       if (p?.seatId) this.standUp(p);
+      if (p) this.checkShare(p);
     },
+
+    /**
+     * A screen share (feature 10): on the TV while you stand on its rug, or to your table while you
+     * sit at a desk. One at a time in each place; it ends when you leave it. The picture and sound go
+     * over LiveKit; each sharer's client lets only this audience receive them.
+     */
+    share: validate(z.object({ where: z.enum(['tv', 'table', '']), audio: z.boolean() }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (!p) return;
+      if (!msg.where) return void Object.assign(p, { share: '', shareAudio: false });
+      if (p.hushed) return;
+      const seat = this.map.seatById.get(p.seatId);
+      const where =
+        msg.where === 'tv' ? (inArea(this.map.tvArea, p.x, p.z) ? 'tv' : '') : seat && seat.kind !== 'sofa' ? `table:${seat.tableId}` : '';
+      if (!where) return;
+      for (const other of this.state.players.values()) if (other !== p && other.share === where) return; // someone's on
+      p.share = where;
+      p.shareAudio = msg.audio;
+    }),
 
     /** A bubble: to the whole room, or only to the private zone you're standing in */
     say: validate(z.object({ text: z.string() }), (client, msg) => {
@@ -367,7 +389,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     const hushed = (p.role === 'guest' && !this.guestVoice) || p.mutedByMod || s.quietUntil > Date.now();
     if (hushed === p.hushed) return;
     p.hushed = hushed;
-    if (hushed) p.stage = false;
+    if (hushed) Object.assign(p, { stage: false, share: '', shareAudio: false });
     voice.current?.allow(this.connectaId, sessionId, !hushed);
   }
 
@@ -397,8 +419,15 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     this.state.mapId = this.map.id;
     for (const p of this.state.players.values()) {
       const spot = this.doorSpot();
-      Object.assign(p, { seatId: '', x: spot.x, z: spot.z, yaw: Math.PI, moving: false });
+      Object.assign(p, { seatId: '', x: spot.x, z: spot.z, yaw: Math.PI, moving: false, share: '', shareAudio: false });
     }
+  }
+
+  /** Walking off the TV rug or standing up from your desk ends your share */
+  private checkShare(p: Player) {
+    if (!p.share) return;
+    const here = p.share === 'tv' ? inArea(this.map.tvArea, p.x, p.z) : p.share === `table:${this.map.seatById.get(p.seatId)?.tableId}`;
+    if (!here) Object.assign(p, { share: '', shareAudio: false });
   }
 
   /** Near the door, spread out a little so people walking in together don't stack. */

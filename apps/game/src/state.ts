@@ -28,6 +28,9 @@ export const Player = schema(
     /** Muted for everyone by the owner or a mod */
     mutedByMod: t.boolean().default(false),
     deaf: t.boolean().default(false),
+    /** Sharing their screen: 'tv', 'table:<tableId>', or '' */
+    share: t.string().default(''),
+    shareAudio: t.boolean().default(false),
     /** The last move applied (its client sequence number), so the client can reconcile its prediction */
     moveSeq: t.number().default(0),
   },

@@ -13,7 +13,7 @@ what each feature is, and what's left. The details are in one spec per feature
   and dark mode.
 - **The real app is being built fresh** in `apps/` and `packages/` (V1 was removed from `main`;
   it's at tag `v1.0.0`). Steps 1 and 2 (the skeleton; accounts and rooms) are done; step 3, the
-  gateway, is done too; step 4, walking in a room, is under way (parts 1–3 of 5 done). Nothing is
+  gateway, is done too; step 4, walking in a room, is under way (parts 1–4 of 5 done). Nothing is
   deployed.
 
 | #   | Feature                                 | Status  | Spec                                                                   |
@@ -82,7 +82,8 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
      actions, the reset when a room empties. Floating reactions moved to part 5 with the cats.
    - ~~LiveKit proximity voice~~ done 2026-11-22: distance and stereo, the 12 nearest, private zones
      enforced by LiveKit, deafen, guest voice, Mute for me and Mute for everyone.
-   - Screen share at a table or the TV, with its sound.
+   - ~~Screen share~~ done 2026-11-22: at a desk to your table, or on the TV, with its sound, over
+     LiveKit to that audience only; desk shares use the TV's share panel, one per table.
    - Server-run cats and study buddies (V1's NpcDirector).
 5. **The rest, a feature at a time:** activities and table games, Plus, coins and quests, focus,
    Common and open rooms, moderation, the editor and admin site.
