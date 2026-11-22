@@ -15,6 +15,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:migrate": "pnpm --filter @connecta/api db:migrate",
+    "db:seed": "pnpm --filter @connecta/api db:seed",
+    "db:reset": "pnpm --filter @connecta/api db:reset",
+    "api:client": "pnpm --filter @connecta/api openapi && pnpm --filter @connecta/web api:types",
     "db:studio": "pnpm --filter @connecta/api db:studio"
   },
   "devDependencies": {

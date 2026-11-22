@@ -5,3 +5,6 @@ pnpm-lock.yaml
 *.tsbuildinfo
 **/generated
 **/.screens
+# Generated: the OpenAPI document and the web types from it (pnpm api:client)
+apps/api/openapi.json
+apps/web/src/lib/api/schema.d.ts

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { BarChart3, Compass, Crown, House, LogOut, MessageCircle, Settings, ShieldCheck, ShoppingBag, Users } from 'lucide-react';
 import { SettingsDialog } from '@/components/app/SettingsDialog';
 import { Inbox } from './Inbox';
@@ -18,7 +18,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { DMS, FRIEND_REQUESTS, ME, userById } from '@/lib/mock';
+import { useMeAsUser, useSignOut } from '@/features/account/useMe';
+import { DMS, FRIEND_REQUESTS, userById } from '@/lib/mock';
 import { useQuests } from '@/lib/quests';
 import { useViewer } from '@/lib/viewer';
 
@@ -187,20 +188,23 @@ function Messages() {
 
 function Me({ team }: { team: boolean }) {
   const [settings, setSettings] = useState(false);
+  const me = useMeAsUser();
+  const signOut = useSignOut();
+  const router = useRouter();
   const { coins } = useQuests();
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="hop rounded-full" aria-label="You">
-            <UserAvatar user={ME} size={40} presence />
+            <UserAvatar user={me} size={40} presence />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-60 rounded-2xl">
           <DropdownMenuLabel className="flex items-center gap-2.5">
-            <UserAvatar user={ME} size={36} presence />
+            <UserAvatar user={me} size={36} presence />
             <span>
-              <span className="block font-black">{ME.name}</span>
+              <span className="block font-black">{me.name}</span>
               <span className="block text-xs font-semibold text-muted-foreground">Online · Plus ✨</span>
             </span>
           </DropdownMenuLabel>
@@ -226,10 +230,13 @@ function Me({ team }: { team: boolean }) {
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link href="/login">
-              <LogOut /> Sign out
-            </Link>
+          <DropdownMenuItem
+            onSelect={async () => {
+              await signOut();
+              router.push('/');
+            }}
+          >
+            <LogOut /> Sign out
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

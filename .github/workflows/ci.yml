@@ -18,6 +18,16 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-24.04
+    # The API's tests run against a real Postgres (the same image as compose.yaml)
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: connecta
+          POSTGRES_PASSWORD: connecta
+          POSTGRES_DB: connecta
+        ports: ['5433:5432']
+        options: --health-cmd "pg_isready -U connecta" --health-interval 5s --health-retries 10
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -26,6 +36,8 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # Formatting, then types, lint and unit tests for every package
+      # Formatting, then types, lint and tests for every package
       - run: pnpm check
       - run: pnpm build
+      # The committed OpenAPI document and web types must match the API
+      - run: pnpm api:client && git diff --exit-code -- apps/api/openapi.json apps/web/src/lib/api/schema.d.ts

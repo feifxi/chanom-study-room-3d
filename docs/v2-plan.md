@@ -12,7 +12,8 @@ what each feature is, and what's left. The details are in one spec per feature
 - All three launch maps are built, each with its own layout. A polish pass covered phones, guests
   and dark mode.
 - **The real app is being built fresh** in `apps/` and `packages/` (V1 was removed from `main`;
-  it's at tag `v1.0.0`). Step 1, the skeleton, is done. Nothing is deployed.
+  it's at tag `v1.0.0`). Steps 1 and 2 (the skeleton; accounts and rooms) are done; step 3, the
+  gateway, is next. Nothing is deployed.
 
 | #   | Feature                                 | Status  | Spec                                                                   |
 | --- | --------------------------------------- | ------- | ---------------------------------------------------------------------- |
@@ -43,12 +44,24 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
    Postgres, Redis and LiveKit in Docker Compose; CI runs check and build.
 2. **The core:** accounts (Google, Discord, email code, guests), rooms, members and roles, invites.
    The first Prisma models and the generated OpenAPI client for the web app.
+   - ~~Sign-in and sign-up~~ done 2026-11-21: Better Auth, the birthday and age lock, character and
+     @handle, guests who keep their character; the login and invite pages on the real API; a
+     rerunnable seed; Mailpit and the AWS Emulator in Compose.
+   - ~~Account settings~~ done 2026-11-21: My profile (name, @handle with the 30-day rule and
+     hold), My character, Settings → Account (sign-ins, birthday), deleting with 7 days to keep
+     it. The signed-in app (Home and the rest) needs a finished account, checked on the server.
+   - ~~Rooms, members and roles, invites~~ done 2026-11-22: making rooms, Room settings, Ask to join,
+     member invites and guest passes, kick, ban, time out, Discover's listed rooms, new owners when
+     an account is deleted. Rooms live at `/r/<id>`; the room's chat and the 3D room still run on
+     mock data until steps 3 and 4.
 3. **The gateway:** room chat, DMs, friends, presence (the API's second entry point, Redis).
 4. **Walking in a room:** the Colyseus game server, with V1's movement prediction and
    reconciliation copied in; voice and screen share; maps.
 5. **The rest, a feature at a time:** activities and table games, Plus, coins and quests, focus,
    Common and open rooms, moderation, the editor and admin site.
-6. **Infra** (discuss first: moving to Azure is on the table), then a playtest, then launch.
+6. **The seed:** one fill of all the data (people, rooms, members, friends, DMs…) for testing the
+   whole app ([why at the end](v2/decisions.md#engineering-and-infra)).
+7. **Infra** on AWS ([spec 15](v2/features/15-business-infra.md#architecture)), then a playtest, then launch.
 
 Deferred on purpose, no date yet:
 
@@ -131,26 +144,28 @@ summaries, AI-made rooms. Today AI only writes Pick a Side decks. No AI tutor or
   V1's isn't carried over. Layout and conventions: [`AGENTS.md`](../AGENTS.md#layout).
 - **Demo first:** new screens are built in `demo/` with mock data. Mock types stay API-shaped (they
   become the OpenAPI schema), one data-access layer per feature, and each spec notes its backend cost.
-- **Infra:** spec 15 describes V1's architecture plus only what V2 needs, on AWS. The owner plans to
-  move to Azure; that's discussed at the infra step. Local development until the owner says deploy.
+- **Infra:** spec 15 describes V1's architecture plus only what V2 needs, on AWS, behind nginx.
+  Local development until the owner says deploy.
 
 ## Port checklist
 
 The demo was built before the move from servers to rooms, and its insides still use the old names.
 Users never see them, but the real app must not inherit them. When porting:
 
-- [ ] **Data model:** rename the mock `Server` type to `Room` (`lib/mock.ts`). `channels[]` becomes
-      one `chat`, `rooms[]` becomes one `mapId` plus settings. Drop the `placeRoom()` adapter in
-      `features/place/model.ts`.
-- [ ] **Routes:** `/servers/[id]` and `/servers/[id]/rooms/[roomId]` become something like `/r/[id]`
-      and `/r/[id]/walk`. Update every `href` (`walkInHref`, `chatHref`, friend chips, DMs, invites).
+- [ ] **Data model:** Home, Discover, Room settings, members and invites use the API's `Room`
+      (`placeRoom()` now builds the screens' view from it). Still to go: the room's chat (step 3) and
+      the 3D room (step 4) take the old `Server` shape through `asServer()` in
+      `features/place/model.ts`; drop it and the mock `Server` type when they're ported.
+- [x] **Routes:** `/servers/[id]` and `/servers/[id]/rooms/[roomId]` became `/r/[id]` and
+      `/r/[id]/walk` (2026-11-22); invites are `/i/[code]` and `/g/[code]`, Common rooms
+      `/common/[copy]`.
 - [ ] **Common rooms:** replace the `PUBLIC_SERVER` stand-in with a real model: a template, its
       copies, and "land me in the right copy" (`commonCopyFor`).
 - [ ] **Maps:** the data files in `features/map/` become the map file format (spec 7); the active-map
       switch becomes part of the live map change.
 - [ ] **"View as"** (`lib/viewer.ts`, `roleIn`) is demo-only: roles come from the session.
-- [ ] **Names:** `components/server/` (InviteDialog), `ServerFrame` in `AppFrame.tsx`, `serverById`,
-      `serverId` params, `ChatTarget.kind: 'channel'`.
+- [ ] **Names:** ~~`components/server/` (InviteDialog)~~, ~~`ServerFrame` in `AppFrame.tsx`~~,
+      `serverById`, `serverId` params, `ChatTarget.kind: 'channel'`.
 - [ ] **Leave behind:** `DemoToolbar`, `lib/demoCrowd.ts`, `MANY_ROOMS`, `extraRooms()`,
       `insideCount`.
 - [ ] **Performance:** port the skinned characters, StaticBatch, the perf meter and overlay, the auto

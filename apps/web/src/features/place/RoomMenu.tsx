@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Bell,
-  CalendarHeart,
   CheckCheck,
   Flag,
   Info,
@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ReportRoomDialog } from './ReportRoomDialog';
-import { InviteDialog } from '@/components/server/InviteDialog';
+import { InviteDialog } from '@/features/rooms/InviteDialog';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
@@ -35,13 +35,14 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useMe } from '@/features/account/useMe';
+import { roomsApi, useRoomAction } from '@/features/rooms/useRooms';
 import { cn } from '@/lib/utils';
-import { userById } from '@/lib/mock';
-import { chatHref, DEFAULT_RULES, planOf, walkInHref, type PlaceRoom } from './model';
+import { chatHref, ROLE_LABEL, walkInHref, type PlaceRoom } from './model';
 import { RoomSettingsDialog } from './RoomSettingsDialog';
 import { Scene } from './Scene';
 
-const VISIBILITY = { private: 'Private · invite only', request: 'Ask to join · listed', public: 'Open · anyone can walk in' } as const;
+const VISIBILITY = { private: 'Private · invite only', request: 'Ask to join · listed', open: 'Open · anyone can walk in' } as const;
 
 /**
  * The "…" on a room (Home cards and rows, the Chat page): everything you can do with a room without
@@ -67,8 +68,13 @@ export function RoomMenu({
   const [settings, setSettings] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false);
   const [report, setReport] = useState(false);
-  const [notify, setNotify] = useState('mentions');
-  const canEdit = !!room.myRole;
+  const router = useRouter();
+  const notify = useRoomAction(roomsApi.myPlace, () => toast.success('Saved'));
+  const leave = useRoomAction(roomsApi.leave, () => {
+    toast(`You left ${room.name}`);
+    router.push('/home');
+  });
+  const canEdit = room.canEdit;
 
   return (
     <>
@@ -87,7 +93,7 @@ export function RoomMenu({
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => {
-              navigator.clipboard?.writeText(`https://connecta.app/r/${room.id}`).catch(() => {});
+              navigator.clipboard?.writeText(`${window.location.origin}${chatHref(room)}`).catch(() => {});
               toast.success('Room link copied');
             }}
           >
@@ -105,7 +111,10 @@ export function RoomMenu({
               <Bell className="size-4" /> Notifications
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="rounded-2xl p-1.5">
-              <DropdownMenuRadioGroup value={notify} onValueChange={setNotify}>
+              <DropdownMenuRadioGroup
+                value={room.room.me.notify}
+                onValueChange={(v) => notify.mutate({ id: room.id, notify: v as 'all' | 'mentions' | 'none' })}
+              >
                 <DropdownMenuRadioItem value="all">Every message</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="mentions">Only @mentions (default)</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="none">Nothing</DropdownMenuRadioItem>
@@ -118,7 +127,7 @@ export function RoomMenu({
               <Settings /> Room settings
             </DropdownMenuItem>
           )}
-          {room.myRole !== 'Owner' && (
+          {room.myRole !== 'owner' && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => setReport(true)}>
@@ -133,7 +142,7 @@ export function RoomMenu({
       </DropdownMenu>
 
       <AboutRoomDialog room={room} open={about} onOpenChange={setAbout} onSettings={canEdit ? () => setSettings('overview') : undefined} />
-      <InviteDialog server={room.server} open={invite} onOpenChange={setInvite} />
+      <InviteDialog room={room} open={invite} onOpenChange={setInvite} />
       <ReportRoomDialog name={room.name} open={report} onOpenChange={setReport} />
       <RoomSettingsDialog room={room} tab={settings} onClose={() => setSettings(null)} />
       <Dialog open={leaving} onOpenChange={setLeaving}>
@@ -142,9 +151,7 @@ export function RoomMenu({
             <DialogTitle className="font-black">Leave {room.name}?</DialogTitle>
             <DialogDescription>
               It leaves your Home and you stop getting its chat.{' '}
-              {room.server.visibility === 'public'
-                ? 'It’s open, so you can join again any time.'
-                : 'You’ll need a new invite to come back.'}
+              {room.visibility === 'open' ? 'It’s open, so you can join again any time.' : 'You’ll need a new invite to come back.'}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -153,9 +160,10 @@ export function RoomMenu({
             </Button>
             <Button
               className="rounded-full bg-destructive font-extrabold text-white hover:bg-destructive/90"
+              disabled={leave.isPending}
               onClick={() => {
                 setLeaving(false);
-                toast(`You left ${room.name}`);
+                leave.mutate(room.id);
               }}
             >
               Leave room
@@ -185,18 +193,18 @@ export function AboutRoomDialog({
   /** Opened from inside the 3D room: no Walk in or Chat (Chat would leave the room). */
   inRoom?: boolean;
 }) {
-  const s = room.server;
-  const ownerId = Object.keys(s.roles).find((id) => s.roles[id] === 'Owner') ?? s.members[1] ?? 'me';
-  const mods = Object.keys(s.roles).filter((id) => s.roles[id] === 'Mod');
+  const r = room.room;
+  const { data: me } = useMe();
+  const you = (p: { id: string; name: string }) => (p.id === me?.id ? 'You' : p.name);
   const facts: [string, string][] = [
     ['Map', `${room.map.emoji} ${room.map.name}`],
-    ['Who can join', VISIBILITY[s.visibility]],
-    ['Members', `${s.memberCount} of ${planOf(room.ownerPlus).members.toLocaleString()}`],
+    ['Who can join', VISIBILITY[r.visibility]],
+    ['Members', `${r.memberCount} of ${r.maxMembers.toLocaleString()}`],
     ['Inside now', `${room.inside} of ${room.capacity}${room.full ? ' · full' : ''}`],
-    ['Owner', ownerId === 'me' ? 'You' : userById(ownerId).name],
-    ['Mods', mods.length ? mods.map((id) => (id === 'me' ? 'You' : userById(id).name)).join(', ') : 'None yet'],
+    ['Owner', you(r.owner)],
+    ['Mods', r.mods.length ? r.mods.map(you).join(', ') : 'None yet'],
     ['Plan', room.ownerPlus ? 'Plus (the owner’s)' : 'Free'],
-    ['You', room.myRole ?? 'Member'],
+    ['You', r.me.role ? ROLE_LABEL[r.me.role] : r.me.guestUntil ? 'Guest' : 'Visitor'],
   ];
 
   return (
@@ -214,16 +222,13 @@ export function AboutRoomDialog({
           <DialogHeader className="sr-only">
             <DialogTitle>About {room.name}</DialogTitle>
           </DialogHeader>
-          <DialogDescription className="text-foreground">{room.description}</DialogDescription>
-          {s.event && (
-            <p className="flex items-center gap-1.5 rounded-2xl bg-lavender px-3 py-2 text-sm font-bold text-lavender-ink">
-              <CalendarHeart className="size-4" /> {s.event}
-            </p>
+          <DialogDescription className="text-foreground">{room.description || room.map.blurb}</DialogDescription>
+          {r.rules && (
+            <section className="rounded-2xl bg-muted/60 px-3 py-2.5">
+              <p className="text-[11px] font-black tracking-wider text-muted-foreground uppercase">Room rules</p>
+              <p className="mt-1 text-sm whitespace-pre-line">{r.rules}</p>
+            </section>
           )}
-          <section className="rounded-2xl bg-muted/60 px-3 py-2.5">
-            <p className="text-[11px] font-black tracking-wider text-muted-foreground uppercase">Room rules</p>
-            <p className="mt-1 text-sm whitespace-pre-line">{DEFAULT_RULES}</p>
-          </section>
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
             {facts.map(([k, v]) => (
               <div key={k}>

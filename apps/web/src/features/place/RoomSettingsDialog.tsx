@@ -1,18 +1,32 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Globe, Link2, Lock, Map as MapIcon, ScrollText, Shield, UserCheck, Users } from 'lucide-react';
+import {
+  maxInside,
+  ROOM_DESCRIPTION_MAX,
+  ROOM_LANGUAGES,
+  ROOM_NAME_MAX,
+  ROOM_RULES_MAX,
+  ROOM_TAGS,
+  ROOM_TAGS_MAX,
+  type MapId,
+  type Visibility,
+} from '@connecta/shared';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { roomsApi, useMembers, useRoomAction, type RoomSettings } from '@/features/rooms/useRooms';
 import { cn } from '@/lib/utils';
-import { MAP_SIZES, MAPS, type Visibility } from '@/lib/mock';
-import { DEFAULT_RULES, planOf, type PlaceRoom } from './model';
+import { MAPS } from '@/lib/mock';
+import { type PlaceRoom } from './model';
 import { SizePicker, TemplateCard } from './MapPickers';
 import { InvitesPanel, MembersPanel } from './RoomMembers';
 import { mapById, ROOM_TIMES, saveLook, toThumbnail, useRoomLook, type RoomLook } from './roomLook';
@@ -40,7 +54,7 @@ const MOD_TABS: TabId[] = ['members', 'invites', 'safety'];
 const VIS: { id: Visibility; icon: typeof Lock; title: string; text: string }[] = [
   { id: 'private', icon: Lock, title: 'Private', text: 'Invite only. Not listed anywhere.' },
   { id: 'request', icon: UserCheck, title: 'Ask to join', text: 'Listed in Discover. Mods approve each new member.' },
-  { id: 'public', icon: Globe, title: 'Open', text: 'An open room: listed, anyone can walk in and join.' },
+  { id: 'open', icon: Globe, title: 'Open', text: 'An open room: listed, anyone can walk in and join.' },
 ];
 
 /** Room settings: the owner (and mods) edit the room here, from Home, the Chat page or inside the room. */
@@ -55,7 +69,7 @@ export function RoomSettingsDialog({ room, tab, onClose }: { room: PlaceRoom; ta
 function Body({ room, initial }: { room: PlaceRoom; initial: string }) {
   const myRole = room.myRole;
   // Members never get here (they see About this room instead); the guard keeps it that way
-  const tabs = TABS.filter(([id]) => myRole === 'Owner' || (myRole === 'Mod' && MOD_TABS.includes(id)));
+  const tabs = TABS.filter(([id]) => myRole === 'owner' || (myRole === 'mod' && MOD_TABS.includes(id)));
   const [current, setCurrent] = useState(tabs.some((t) => t[0] === initial) ? initial : tabs[0]![0]);
   return (
     <DialogContent className="flex h-[min(680px,90dvh)] max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-3xl p-0 sm:max-w-4xl">
@@ -101,15 +115,17 @@ function Body({ room, initial }: { room: PlaceRoom; initial: string }) {
         <div className="mt-5">
           {current === 'overview' && <Overview room={room} />}
           {current === 'map' && <MapAndLook room={room} />}
-          {current === 'members' && <MembersPanel room={room} myRole={myRole} />}
+          {current === 'members' && <MembersPanel room={room} />}
           {current === 'invites' && (
             <InvitesPanel
+              room={room}
               toggles={
                 <Toggles
+                  room={room}
                   rows={[
-                    ['Members can invite', 'Off: only the owner and mods make invite links', true],
-                    ['Allow guests', 'Guest passes let people walk in for 24 hours without an account', room.scene.allowGuests],
-                    ['Guests can use voice', 'Off: guests with a 24-hour pass can listen and type in Bubbles, but not talk', false],
+                    ['membersCanInvite', 'Members can invite', 'Off: only the owner and mods make invite links'],
+                    ['allowGuests', 'Allow guests', 'Guest passes let people walk in for 24 hours without an account'],
+                    ['guestVoice', 'Guests can use voice', 'Off: guests with a 24-hour pass can listen and type in Bubbles, but not talk'],
                   ]}
                 />
               }
@@ -122,23 +138,44 @@ function Body({ room, initial }: { room: PlaceRoom; initial: string }) {
   );
 }
 
-const TAGS = ['Study', 'Chill', 'Games', 'Language exchange', 'Music', 'Art', 'Anime', 'Late night'];
-const LANGUAGES = ['Thai', 'English', 'Japanese', 'Korean', 'Chinese', 'Mixed'];
+/** Saves settings and says so; the API has the last word on what each role may change. */
+function useSave(room: PlaceRoom, message = 'Saved') {
+  return useRoomAction(
+    (body: RoomSettings) => roomsApi.update({ id: room.id, ...body }),
+    () => toast.success(message),
+  );
+}
 
 function Overview({ room }: { room: PlaceRoom }) {
-  const [vis, setVis] = useState(room.server.visibility);
+  const r = room.room;
+  const [name, setName] = useState(r.name);
+  const [description, setDescription] = useState(r.description);
+  const [vis, setVis] = useState<Visibility>(r.visibility);
+  // A fixed list, up to 3: free-text tags only get spammed (feature 14)
+  const [tags, setTags] = useState<string[]>(r.tags);
+  const [lang, setLang] = useState<string | null>(r.language);
+  const [capacity, setCapacity] = useState(r.capacity);
   const saved = useRoomLook(room.id, room.map.id);
   const [thumb, setThumb] = useState(saved.thumb);
-  // A fixed list, up to 3: free-text tags only get spammed (feature 14)
-  const [tags, setTags] = useState<string[]>(['Study', 'Chill']);
-  const [lang, setLang] = useState('Thai');
-  const max = Math.min(planOf(room.ownerPlus).capacity, MAP_SIZES.find((s) => s.id === saved.size)!.upTo);
+  const [transfer, setTransfer] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const save = useSave(room);
   const listed = vis !== 'private';
   const toggleTag = (t: string) =>
-    setTags((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : cur.length < 3 ? [...cur, t] : (toast('Up to 3 tags'), cur)));
-  const save = () => {
+    setTags((cur) =>
+      cur.includes(t) ? cur.filter((x) => x !== t) : cur.length < ROOM_TAGS_MAX ? [...cur, t] : (toast(`Up to ${ROOM_TAGS_MAX} tags`), cur),
+    );
+  const submit = () => {
+    // The thumbnail stays in this browser until uploads are built (feature 14 checks pictures first)
     if (!saveLook(room.id, { ...saved, thumb })) return toast.error('Couldn’t save that. Try a smaller picture.');
-    toast.success('Saved');
+    save.mutate({
+      name: name.trim(),
+      description: description.trim(),
+      visibility: vis,
+      tags: tags as RoomSettings['tags'],
+      language: lang as RoomSettings['language'],
+      capacity,
+    });
   };
   return (
     <div className="flex flex-col gap-5">
@@ -146,12 +183,19 @@ function Overview({ room }: { room: PlaceRoom }) {
         <span className={cn('grid size-20 place-items-center rounded-3xl text-4xl', room.tint)}>{room.emoji}</span>
         <div className="flex flex-1 flex-col gap-1.5">
           <Label htmlFor="rn">Room name</Label>
-          <Input id="rn" defaultValue={room.name} className="rounded-xl" />
+          <Input id="rn" value={name} onChange={(e) => setName(e.target.value)} maxLength={ROOM_NAME_MAX} className="rounded-xl" />
         </div>
       </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="rd">Description</Label>
-        <Input id="rd" defaultValue={room.description} className="rounded-xl" />
+        <Input
+          id="rd"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          maxLength={ROOM_DESCRIPTION_MAX}
+          placeholder="What’s it for? e.g. “Card night every Friday”"
+          className="rounded-xl"
+        />
       </div>
       <ThumbnailPicker roomId={room.id} mapId={saved.mapId} thumb={thumb} onChange={setThumb} />
       <div>
@@ -161,6 +205,7 @@ function Overview({ room }: { room: PlaceRoom }) {
             <button
               key={v.id}
               onClick={() => setVis(v.id)}
+              aria-pressed={vis === v.id}
               className={cn('rounded-2xl border-2 p-3 text-left', vis === v.id ? 'border-primary bg-secondary/50' : 'border-border')}
             >
               <v.icon className="size-5 text-primary" />
@@ -178,7 +223,7 @@ function Overview({ room }: { room: PlaceRoom }) {
           </p>
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {TAGS.map((t) => (
+          {ROOM_TAGS.map((t) => (
             <Chip key={t} on={tags.includes(t)} onClick={() => toggleTag(t)}>
               {t}
             </Chip>
@@ -186,8 +231,8 @@ function Overview({ room }: { room: PlaceRoom }) {
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="mr-1 text-xs font-bold text-muted-foreground">Language</span>
-          {LANGUAGES.map((l) => (
-            <Chip key={l} on={lang === l} onClick={() => setLang(l)}>
+          {ROOM_LANGUAGES.map((l) => (
+            <Chip key={l} on={lang === l} onClick={() => setLang(lang === l ? null : l)}>
               {l}
             </Chip>
           ))}
@@ -195,50 +240,148 @@ function Overview({ room }: { room: PlaceRoom }) {
       </section>
       <div className="flex flex-col gap-2">
         <Label>
-          People at once · <span className="font-mono">{max}</span>
+          People at once · <span className="font-mono">{capacity}</span>
         </Label>
-        <Slider key={max} defaultValue={[max]} min={2} max={max} />
+        <Slider value={[capacity]} onValueChange={([v]) => setCapacity(v!)} min={2} max={r.maxCapacity} />
         <p className="text-xs text-muted-foreground">
           Free: 25 · Plus: 50 on a Cosy map, 100 on a Big one (the size is in Map & look). When it’s full, it’s full.
         </p>
       </div>
-      <Button className="w-fit rounded-full font-extrabold" onClick={save}>
+      <Button className="w-fit rounded-full font-extrabold" disabled={!name.trim() || save.isPending} onClick={submit}>
         Save changes
       </Button>
-      {room.myRole === 'Owner' && (
+      {room.myRole === 'owner' && (
         <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-destructive/30 p-3">
           <p className="min-w-0 flex-1 text-sm">
             <span className="block font-extrabold">Danger zone</span>
-            <span className="text-xs text-muted-foreground">Hand the room to a mod, or delete it with its chat for everyone.</span>
+            <span className="text-xs text-muted-foreground">Hand the room to a member, or delete it with its chat for everyone.</span>
           </p>
-          <Button variant="outline" className="rounded-full font-extrabold" onClick={() => toast('Pick a member to make owner')}>
+          <Button variant="outline" className="rounded-full font-extrabold" onClick={() => setTransfer(true)}>
             Transfer ownership
           </Button>
           <Button
             variant="outline"
             className="rounded-full border-destructive/40 font-extrabold text-destructive"
-            onClick={() => toast('Type the room name to confirm')}
+            onClick={() => setDeleting(true)}
           >
             Delete room
           </Button>
         </div>
       )}
+      <TransferDialog room={room} open={transfer} onOpenChange={setTransfer} />
+      <DeleteRoomDialog room={room} open={deleting} onOpenChange={setDeleting} />
     </div>
   );
 }
 
+/** Hand the room over: pick a member (mods first, they know the room); you stay on as a mod. */
+function TransferDialog({ room, open, onOpenChange }: { room: PlaceRoom; open: boolean; onOpenChange: (o: boolean) => void }) {
+  const members = useMembers(room.id, open);
+  const others = (members.data ?? []).filter((m) => m.role !== 'owner');
+  const [to, setTo] = useState('');
+  const picked = to || others[0]?.person.id || '';
+  const transfer = useRoomAction(roomsApi.transfer, () => {
+    onOpenChange(false);
+    toast.success(`${others.find((m) => m.person.id === picked)?.person.name} owns ${room.name} now. You’re a mod.`);
+  });
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-[calc(100%-2rem)] rounded-3xl sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="font-black">Hand {room.name} over</DialogTitle>
+          <DialogDescription>They get everything: the map, who can join, mods, deleting. You stay on as a mod.</DialogDescription>
+        </DialogHeader>
+        {others.length ? (
+          <Select value={picked} onValueChange={setTo}>
+            <SelectTrigger className="w-full rounded-xl">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {others.map((m) => (
+                <SelectItem key={m.person.id} value={m.person.id}>
+                  {m.person.name} {m.role === 'mod' ? '· mod' : ''}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <p className="rounded-2xl bg-muted p-3 text-sm">
+            {members.isPending ? 'Loading…' : 'Nobody else is in the room yet. Invite someone first.'}
+          </p>
+        )}
+        <DialogFooter>
+          <Button variant="outline" className="rounded-full font-extrabold" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            className="rounded-full font-extrabold"
+            disabled={!picked || transfer.isPending}
+            onClick={() => transfer.mutate({ id: room.id, userId: picked })}
+          >
+            Hand it over
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/** Deleting a room takes its chat with it for everyone, so it's confirmed by typing the name. */
+function DeleteRoomDialog({ room, open, onOpenChange }: { room: PlaceRoom; open: boolean; onOpenChange: (o: boolean) => void }) {
+  const router = useRouter();
+  const [typed, setTyped] = useState('');
+  const remove = useRoomAction(roomsApi.remove, () => {
+    onOpenChange(false);
+    toast(`${room.name} is gone`);
+    router.push('/home');
+  });
+  const matches = typed.trim().toLowerCase() === room.name.toLowerCase();
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-[calc(100%-2rem)] rounded-3xl sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="font-black">Delete {room.name}?</DialogTitle>
+          <DialogDescription>
+            The room, its chat and its {room.room.memberCount === 1 ? 'membership' : `${room.room.memberCount} members`} go for everyone.
+            This can’t be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="delete-room">Type the room’s name to confirm</Label>
+          <Input id="delete-room" value={typed} onChange={(e) => setTyped(e.target.value)} placeholder={room.name} className="rounded-xl" />
+        </div>
+        <DialogFooter>
+          <Button variant="outline" className="rounded-full font-extrabold" onClick={() => onOpenChange(false)}>
+            Keep it
+          </Button>
+          <Button
+            className="rounded-full bg-destructive font-extrabold text-white hover:bg-destructive/90"
+            disabled={!matches || remove.isPending}
+            onClick={() => remove.mutate({ id: room.id, name: typed })}
+          >
+            Delete room
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function MapAndLook({ room }: { room: PlaceRoom }) {
+  const r = room.room;
   const saved = useRoomLook(room.id, room.map.id);
-  const [look, setLook] = useState(saved);
+  const [look, setLook] = useState<RoomLook>({ ...saved, mapId: r.mapId, size: r.size, time: r.time });
   const set = (patch: Partial<RoomLook>) => setLook((l) => ({ ...l, ...patch }));
   const someoneInside = room.people.length > 0;
-  const mapChanged = look.mapId !== saved.mapId || look.size !== saved.size;
-
-  const save = () => {
-    // Everything applies at once, a new map too: people inside get a short loading screen (feature 7)
-    if (!saveLook(room.id, look)) return toast.error('Couldn’t save that. Try a smaller picture.');
-    toast.success(mapChanged && someoneInside ? `Moving everyone to ${mapById(look.mapId).name}` : 'Saved for everyone in the room');
-  };
+  const mapChanged = look.mapId !== r.mapId || look.size !== r.size;
+  const save = useRoomAction(
+    () => roomsApi.update({ id: room.id, mapId: look.mapId as MapId, size: look.size, time: look.time }),
+    () => {
+      // Also tells a 3D view of this room open in this browser; everyone else gets it over the gateway (build step 3)
+      saveLook(room.id, look);
+      toast.success(mapChanged && someoneInside ? `Moving everyone to ${mapById(look.mapId).name}` : 'Saved for everyone in the room');
+    },
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -258,6 +401,9 @@ function MapAndLook({ room }: { room: PlaceRoom }) {
       <section>
         <p className="mb-2 text-sm font-extrabold">Size</p>
         <SizePicker size={look.size} plus={room.ownerPlus} onPick={(size) => set({ size })} />
+        {maxInside(room.ownerPlus, look.size) < r.capacity && (
+          <p className="mt-2 text-xs text-muted-foreground">People at once drops to {maxInside(room.ownerPlus, look.size)}.</p>
+        )}
       </section>
 
       {mapChanged && (
@@ -295,7 +441,7 @@ function MapAndLook({ room }: { room: PlaceRoom }) {
         </p>
       </section>
 
-      <Button className="w-fit rounded-full font-extrabold" onClick={save}>
+      <Button className="w-fit rounded-full font-extrabold" disabled={save.isPending} onClick={() => save.mutate(undefined)}>
         {mapChanged && someoneInside ? 'Save and move everyone' : 'Save changes'}
       </Button>
     </div>
@@ -364,25 +510,40 @@ function ThumbnailPicker({
 
 /** The rules people read before joining (and in About this room), plus what's allowed inside. */
 function RulesAndSafety({ room }: { room: PlaceRoom }) {
+  const [rules, setRules] = useState(room.room.rules);
+  const save = useSave(room, 'Rules saved');
   return (
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-2">
         <Label htmlFor="rules">Room rules</Label>
-        <Textarea id="rules" rows={4} maxLength={1000} defaultValue={DEFAULT_RULES} className="rounded-xl" />
-        <Button variant="secondary" className="w-fit rounded-full font-bold" onClick={() => toast.success('Rules saved')}>
+        <Textarea
+          id="rules"
+          rows={4}
+          maxLength={ROOM_RULES_MAX}
+          value={rules}
+          onChange={(e) => setRules(e.target.value)}
+          className="rounded-xl"
+        />
+        <Button
+          variant="secondary"
+          className="w-fit rounded-full font-bold"
+          disabled={save.isPending}
+          onClick={() => save.mutate({ rules: rules.trim() })}
+        >
           Save rules
         </Button>
       </section>
       <Toggles
+        room={room}
         rows={[
-          ['Show rules before joining', 'New members tick “I’ll follow the rules” before they’re in', true],
-          ['Filter rude words', 'In the room chat and the bubbles', true],
-          ['Slow mode', 'One message every 5 seconds', false],
-          ['New members wait 10 minutes to talk', '', false],
+          ['showRules', 'Show rules before joining', 'New members tick “I’ll follow the rules” before they’re in'],
+          ['filterWords', 'Filter rude words', 'In the room chat and the bubbles'],
+          ['slowMode', 'Slow mode', 'One message every 5 seconds'],
+          ['newMemberWait', 'New members wait 10 minutes to talk', ''],
           [
+            'roomWideGames',
             'Room-wide games',
             'Off: nobody can start games that invite the whole room (Pick a Side). Tables, the TV and the board still work.',
-            room.scene.roomWideGames,
           ],
         ]}
       />
@@ -406,16 +567,21 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
   );
 }
 
-function Toggles({ rows }: { rows: [string, string, boolean][] }) {
+type Toggle =
+  'showRules' | 'filterWords' | 'slowMode' | 'newMemberWait' | 'roomWideGames' | 'membersCanInvite' | 'allowGuests' | 'guestVoice';
+
+/** On/off settings save as soon as they're flipped. */
+function Toggles({ room, rows }: { room: PlaceRoom; rows: [Toggle, string, string][] }) {
+  const save = useSave(room);
   return (
     <div className="flex flex-col gap-4">
-      {rows.map(([label, hint, on]) => (
-        <label key={label} className="flex items-center justify-between gap-4">
+      {rows.map(([key, label, hint]) => (
+        <label key={key} className="flex items-center justify-between gap-4">
           <span>
             <span className="block text-sm font-bold">{label}</span>
             {hint && <span className="block text-xs text-muted-foreground">{hint}</span>}
           </span>
-          <Switch defaultChecked={on} />
+          <Switch checked={room.room[key]} disabled={save.isPending} onCheckedChange={(on) => save.mutate({ [key]: on })} />
         </label>
       ))}
     </div>

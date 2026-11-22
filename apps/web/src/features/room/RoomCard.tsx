@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { ChevronDown, Flag, Info, Link2, LogOut, Settings, VolumeX } from 'lucide-react';
 import { toast } from 'sonner';
-import { InviteDialog } from '@/components/server/InviteDialog';
-import { placeRoom } from '@/features/place/model';
+import { InviteDialog } from '@/features/rooms/InviteDialog';
+import type { PlaceRoom } from '@/features/place/model';
 import { RoomSettingsDialog } from '@/features/place/RoomSettingsDialog';
 import { AboutRoomDialog } from '@/features/place/RoomMenu';
 import { ReportRoomDialog } from '@/features/place/ReportRoomDialog';
@@ -24,6 +24,7 @@ import { useDismiss } from './useDismiss';
 
 export function RoomCard({
   server,
+  place,
   room,
   here,
   guest,
@@ -31,6 +32,8 @@ export function RoomCard({
   className,
 }: {
   server: Server;
+  /** The room from the API (none in Common rooms) */
+  place?: PlaceRoom;
   room: Room;
   /** How many people are in this room right now, you included. */
   here: number;
@@ -45,9 +48,7 @@ export function RoomCard({
   const [settings, setSettings] = useState<string | null>(null);
   const [about, setAbout] = useState(false);
   const [report, setReport] = useState(false);
-  // "View as" remounts the room, so the role is read once
-  const [place] = useState(() => (isPublic ? null : placeRoom(server)));
-  const canEdit = !guest && !!place?.myRole;
+  const canEdit = !guest && !!place?.canEdit;
   const look = useRoomLook(isPublic ? `public:${room.id}` : server.id, room.mapId);
   const map = mapById(look.mapId);
   const name = isPublic ? room.name : server.name;
@@ -94,7 +95,7 @@ export function RoomCard({
               </button>
               {canEdit ? (
                 <button
-                  onClick={() => setSettings(place!.myRole === 'Owner' ? 'overview' : 'members')}
+                  onClick={() => setSettings(place!.myRole === 'owner' ? 'overview' : 'members')}
                   className="flex flex-1 items-center justify-center gap-1.5 rounded-full border bg-card px-3 py-2 text-sm font-extrabold whitespace-nowrap hover:bg-muted"
                 >
                   <Settings className="size-4" /> Room settings
@@ -126,7 +127,7 @@ export function RoomCard({
             <LogOut className="size-4" /> Leave room
           </button>
           {/* Not your own room, not a Common room (there you report people, not the room) */}
-          {!isPublic && place?.myRole !== 'Owner' && (
+          {!isPublic && place?.myRole !== 'owner' && (
             <button
               onClick={() => setReport(true)}
               className="-mt-1 flex items-center justify-center gap-1 text-[11px] font-bold text-muted-foreground hover:text-foreground hover:underline"
@@ -140,7 +141,7 @@ export function RoomCard({
 
       {!isPublic && !guest && (
         <>
-          <InviteDialog server={server} open={invite} onOpenChange={setInvite} />
+          {place && <InviteDialog room={place} open={invite} onOpenChange={setInvite} />}
           {place && <RoomSettingsDialog room={place} tab={settings} onClose={() => setSettings(null)} />}
           {place && <AboutRoomDialog room={place} open={about} onOpenChange={setAbout} inRoom />}
         </>

@@ -1,9 +1,11 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { HealthCheck, HealthCheckService } from '@nestjs/terminus';
+import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 import { DatabaseHealthIndicator } from './database.health.js';
 
 @ApiTags('health')
+@AllowAnonymous()
 @Controller('health')
 export class HealthController {
   constructor(

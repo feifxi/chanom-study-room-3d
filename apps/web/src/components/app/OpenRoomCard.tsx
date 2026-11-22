@@ -4,12 +4,14 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Users, VolumeX } from 'lucide-react';
 import { JoinRoomDialog } from '@/features/place/JoinRoomDialog';
+import { chatHref, mapFor } from '@/features/place/model';
+import type { ListedRoom } from '@/features/rooms/useRooms';
 import { AvatarStack } from '@/components/UserAvatar';
 import { cn } from '@/lib/utils';
-import { commonCopyFor, MAPS, serverById, userById, type CommonRoom, type OpenRoom } from '@/lib/mock';
+import { commonCopyFor, MAPS, userById, type CommonRoom } from '@/lib/mock';
 import { useViewer } from '@/lib/viewer';
 
-type Props = { kind: 'open'; room: OpenRoom } | { kind: 'common'; room: CommonRoom };
+type Props = { kind: 'open'; room: ListedRoom } | { kind: 'common'; room: CommonRoom };
 
 /**
  * A room anyone can walk into, on Home ("Open now") and in Discover. Two kinds, labelled so people
@@ -21,14 +23,12 @@ type Props = { kind: 'open'; room: OpenRoom } | { kind: 'common'; room: CommonRo
  *   everyone across its copies instead.
  */
 export function OpenRoomCard(props: Props) {
-  const r = props.room;
-  const map = MAPS.find((m) => m.id === r.mapId)!;
-  const friends = (r.friendsInside ?? []).map(userById);
-
   if (props.kind === 'common') {
     const d = props.room;
+    const map = MAPS.find((m) => m.id === d.mapId)!;
+    const friends = (d.friendsInside ?? []).map(userById);
     return (
-      <Link href={`/servers/public/rooms/${commonCopyFor(d.mapId)}`} className={CARD}>
+      <Link href={`/common/${commonCopyFor(d.mapId)}`} className={CARD}>
         <Picture tint={map.tint} emoji={map.emoji} label="Common room · by Connecta" dark />
         <p className="mt-2 flex items-center gap-1 font-black">
           <span className="truncate">{d.name}</span>
@@ -51,36 +51,39 @@ export function OpenRoomCard(props: Props) {
   return <OpenCard room={props.room} />;
 }
 
-/** An open room you're not in yet opens its preview (rules, who's inside) before you join. */
-function OpenCard({ room: o }: { room: OpenRoom }) {
+/**
+ * A listed room (Open or Ask to join) opens its preview (rules, who runs it) before you join; one
+ * you're already in opens its page. Who's inside comes with presence (build step 3).
+ */
+function OpenCard({ room: o }: { room: ListedRoom }) {
   const [preview, setPreview] = useState(false);
-  const map = MAPS.find((m) => m.id === o.mapId)!;
-  const friends = (o.friendsInside ?? []).map(userById);
-  const fill = o.inside / o.capacity;
-  const full = o.inside >= o.capacity;
-  const mine = serverById(o.id);
-  // Guests can look, but open rooms have members, and members need an account
+  const map = mapFor(o.mapId);
+  const inside = 0;
+  const fill = inside / o.capacity;
+  const full = inside >= o.capacity;
+  const mine = !!o.me.role;
+  // Guests can look, but listed rooms have members, and members need an account
   const guest = useViewer() === 'guest';
   const action = guest
     ? 'Sign up to join'
     : mine
-      ? full
-        ? 'Full · notify me'
-        : 'Walk in'
-      : o.ask
-        ? 'Ask to join'
-        : full
-          ? 'Join · full now'
-          : 'Join & walk in';
+      ? 'Open'
+      : o.me.requested
+        ? 'Waiting to be let in'
+        : o.visibility === 'request'
+          ? 'Ask to join'
+          : full
+            ? 'Join · full now'
+            : 'Join & walk in';
   const body = (
     <>
-      <Picture tint={map.tint} emoji={o.emoji} label="Open room" />
+      <Picture tint={map.tint} emoji={o.emoji} label={o.visibility === 'request' ? 'Ask to join' : 'Open room'} />
       <p className="mt-2 truncate font-black">{o.name}</p>
       <p className="line-clamp-1 text-xs text-muted-foreground">
-        {o.blurb} · by {o.owner}
+        {o.description || map.mood} · by {o.owner.name}
       </p>
       <p className="mt-1 truncate text-[11px] font-bold text-muted-foreground">
-        {o.language} · {o.tags.join(', ')}
+        {[o.language, ...o.tags].filter(Boolean).join(' · ') || `${map.emoji} ${map.name}`}
       </p>
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
         <div
@@ -90,16 +93,19 @@ function OpenCard({ room: o }: { room: OpenRoom }) {
       </div>
       <p className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
         <span className="font-mono">
-          {o.inside}/{o.capacity}
+          {inside}/{o.capacity}
           {full && ' full'}
         </span>
         <span className="flex items-center gap-0.5">
-          <Users className="size-3" /> {o.members.toLocaleString()} members
+          <Users className="size-3" /> {o.memberCount.toLocaleString()} {o.memberCount === 1 ? 'member' : 'members'}
         </span>
       </p>
-      <Friends friends={friends} />
+      <span className="mt-1 h-4" />
       <span
-        className={cn(BUTTON, full ? 'bg-muted text-muted-foreground' : 'bg-primary text-primary-foreground group-hover:bg-primary-ink')}
+        className={cn(
+          BUTTON,
+          full || o.me.requested ? 'bg-muted text-muted-foreground' : 'bg-primary text-primary-foreground group-hover:bg-primary-ink',
+        )}
       >
         {action}
       </span>
@@ -113,7 +119,7 @@ function OpenCard({ room: o }: { room: OpenRoom }) {
     );
   // Already a member: go to the room's page (its chat works even when the room is full)
   return mine ? (
-    <Link href={`/servers/${o.id}`} className={CARD}>
+    <Link href={chatHref(o)} className={CARD}>
       {body}
     </Link>
   ) : (

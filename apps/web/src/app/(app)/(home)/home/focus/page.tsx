@@ -67,7 +67,7 @@ function FocusHero({ week }: { week: number }) {
         <p className="mt-1 text-xs opacity-75">Your numbers are only yours. Friends see the weekly ranking.</p>
       </div>
       <Link
-        href={`/servers/public/rooms/${commonCopyFor('library')}`}
+        href={`/common/${commonCopyFor('library')}`}
         className="relative flex items-center gap-2 rounded-full bg-card px-5 py-3 text-sm font-extrabold shadow-md hover:bg-muted"
       >
         📚 Study in the Library

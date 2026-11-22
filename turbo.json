@@ -11,18 +11,18 @@
       "outputs": ["src/generated/**"]
     },
     "dev": {
-      "dependsOn": ["generate"],
+      "dependsOn": ["^build", "generate"],
       "cache": false,
       "persistent": true
     },
     "typecheck": {
-      "dependsOn": ["^typecheck", "generate"]
+      "dependsOn": ["^build", "generate"]
     },
     "lint": {
-      "dependsOn": ["generate"]
+      "dependsOn": ["^build", "generate"]
     },
     "test": {
-      "dependsOn": ["generate"]
+      "dependsOn": ["^build", "generate"]
     }
   }
 }

@@ -32,8 +32,9 @@ log. Keep them current in the same change that makes them stale.
 
 ## What's next
 
-Build step 2 of the plan, **the core**: accounts (Google, Discord, email code, guests), rooms,
-members and roles, invites, with the web app's screens moved onto the real API. The plan's
+Step 3 of the plan, **the gateway**: room chat, DMs, friends and presence over the API's WebSocket
+entry point. Steps 1 and 2 (the skeleton; accounts and rooms with members, roles and invites) are
+done. The plan's
 [What's left](docs/v2-plan.md#whats-left) is the source of truth.
 
 ## Working agreements
@@ -44,6 +45,10 @@ members and roles, invites, with the web app's screens moved onto the real API. 
   how it feels, panel or 3D), build it in `demo/` for approval, then write or update its spec and
   the plan. Don't build ahead of a decision.
 - **Ask in plain text** with options and a recommendation. Don't use pop-up question dialogs.
+- **The seed is written once, at the end:** when every feature is on the API, one seed fills all
+  the data (people, rooms, members, friends, DMs…) for the owner to test with. Don't grow it feature
+  by feature; until then it holds only the demo people (to sign in) and the S3 bucket. Test a new
+  feature with the API tests and by hand.
 - **Record decisions in the same change:** update the feature's spec, add a dated line to
   `docs/v2/decisions.md`, and update `docs/v2-plan.md` if the status or a one-line summary changed.
 - **Each fact lives in one place:** specs hold the what, the decision log the why, the plan the
@@ -81,7 +86,18 @@ members and roles, invites, with the web app's screens moved onto the real API. 
   `generate` before dev, typecheck, lint, test and build). Every schema change is a migration
   (`pnpm db:migrate`).
 - **Tests:** Vitest everywhere. API tests compile through SWC (Nest needs decorator metadata) and
-  boot the real module with fakes for outside services (`apps/api/src/health/*.spec.ts`).
+  boot the whole app (`apps/api/test/test-app.ts`) against a real test database, `connecta_test`
+  in the compose Postgres (created and migrated on each run), with fakes only for what leaves the
+  machine (email). So `pnpm check` needs `docker compose up -d`; CI runs Postgres as a service.
+- **Sign-in is Better Auth** (`apps/api/src/auth/auth.ts`), served under `/api/auth/*`. A global
+  guard protects every route: mark public ones `@AllowAnonymous()`, read the user with
+  `@Session()`. Better Auth owns the users, sessions, accounts and verifications tables; Connecta's
+  own user fields (`handle`, `birthday`, `look`) are `input: false` there and written only by the
+  accounts module.
+- **The web app calls the API through the generated client** (`apps/web/src/lib/api/client.ts`,
+  `api.GET('/api/me')`) with relative paths and TanStack Query; sign-in goes through `authClient`.
+  After changing an endpoint or schema, run `pnpm api:client` and commit `apps/api/openapi.json`
+  and `apps/web/src/lib/api/schema.d.ts` (CI fails if they're stale).
 - **`.npmrc` uses `node-linker=hoisted` on purpose:** Colyseus packages peer-depend in a cycle, and
   an isolated layout installs two `@colyseus/core` copies ("seat reservation expired" on every join).
 - **Headless Chrome and Playwright always run with `--mute-audio`.**
@@ -90,9 +106,10 @@ members and roles, invites, with the web app's screens moved onto the real API. 
 
 **Infra and secrets**
 
-- **Local development only** until the owner says to deploy. The cloud is being reconsidered (Azure
-  instead of AWS); it's discussed when the build reaches the infra step, so don't add cloud-specific
-  code before then.
+- **Local development only** until the owner says to deploy. The cloud is AWS, behind nginx
+  ([spec 15](docs/v2/features/15-business-infra.md#architecture)). Code talks to AWS only through
+  the AWS SDK with `AWS_ENDPOINT_URL`, so locally it hits the AWS Emulator; email goes through the
+  API's mail module (Mailpit locally, SES in production).
 - **Only the owner provisions** cloud resources. Agents suggest steps and run read-only checks only.
 - Never commit secrets (`.env` files are ignored; examples are `.env.example`).
 
@@ -102,19 +119,28 @@ Node 24 (`.nvmrc`) and pnpm 9 (`packageManager`, via corepack).
 
 ```bash
 pnpm install
-docker compose up -d                 # Postgres :5433, Redis :6379, LiveKit :7880
+docker compose up -d                 # Postgres :5433, Redis :6379, LiveKit :7880, Mailpit :8025,
+                                     # AWS Emulator :9297 (the first run builds its image)
 cp apps/api/.env.example apps/api/.env
+pnpm db:migrate && pnpm db:seed      # schema, then the demo people and the S3 bucket
 pnpm dev                             # web :3000, API :4000 (Swagger UI at /api/docs)
 pnpm check                           # what CI runs: prettier --check, then typecheck + lint + tests
 pnpm build
 pnpm format                          # prettier --write
 pnpm db:migrate                      # create and apply a migration after a schema change
+pnpm db:seed                         # safe to rerun; also after restarting the AWS Emulator
+pnpm db:reset                        # drop the local database, migrate, seed
 pnpm db:studio                       # browse the local database
+pnpm api:client                      # after an API change: OpenAPI document → web types
 pnpm --filter @connecta/web screens 390 dark guest   # screenshots; needs the web app running
 pnpm --filter @connecta/web perf                     # 3D budget check; needs the web app running
 ```
 
-Single tests: `cd apps/api && npx vitest run src/health`, `cd packages/shared && npx vitest run
+Signing in locally: use the email code; it arrives in Mailpit (http://localhost:8025). The seed
+people sign in as `<handle>@connecta.test` (`maimai@connecta.test`). Google and Discord need
+their keys in `apps/api/.env` (see `.env.example`).
+
+Single tests: `cd apps/api && npx vitest run src/accounts`, `cd packages/shared && npx vitest run
 src/navigation.test.ts`.
 
 The demo has its own scripts, which turbo and CI skip:
@@ -136,8 +162,10 @@ apps/
              WebSocket gateway (chat, DMs, presence). Owns the database: Prisma schema + migrations
   game/      (build step 4) Colyseus rooms: movement, seats, NPCs, activities
 packages/
-  shared/    Consumed as TypeScript source: avatars, map world types, movement rules, collisions,
-             A* navigation, NPC types. Used by the web app, the demo and (later) the game server
+  shared/    Built to dist/ (tsc; `pnpm dev` watches it): account rules (handles, age), avatars, map
+             world types, movement rules, collisions, A* navigation, NPC types. Used by the web
+             app, the demo, the API and (later) the game server
+docker/      Images built for local services (the AWS Emulator, which AWS ships only as a package)
 demo/        The design sandbox (mock data only)
 docs/        The plan, the decision log, the specs
 ```
@@ -147,6 +175,8 @@ docs/        The plan, the decision log, the specs
   (`src/config/env.ts`); add every new variable there and to `.env.example`. `src/setup.ts` holds
   what `main.ts` applies (the `/api` prefix, CORS, validation, logging), so tests boot the app the
   same way. Logs are pino (JSON in production, pretty locally).
-- **Web conventions:** `features/<feature>/` holds everything per feature. Mock data in `lib/mock.ts`
-  is the API boundary: each mock function becomes an API call as its feature is ported.
+- **Web conventions:** `features/<feature>/` holds everything per feature (`features/account/useMe`
+  is who's signed in, `features/rooms/useRooms` the rooms). Server components read the API with the
+  request's cookies (`getMe`, `getRoom` in each feature's `server.ts`). Mock data in `lib/mock.ts` is the API boundary: each mock function becomes an
+  API call as its feature is ported.
 - CI (`.github/workflows/ci.yml`) runs `pnpm check` and `pnpm build`. There's no deploy yet.

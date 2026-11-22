@@ -13,3 +13,5 @@ next-env.d.ts
 **/src/generated
 # Screenshots from the screens scripts
 **/.screens
+# Local service files (the AWS Emulator's certificate)
+.local

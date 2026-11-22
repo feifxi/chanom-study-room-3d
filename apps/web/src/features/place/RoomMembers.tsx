@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { Ban, Check, Clock, MoreHorizontal, ShieldCheck, ShieldOff, UserMinus, X } from 'lucide-react';
+import { canActOn, REQUEST_COOLDOWN_DAYS, type RoomRole, type Timeout } from '@connecta/shared';
 import { toast } from 'sonner';
 import { UserAvatar } from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
@@ -15,53 +16,45 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useMe } from '@/features/account/useMe';
+import { inviteUrl, roomsApi, useBans, useInvites, useMembers, useRequests, useRoomAction, type Person } from '@/features/rooms/useRooms';
+import { ago } from '@/lib/mock';
 import { cn } from '@/lib/utils';
-import { userById } from '@/lib/mock';
-import {
-  BANS,
-  INVITE_LINKS,
-  JOIN_REQUESTS,
-  REQUEST_COOLDOWN_DAYS,
-  ROLE_RULES,
-  TIMEOUTS,
-  type JoinRequest,
-  type Outsider,
-  type RoomBan,
-  type RoomRole,
-} from './membership';
-import { planOf, type PlaceRoom } from './model';
+import { ROLE_RULES, TIMEOUTS } from './membership';
+import { ROLE_LABEL, type PlaceRoom } from './model';
 
-/** Can `me` act on someone with `their` role? Owner: anyone but themselves. Mod: members only. */
-export const canActOn = (me: RoomRole | undefined, their: RoomRole) =>
-  me === 'Owner' ? their !== 'Owner' : me === 'Mod' ? their === 'Member' : false;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const since = (iso: string) => ago(Math.floor((Date.now() - Date.parse(iso)) / DAY_MS));
+const until = (iso: string) => new Date(iso).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+
+/** Someone's face from their account (the colour is their outfit). */
+function Face({ who, size = 34 }: { who: Person; size?: number }) {
+  return <UserAvatar user={{ name: who.name, color: who.look?.outfit ?? '#9c8aa0', presence: 'offline' }} size={size} />;
+}
 
 /**
  * Members & roles: who belongs, join requests (Ask to join rooms) and the banned list. Kick, ban,
  * time out and make mod sit in each person's "…", the same actions as the in-room people list.
  */
-export function MembersPanel({ room, myRole }: { room: PlaceRoom; myRole: RoomRole | undefined }) {
-  const asks = room.server.visibility === 'request';
+export function MembersPanel({ room }: { room: PlaceRoom }) {
+  const r = room.room;
+  const asks = r.visibility === 'request';
+  const myRole = room.myRole;
+  const { data: me } = useMe();
   const [view, setView] = useState<'members' | 'requests' | 'banned'>('members');
-  const [ids, setIds] = useState(room.server.members);
-  const [roles, setRoles] = useState<Record<string, RoomRole>>(room.server.roles);
-  const [timedOut, setTimedOut] = useState<Record<string, string>>({});
-  const [requests, setRequests] = useState<JoinRequest[]>(asks ? JOIN_REQUESTS : []);
-  const [bans, setBans] = useState<RoomBan[]>(BANS);
+  const members = useMembers(room.id);
+  const requests = useRequests(room.id, asks);
+  const bans = useBans(room.id);
+
+  const act = useRoomAction(async (run: () => Promise<unknown>) => run());
+  const say = (text: string) => () => toast(text);
+  const id = room.id;
 
   const views: [typeof view, string, number][] = [
-    ['members', 'Members', ids.length],
-    ...(asks ? [['requests', 'Requests', requests.length] as [typeof view, string, number]] : []),
-    ['banned', 'Banned', bans.length],
+    ['members', 'Members', members.data?.length ?? r.memberCount],
+    ...(asks ? [['requests', 'Requests', requests.data?.length ?? r.requestCount] as [typeof view, string, number]] : []),
+    ['banned', 'Banned', bans.data?.length ?? 0],
   ];
-
-  const remove = (id: string, ban: boolean) => {
-    const name = userById(id).name;
-    setIds((l) => l.filter((x) => x !== id));
-    if (ban) {
-      setBans((b) => [{ id: `b-${id}`, who: { name, color: userById(id).color }, by: 'you', at: 'Just now' }, ...b]);
-      toast(`${name} was banned. They can’t rejoin or use guest passes for this room.`);
-    } else toast(`${name} was removed. A new invite lets them back in.`);
-  };
 
   return (
     <div className="flex flex-col gap-3">
@@ -69,7 +62,7 @@ export function MembersPanel({ room, myRole }: { room: PlaceRoom; myRole: RoomRo
       <div className="grid gap-2 sm:grid-cols-2">
         <p className="rounded-2xl bg-muted p-3 text-sm">
           <span className="block text-lg font-black">
-            {room.server.memberCount}/{planOf(room.ownerPlus).members}
+            {r.memberCount}/{r.maxMembers.toLocaleString()}
           </span>
           members. They have the Room chat any time, from anywhere. Free rooms hold 150; the owner’s Plus raises it to 1,000.
         </p>
@@ -82,20 +75,20 @@ export function MembersPanel({ room, myRole }: { room: PlaceRoom; myRole: RoomRo
       </div>
 
       <div className="flex gap-1 rounded-2xl bg-muted p-1">
-        {views.map(([id, label, n]) => (
+        {views.map(([v, label, n]) => (
           <button
-            key={id}
-            onClick={() => setView(id)}
+            key={v}
+            onClick={() => setView(v)}
             className={cn(
               'flex flex-1 items-center justify-center gap-1.5 rounded-xl py-1.5 text-sm font-bold',
-              view === id ? 'bg-card shadow-sm' : 'text-muted-foreground',
+              view === v ? 'bg-card shadow-sm' : 'text-muted-foreground',
             )}
           >
             {label}
             <span
               className={cn(
                 'rounded-full px-1.5 text-[11px] font-black',
-                id === 'requests' && n > 0 ? 'bg-primary text-primary-foreground' : 'bg-card/70',
+                v === 'requests' && n > 0 ? 'bg-primary text-primary-foreground' : 'bg-card/70',
               )}
             >
               {n}
@@ -106,35 +99,51 @@ export function MembersPanel({ room, myRole }: { room: PlaceRoom; myRole: RoomRo
 
       {view === 'members' && (
         <>
-          {ids.map((id) => {
-            const u = userById(id);
-            const role = roles[id] ?? 'Member';
+          {members.isPending && <Empty>Loading members…</Empty>}
+          {members.data?.map((m) => {
+            const mine = m.person.id === me?.id;
+            const name = m.person.name;
             return (
-              <div key={id} className="flex items-center gap-3 rounded-2xl border p-2.5">
-                <UserAvatar user={u} size={34} presence />
+              <div key={m.person.id} className="flex items-center gap-3 rounded-2xl border p-2.5">
+                <Face who={m.person} />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-bold">{id === 'me' ? `${u.name} (you)` : u.name}</span>
-                  {timedOut[id] && (
+                  <span className="block truncate font-bold">
+                    {mine ? `${name} (you)` : name}
+                    {m.person.handle && <span className="ml-1.5 text-xs font-semibold text-muted-foreground">@{m.person.handle}</span>}
+                  </span>
+                  {m.timedOutUntil && (
                     <span className="flex items-center gap-1 text-xs font-semibold text-tea-ink">
-                      <Clock className="size-3" /> Timed out · {timedOut[id]}
+                      <Clock className="size-3" /> Timed out until {until(m.timedOutUntil)}
                     </span>
                   )}
                 </span>
-                <RolePill role={role} />
-                {id !== 'me' && canActOn(myRole, role) ? (
+                <RolePill role={m.role} />
+                {!mine && canActOn(myRole, m.role) ? (
                   <MemberMenu
-                    name={u.name}
-                    role={role}
-                    isOwner={myRole === 'Owner'}
-                    onRole={(r) => {
-                      setRoles((all) => ({ ...all, [id]: r }));
-                      toast.success(r === 'Mod' ? `${u.name} is now a mod` : `${u.name} is no longer a mod`);
-                    }}
-                    onTimeout={(label) => {
-                      setTimedOut((t) => ({ ...t, [id]: label }));
-                      toast(`${u.name} can’t talk or type for ${label}`);
-                    }}
-                    onRemove={(ban) => remove(id, ban)}
+                    name={name}
+                    role={m.role}
+                    isOwner={myRole === 'owner'}
+                    onRole={(role) =>
+                      act.mutate(() =>
+                        roomsApi
+                          .setRole({ id, userId: m.person.id, role })
+                          .then(say(role === 'mod' ? `${name} is now a mod` : `${name} is no longer a mod`)),
+                      )
+                    }
+                    onTimeout={(duration, label) =>
+                      act.mutate(() =>
+                        roomsApi.timeOut({ id, userId: m.person.id, duration }).then(say(`${name} can’t talk or type for ${label}`)),
+                      )
+                    }
+                    onRemove={(ban) =>
+                      act.mutate(() =>
+                        ban
+                          ? roomsApi
+                              .ban({ id, userId: m.person.id })
+                              .then(say(`${name} was banned. They can’t rejoin or use guest passes for this room.`))
+                          : roomsApi.kick({ id, userId: m.person.id }).then(say(`${name} was removed. A new invite lets them back in.`)),
+                      )
+                    }
                   />
                 ) : (
                   <span className="size-8" />
@@ -147,25 +156,27 @@ export function MembersPanel({ room, myRole }: { room: PlaceRoom; myRole: RoomRo
       )}
 
       {view === 'requests' &&
-        (requests.length ? (
+        (requests.data?.length ? (
           <>
-            {requests.map((r) => (
-              <div key={r.id} className="flex items-start gap-3 rounded-2xl border p-3">
-                <Face who={r.who} />
+            {requests.data.map((q) => (
+              <div key={q.person.id} className="flex items-start gap-3 rounded-2xl border p-3">
+                <Face who={q.person} />
                 <div className="min-w-0 flex-1">
                   <p className="font-bold">
-                    {r.who.name} <span className="text-xs font-semibold text-muted-foreground">· {r.at}</span>
+                    {q.person.name} <span className="text-xs font-semibold text-muted-foreground">· {since(q.at)}</span>
                   </p>
-                  {r.note && <p className="text-sm">“{r.note}”</p>}
-                  {r.mutual && <p className="text-xs text-muted-foreground">{r.mutual}</p>}
+                  {q.person.handle && <p className="text-xs text-muted-foreground">@{q.person.handle}</p>}
+                  {q.note && <p className="text-sm">“{q.note}”</p>}
                 </div>
                 <Button
                   size="sm"
                   className="rounded-full font-bold"
-                  onClick={() => {
-                    setRequests((l) => l.filter((x) => x.id !== r.id));
-                    toast.success(`${r.who.name} is a member now`);
-                  }}
+                  disabled={act.isPending}
+                  onClick={() =>
+                    act.mutate(() =>
+                      roomsApi.decide({ id, userId: q.person.id, letIn: true }).then(say(`${q.person.name} is a member now`)),
+                    )
+                  }
                 >
                   <Check /> Let in
                 </Button>
@@ -173,18 +184,23 @@ export function MembersPanel({ room, myRole }: { room: PlaceRoom; myRole: RoomRo
                   size="sm"
                   variant="ghost"
                   className="rounded-full font-bold"
-                  aria-label={`Decline ${r.who.name}`}
-                  onClick={() => {
-                    setRequests((l) => l.filter((x) => x.id !== r.id));
-                    toast(`Declined. ${r.who.name} can ask again in ${REQUEST_COOLDOWN_DAYS} days.`);
-                  }}
+                  aria-label={`Decline ${q.person.name}`}
+                  disabled={act.isPending}
+                  onClick={() =>
+                    act.mutate(() =>
+                      roomsApi
+                        .decide({ id, userId: q.person.id, letIn: false })
+                        .then(say(`Declined. ${q.person.name} can ask again in ${REQUEST_COOLDOWN_DAYS} days.`)),
+                    )
+                  }
                 >
                   <X />
                 </Button>
               </div>
             ))}
             <p className="text-xs text-muted-foreground">
-              Mods get a notification for each request. Someone declined can ask again after {REQUEST_COOLDOWN_DAYS} days.
+              Someone declined can ask again after {REQUEST_COOLDOWN_DAYS} days. Mods get a notification for each request once notifications
+              are on.
             </p>
           </>
         ) : (
@@ -192,24 +208,28 @@ export function MembersPanel({ room, myRole }: { room: PlaceRoom; myRole: RoomRo
         ))}
 
       {view === 'banned' &&
-        (bans.length ? (
-          bans.map((b) => (
-            <div key={b.id} className="flex items-center gap-3 rounded-2xl border p-2.5">
-              <Face who={b.who} />
+        (bans.data?.length ? (
+          bans.data.map((b) => (
+            <div key={b.person.id} className="flex items-center gap-3 rounded-2xl border p-2.5">
+              <Face who={b.person} />
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-bold">{b.who.name}</span>
+                <span className="block truncate font-bold">{b.person.name}</span>
                 <span className="block text-xs text-muted-foreground">
-                  {b.reason ? `${b.reason} · ` : ''}by {b.by} · {b.at}
+                  {b.reason ? `${b.reason} · ` : ''}by {b.by?.name ?? 'a mod'} · {since(b.at)}
                 </span>
               </span>
               <Button
                 size="sm"
                 variant="outline"
                 className="rounded-full font-bold"
-                onClick={() => {
-                  setBans((l) => l.filter((x) => x.id !== b.id));
-                  toast(`${b.who.name} is unbanned. They’ll need a new invite to come back.`);
-                }}
+                disabled={act.isPending}
+                onClick={() =>
+                  act.mutate(() =>
+                    roomsApi
+                      .unban({ id, userId: b.person.id })
+                      .then(say(`${b.person.name} is unbanned. They’ll need a new invite to come back.`)),
+                  )
+                }
               >
                 Unban
               </Button>
@@ -233,8 +253,8 @@ function MemberMenu({
   name: string;
   role: RoomRole;
   isOwner: boolean;
-  onRole: (role: RoomRole) => void;
-  onTimeout: (label: string) => void;
+  onRole: (role: 'mod' | 'member') => void;
+  onTimeout: (duration: Timeout, label: string) => void;
   onRemove: (ban: boolean) => void;
 }) {
   return (
@@ -249,8 +269,8 @@ function MemberMenu({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">
         {isOwner && (
-          <DropdownMenuItem onSelect={() => onRole(role === 'Mod' ? 'Member' : 'Mod')}>
-            {role === 'Mod' ? <ShieldOff /> : <ShieldCheck />} {role === 'Mod' ? 'Remove mod' : 'Make mod'}
+          <DropdownMenuItem onSelect={() => onRole(role === 'mod' ? 'member' : 'mod')}>
+            {role === 'mod' ? <ShieldOff /> : <ShieldCheck />} {role === 'mod' ? 'Remove mod' : 'Make mod'}
           </DropdownMenuItem>
         )}
         <DropdownMenuSub>
@@ -259,7 +279,7 @@ function MemberMenu({
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
             {TIMEOUTS.map(([id, label]) => (
-              <DropdownMenuItem key={id} onSelect={() => onTimeout(label)}>
+              <DropdownMenuItem key={id} onSelect={() => onTimeout(id, label)}>
                 {label}
               </DropdownMenuItem>
             ))}
@@ -310,16 +330,12 @@ function RolePill({ role }: { role: RoomRole }) {
     <span
       className={cn(
         'w-fit flex-none rounded-full px-2.5 py-0.5 text-xs font-bold',
-        role === 'Owner' ? 'bg-peach text-peach-ink' : role === 'Mod' ? 'bg-lavender text-lavender-ink' : 'bg-muted',
+        role === 'owner' ? 'bg-peach text-peach-ink' : role === 'mod' ? 'bg-lavender text-lavender-ink' : 'bg-muted',
       )}
     >
-      {role}
+      {ROLE_LABEL[role]}
     </span>
   );
-}
-
-function Face({ who }: { who: Outsider }) {
-  return <UserAvatar user={{ name: who.name, color: who.color, presence: 'offline' }} size={34} />;
 }
 
 function Empty({ children }: { children: ReactNode }) {
@@ -327,15 +343,17 @@ function Empty({ children }: { children: ReactNode }) {
 }
 
 /** Invites: who may make links, plus every active link with how it's doing and a way to cancel it. */
-export function InvitesPanel({ toggles }: { toggles: ReactNode }) {
-  const [links, setLinks] = useState(INVITE_LINKS);
+export function InvitesPanel({ room, toggles }: { room: PlaceRoom; toggles: ReactNode }) {
+  const invites = useInvites(room.id);
+  const cancel = useRoomAction(roomsApi.cancelInvite, () => toast('Link cancelled. It stops working right away.'));
   return (
     <div className="flex flex-col gap-5">
       {toggles}
       <div className="flex flex-col gap-2">
         <p className="text-sm font-extrabold">Active links</p>
-        {links.length === 0 && <Empty>No active links. Make one from Invite.</Empty>}
-        {links.map((l) => (
+        {invites.isPending && <Empty>Loading links…</Empty>}
+        {invites.data?.length === 0 && <Empty>No active links. Make one from Invite.</Empty>}
+        {invites.data?.map((l) => (
           <div key={l.code} className="flex items-center gap-3 rounded-2xl border p-2.5">
             <span
               className={cn(
@@ -346,21 +364,18 @@ export function InvitesPanel({ toggles }: { toggles: ReactNode }) {
               {l.kind === 'guest' ? 'Guest pass' : 'Member'}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-mono text-sm">
-                connecta.app/{l.kind === 'guest' ? 'g' : 'i'}/{l.code}
-              </span>
+              <span className="block truncate font-mono text-sm">{inviteUrl(l).replace(/^https?:\/\//, '')}</span>
               <span className="block text-xs text-muted-foreground">
-                by {l.by} · used {l.uses} {l.uses === 1 ? 'time' : 'times'} · expires {l.expires}
+                by {l.by?.name ?? 'someone who left'} · used {l.uses} {l.uses === 1 ? 'time' : 'times'} ·{' '}
+                {l.expiresAt ? `until ${until(l.expiresAt)}` : 'never expires'}
               </span>
             </span>
             <Button
               size="sm"
               variant="ghost"
               className="rounded-full font-bold text-destructive"
-              onClick={() => {
-                setLinks((all) => all.filter((x) => x.code !== l.code));
-                toast('Link cancelled. It stops working right away.');
-              }}
+              disabled={cancel.isPending}
+              onClick={() => cancel.mutate(l.code)}
             >
               Cancel
             </Button>

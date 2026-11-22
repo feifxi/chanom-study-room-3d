@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { Bell, Crown, Gamepad2, KeyRound, Mic, Palette, Shield, Shirt, User } from 'lucide-react';
 import { toast } from 'sonner';
-import type { AvatarLook } from '@connecta/shared';
+import { DISPLAY_NAME_MAX, type AvatarLook } from '@connecta/shared';
 import { PALETTES, usePalette } from '@/components/Providers';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
@@ -14,11 +14,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
+import { HandleField, useHandleCheck } from '@/features/account/HandleField';
+import { useAccountDetails, useMe, useSetMe } from '@/features/account/useMe';
 import { CharacterEditor } from '@/features/avatar/CharacterEditor';
+import { api } from '@/lib/api/client';
 import { AccountTab } from './AccountTab';
 import { PlusBillingTab } from './PlusBillingTab';
 import { cn } from '@/lib/utils';
-import { ME } from '@/lib/mock';
 import { useGlobalOptIn } from '@/lib/focus';
 import { getMyLook, saveMyLook, useMyLook } from '@/lib/myLook';
 import { KEYS, useClickToWalk, useHideInvitesWhileFocusing } from '@/lib/controls';
@@ -100,22 +102,85 @@ export function SettingsDialog({
   );
 }
 
+/** Display name and @handle (once every 30 days), saved to the account. "About me" isn't saved yet. */
 function Profile({ onEditCharacter }: { onEditCharacter: () => void }) {
   const myLook = useMyLook();
+  const { data: me } = useMe();
+  const setMe = useSetMe();
+  const details = useAccountDetails();
+  const [name, setName] = useState(me?.name ?? '');
+  const [handle, setHandle] = useState(me?.handle ?? '');
+  const [busy, setBusy] = useState(false);
+  const check = useHandleCheck(handle);
+  const nextChange = details.data?.nextHandleChangeAt ? new Date(details.data.nextHandleChangeAt) : null;
+  if (!me?.signedUp) return <p className="text-sm text-muted-foreground">Sign up to have a profile.</p>;
+
+  const saveName = async () => {
+    setBusy(true);
+    const { data } = await api.PATCH('/api/me/profile', { body: { name: name.trim() } });
+    setBusy(false);
+    if (!data) return toast.error("Couldn't save your name. Try again?");
+    setMe(data);
+    toast.success('Name saved ✨');
+  };
+  const saveHandle = async () => {
+    setBusy(true);
+    const { data, error, response } = await api.PUT('/api/me/handle', { body: { handle } });
+    setBusy(false);
+    if (!data) {
+      const tooSoon = response.status === 409 && error && 'nextChangeAt' in error;
+      return toast.error(tooSoon ? 'You changed it recently. Try again later.' : "Couldn't change it. Is it still free?");
+    }
+    setMe(data);
+    void details.refetch();
+    toast.success(`You're @${data.handle} now ✨`);
+  };
+
   return (
     <div className="flex flex-col gap-5 sm:flex-row">
       <div className="h-56 w-40 flex-none overflow-hidden rounded-3xl bg-gradient-to-b from-lavender to-peach">
         <AvatarPreview look={myLook.look} />
       </div>
-      <div className="flex flex-1 flex-col gap-3">
+      <div className="flex flex-1 flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="dn">Display name</Label>
-          <Input id="dn" defaultValue={ME.name} className="rounded-xl" />
+          <div className="flex gap-2">
+            <Input id="dn" value={name} maxLength={DISPLAY_NAME_MAX} onChange={(e) => setName(e.target.value)} className="rounded-xl" />
+            <Button
+              variant="secondary"
+              className="rounded-xl font-bold"
+              disabled={busy || !name.trim() || name.trim() === me.name}
+              onClick={() => void saveName()}
+            >
+              Save
+            </Button>
+          </div>
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="un">@handle</Label>
-          <Input id="un" defaultValue={`@${ME.handle}`} className="rounded-xl" />
-          <p className="text-xs text-muted-foreground">You can change it once every 30 days.</p>
+          {nextChange ? (
+            <>
+              <Label htmlFor="un">@handle</Label>
+              <Input id="un" value={`@${me.handle}`} disabled className="rounded-xl" />
+              <p className="text-xs text-muted-foreground">
+                You can change it again on {nextChange.toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}.
+              </p>
+            </>
+          ) : (
+            <>
+              <HandleField handle={handle} check={handle === me.handle ? { ok: true } : check} onChange={setHandle} />
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  className="rounded-xl font-bold"
+                  disabled={busy || handle === me.handle || check.ok !== true}
+                  onClick={() => void saveHandle()}
+                >
+                  Change my @handle
+                </Button>
+                <p className="text-xs text-muted-foreground">Once every 30 days. Your old one stays yours for 30 days.</p>
+              </div>
+            </>
+          )}
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="bio">About me</Label>
@@ -132,6 +197,8 @@ function Profile({ onEditCharacter }: { onEditCharacter: () => void }) {
 /** Same editor as sign-up, plus what you own from the shop. Saving changes how you look in every room. */
 function Character() {
   const [look, setLook] = useState<AvatarLook>(getMyLook);
+  const { data: me } = useMe();
+  const setMe = useSetMe();
   return (
     <div className="flex flex-col gap-5">
       <CharacterEditor look={look} onChange={setLook} previewClassName="h-64 w-44" />
@@ -150,10 +217,16 @@ function Character() {
       </section>
       <Button
         className="w-fit rounded-full font-extrabold"
-        onClick={() => {
+        onClick={async () => {
           const r = saveMyLook(look);
-          if (r.ok) toast.success('Looking good! ✨ Everyone in the room sees it now');
-          else toast(`One more sec: you can change again in ${r.waitS} s`);
+          if (!r.ok) return toast(`One more sec: you can change again in ${r.waitS} s`);
+          // Guests' looks live on their guest session (set on the invite page), so only accounts save here
+          if (me?.signedUp) {
+            const { data } = await api.PATCH('/api/me/profile', { body: { look } });
+            if (!data) return toast.error("Couldn't save your look. Try again?");
+            setMe(data);
+          }
+          toast.success('Looking good! ✨ Everyone in the room sees it now');
         }}
       >
         Save my look

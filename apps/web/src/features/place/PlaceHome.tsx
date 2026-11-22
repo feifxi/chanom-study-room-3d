@@ -2,20 +2,22 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Bell, ChevronDown, Crown, MessageCircle, Pin, Play, Plus, Search, UserCheck } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ArrowRight, Bell, ChevronDown, Compass, Crown, MessageCircle, Pin, Play, Plus, Search, UserCheck } from 'lucide-react';
+import { MAP_IDS, ROOM_NAME_MAX, type MapId } from '@connecta/shared';
 import { toast } from 'sonner';
 import { OpenRoomCard } from '@/components/app/OpenRoomCard';
-import { AvatarStack, UserAvatar } from '@/components/UserAvatar';
+import { AvatarStack } from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useMe } from '@/features/account/useMe';
+import { roomsApi, useListedRooms, useMyRooms, useRoomAction } from '@/features/rooms/useRooms';
 import { cn } from '@/lib/utils';
-import { useManyRooms } from '@/lib/demoCrowd';
-import { COMMON_ROOMS, MANY_ROOMS, MAPS, ME, OPEN_ROOMS, SERVERS, USERS, serverById, userById } from '@/lib/mock';
+import { ago, COMMON_ROOMS, MAPS, userById } from '@/lib/mock';
 import { chatHref, placeRoom, walkInHref, type PlaceRoom } from './model';
 import { SizePicker, TemplateCard } from './MapPickers';
-import { JOIN_REQUESTS } from './membership';
 import { PlusEndingBanner } from './PlusEndingBanner';
 import { RoomMenu } from './RoomMenu';
 import { Scene } from './Scene';
@@ -34,96 +36,65 @@ type Filter = 'all' | 'mine' | 'active';
  * with who's inside. Pinned rooms come first, then wherever something is happening, then the rest
  * by when you were last there. Clicking a room opens its page (the chat outside 3D, with its info);
  * "Walk in" enters 3D. The "…" has everything else, including Settings for owners and mods.
- * Below them, a few open rooms worth dropping into right now; Discover has the full list.
+ * Below them, a few listed rooms worth dropping into; Discover has the full list.
+ *
+ * "Friends out right now" comes back with presence (build step 3).
  */
 export function PlaceHome() {
   const [creating, setCreating] = useState(false);
-  const [pinned, setPinned] = useState<Set<string>>(new Set(['chanom']));
-  const [read, setRead] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
   const [allRows, setAllRows] = useState(false);
   const [showQuiet, setShowQuiet] = useState(false);
   const [order, setOrder] = useState<'recent' | 'az'>('recent');
-  const many = useManyRooms();
-  const out = Object.values(USERS).filter((u) => u.inRoom);
+  const { data: me } = useMe();
+  const mine = useMyRooms();
+  const listed = useListedRooms();
+  const pin = useRoomAction(roomsApi.myPlace);
 
-  const rooms = (many ? [...SERVERS, ...MANY_ROOMS] : SERVERS).map(placeRoom);
-  const unreadOf = (r: PlaceRoom) => (read.has(r.id) ? 0 : (r.chat?.unread ?? 0));
-  const busy = (r: PlaceRoom) => r.inside > 0 || unreadOf(r) > 0;
+  const rooms = (mine.data ?? []).map(placeRoom);
+  // Unread counts come with the room chat (build step 3)
+  const unread = 0;
+  const busy = (r: PlaceRoom) => r.inside > 0;
+  const pinned = (r: PlaceRoom) => r.room.me.pinned;
+  const idleDays = (r: PlaceRoom) => (r.room.me.visitedAt ? daysSince(r.room.me.visitedAt) : 0);
   const sorted = [...rooms].sort(
-    (a, b) => Number(pinned.has(b.id)) - Number(pinned.has(a.id)) || Number(busy(b)) - Number(busy(a)) || b.inside - a.inside,
+    (a, b) =>
+      Number(pinned(b)) - Number(pinned(a)) || Number(busy(b)) - Number(busy(a)) || b.inside - a.inside || idleDays(a) - idleDays(b),
   );
   const q = query.trim().toLowerCase();
   const shown = sorted.filter(
-    (r) => (!q || r.name.toLowerCase().includes(q)) && (filter === 'all' || (filter === 'mine' ? !!r.myRole : busy(r))),
+    (r) => (!q || r.name.toLowerCase().includes(q)) && (filter === 'all' || (filter === 'mine' ? r.canEdit : busy(r))),
   );
   const cards = shown.slice(0, CARDS);
   // Past the cards: recent rooms as rows (a few, then "Show all"), and rooms quiet for a month folded away.
   // Searching or filtering shows every match instead.
   const searching = !!q || filter !== 'all';
-  const rest = shown
-    .slice(CARDS)
-    .sort((a, b) => (order === 'az' ? a.name.localeCompare(b.name) : (a.server.idleDays ?? 0) - (b.server.idleDays ?? 0)));
-  const quiet = searching ? [] : rest.filter((r) => (r.server.idleDays ?? 0) > QUIET_DAYS);
-  const recent = searching ? rest : rest.filter((r) => (r.server.idleDays ?? 0) <= QUIET_DAYS);
+  const rest = shown.slice(CARDS).sort((a, b) => (order === 'az' ? a.name.localeCompare(b.name) : idleDays(a) - idleDays(b)));
+  const quiet = searching ? [] : rest.filter((r) => idleDays(r) > QUIET_DAYS);
+  const recent = searching ? rest : rest.filter((r) => idleDays(r) <= QUIET_DAYS);
   const recentShown = searching || allRows ? recent : recent.slice(0, ROWS);
-  const togglePin = (id: string) =>
-    setPinned((p) => {
-      const n = new Set(p);
-      if (n.has(id)) n.delete(id);
-      else n.add(id);
-      return n;
-    });
   const menu = (r: PlaceRoom, className: string) => (
     <RoomMenu
       room={r}
-      pinned={pinned.has(r.id)}
-      onPin={() => togglePin(r.id)}
-      unread={unreadOf(r)}
-      onRead={() => setRead((s) => new Set(s).add(r.id))}
+      pinned={pinned(r)}
+      onPin={() => pin.mutate({ id: r.id, pinned: !pinned(r) })}
+      unread={unread}
+      onRead={() => {}}
       className={className}
     />
   );
 
-  // Open rooms you're not in yet, ones with friends inside first; then two of Connecta's Common rooms
-  const open = OPEN_ROOMS.filter((r) => !serverById(r.id))
-    .sort((a, b) => (b.friendsInside?.length ?? 0) - (a.friendsInside?.length ?? 0))
-    .slice(0, 2);
+  // Listed rooms you're not in yet; then two of Connecta's Common rooms
+  const open = (listed.data ?? []).filter((r) => !r.me.role).slice(0, 2);
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-8 p-5 sm:p-8">
       <header>
-        <p className="text-sm font-bold text-muted-foreground">Saturday evening 🌙</p>
-        <h1 className="text-3xl font-black tracking-[-0.03em]">Where to tonight, {ME.name}?</h1>
+        <p className="text-sm font-bold text-muted-foreground">{partOfWeek()}</p>
+        <h1 className="text-3xl font-black tracking-[-0.03em]">Where to tonight{me ? `, ${me.name}` : ''}?</h1>
       </header>
       <PlusEndingBanner />
-
-      {out.length > 0 && (
-        <section>
-          <h2 className="mb-3 text-lg font-black">Friends out right now</h2>
-          <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-            {out.map((u) => {
-              const r = placeRoom(serverById(u.inRoom!.serverId)!);
-              return (
-                <Link
-                  key={u.id}
-                  href={walkInHref(r)}
-                  className="group flex flex-none items-center gap-2.5 rounded-full border bg-card py-1.5 pr-4 pl-1.5 shadow-sm hover:border-primary/50"
-                >
-                  <UserAvatar user={u} size={34} presence />
-                  <span className="text-sm">
-                    <span className="block font-black">{u.name}</span>
-                    <span className="block text-xs text-muted-foreground">
-                      {r.emoji} {r.name} · <span className="font-bold text-primary group-hover:underline">Join</span>
-                    </span>
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-      )}
 
       <section>
         <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -166,14 +137,22 @@ export function PlaceHome() {
           </Button>
         </div>
 
-        {cards.length > 0 ? (
+        {mine.isPending ? (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="min-h-64 animate-pulse rounded-[2rem] bg-muted" />
+            ))}
+          </div>
+        ) : rooms.length === 0 ? (
+          <FirstRoom onMake={() => setCreating(true)} />
+        ) : cards.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {cards.map((r) => (
               <RoomCard
                 key={r.id}
                 room={r}
-                pinned={pinned.has(r.id)}
-                unread={unreadOf(r)}
+                pinned={pinned(r)}
+                unread={unread}
                 menu={menu(r, 'bg-black/35 text-white backdrop-blur hover:bg-black/55')}
               />
             ))}
@@ -208,12 +187,7 @@ export function PlaceHome() {
               ))}
             </div>
             {recentShown.map((r) => (
-              <RoomRow
-                key={r.id}
-                room={r}
-                unread={unreadOf(r)}
-                menu={menu(r, 'text-muted-foreground hover:bg-muted hover:text-foreground')}
-              />
+              <RoomRow key={r.id} room={r} unread={unread} menu={menu(r, 'text-muted-foreground hover:bg-muted hover:text-foreground')} />
             ))}
             {recent.length > recentShown.length && (
               <button onClick={() => setAllRows(true)} className="w-full py-2.5 text-sm font-extrabold text-primary hover:bg-muted/50">
@@ -240,12 +214,7 @@ export function PlaceHome() {
             </button>
             {showQuiet &&
               quiet.map((r) => (
-                <RoomRow
-                  key={r.id}
-                  room={r}
-                  unread={unreadOf(r)}
-                  menu={menu(r, 'text-muted-foreground hover:bg-muted hover:text-foreground')}
-                />
+                <RoomRow key={r.id} room={r} unread={unread} menu={menu(r, 'text-muted-foreground hover:bg-muted hover:text-foreground')} />
               ))}
           </div>
         )}
@@ -303,15 +272,14 @@ function RoomCard({ room, pinned, unread, menu }: { room: PlaceRoom; pinned: boo
           {room.full ? 'full' : room.inside ? 'inside' : '· lights off'}
         </Chip>
         {unread > 0 && (
-          <Chip className={room.chat?.mention ? 'bg-primary text-primary-foreground' : undefined}>
-            <MessageCircle className="size-3" /> {room.chat?.mention ? '@ you · ' : ''}
-            {unread} new
+          <Chip>
+            <MessageCircle className="size-3" /> {unread} new
           </Chip>
         )}
         {/* Owners and mods of an Ask-to-join room see who's waiting (approve in Room settings → Members) */}
-        {room.myRole && room.server.visibility === 'request' && JOIN_REQUESTS.length > 0 && (
+        {room.canEdit && room.visibility === 'request' && room.room.requestCount > 0 && (
           <Chip className="bg-lavender text-lavender-ink">
-            <UserCheck className="size-3" /> {JOIN_REQUESTS.length} asking to join
+            <UserCheck className="size-3" /> {room.room.requestCount} asking to join
           </Chip>
         )}
         {room.ownerPlus && (
@@ -326,14 +294,14 @@ function RoomCard({ room, pinned, unread, menu }: { room: PlaceRoom; pinned: boo
           <p className="flex items-center gap-2 text-2xl font-black tracking-[-0.02em]">
             <span className={cn('grid size-9 place-items-center rounded-xl text-lg', room.tint)}>{room.emoji}</span>
             {room.name}
-            {room.myRole && (
+            {room.canEdit && (
               <span className="rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-extrabold tracking-normal backdrop-blur">
-                {room.myRole === 'Owner' ? 'owner' : 'mod'}
+                {room.myRole}
               </span>
             )}
           </p>
-          <p className="mt-1 text-xs text-white/80">
-            {room.map.emoji} {room.map.name} · {room.server.event ?? room.description}
+          <p className="mt-1 line-clamp-1 text-xs text-white/80">
+            {room.map.emoji} {room.map.name} · {room.description || room.map.mood}
           </p>
         </div>
         <div className="pointer-events-auto flex items-center gap-2">
@@ -381,14 +349,15 @@ function RoomRow({ room, unread, menu }: { room: PlaceRoom; unread: number; menu
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5 font-extrabold">
           <span className="truncate">{room.name}</span>
-          {room.myRole && (
-            <span className="flex-none rounded-full bg-lavender px-1.5 text-[10px] font-black text-lavender-ink">
-              {room.myRole === 'Owner' ? 'owner' : 'mod'}
-            </span>
+          {room.canEdit && (
+            <span className="flex-none rounded-full bg-lavender px-1.5 text-[10px] font-black text-lavender-ink">{room.myRole}</span>
           )}
         </span>
         <span className="block truncate text-xs text-muted-foreground">
-          {room.map.emoji} {room.map.name} · {room.server.lastActive ? `you were here ${room.server.lastActive}` : room.description}
+          {room.map.emoji} {room.map.name} ·{' '}
+          {room.room.me.visitedAt
+            ? `you were here ${ago(Math.floor(daysSince(room.room.me.visitedAt)))}`
+            : room.description || room.map.mood}
         </span>
       </span>
       <span className="hidden items-center gap-1.5 text-xs font-bold text-muted-foreground sm:flex">
@@ -422,38 +391,91 @@ function Chip({ children, className }: { children: React.ReactNode; className?: 
   );
 }
 
+/** Shown until you're in a room: make one, or find one. */
+function FirstRoom({ onMake }: { onMake: () => void }) {
+  return (
+    <div className="relative isolate overflow-hidden rounded-[2rem] bg-gradient-to-br from-peach via-secondary to-lavender p-8 sm:p-10">
+      <span className="pointer-events-none absolute -right-4 -bottom-6 -z-10 text-[9rem] opacity-30">🏠</span>
+      <p className="text-xs font-black tracking-wider text-primary uppercase">Your rooms</p>
+      <h3 className="mt-1 max-w-md text-3xl font-black tracking-[-0.03em] text-balance">Make a room for your people</h3>
+      <p className="mt-2 max-w-md text-sm">
+        Pick a map, name it and send the link. Your friends walk in, sit down and talk; the room and its chat are always there.
+      </p>
+      <div className="mt-5 flex flex-wrap gap-2">
+        <Button onClick={onMake} className="rounded-full font-extrabold">
+          <Plus /> Make a room
+        </Button>
+        <Button asChild variant="outline" className="rounded-full bg-card font-extrabold">
+          <Link href="/discover">
+            <Compass /> Find one in Discover
+          </Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 /** Making a room: a name and a template (Cosy size). Everything else has a sensible default and lives in settings. */
 function CreateRoomDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
-  const [mapId, setMapId] = useState(MAPS[0]!.id);
+  const router = useRouter();
+  const [mapId, setMapId] = useState<MapId>(MAP_IDS[0]);
+  const [name, setName] = useState('');
+  const make = useRoomAction(roomsApi.make, (room) => {
+    onOpenChange(false);
+    setName('');
+    toast.success('Room made! Invite your friends 💌');
+    router.push(`/r/${room.id}`);
+  });
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90dvh] max-w-[calc(100%-2rem)] overflow-y-auto rounded-3xl sm:max-w-2xl">
         <DialogTitle className="text-xl font-black">Make a room</DialogTitle>
         <DialogDescription>Pick a template and name it. It’s private until you invite people; up to 25 at once for free.</DialogDescription>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="new-room">Room name</Label>
-          <Input id="new-room" placeholder="e.g. Chanom Friends" className="rounded-xl" />
-        </div>
-        <div className="grid gap-2 sm:grid-cols-3">
-          {MAPS.map((m) => (
-            <TemplateCard key={m.id} map={m} picked={mapId === m.id} onPick={() => setMapId(m.id)} />
-          ))}
-        </div>
-        <SizePicker size="cosy" plus={!!ME.plus} onPick={() => {}} />
-        <p className="-mt-2 text-xs text-muted-foreground">
-          Every template has the same things to do; only the place differs. Colours, the sign, time of day and a thumbnail are in the room’s
-          settings once it’s made.
-        </p>
-        <Button
-          className="w-fit rounded-full font-extrabold"
-          onClick={() => {
-            onOpenChange(false);
-            toast.success('Room made! Invite your friends 💌');
+        <form
+          className="flex flex-col gap-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (name.trim()) make.mutate({ name: name.trim(), mapId });
           }}
         >
-          Make room
-        </Button>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="new-room">Room name</Label>
+            <Input
+              id="new-room"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={ROOM_NAME_MAX}
+              placeholder="e.g. Chanom Friends"
+              className="rounded-xl"
+              autoFocus
+            />
+          </div>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {MAPS.map((m) => (
+              <TemplateCard key={m.id} map={m} picked={mapId === m.id} onPick={() => setMapId(m.id as MapId)} />
+            ))}
+          </div>
+          <SizePicker size="cosy" plus={false} onPick={() => {}} />
+          <p className="-mt-2 text-xs text-muted-foreground">
+            Every template has the same things to do; only the place differs. Colours, the sign, time of day and a thumbnail are in the
+            room’s settings once it’s made.
+          </p>
+          <Button type="submit" disabled={!name.trim() || make.isPending} className="w-fit rounded-full font-extrabold">
+            Make room
+          </Button>
+        </form>
       </DialogContent>
     </Dialog>
   );
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const daysSince = (iso: string) => (Date.now() - Date.parse(iso)) / DAY_MS;
+
+/** "Saturday evening 🌙": the greeting's mood line, from your own clock. */
+function partOfWeek(d = new Date()) {
+  const day = d.toLocaleDateString('en-US', { weekday: 'long' });
+  const h = d.getHours();
+  const part = h < 5 ? 'night 🌌' : h < 12 ? 'morning ☀️' : h < 17 ? 'afternoon 🍵' : h < 21 ? 'evening 🌙' : 'night 🌌';
+  return `${day} ${part}`;
 }

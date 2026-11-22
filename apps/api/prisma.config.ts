@@ -4,7 +4,7 @@ import { defineConfig } from 'prisma/config';
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
-  migrations: { path: 'prisma/migrations' },
+  migrations: { path: 'prisma/migrations', seed: 'tsx prisma/seed/index.ts' },
   // Read directly, not with env(), so `prisma generate` also works without a database (CI, fresh clones)
   datasource: { url: process.env.DATABASE_URL },
 });

@@ -290,12 +290,46 @@ decision is made or changed: one line, a date, and the reason.
   schemas), not class-validator. Prisma 7, not the Prisma 8 release candidate. Vitest everywhere
   (SWC for Nest's decorator metadata), not Jest. TypeScript 5.9 everywhere. Package scope
   `@connecta/*`.
-- **The cloud is open again** (2026-11-21): the owner plans to move to Azure now rather than later.
-  Discussed when the build reaches the infra step; until then, nothing cloud-specific.
-- **Infra = V1's architecture plus only what V2 needs** (2026-11-10): EC2 + Docker Compose + Caddy +
-  RDS, plus gateway and Redis containers, S3 + CloudFront, SES, Stripe, and a separate monitoring
-  server (SRE practice). Fargate, ALB, ECS and "managed swaps" were rejected. nginx was dropped.
-  AWS now, Azure later (team credits); see the 2026-11-21 line above. Local development only until
-  the owner says deploy.
+- **AWS stays; Azure is off** (2026-11-21, the owner, reverses "the cloud is open again" from earlier
+  the same day): the architecture in [15-business-infra.md](features/15-business-infra.md#architecture)
+  stands. Local development only until the owner says deploy.
+- **nginx instead of Caddy** (2026-11-21, the owner, reverses "nginx was dropped" from 2026-11-10):
+  the more common choice. Certificates come from certbot (Let's Encrypt) in a container beside nginx;
+  an ALB with ACM certificates was turned down at ~$16+ a month. The same config runs locally for a
+  production-like check.
+- **Sign-in with Better Auth** (2026-11-21, the owner): it covers the spec out of the box (Google,
+  Discord, 6-digit email codes, guest accounts that link on sign-up, linked sign-ins, database
+  sessions, rate limits) through its Prisma adapter. Its username plugin isn't used: @handles have
+  their own rules (reserved words, the 30-day hold), so the accounts module owns them. `@nestjs/authentication` was the
+  Nest-native option but is 0.1.x (first published 2026-09-29) and has no email codes, Discord,
+  guests or database stores. Sessions are server-side rows with an HttpOnly cookie, not JWTs.
+- **The browser only calls its own site** (2026-11-21): relative `/api` paths, a Next rewrite
+  locally and nginx in production, so cookies need no CORS and one build fits every environment. The
+  web app calls the API through a client generated from its OpenAPI document (`openapi-typescript`
+  and `openapi-fetch`), with TanStack Query for caching.
+- **Local AWS: the AWS Emulator, plus Mailpit** (2026-11-21, the owner): AWS's own emulator
+  (announced 2026-11-11, free, no account) for S3 locally and S3/SES in tests, pinned and with
+  telemetry off. LocalStack now needs an account and token, and MinIO's free edition is archived, so
+  both were turned down; moto's server is the fallback. Mailpit is the local inbox for sign-in codes,
+  since no AWS emulator shows sent mail. The code only sees `AWS_ENDPOINT_URL`.
+- **`packages/shared` is built to `dist/`** (2026-11-21): the API (and later the game server) run
+  it in Node, which can't load TypeScript from another package. It was TypeScript source only.
+- **API tests use a real Postgres** (2026-11-21): sign-in is mostly database work (sessions, codes,
+  locks, unique handles), and faking Prisma would test the fake. A `connecta_test` database in the
+  compose Postgres, a service in CI; only email is faked.
+- **One seed for the whole app, written at the end** (2026-11-22, the owner): it's for the owner
+  to test once everything is built, a one-time fill of all the data (people, rooms, friends,
+  DMs…), not something each build step grows. Until then it has only the demo people and the S3
+  bucket.
+- **Rooms on the API: the details the spec left open** (2026-11-22): rooms live at `/r/<id>` (its
+  chat) and `/r/<id>/walk` (3D); invites at `/i/<code>` and `/g/<code>`; Common rooms at
+  `/common/<copy>` until feature 14 gives them a real model. Room ids are 10 random characters and
+  invite codes 8 (no look-alike letters), so they can't be guessed. A private room you're not in is
+  a 404, not a 403. The Invite dialog hands back your existing link while at least half its time
+  is left, so opening it doesn't mint a new code each time. A guest pass works for 24 hours from
+  when it's made, and so does what it lets in. Bans also work on people who aren't members (a
+  guest, someone asking). Handing a room over makes the old owner a mod. "Allow guests" starts on.
+  An account being deleted names who takes each room it owns; nobody named means the
+  longest-serving mod, then the longest-standing member.
 - **Only the owner provisions** cloud resources. Agents suggest steps and do read-only checks.
 - **Music must be royalty-free** (Pixabay). Never rips from YouTube or Spotify.

@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, Fragment, useContext, useEffect, useState, type ReactNode } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -38,8 +39,10 @@ function loadPalette(): Palette {
   }
 }
 
-/** Theme (light/dark via next-themes) and brand palette (data-palette on <html>). */
+/** Server data (TanStack Query), theme (light/dark via next-themes) and brand palette (data-palette on <html>). */
 export function Providers({ children }: { children: ReactNode }) {
+  // One cache per browser tab (made in state so it survives re-renders)
+  const [queryClient] = useState(() => new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } }));
   // The palette only shows in popovers and settings (closed on first paint), so reading storage up front can't cause a visible hydration mismatch
   const [palette, setPaletteState] = useState<Palette>(loadPalette);
 
@@ -61,13 +64,15 @@ export function Providers({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-      <PaletteContext.Provider value={{ palette, setPalette }}>
-        <TooltipProvider delayDuration={200}>
-          <Fragment key={viewer}>{children}</Fragment>
-          <Toaster position="top-center" />
-        </TooltipProvider>
-      </PaletteContext.Provider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+        <PaletteContext.Provider value={{ palette, setPalette }}>
+          <TooltipProvider delayDuration={200}>
+            <Fragment key={viewer}>{children}</Fragment>
+            <Toaster position="top-center" />
+          </TooltipProvider>
+        </PaletteContext.Provider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }

@@ -1,7 +1,12 @@
 # 3. Rooms and membership
 
-**Status:** decided and built in the demo. **Try it:** http://localhost:3100/home (you own Chanom
-Friends and mod CPE Year 3; Discover has rooms to preview). The Demo tab's **View as** switches role.
+**Status:** built in the real app (2026-11-22): making rooms, Room settings, members and roles,
+Ask to join, invites and guest passes, kick, ban and time out, Discover's listed rooms. Waiting on
+later steps: who's inside and unread counts (presence and chat, step 3), notifications for
+requests, enforcing time outs and the safety switches (chat and the game server), uploading a
+thumbnail (it stays in your browser for now), reporting a room (feature 14), and "Invite a friend"
+in a DM (step 3). **Try it:** http://localhost:3000/home after `pnpm dev` (the demo is still at
+http://localhost:3100/home).
 
 Like Discord, you're a member of a room before you walk in. Three fixed roles, two kinds of invite
 link, and kick, ban and time out where you see the person.
@@ -59,11 +64,25 @@ The same actions in Members & roles and in the in-room people list:
 
 ## Backend notes
 
-- **Tables:** room; membership (room, user, role, joined at, timed out until); join request (room,
-  user, note, status, decided by and at); ban (room, user, by, reason, at); invite link (code, room,
-  kind, created by, uses, expires at, cancelled at).
-- **Server checks:** every action goes through the role rules (`canActOn(me, them)`); the client only
-  hides buttons. Bans are checked on join, invite use and guest pass use.
-- **Timeouts** are enforced by the chat gateway and by Colyseus and LiveKit (no publish permission).
-- **Invite codes** are short and random; opening one is rate-limited.
+- **Tables** (`apps/api/prisma/schema.prisma`): `rooms` (name, emoji, description, map, size, time
+  of day, visibility, capacity, tags, language, rules and the safety and invite switches, the
+  picked heir); `memberships` (room, user, role, joined, last visited, pinned, notifications,
+  timed out until); `join_requests` (a decline stays, for the 7 days); `room_bans`; `invites`
+  (code, kind, expiry, uses, expires and cancelled at); `guest_visits` (who a guest pass let in,
+  until when).
+- **API** (`apps/api/src/rooms/`): `GET/POST /api/rooms` (yours, make one), `GET/PATCH/DELETE
+/api/rooms/:id`, `PUT :id/owner`, `PATCH/DELETE :id/me` (pin and notifications, leave), `PUT
+:id/visit`, `POST :id/join`, `:id/requests` (ask, list, accept, decline), `:id/members` (list,
+  role, time out, kick), `:id/bans`, `:id/invites` (your link, the active ones), `GET
+/api/rooms/listed` (Discover), `GET/POST/DELETE /api/invites/:code` (preview, use, cancel).
+- **Server checks:** every action goes through the role rules (`canActOn` in `@connecta/shared`);
+  the web app only hides buttons. Mods may change only the invite and safety settings. Bans are
+  checked on join, asking, invite use and guest pass use. A private room you're not in is a 404.
+- **Limits:** 150 members a room and 100 rooms a person on Free (1,000 and 200 with Plus, which isn't
+  built yet). Capacity is the owner's choice up to the plan and map size.
+- **Timeouts** are stored now and enforced by the chat gateway and by Colyseus and LiveKit (no
+  publish permission) when those are built.
+- **Invite codes** are 8 random characters; opening and using one is rate-limited.
+- **Deleting an account** hands each room it owns to the member picked in Settings → Account (or a
+  mod, or the longest-standing member); a room with nobody else goes with the account.
 - **Cost:** database rows and notifications only.

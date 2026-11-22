@@ -54,7 +54,7 @@ export default function FriendsPage() {
         title: s.id === 'public' ? `🌏 ${r.name}` : `${s.emoji} ${s.name}`,
         sub: s.id === 'public' ? 'Common room · text only' : r.name,
         people: [],
-        href: `/servers/${s.id}/rooms/${r.id}`,
+        href: s.id === 'public' ? `/common/${r.id}` : `/r/${s.id}/walk`,
       };
       card.people.push(u);
       rooms.set(s.id, card);

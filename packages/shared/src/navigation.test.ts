@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { INSIDE_SOFA, OPEN_SPOT, TEST_WORLD, seeded } from './test-fixtures';
-import { createNavigator } from './navigation';
-import type { Point } from './world';
+import { INSIDE_SOFA, OPEN_SPOT, TEST_WORLD, seeded } from './test-fixtures.js';
+import { createNavigator } from './navigation.js';
+import type { Point } from './world.js';
 
 const nav = createNavigator(TEST_WORLD);
 

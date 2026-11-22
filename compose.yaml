@@ -1,5 +1,5 @@
 # Local development services. The apps run on the host via `pnpm dev`.
-#   docker compose up -d
+#   docker compose up -d    (the first run builds the AWS Emulator image)
 name: connecta
 
 services:
@@ -38,6 +38,27 @@ services:
       - '7880:7880' # API and signalling (WebSocket)
       - '7881:7881' # WebRTC over TCP (fallback)
       - '7882:7882/udp' # WebRTC media
+
+  # Local S3 (and other AWS APIs). HTTPS with a certificate it makes on each start, written with
+  # its other files to .local/aws-emulator/9297/ (the API trusts ca.pem from there). Keeps
+  # everything in memory: `pnpm db:seed` recreates the bucket after a restart.
+  aws:
+    build: docker/aws-emulator
+    image: connecta/aws-emulator:1.0.556
+    # Auth off: local only, so no per-run keys to copy around. Telemetry off.
+    command: ['-p', '9297', '--auth', 'off', '--telemetry', 'off']
+    ports:
+      - '127.0.0.1:9297:9297'
+    volumes:
+      - ./.local/aws-emulator:/home/emulator/.aws/emulator
+    mem_limit: 2g
+
+  # Catches every email the API sends (sign-in codes). Inbox: http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:v1.34
+    ports:
+      - '1025:1025' # SMTP
+      - '8025:8025' # web inbox
 
 volumes:
   pgdata:

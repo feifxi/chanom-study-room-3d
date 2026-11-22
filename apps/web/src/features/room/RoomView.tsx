@@ -10,7 +10,9 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SettingsDialog, type SettingsTab } from '@/components/app/SettingsDialog';
 import { setConnection } from '@/lib/connection';
-import { DMS, ME, USERS, serverById } from '@/lib/mock';
+import { DMS, ME, USERS, type Server } from '@/lib/mock';
+import type { PlaceRoom } from '@/features/place/model';
+import { useMeAsUser } from '@/features/account/useMe';
 import { AWAY_EVENT, crowdPeople, useCrowd } from '@/lib/demoCrowd';
 import { questProgress } from '@/lib/quests';
 import { GUEST_LOOK, loadGuest } from '@/lib/guest';
@@ -100,9 +102,21 @@ const AWAY_MS = 10 * 60_000;
  *   (photo mode and your own settings). Screen share only shows once you sit at a desk, because
  *   that's the only place it works.
  */
-export default function RoomView({ serverId, roomId, guestName }: { serverId: string; roomId: string; guestName: string | null }) {
+export default function RoomView({
+  server,
+  place,
+  roomId,
+  guestName,
+}: {
+  /** The room in the demo's old shape (asServer), until walking in is ported (build step 4) */
+  server: Server;
+  /** The room from the API; none for Common rooms (still mock, feature 14) */
+  place?: PlaceRoom;
+  roomId: string;
+  guestName: string | null;
+}) {
   const router = useRouter();
-  const server = serverById(serverId)!;
+  const serverId = server.id;
   const roomDef = server.rooms.find((r) => r.id === roomId) ?? server.rooms[0]!;
   // `?guest=Name` from the invite page, or the Demo tab's "View as: Guest"
   const [guestAs] = useState(() => guestName ?? (isGuestViewer() ? (loadGuest()?.name ?? 'Guest') : null));
@@ -113,7 +127,9 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const [myRole] = useState<RoomRole | undefined>(() =>
     guestAs !== null ? undefined : server.id === 'public' ? (isTeam() ? 'Team' : undefined) : roleIn(server),
   );
-  const myName = guest ? guestAs || 'Guest' : ME.name;
+  // Your own name from your account; the people around you are still mock until walking in is ported (step 4)
+  const account = useMeAsUser();
+  const myName = guest ? guestAs || 'Guest' : account.name;
 
   // The owner sets the room's look and time of day for everyone (feature 7); Common rooms use the defaults
   const lookId = server.id === 'public' ? `public:${roomDef.id}` : server.id;
@@ -785,6 +801,7 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
               {!bigView && (
                 <RoomCard
                   server={server}
+                  place={place}
                   room={roomDef}
                   here={people.length}
                   guest={guest}

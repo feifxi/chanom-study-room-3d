@@ -2,10 +2,11 @@
 
 import { PhoneTabs, PlaceHeader } from '@/features/place/PlaceHeader';
 import { PlaceChat } from '@/features/place/PlaceChat';
+import { RoomPreview } from '@/features/rooms/RoomPreview';
+import type { Room } from '@/features/rooms/useRooms';
 import Link from 'next/link';
 import { RoomShot, SplitScreen } from './SplitScreen';
 import { usePathname } from 'next/navigation';
-import type { Server } from '@/lib/mock';
 import { useViewer } from '@/lib/viewer';
 
 /**
@@ -27,10 +28,10 @@ export function HomeFrame({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** A room's URL (mock servers stand in for rooms) opens its chat outside 3D. */
-export function ServerFrame({ server }: { server: Server }) {
-  if (useViewer() === 'guest') return <GuestWall />;
-  return <PlaceChat key={server.id} server={server} />;
+/** A room's URL opens its chat outside 3D for members, and the preview before joining for everyone else. */
+export function RoomFrame({ room }: { room: Room }) {
+  if (!room.me.role) return <RoomPreview room={room} />;
+  return <PlaceChat key={room.id} initial={room} />;
 }
 
 /** What an account adds, shown to guests on pages they can't open. */

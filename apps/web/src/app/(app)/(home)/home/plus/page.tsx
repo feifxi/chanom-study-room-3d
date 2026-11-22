@@ -7,7 +7,7 @@ import { Check, ChevronDown, CreditCard, Crown, Gift, Minus, QrCode, Sparkles } 
 import { Button } from '@/components/ui/button';
 import { GiftPlusDialog } from '@/components/app/GiftPlusDialog';
 import { SettingsDialog } from '@/components/app/SettingsDialog';
-import { PLANS } from '@/features/place/model';
+import { ROOM_PLANS as PLANS } from '@connecta/shared';
 import { FUTURE_MAPS, ME } from '@/lib/mock';
 import { useMyLook } from '@/lib/myLook';
 import { hasPlus, PLUS_PLANS, REMIND_DAYS, usePlus, type PlanId } from '@/lib/plus';

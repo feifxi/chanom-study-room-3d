@@ -1,4 +1,4 @@
-import type { World } from './world';
+import type { World } from './world.js';
 
 /** A small 12 × 10 m test room: a table in the middle, a round plant pot and a sofa on the left wall. */
 export const TEST_WORLD: World = {

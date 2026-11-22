@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { resolveCollisions } from './collision';
-import { OPEN_SPOT, TEST_WORLD } from './test-fixtures';
-import { PLAYER_RADIUS } from './movement';
+import { resolveCollisions } from './collision.js';
+import { OPEN_SPOT, TEST_WORLD } from './test-fixtures.js';
+import { PLAYER_RADIUS } from './movement.js';
 
 const { bounds } = TEST_WORLD;
 

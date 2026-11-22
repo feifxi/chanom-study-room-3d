@@ -18,6 +18,12 @@ let lastSaved = 0;
 
 export const getMyLook = () => state.look;
 
+/** Starts from the account's saved look (once signed in), without a sparkle or the cooldown. */
+export function initMyLook(look: AvatarLook) {
+  if (state.look === look) return;
+  state = { look, version: state.version };
+}
+
 /** Saves the look, or says how long to wait. */
 export function saveMyLook(look: AvatarLook): { ok: true } | { ok: false; waitS: number } {
   const wait = lastSaved + LOOK_COOLDOWN_MS - Date.now();

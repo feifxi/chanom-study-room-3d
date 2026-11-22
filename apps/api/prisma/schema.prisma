@@ -1,5 +1,6 @@
 // The Connecta database. The API owns it: every change is a migration (pnpm db:migrate).
-// Models arrive with the features that need them, starting with accounts and rooms.
+// Models arrive with the features that need them. Tables and columns are snake_case in Postgres;
+// the client stays camelCase.
 
 generator client {
   provider            = "prisma-client"
@@ -10,4 +11,267 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+// ── Accounts (docs/v2/features/02-accounts.md) ──────────────────────────────────────────────────
+// User, Session, Account and Verification are Better Auth's tables (its Prisma adapter reads and
+// writes them; field names must match its schema). Connecta's own fields sit on User and are only
+// written through the API's accounts module, never by Better Auth's update-user route.
+
+/// A person: a full account, or a guest (isAnonymous) made from an invite that can sign up later.
+model User {
+  id              String    @id
+  /// Display name: up to 16 characters, not unique
+  name            String
+  /// Guests get a placeholder address that never receives mail
+  email           String    @unique
+  emailVerified   Boolean   @default(false) @map("email_verified")
+  image           String?
+  isAnonymous     Boolean   @default(false) @map("is_anonymous")
+  /// Unique @handle, lowercase. Null until sign-up is finished (and always for guests)
+  handle          String?   @unique
+  handleChangedAt DateTime? @map("handle_changed_at")
+  /// The full date, never shown to anyone else. Null until sign-up is finished
+  birthday        DateTime? @db.Date
+  /// The character (AvatarLook from @connecta/shared)
+  look            Json?
+  /// Asked to be deleted: goes at this time unless they sign in and keep it (7 days)
+  deleteAt        DateTime? @map("delete_at")
+  /// Deleted: the row stays as "Deleted user" so their messages still read; everything personal is gone
+  deletedAt       DateTime? @map("deleted_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  sessions    Session[]
+  accounts    Account[]
+  handleHolds HandleHold[]
+  memberships Membership[]
+  requests    JoinRequest[]
+  bans        RoomBan[]     @relation("banned")
+  guestPasses GuestVisit[]
+
+  @@index([deleteAt])
+  @@map("users")
+}
+
+/// A signed-in browser. The cookie holds only the token; deleting the row signs that browser out.
+model Session {
+  id        String   @id
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+/// A way to sign in, linked to a user: Google, Discord or email. One user can have several.
+model Account {
+  id                    String    @id
+  /// The id at the provider (Google's or Discord's user id)
+  accountId             String    @map("account_id")
+  /// google, discord, credential
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id")
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+/// Short-lived secrets: email sign-in codes and OAuth state.
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([identifier])
+  @@map("verifications")
+}
+
+/// Under 13: the sign-in and the browser wait a day before another birthday can be tried.
+model AgeLock {
+  /// "user:<id>" or "device:<id>"
+  key   String   @id
+  until DateTime
+
+  @@map("age_locks")
+}
+
+/// An old @handle kept for its owner for 30 days after a change (or after deleting the account),
+/// so nobody can grab it to pretend to be them. Its owner can take it back meanwhile.
+model HandleHold {
+  handle String   @id
+  userId String   @map("user_id")
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  until  DateTime
+
+  @@index([userId])
+  @@map("handle_holds")
+}
+
+// ── Rooms and membership (docs/v2/features/03-rooms-membership.md) ─────────────────────────────
+
+enum Visibility {
+  /// Invite only, not listed
+  private
+  /// Listed in Discover; mods let each new member in
+  request
+  /// Listed; anyone can join and walk in
+  open
+}
+
+enum RoomRole {
+  owner
+  mod
+  member
+}
+
+enum InviteKind {
+  /// Whoever opens it joins the room
+  member
+  /// Walk in for 24 hours without joining (or without an account)
+  guest
+}
+
+/// A room: one map, one permanent chat, its own members and rules. The top level: no servers.
+model Room {
+  /// Short and random, in the room's URL (/r/<id>)
+  id               String     @id
+  name             String
+  emoji            String
+  description      String     @default("")
+  /// A template from @connecta/shared MAP_IDS
+  mapId            String     @map("map_id")
+  /// cosy or big (big needs the owner's Plus)
+  size             String     @default("cosy")
+  /// clock, day or night: the same for everyone inside
+  time             String     @default("clock")
+  visibility       Visibility @default(private)
+  /// People inside at once, set lower than the plan allows; null means the plan's most
+  capacity         Int?
+  /// Up to 3 from ROOM_TAGS, for Discover
+  tags             String[]   @default([])
+  language         String?
+  rules            String
+  showRules        Boolean    @default(true) @map("show_rules")
+  filterWords      Boolean    @default(true) @map("filter_words")
+  slowMode         Boolean    @default(false) @map("slow_mode")
+  newMemberWait    Boolean    @default(false) @map("new_member_wait")
+  /// Off: nobody starts games that invite the whole room (Pick a Side)
+  roomWideGames    Boolean    @default(true) @map("room_wide_games")
+  membersCanInvite Boolean    @default(true) @map("members_can_invite")
+  allowGuests      Boolean    @default(true) @map("allow_guests")
+  guestVoice       Boolean    @default(false) @map("guest_voice")
+  /// Who the owner picked to take over if their account is deleted
+  heirId           String?    @map("heir_id")
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  members  Membership[]
+  requests JoinRequest[]
+  bans     RoomBan[]
+  invites  Invite[]
+  guests   GuestVisit[]
+
+  @@index([visibility])
+  @@map("rooms")
+}
+
+/// Someone in a room. Exactly one owner per room (the API keeps it that way).
+model Membership {
+  roomId        String    @map("room_id")
+  room          Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId        String    @map("user_id")
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role          RoomRole  @default(member)
+  joinedAt      DateTime  @default(now()) @map("joined_at")
+  /// Last opened (its page or walking in), for Home's order
+  visitedAt     DateTime? @map("visited_at")
+  pinned        Boolean   @default(false)
+  /// all, mentions or none: which chat messages notify you
+  notify        String    @default("mentions")
+  /// Can't talk or type until then
+  timedOutUntil DateTime? @map("timed_out_until")
+
+  @@id([roomId, userId])
+  @@index([userId])
+  @@map("memberships")
+}
+
+/// Ask to join. Letting someone in removes the row; a decline stays, so they wait 7 days to ask again.
+model JoinRequest {
+  roomId     String    @map("room_id")
+  room       Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId     String    @map("user_id")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  note       String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  /// Set when declined
+  declinedAt DateTime? @map("declined_at")
+
+  @@id([roomId, userId])
+  @@map("join_requests")
+}
+
+/// Banned from a room: removed, can't rejoin or use its guest passes. Tied to the account.
+model RoomBan {
+  roomId    String   @map("room_id")
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id")
+  user      User     @relation("banned", fields: [userId], references: [id], onDelete: Cascade)
+  /// Who banned them (kept as an id: the mod may leave)
+  byId      String   @map("by_id")
+  reason    String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([roomId, userId])
+  @@map("room_bans")
+}
+
+/// An invite link: /i/<code> (member) or /g/<code> (guest pass). No use limits.
+model Invite {
+  code        String     @id
+  roomId      String     @map("room_id")
+  room        Room       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  kind        InviteKind
+  createdById String     @map("created_by_id")
+  /// 1d, 7d or never (member invites); guest passes are always 24 hours
+  expiry      String
+  uses        Int        @default(0)
+  expiresAt   DateTime?  @map("expires_at")
+  cancelledAt DateTime?  @map("cancelled_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  @@index([roomId])
+  @@map("invites")
+}
+
+/// Someone let in by a guest pass: they may walk into this one room until the pass runs out.
+model GuestVisit {
+  roomId String   @map("room_id")
+  room   Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId String   @map("user_id")
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  until  DateTime
+
+  @@id([roomId, userId])
+  @@map("guest_visits")
 }

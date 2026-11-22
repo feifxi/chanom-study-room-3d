@@ -4,8 +4,8 @@
   "private": true,
   "description": "Frontend-only V2 UI demo (mock data). Temporary: remove once V2 is built.",
   "scripts": {
-    "demo:dev": "next dev -p 3100",
-    "demo:typecheck": "next typegen && tsc --noEmit",
+    "demo:dev": "pnpm --filter @connecta/shared build && next dev -p 3100",
+    "demo:typecheck": "pnpm --filter @connecta/shared build && next typegen && tsc --noEmit",
     "demo:lint": "eslint --max-warnings 0",
     "demo:perf": "node scripts/perf-check.mjs",
     "demo:screens": "node scripts/screens.mjs"

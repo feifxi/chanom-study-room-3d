@@ -2,8 +2,8 @@
 
 **Status:** decided; payments are mocked in the demo. **Try it:** http://localhost:3100/home/plus,
 `/checkout?plan=yearly`, and `/admin/money` (View as Connecta team). V1's infra is at tag `v1.0.0`
-(`infra/README.md`). **The architecture below is on hold:** the owner plans to move to Azure, to be
-discussed at the infra step ([decision](../decisions.md#engineering-and-infra)).
+(`infra/README.md`). The cloud is AWS; nginx replaced Caddy on 2026-11-21
+([decision](../decisions.md#engineering-and-infra)).
 
 One subscription, **Connecta Plus**, plus earn-only coins for cosmetics. Infra is V1's single app
 server with only what V2 needs added, and monitoring on its own server for SRE practice.
@@ -109,7 +109,7 @@ Real Stripe (test mode first) comes with the backend; the demo fakes it:
 
 ## Architecture
 
-**V1's design, kept:** one app server with Docker Compose behind Caddy, RDS Postgres, no load
+**V1's design, kept:** one app server with Docker Compose behind nginx, RDS Postgres, no load
 balancer, no autoscaling. V2 adds only what its features need, plus a separate monitoring server.
 NEW marks what V1 didn't have.
 
@@ -119,12 +119,12 @@ NEW marks what V1 didn't have.
    ▼                                           ▼
  Route 53 ──▶ App server: EC2 t4g.medium + Elastic IP (Docker Compose)
               ┌─────────────────────────────────────────────────────────┐
-              │ Caddy ─┬─ /            → web      (Next.js)             │
+              │ nginx ─┬─ /            → web      (Next.js)             │
               │        ├─ /api/*       → api      (NestJS + jobs)       │
               │        ├─ /ws  NEW     → gateway  (NestJS WebSocket)    │
               │        ├─ game.*       → game     (Colyseus)            │
               │        └─ rtc.*        → livekit  (+ UDP ports)         │
-              │ redis NEW · alloy · cAdvisor NEW                        │
+              │ certbot · redis NEW · alloy · cAdvisor NEW              │
               └───┬───────────────┬──────────────────────┬──────────────┘
                   │ private       │ HTTPS out            │ private: scrape metrics, push logs
             RDS Postgres    S3 + CloudFront NEW     Monitoring server NEW: EC2 t4g.small
@@ -134,11 +134,12 @@ NEW marks what V1 didn't have.
 
 ### Way in
 
-| Part           | Job                                                                             |
-| -------------- | ------------------------------------------------------------------------------- |
-| **Route 53**   | DNS: the domain, `game.`, `rtc.`, NEW `files.` (CloudFront). `grafana.` is gone |
-| **Elastic IP** | Fixed address for the app server                                                |
-| **Caddy**      | HTTPS with automatic certificates, routing, hides `/metrics` and `/internal/*`  |
+| Part           | Job                                                                                                |
+| -------------- | -------------------------------------------------------------------------------------------------- |
+| **Route 53**   | DNS: the domain, `game.`, `rtc.`, NEW `files.` (CloudFront). `grafana.` is gone                    |
+| **Elastic IP** | Fixed address for the app server                                                                   |
+| **nginx**      | HTTPS, routing (WebSocket upgrades for `/ws`, `game.`, `rtc.`), hides `/metrics` and `/internal/*` |
+| **certbot**    | Let's Encrypt certificates for nginx, renewed on a timer (a container)                             |
 
 ### App server: EC2 t4g.medium (arm64), Docker Compose
 
@@ -181,6 +182,30 @@ SSM Parameter Store (NEW: Stripe, OpenAI, OAuth secrets), SSM Run Command for `d
 - Monitoring server: **nothing open to the internet**; Grafana through SSM port forwarding.
 - RDS: only from the app server. IAM: the app server can read its SSM parameters and the bundle,
   NEW write to the files bucket and send with SES.
+
+### How the browser reaches the backend
+
+The browser only calls its own site: relative `/api` paths, so cookies work without CORS and one
+build fits every environment ([decision](../decisions.md#engineering-and-infra)).
+
+| From the browser | Local (`pnpm dev`)                                      | Production                               |
+| ---------------- | ------------------------------------------------------- | ---------------------------------------- |
+| Pages            | `localhost:3000`                                        | nginx → web                              |
+| `/api/*`         | Next rewrite → `localhost:4000`                         | nginx → api                              |
+| `/ws` (gateway)  | `localhost:4001` directly (Next can't proxy WebSockets) | nginx → gateway                          |
+| Game, voice      | `localhost:2567`, `localhost:7880`                      | `game.`, `rtc.` subdomains               |
+| Server rendering | `localhost:4000`, forwarding the cookie                 | `http://api:4000`, forwarding the cookie |
+
+### Local stand-ins (Docker Compose)
+
+| Production     | Local                                                                          |
+| -------------- | ------------------------------------------------------------------------------ |
+| RDS Postgres   | Postgres 17 container                                                          |
+| Redis, LiveKit | the same containers                                                            |
+| S3             | AWS Emulator (in memory; `pnpm db:seed` recreates the bucket)                  |
+| SES            | Mailpit, an inbox at http://localhost:8025 (tests use the AWS Emulator)        |
+| SSM parameters | `apps/api/.env`                                                                |
+| nginx          | the Next rewrite; the nginx config can run locally for a production-like check |
 
 ## Monitoring on its own server (SRE practice)
 
@@ -225,5 +250,5 @@ the public server, history survives rebuilds, and chaos drills become possible.
 
 ## Not now
 
-Load balancer, autoscaling, Fargate or ECS, ElastiCache, Multi-AZ RDS, LiveKit on its own server, WAF,
-Azure. Revisit when the playtest shows the app server or bandwidth is the limit.
+Load balancer, autoscaling, Fargate or ECS, ElastiCache, Multi-AZ RDS, LiveKit on its own server, WAF.
+Revisit when the playtest shows the app server or bandwidth is the limit.

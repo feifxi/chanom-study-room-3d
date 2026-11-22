@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { NPC_RADIUS, npcRadius, parseJson } from './npc';
+import { NPC_RADIUS, npcRadius, parseJson } from './npc.js';
 
 describe('parseJson', () => {
   it('parses valid JSON', () => expect(parseJson('{"coat":"grey"}', {})).toEqual({ coat: 'grey' }));

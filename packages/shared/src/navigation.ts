@@ -1,4 +1,4 @@
-import type { Bounds, Point, World } from './world';
+import type { Bounds, Point, World } from './world.js';
 
 /**
  * Grid navigation for NPCs: a 0.4 m occupancy grid built from the furniture,

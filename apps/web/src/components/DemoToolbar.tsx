@@ -38,10 +38,7 @@ const PAGES = [
   ['Connecta Plus', '/home/plus'],
   ['Checkout (fake Stripe)', '/checkout?plan=yearly'],
   ['Discover', '/discover'],
-  ['Room chat (outside 3D)', '/servers/chanom'],
-  ['3D room', '/servers/chanom/rooms/library'],
-  ['Common room', '/servers/public/rooms/cafe-2'],
-  ['Invite (guest)', '/invite/cafe-chanom'],
+  ['Common room', '/common/cafe-2'],
   ['Admin', '/admin'],
   ['Admin · Money', '/admin/money'],
 ] as const;

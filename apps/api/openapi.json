@@ -1,0 +1,2625 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The Health Check is successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/TerminusHealthCheckResult"
+                    }
+                  ],
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        "ok",
+                        "degraded"
+                      ],
+                      "example": "ok"
+                    },
+                    "error": {
+                      "example": {}
+                    },
+                    "details": {
+                      "example": {
+                        "database": {
+                          "status": "up",
+                          "responseTime": 12
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Health Check is not successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/TerminusHealthCheckResult"
+                    }
+                  ],
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        "error",
+                        "shutting_down"
+                      ],
+                      "example": "error"
+                    },
+                    "error": {
+                      "example": {
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect",
+                          "responseTime": 3005
+                        }
+                      }
+                    },
+                    "details": {
+                      "example": {
+                        "database": {
+                          "status": "up",
+                          "responseTime": 12
+                        },
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect",
+                          "responseTime": 3005
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/me": {
+      "get": {
+        "operationId": "MeController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/me/birthday": {
+      "post": {
+        "operationId": "MeController_birthday",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BirthdayBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TooYoung"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/me/sign-up": {
+      "post": {
+        "operationId": "MeController_signUp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUpBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HandleCheck"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/me/guest": {
+      "put": {
+        "operationId": "MeController_guest",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/me/profile": {
+      "patch": {
+        "operationId": "MeController_profile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/me/handle": {
+      "put": {
+        "operationId": "MeController_handle",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HandleBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TooSoon"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/me/account": {
+      "get": {
+        "operationId": "MeController_account",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountDetails"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/me/deletion": {
+      "post": {
+        "operationId": "MeController_requestDeletion",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeletionBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "me"
+        ]
+      },
+      "delete": {
+        "operationId": "MeController_keep",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/handles/{handle}": {
+      "get": {
+        "operationId": "HandlesController_check",
+        "parameters": [
+          {
+            "name": "handle",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HandleCheck"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "handles"
+        ]
+      }
+    },
+    "/api/rooms": {
+      "get": {
+        "operationId": "RoomsController_mine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Room"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      },
+      "post": {
+        "operationId": "RoomsController_make",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRoomBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Room"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "too_many_rooms"
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/rooms/listed": {
+      "get": {
+        "operationId": "RoomsController_listed",
+        "parameters": [
+          {
+            "name": "language",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "Thai",
+                "English",
+                "Japanese",
+                "Korean",
+                "Chinese",
+                "Mixed"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "Study",
+                "Chill",
+                "Games",
+                "Language exchange",
+                "Music",
+                "Art",
+                "Anime",
+                "Late night"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListedRoom"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/rooms/{id}": {
+      "get": {
+        "operationId": "RoomsController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Room"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      },
+      "patch": {
+        "operationId": "RoomsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoomSettingsBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Room"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      },
+      "delete": {
+        "operationId": "RoomsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteRoomBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/rooms/{id}/owner": {
+      "put": {
+        "operationId": "RoomsController_transfer",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Room"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/rooms/{id}/me": {
+      "patch": {
+        "operationId": "RoomsController_myPlace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MyPlaceBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Room"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      },
+      "delete": {
+        "operationId": "RoomsController_leave",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/rooms/{id}/visit": {
+      "put": {
+        "operationId": "RoomsController_visit",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/rooms/{id}/join": {
+      "post": {
+        "operationId": "RoomsController_join",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Room"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/rooms/{id}/requests": {
+      "post": {
+        "operationId": "RoomsController_ask",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AskBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Room"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      },
+      "get": {
+        "operationId": "RoomsController_requests",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/JoinRequest"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/rooms/{id}/requests/{userId}/accept": {
+      "post": {
+        "operationId": "RoomsController_letIn",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/rooms/{id}/requests/{userId}/decline": {
+      "post": {
+        "operationId": "RoomsController_decline",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/rooms/{id}/members": {
+      "get": {
+        "operationId": "RoomsController_members",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Member"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/rooms/{id}/members/{userId}/role": {
+      "put": {
+        "operationId": "RoomsController_role",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/rooms/{id}/members/{userId}/timeout": {
+      "put": {
+        "operationId": "RoomsController_timeOut",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TimeoutBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/rooms/{id}/members/{userId}": {
+      "delete": {
+        "operationId": "RoomsController_kick",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/rooms/{id}/bans": {
+      "get": {
+        "operationId": "RoomsController_bans",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Ban"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/rooms/{id}/bans/{userId}": {
+      "put": {
+        "operationId": "RoomsController_ban",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      },
+      "delete": {
+        "operationId": "RoomsController_unban",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/rooms/{id}/invites": {
+      "post": {
+        "operationId": "RoomsController_makeInvite",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MakeInviteBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Invite"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      },
+      "get": {
+        "operationId": "RoomsController_invites",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Invite"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/invites/{code}": {
+      "get": {
+        "operationId": "InvitesController_preview",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 16
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitePreview"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "invites"
+        ]
+      },
+      "delete": {
+        "operationId": "InvitesController_cancel",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 16
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "invites"
+        ]
+      }
+    },
+    "/api/invites/{code}/accept": {
+      "post": {
+        "operationId": "InvitesController_accept",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 16
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accepted"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "invites"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Connecta API",
+    "description": "",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "TerminusHealthIndicatorResult": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "up",
+              "degraded",
+              "down"
+            ],
+            "description": "The status of this health indicator"
+          },
+          "responseTime": {
+            "type": "number",
+            "description": "Time the health indicator took to respond, in ms"
+          },
+          "cachedResponse": {
+            "type": "boolean",
+            "description": "Whether this result was served from the cache"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "TerminusHealthCheckResult": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "error",
+              "ok",
+              "degraded",
+              "shutting_down"
+            ],
+            "example": "ok"
+          },
+          "info": {
+            "type": "object",
+            "additionalProperties": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/TerminusHealthIndicatorResult"
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              ]
+            },
+            "example": {
+              "database": {
+                "status": "up",
+                "responseTime": 12
+              }
+            },
+            "nullable": true
+          },
+          "error": {
+            "type": "object",
+            "additionalProperties": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/TerminusHealthIndicatorResult"
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              ]
+            },
+            "example": {},
+            "nullable": true
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/TerminusHealthIndicatorResult"
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              ]
+            },
+            "example": {
+              "database": {
+                "status": "up",
+                "responseTime": 12
+              }
+            }
+          }
+        },
+        "required": [
+          "status",
+          "details"
+        ]
+      },
+      "Me": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "handle": {
+            "nullable": true,
+            "type": "string"
+          },
+          "look": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Look"
+              }
+            ]
+          },
+          "email": {
+            "nullable": true,
+            "type": "string"
+          },
+          "isGuest": {
+            "type": "boolean"
+          },
+          "ageChecked": {
+            "type": "boolean"
+          },
+          "signedUp": {
+            "type": "boolean"
+          },
+          "deleteAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "handle",
+          "look",
+          "email",
+          "isGuest",
+          "ageChecked",
+          "signedUp",
+          "deleteAt"
+        ],
+        "additionalProperties": false
+      },
+      "Look": {
+        "type": "object",
+        "properties": {
+          "hair": {
+            "type": "string"
+          },
+          "outfit": {
+            "type": "string"
+          },
+          "accessory": {
+            "type": "string",
+            "enum": [
+              "none",
+              "ribbon",
+              "catEars",
+              "glasses",
+              "headphones",
+              "ahoge",
+              "twintails"
+            ]
+          }
+        },
+        "required": [
+          "hair",
+          "outfit",
+          "accessory"
+        ],
+        "additionalProperties": false
+      },
+      "BirthdayBody": {
+        "type": "object",
+        "properties": {
+          "birthday": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "YYYY-MM-DD"
+          }
+        },
+        "required": [
+          "birthday"
+        ]
+      },
+      "TooYoung": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "too_young"
+            ]
+          },
+          "until": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "code",
+          "until"
+        ],
+        "additionalProperties": false
+      },
+      "SignUpBody": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16
+          },
+          "handle": {
+            "type": "string"
+          },
+          "look": {
+            "$ref": "#/components/schemas/Look"
+          }
+        },
+        "required": [
+          "name",
+          "handle",
+          "look"
+        ]
+      },
+      "HandleCheck": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "reason": {
+            "nullable": true,
+            "type": "string"
+          },
+          "suggestions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "handle",
+          "available",
+          "reason",
+          "suggestions"
+        ],
+        "additionalProperties": false
+      },
+      "GuestBody": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16
+          },
+          "look": {
+            "$ref": "#/components/schemas/Look"
+          }
+        },
+        "required": [
+          "name",
+          "look"
+        ]
+      },
+      "ProfileBody": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16
+          },
+          "look": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Look"
+              }
+            ]
+          }
+        }
+      },
+      "HandleBody": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "handle"
+        ]
+      },
+      "TooSoon": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "too_soon"
+            ]
+          },
+          "nextChangeAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "code",
+          "nextChangeAt"
+        ],
+        "additionalProperties": false
+      },
+      "AccountDetails": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "birthday": {
+            "nullable": true,
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "linked": {
+            "type": "object",
+            "properties": {
+              "google": {
+                "nullable": true,
+                "type": "string"
+              },
+              "discord": {
+                "nullable": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "google",
+              "discord"
+            ],
+            "additionalProperties": false
+          },
+          "available": {
+            "type": "object",
+            "properties": {
+              "google": {
+                "type": "boolean"
+              },
+              "discord": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "google",
+              "discord"
+            ],
+            "additionalProperties": false
+          },
+          "nextHandleChangeAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "email",
+          "birthday",
+          "linked",
+          "available",
+          "nextHandleChangeAt"
+        ],
+        "additionalProperties": false
+      },
+      "DeletionBody": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "description": "The @handle, typed to confirm"
+          },
+          "heirs": {
+            "default": {},
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "handle"
+        ]
+      },
+      "Room": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "emoji": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "mapId": {
+            "type": "string",
+            "enum": [
+              "library",
+              "cafe",
+              "rooftop"
+            ]
+          },
+          "size": {
+            "type": "string",
+            "enum": [
+              "cosy",
+              "big"
+            ]
+          },
+          "time": {
+            "type": "string",
+            "enum": [
+              "clock",
+              "day",
+              "night"
+            ]
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "private",
+              "request",
+              "open"
+            ]
+          },
+          "capacity": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "maxCapacity": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "language": {
+            "nullable": true,
+            "type": "string"
+          },
+          "rules": {
+            "type": "string"
+          },
+          "showRules": {
+            "type": "boolean"
+          },
+          "filterWords": {
+            "type": "boolean"
+          },
+          "slowMode": {
+            "type": "boolean"
+          },
+          "newMemberWait": {
+            "type": "boolean"
+          },
+          "roomWideGames": {
+            "type": "boolean"
+          },
+          "membersCanInvite": {
+            "type": "boolean"
+          },
+          "allowGuests": {
+            "type": "boolean"
+          },
+          "guestVoice": {
+            "type": "boolean"
+          },
+          "ownerPlus": {
+            "type": "boolean"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "mods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Person"
+            }
+          },
+          "memberCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "maxMembers": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "requestCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "me": {
+            "$ref": "#/components/schemas/MyPlace"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "emoji",
+          "description",
+          "mapId",
+          "size",
+          "time",
+          "visibility",
+          "capacity",
+          "maxCapacity",
+          "tags",
+          "language",
+          "rules",
+          "showRules",
+          "filterWords",
+          "slowMode",
+          "newMemberWait",
+          "roomWideGames",
+          "membersCanInvite",
+          "allowGuests",
+          "guestVoice",
+          "ownerPlus",
+          "owner",
+          "mods",
+          "memberCount",
+          "maxMembers",
+          "requestCount",
+          "me"
+        ],
+        "additionalProperties": false
+      },
+      "Person": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "handle": {
+            "nullable": true,
+            "type": "string"
+          },
+          "look": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Look"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "handle",
+          "look"
+        ],
+        "additionalProperties": false
+      },
+      "MyPlace": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "owner",
+              "mod",
+              "member"
+            ]
+          },
+          "pinned": {
+            "type": "boolean"
+          },
+          "notify": {
+            "type": "string",
+            "enum": [
+              "all",
+              "mentions",
+              "none"
+            ]
+          },
+          "requested": {
+            "type": "boolean"
+          },
+          "askAgainAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "guestUntil": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "visitedAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "timedOutUntil": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "role",
+          "pinned",
+          "notify",
+          "requested",
+          "askAgainAt",
+          "guestUntil",
+          "visitedAt",
+          "timedOutUntil"
+        ],
+        "additionalProperties": false
+      },
+      "CreateRoomBody": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "mapId": {
+            "type": "string",
+            "enum": [
+              "library",
+              "cafe",
+              "rooftop"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "mapId"
+        ]
+      },
+      "DiscoverQuery": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "tag": {
+            "type": "string",
+            "enum": [
+              "Study",
+              "Chill",
+              "Games",
+              "Language exchange",
+              "Music",
+              "Art",
+              "Anime",
+              "Late night"
+            ]
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "Thai",
+              "English",
+              "Japanese",
+              "Korean",
+              "Chinese",
+              "Mixed"
+            ]
+          }
+        }
+      },
+      "ListedRoom": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "emoji": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "mapId": {
+            "type": "string",
+            "enum": [
+              "library",
+              "cafe",
+              "rooftop"
+            ]
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "request",
+              "open"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "language": {
+            "nullable": true,
+            "type": "string"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "memberCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "capacity": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "rules": {
+            "nullable": true,
+            "type": "string"
+          },
+          "me": {
+            "$ref": "#/components/schemas/MyPlace"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "emoji",
+          "description",
+          "mapId",
+          "visibility",
+          "tags",
+          "language",
+          "owner",
+          "memberCount",
+          "capacity",
+          "rules",
+          "me"
+        ],
+        "additionalProperties": false
+      },
+      "RoomSettingsBody": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "emoji": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "mapId": {
+            "type": "string",
+            "enum": [
+              "library",
+              "cafe",
+              "rooftop"
+            ]
+          },
+          "size": {
+            "type": "string",
+            "enum": [
+              "cosy",
+              "big"
+            ]
+          },
+          "time": {
+            "type": "string",
+            "enum": [
+              "clock",
+              "day",
+              "night"
+            ]
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "private",
+              "request",
+              "open"
+            ]
+          },
+          "capacity": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 9007199254740991
+          },
+          "tags": {
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Study",
+                "Chill",
+                "Games",
+                "Language exchange",
+                "Music",
+                "Art",
+                "Anime",
+                "Late night"
+              ]
+            }
+          },
+          "language": {
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "Thai",
+              "English",
+              "Japanese",
+              "Korean",
+              "Chinese",
+              "Mixed"
+            ]
+          },
+          "rules": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "showRules": {
+            "type": "boolean"
+          },
+          "filterWords": {
+            "type": "boolean"
+          },
+          "slowMode": {
+            "type": "boolean"
+          },
+          "newMemberWait": {
+            "type": "boolean"
+          },
+          "roomWideGames": {
+            "type": "boolean"
+          },
+          "membersCanInvite": {
+            "type": "boolean"
+          },
+          "allowGuests": {
+            "type": "boolean"
+          },
+          "guestVoice": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DeleteRoomBody": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The room name, typed to confirm"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "TransferBody": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "MyPlaceBody": {
+        "type": "object",
+        "properties": {
+          "pinned": {
+            "type": "boolean"
+          },
+          "notify": {
+            "type": "string",
+            "enum": [
+              "all",
+              "mentions",
+              "none"
+            ]
+          }
+        }
+      },
+      "AskBody": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "maxLength": 150
+          }
+        }
+      },
+      "JoinRequest": {
+        "type": "object",
+        "properties": {
+          "person": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "note": {
+            "nullable": true,
+            "type": "string"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "person",
+          "note",
+          "at"
+        ],
+        "additionalProperties": false
+      },
+      "Member": {
+        "type": "object",
+        "properties": {
+          "person": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "mod",
+              "member"
+            ]
+          },
+          "joinedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "timedOutUntil": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "person",
+          "role",
+          "joinedAt",
+          "timedOutUntil"
+        ],
+        "additionalProperties": false
+      },
+      "RoleBody": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "mod",
+              "member"
+            ]
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "TimeoutBody": {
+        "type": "object",
+        "properties": {
+          "duration": {
+            "type": "string",
+            "enum": [
+              "10m",
+              "1h",
+              "1d"
+            ]
+          }
+        },
+        "required": [
+          "duration"
+        ]
+      },
+      "Ban": {
+        "type": "object",
+        "properties": {
+          "person": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "by": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Person"
+              }
+            ]
+          },
+          "reason": {
+            "nullable": true,
+            "type": "string"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "person",
+          "by",
+          "reason",
+          "at"
+        ],
+        "additionalProperties": false
+      },
+      "BanBody": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 200
+          }
+        }
+      },
+      "MakeInviteBody": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "member",
+              "guest"
+            ]
+          },
+          "expiry": {
+            "default": "7d",
+            "type": "string",
+            "enum": [
+              "1d",
+              "7d",
+              "never"
+            ]
+          },
+          "fresh": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "Invite": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "member",
+              "guest"
+            ]
+          },
+          "by": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Person"
+              }
+            ]
+          },
+          "expiry": {
+            "type": "string",
+            "enum": [
+              "1d",
+              "7d",
+              "never",
+              "24h"
+            ]
+          },
+          "uses": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "expiresAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "code",
+          "kind",
+          "by",
+          "expiry",
+          "uses",
+          "expiresAt"
+        ],
+        "additionalProperties": false
+      },
+      "InvitePreview": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "member",
+              "guest"
+            ]
+          },
+          "expiresAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "by": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Person"
+              }
+            ]
+          },
+          "room": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "emoji": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "mapId": {
+                "type": "string",
+                "enum": [
+                  "library",
+                  "cafe",
+                  "rooftop"
+                ]
+              },
+              "memberCount": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "allowGuests": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "emoji",
+              "description",
+              "mapId",
+              "memberCount",
+              "allowGuests"
+            ],
+            "additionalProperties": false
+          },
+          "member": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "kind",
+          "expiresAt",
+          "by",
+          "room",
+          "member"
+        ],
+        "additionalProperties": false
+      },
+      "Accepted": {
+        "type": "object",
+        "properties": {
+          "roomId": {
+            "type": "string"
+          },
+          "guestUntil": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "roomId",
+          "guestUntil"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

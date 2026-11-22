@@ -87,7 +87,7 @@ export default function Landing() {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="h-12 rounded-full bg-card px-6 text-base font-bold">
-                <Link href="/invite/cafe-chanom">Try a room as a guest</Link>
+                <Link href="/common/cafe-2?guest=Guest">Try a room as a guest</Link>
               </Button>
             </div>
             <p className="flex items-center gap-2 text-sm text-muted-foreground">

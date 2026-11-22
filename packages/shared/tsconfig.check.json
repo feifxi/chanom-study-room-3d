@@ -1,0 +1,7 @@
+{
+  // Typechecks everything, tests included, without emitting
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": true, "declaration": false, "declarationMap": false },
+  "include": ["src"],
+  "exclude": []
+}

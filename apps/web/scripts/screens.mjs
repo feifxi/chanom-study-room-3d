@@ -7,6 +7,8 @@
 //   pnpm --filter @connecta/web screens 1280 light admin /admin /admin/money
 //
 // Viewers: auto, guest, member, mod, owner, admin (lib/viewer.ts). Phone widths get touch.
+// Home and the rest of the signed-in app need an account: every viewer except guest signs in first
+// as a seed person (SCREENS_AS, default maimai@connecta.test; needs `pnpm db:seed` and Mailpit).
 import { mkdirSync } from 'node:fs';
 import { chromium } from 'playwright';
 
@@ -44,6 +46,19 @@ await ctx.addInitScript(
   },
   [theme, viewer],
 );
+if (viewer !== 'guest') await signIn(process.env.SCREENS_AS ?? 'maimai@connecta.test');
+
+/** Signs the browser context in with an email code, read from Mailpit. */
+async function signIn(email) {
+  const headers = { origin: BASE };
+  const send = await ctx.request.post(`${BASE}/api/auth/email-otp/send-verification-otp`, { headers, data: { email, type: 'sign-in' } });
+  if (!send.ok()) throw new Error(`Couldn't send a code to ${email} (${send.status()}): is the API running?`);
+  const inbox = await (await fetch(`${process.env.MAILPIT_URL ?? 'http://localhost:8025'}/api/v1/messages`)).json();
+  const otp = inbox.messages.find((m) => m.To[0]?.Address === email)?.Subject.slice(0, 6);
+  const res = await ctx.request.post(`${BASE}/api/auth/sign-in/email-otp`, { headers, data: { email, otp } });
+  if (!res.ok()) throw new Error(`Couldn't sign in as ${email} (${res.status()})`);
+}
+
 let problems = 0;
 for (const path of PAGES) {
   const page = await ctx.newPage();

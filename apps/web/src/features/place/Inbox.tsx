@@ -48,11 +48,11 @@ const NOTES: Note[] = [
     from: 'jod',
     text: '**Jod** mentioned you in Chanom Friends: “@feifei library at 8?”',
     at: '5m',
-    href: '/servers/chanom',
+    href: '/home',
     unread: true,
   },
   { id: 'n2', kind: 'friend', from: 'bow', text: '**Bow** sent you a friend request', at: '20m', href: '/home/friends', unread: true },
-  { id: 'n3', kind: 'room', text: '**2 people** want to join CPE Year 3 (you’re a mod)', at: '1h', href: '/servers/cpe', unread: true },
+  { id: 'n3', kind: 'room', text: '**2 people** want to join CPE Year 3 (you’re a mod)', at: '1h', href: '/home', unread: true },
   { id: 'n4', kind: 'event', text: '**Draw & Guess · Sat 21:00** starts in 1 hour', at: '1h', href: '/home', unread: false },
   { id: 'n5', kind: 'space', text: 'There’s space in **Exam Hall** now', at: '3h', href: '/home', unread: false },
   {

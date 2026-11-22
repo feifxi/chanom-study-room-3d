@@ -44,7 +44,8 @@ export function defaultLook(mapId: string): RoomLook {
 
 export const mapById = (id: string): MapTemplate => MAPS.find((m) => m.id === id) ?? MAPS[0]!;
 
-function read(roomId: string, mapId: string): RoomLook {
+/** The room's look as this browser has it (the defaults when nothing's saved). */
+export function readLook(roomId: string, mapId: string): RoomLook {
   let raw: string | null = null;
   try {
     raw = sessionStorage.getItem(key(roomId));
@@ -79,7 +80,7 @@ function subscribe(onChange: () => void) {
 export function useRoomLook(roomId: string, mapId: string): RoomLook {
   return useSyncExternalStore(
     subscribe,
-    () => read(roomId, mapId),
+    () => readLook(roomId, mapId),
     () => cachedDefault(mapId),
   );
 }

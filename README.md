@@ -35,8 +35,12 @@ Needs Node 24, pnpm 9 and Docker.
 pnpm install
 docker compose up -d
 cp apps/api/.env.example apps/api/.env
+pnpm db:migrate && pnpm db:seed
 pnpm dev          # web http://localhost:3000 · API http://localhost:4000/api/docs
 ```
+
+Sign in with an email code; it lands in the local inbox at http://localhost:8025. The demo people
+sign in as `<handle>@connecta.test`, for example `maimai@connecta.test`.
 
 Developers and coding agents: start at [`AGENTS.md`](AGENTS.md) for commands, layout and the
 working agreements.

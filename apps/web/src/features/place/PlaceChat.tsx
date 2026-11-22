@@ -1,16 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Bell, CalendarHeart, MessageCircle, Play, Crown, UserPlus } from 'lucide-react';
+import { ArrowLeft, Bell, MessageCircle, Play, Crown, UserPlus } from 'lucide-react';
 import { ChatThread } from '@/components/chat/Chat';
-import { InviteDialog } from '@/components/server/InviteDialog';
-import { PRESENCE_LABEL, UserAvatar } from '@/components/UserAvatar';
+import { InviteDialog } from '@/features/rooms/InviteDialog';
+import { UserAvatar } from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { roomsApi, useMembers, useRoom, useRoomAction, type Room } from '@/features/rooms/useRooms';
 import { cn } from '@/lib/utils';
-import { channelMessages, userById, type Server } from '@/lib/mock';
-import { placeRoom, walkInHref } from './model';
+import { channelMessages } from '@/lib/mock';
+import { ROLE_LABEL, placeRoom, walkInHref } from './model';
 import { RoomMenu } from './RoomMenu';
 import { Scene } from './Scene';
 
@@ -19,12 +20,19 @@ import { Scene } from './Scene';
  * who's inside on the side, and one tap to walk in. Nobody sees you here and voice is off. It's how
  * phones, slow laptops and a quick reply use a room; in 3D the same chat opens as a panel.
  */
-export function PlaceChat({ server }: { server: Server }) {
-  const room = placeRoom(server);
+export function PlaceChat({ initial }: { initial: Room }) {
+  const { data } = useRoom(initial.id, initial);
+  const room = placeRoom(data ?? initial);
   const [invite, setInvite] = useState(false);
-  const [pinned, setPinned] = useState(server.id === 'chanom');
-  const inside = room.people.map(userById);
-  const away = server.members.filter((id) => id !== 'me' && !room.people.includes(id)).map(userById);
+  const pin = useRoomAction(roomsApi.myPlace);
+  const members = useMembers(room.id);
+  // Who's inside comes with presence (build step 3)
+  const inside: never[] = [];
+
+  // Home lists rooms you've opened lately first
+  useEffect(() => {
+    roomsApi.visit(initial.id).catch(() => {});
+  }, [initial.id]);
 
   return (
     <div className="fixed inset-0 isolate flex flex-col gap-3 p-3">
@@ -72,8 +80,8 @@ export function PlaceChat({ server }: { server: Server }) {
         </Button>
         <RoomMenu
           room={room}
-          pinned={pinned}
-          onPin={() => setPinned(!pinned)}
+          pinned={room.room.me.pinned}
+          onPin={() => pin.mutate({ id: room.id, pinned: !room.room.me.pinned })}
           unread={0}
           onRead={() => {}}
           className="text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -98,47 +106,43 @@ export function PlaceChat({ server }: { server: Server }) {
             <p className="flex-1 text-sm font-black">Room chat</p>
             <p className="hidden text-xs text-muted-foreground sm:block">You’re reading from outside · nobody sees you</p>
           </div>
-          {server.event && (
-            <p className="mx-3 mt-3 flex items-center gap-1.5 rounded-2xl bg-lavender px-3 py-2 text-sm font-bold text-lavender-ink">
-              <CalendarHeart className="size-4" /> {server.event}
-            </p>
-          )}
+          {/* The room chat is still mock data: it moves to the API with build step 3 */}
           <ChatThread
-            key={server.id}
-            initial={room.chat ? channelMessages(server.id, room.chat.id) : []}
-            unread={room.chat?.unread}
-            members={server.members}
-            moderator={!!room.myRole}
+            key={room.id}
+            initial={channelMessages(room.id, 'chat')}
+            members={[]}
+            moderator={room.canEdit}
             placeholder="Message the room"
           />
         </section>
 
         <aside className="panel hidden w-72 flex-none flex-col gap-3 overflow-y-auto p-3 lg:flex" aria-label="People">
           <Group title="About">
-            <p className="px-1 text-sm">{room.description}</p>
+            <p className="px-1 text-sm">{room.description || room.map.blurb}</p>
             <p className="mt-1 px-1 text-xs text-muted-foreground">
-              {server.memberCount} members · {room.myRole ? `you’re ${room.myRole === 'Owner' ? 'the owner' : 'a mod'}` : 'you’re a member'}
+              {room.room.memberCount} {room.room.memberCount === 1 ? 'member' : 'members'} ·{' '}
+              {room.myRole === 'owner' ? 'you’re the owner' : room.myRole === 'mod' ? 'you’re a mod' : 'you’re a member'}
             </p>
           </Group>
           <Group title={`Inside now · ${room.inside}`}>
-            {inside.length ? (
-              inside.map((u) => <Person key={u.id} id={u.id} />)
-            ) : (
+            {inside.length === 0 && (
               <p className="px-1 text-sm text-muted-foreground">Lights off. Walk in first and friends will see you there.</p>
             )}
-            {room.inside > inside.length && inside.length > 0 && (
-              <p className="px-1 pt-1 text-xs font-bold text-muted-foreground">and {room.inside - inside.length} more</p>
-            )}
           </Group>
-          <Group title="Members">
-            {away.map((u) => (
-              <Person key={u.id} id={u.id} />
+          <Group title={`Members · ${room.room.memberCount}`}>
+            {members.data?.map((m) => (
+              <Person
+                key={m.person.id}
+                name={m.person.name}
+                color={m.person.look?.outfit}
+                note={m.role === 'member' ? m.person.handle && `@${m.person.handle}` : ROLE_LABEL[m.role]}
+              />
             ))}
           </Group>
         </aside>
       </div>
 
-      <InviteDialog server={server} open={invite} onOpenChange={setInvite} />
+      <InviteDialog room={room} open={invite} onOpenChange={setInvite} />
     </div>
   );
 }
@@ -152,14 +156,13 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
-function Person({ id }: { id: string }) {
-  const u = userById(id);
+function Person({ name, color = '#9c8aa0', note }: { name: string; color?: string; note?: string | null }) {
   return (
-    <div className={cn('flex items-center gap-2 rounded-xl px-1 py-1', u.presence === 'offline' && 'opacity-50')}>
-      <UserAvatar user={u} size={30} presence />
+    <div className="flex items-center gap-2 rounded-xl px-1 py-1">
+      <UserAvatar user={{ name, color, presence: 'offline' }} size={30} />
       <span className="min-w-0">
-        <span className="block truncate text-sm font-bold">{u.name}</span>
-        <span className="block truncate text-[11px] text-muted-foreground">{u.activity ?? PRESENCE_LABEL[u.presence]}</span>
+        <span className="block truncate text-sm font-bold">{name}</span>
+        {note && <span className="block truncate text-[11px] text-muted-foreground">{note}</span>}
       </span>
     </div>
   );

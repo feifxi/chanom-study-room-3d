@@ -58,7 +58,7 @@ export default function DmPage() {
           </div>
           {where && u.inRoom && (
             <Button asChild className="rounded-full font-extrabold">
-              <Link href={`/servers/${where.id}/rooms/${u.inRoom.roomId}`}>
+              <Link href={where.id === 'public' ? `/common/${u.inRoom.roomId}` : `/r/${where.id}/walk`}>
                 <Play className="fill-current" /> Join {u.name}
               </Link>
             </Button>
@@ -159,7 +159,7 @@ export default function DmPage() {
             </p>
             <p className="text-sm text-muted-foreground">{u.activity}</p>
             <Button asChild size="sm" className="mt-3 rounded-full font-extrabold">
-              <Link href={`/servers/${where.id}/rooms/${u.inRoom.roomId}`}>
+              <Link href={where.id === 'public' ? `/common/${u.inRoom.roomId}` : `/r/${where.id}/walk`}>
                 <Play className="fill-current" /> Walk in
               </Link>
             </Button>
@@ -168,11 +168,7 @@ export default function DmPage() {
         <div>
           <p className="mb-2 text-xs font-black tracking-wider text-muted-foreground uppercase">Rooms you share · {shared.length}</p>
           {shared.map((s) => (
-            <Link
-              key={s.id}
-              href={`/servers/${s.id}`}
-              className="flex items-center gap-2 rounded-xl p-1.5 text-sm font-bold hover:bg-muted"
-            >
+            <Link key={s.id} href={`/r/${s.id}`} className="flex items-center gap-2 rounded-xl p-1.5 text-sm font-bold hover:bg-muted">
               <span className={`grid size-8 place-items-center rounded-xl ${s.tint}`}>{s.emoji}</span> {s.name}
             </Link>
           ))}

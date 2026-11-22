@@ -1,7 +1,10 @@
 # 2. Accounts and sign-up
 
-**Status:** decided and built in the demo. **Try it:** http://localhost:3100/login, and
-http://localhost:3100/invite/cafe-chanom for the guest path.
+**Status:** built in the real app (2026-11-21): sign-in and sign-up, guests, My profile (name,
+@handle), My character, Settings → Account and deleting an account. Picking new owners for your rooms when deleting came with rooms (2026-11-22). Still to come with
+their features: Privacy & safety (friends and presence), "About me" (not specced yet). **Try it:** http://localhost:3000/login (the email code
+arrives in Mailpit, http://localhost:8025), and http://localhost:3000/invite/cafe-chanom for the
+guest path. The demo has every screen at http://localhost:3100/login.
 
 Sign-in is passwordless (Google, Discord or an email code), accounts are 13+, and anyone can try a
 room first as a guest. A guest who signs up keeps their character.
@@ -73,11 +76,33 @@ through one `can(user, action)` check, so one can be added in one place.
 
 ## Backend notes
 
-- **Auth:** Google and Discord OAuth, email codes (SES, about $0.10 per 1,000 emails). Sessions are
-  signed HttpOnly cookies, like V1's admin.
-- **Account:** id, @handle (unique, case-insensitive), display name, birthday, look, created at, and
-  linked sign-ins (one account can have Google, Discord and email).
-- **Guests:** a short-lived guest session from the invite (room, name, look, expiry). On sign-up the
-  look moves to the account.
-- **Age lock:** a record per device and per sign-in identity with an expiry; the client only shows it.
-- **Handle check:** a rate-limited "is this free?" endpoint; the final claim happens on submit.
+- **Sign-in is Better Auth** ([why](../decisions.md#engineering-and-infra)) under `/api/auth/*`:
+  Google and Discord (on when their keys are set), 6-digit email codes (10 minutes, 5 tries, stored
+  hashed; sent with SES, about $0.10 per 1,000 emails), and guests (its anonymous plugin). Sessions
+  are rows in Postgres for 30 days with an HttpOnly cookie holding only a random token; signing in
+  is rate-limited per IP.
+- **Linked sign-ins:** Google and Discord link to an existing account with the same verified email,
+  so one person has one account.
+- **Account** (`users` table): id, display name, email, @handle (unique, lowercase), birthday (a
+  date, never returned to anyone), look, when the handle last changed.
+- **Sign-up steps** (`/api/me`): after signing in, `POST /api/me/birthday`, then
+  `POST /api/me/sign-up` with the name, handle and look. The server keeps where you are, so leaving
+  halfway picks up at the next step. `GET /api/me` says which steps are done.
+- **Age lock:** under 13 answers `403 too_young` and locks the sign-in and the browser (a random id
+  in a year-long cookie) for a day (`age_locks`). That birthday isn't kept.
+- **Handle check:** `GET /api/handles/:handle` (signed in, 60 a minute) with suggestions when
+  taken; the final claim happens on submit, and a race answers 409 with fresh suggestions.
+- **Settings** (`/api/me`): `PATCH profile` (name, look), `PUT handle` (409 `too_soon` within 30 days
+  of the last change; the first change after sign-up is free; the old handle goes to
+  `handle_holds` for 30 days, and its owner can take it back), `GET account` (email, birthday,
+  linked sign-ins, which providers this server has). Google and Discord connect and disconnect
+  through Better Auth (disconnecting wants a sign-in within the last day); an email code always
+  works, so disconnecting the last one is fine.
+- **Deleting** (`POST /api/me/deletion` with the typed @handle): `deleteAt` = now + 7 days, every
+  other browser signed out. Until then signing in shows "Keep my account" (`DELETE
+/api/me/deletion`) and the rest of the app is closed. An hourly job then keeps the row as
+  "Deleted user" (so messages still read) and removes the name, email, birthday, look, sign-ins and
+  sessions; the @handle is held 30 more days. Moves to the job queue when there is one.
+- **Guests:** a guest session from the invite page, with a name and look (`PUT /api/me/guest`), no
+  birthday. Signing in from a guest session carries the name and look over to the new account and
+  deletes the guest. Clearing out guests nobody came back for is a job for later.

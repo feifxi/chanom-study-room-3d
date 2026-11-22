@@ -1,5 +1,5 @@
-import { PLAYER_RADIUS } from './movement';
-import type { Point, Walker, World } from './world';
+import { PLAYER_RADIUS } from './movement.js';
+import type { Point, Walker, World } from './world.js';
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 

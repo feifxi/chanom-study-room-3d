@@ -1,80 +1,99 @@
-import { MAPS, type Channel, type MapTemplate, type Room, type Server } from '@/lib/mock';
-import { roleIn } from '@/lib/viewer';
+import type { RoomRole, Visibility } from '@connecta/shared';
+import type { Room } from '@/features/rooms/useRooms';
+import { MAPS, type MapTemplate, type Server } from '@/lib/mock';
 
 /**
  * Place layout's model (decided 2026-11-08): no servers, just rooms. A room has one map (from a
- * template), one permanent main chat, its own members, roles, invites and visibility. When full it's
+ * template), one permanent chat, its own members, roles, invites and visibility. When full it's
  * full; the owner's Plus raises its capacity.
  *
- * The demo's mock data is still shaped as servers (the other layouts use it), so each mock server
- * stands in for one room: its busiest room gives the map and the crowd, its first chat is the main
- * chat. In the real schema `rooms` replaces `servers` outright.
+ * `PlaceRoom` is a room from the API plus what the screens show about it. Who's inside comes with
+ * presence (build step 3); until then every room reads as empty.
  */
-
-/**
- * One subscription, Connecta Plus (decided 2026-11-09; room boosts dropped). A room
- * follows its owner's plan. Members grow with capacity (about 6 per spot inside), so a room never has
- * far more members than could ever fit: Free fits a friend group or a class, Plus a community.
- */
-export const PLANS = {
-  free: { name: 'Free', capacity: 25, members: 150 },
-  plus: { name: 'Plus', capacity: 100, members: 1000 },
-} as const;
-
-export const planOf = (ownerPlus: boolean) => PLANS[ownerPlus ? 'plus' : 'free'];
-
 export interface PlaceRoom {
   id: string;
   name: string;
   emoji: string;
   tint: string;
   description: string;
-  server: Server;
+  /** The room as the API sent it: settings, owner, mods, your place in it. */
+  room: Room;
   map: MapTemplate;
-  /** The 3D room to load (the mock server's busiest room). */
-  scene: Room;
   /** People you know inside right now (faces on the card). */
   people: string[];
   /** How many are inside in total, strangers included. */
   inside: number;
   /** When it's full, it's full: Walk in waits for a spot (the chat still works). */
   full: boolean;
-  /** Your role here; no role means a member. */
-  myRole?: 'Owner' | 'Mod';
-  chat?: Channel;
+  /** Your role here; null when you're not a member (a preview, or a guest pass). */
+  myRole: RoomRole | null;
+  /** The owner or a mod: sees Room settings. */
+  canEdit: boolean;
+  visibility: Visibility;
   /** The room follows its owner's plan. */
   ownerPlus: boolean;
   capacity: number;
 }
 
-export function placeRoom(server: Server): PlaceRoom {
-  const scene = [...server.rooms].sort((a, b) => b.people.length - a.people.length)[0]!;
-  const ownerPlus = !!server.ownerPlus;
-  const people = server.rooms.flatMap((r) => r.people);
-  const capacity = planOf(ownerPlus).capacity;
-  const inside = Math.max(people.length, server.insideCount ?? 0);
-  const role = roleIn(server);
+export const mapFor = (mapId: string): MapTemplate => MAPS.find((m) => m.id === mapId) ?? MAPS[0]!;
+
+export function placeRoom(room: Room): PlaceRoom {
+  const map = mapFor(room.mapId);
+  const inside = 0;
   return {
-    id: server.id,
-    name: server.name,
-    emoji: server.emoji,
-    tint: server.tint,
-    description: server.description,
-    server,
-    map: MAPS.find((m) => m.id === scene.mapId)!,
-    scene,
-    people,
+    id: room.id,
+    name: room.name,
+    emoji: room.emoji,
+    tint: map.tint,
+    description: room.description,
+    room,
+    map,
+    people: [],
     inside,
-    full: inside >= capacity,
-    myRole: role === 'Owner' ? 'Owner' : role === 'Mod' ? 'Mod' : undefined,
-    chat: server.channels[0],
-    ownerPlus,
-    capacity,
+    full: inside >= room.capacity,
+    myRole: room.me.role,
+    canEdit: room.me.role === 'owner' || room.me.role === 'mod',
+    visibility: room.visibility,
+    ownerPlus: room.ownerPlus,
+    capacity: room.capacity,
   };
 }
 
-/** The room's rules (Settings → Rules & safety): shown before joining and in About this room. */
-export const DEFAULT_RULES = '1. Be kind, no drama.\n2. Quiet at the study tables; chat in the lounge.\n3. No spam or selling.';
+/** How each role reads in the app. */
+export const ROLE_LABEL: Record<RoomRole, string> = { owner: 'Owner', mod: 'Mod', member: 'Member' };
 
-export const walkInHref = (r: PlaceRoom) => `/servers/${r.id}/rooms/${r.scene.id}`;
-export const chatHref = (r: PlaceRoom) => `/servers/${r.id}`;
+/**
+ * The room in the demo's old shape, for the parts still on mock data: the room's chat (build step 3)
+ * and walking in (step 4). Goes when they're ported (docs/v2-plan.md, port checklist).
+ */
+export function asServer(room: Room): Server {
+  const role = room.me.role === 'owner' ? 'Owner' : room.me.role === 'mod' ? 'Mod' : undefined;
+  return {
+    id: room.id,
+    name: room.name,
+    emoji: room.emoji,
+    tint: mapFor(room.mapId).tint,
+    banner: 'from-[#ffe9d6] via-[#efe4ff] to-[#dfeeff]',
+    description: room.description,
+    visibility: room.visibility === 'open' ? 'public' : room.visibility,
+    members: ['me'],
+    memberCount: room.memberCount,
+    roles: role ? { me: role } : {},
+    channels: [{ id: 'chat', name: 'chat', topic: '' }],
+    rooms: [
+      {
+        id: room.mapId,
+        name: room.name,
+        mapId: room.mapId,
+        capacity: room.capacity,
+        allowGuests: room.allowGuests,
+        roomWideGames: room.roomWideGames,
+        people: [],
+      },
+    ],
+    ownerPlus: room.ownerPlus,
+  };
+}
+
+export const walkInHref = (r: Pick<PlaceRoom, 'id'>) => `/r/${r.id}/walk`;
+export const chatHref = (r: Pick<PlaceRoom, 'id'>) => `/r/${r.id}`;

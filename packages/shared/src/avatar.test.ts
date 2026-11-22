@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_LOOK, sanitizeLook } from './avatar';
+import { DEFAULT_LOOK, sanitizeLook } from './avatar.js';
 
 describe('sanitizeLook', () => {
   it('replaces anything unknown with defaults', () => {

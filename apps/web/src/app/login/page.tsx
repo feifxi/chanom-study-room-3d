@@ -1,28 +1,37 @@
 'use client';
 
-import { Suspense, useState } from 'react';
-import Link from 'next/link';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, ArrowRight, AtSign, Check, Mail, Sprout } from 'lucide-react';
-import type { AvatarLook } from '@connecta/shared';
+import { ArrowLeft, ArrowRight, Loader2, Mail, Sprout } from 'lucide-react';
+import { toast } from 'sonner';
+import { DEFAULT_LOOK, DISPLAY_NAME_MAX, handleFrom, MIN_AGE, type AvatarLook } from '@connecta/shared';
 import { RoomShot, SplitScreen } from '@/components/app/SplitScreen';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CharacterEditor } from '@/features/avatar/CharacterEditor';
-import { ME } from '@/lib/mock';
-import { ageLocked, checkHandle, clearAgeLock, clearGuest, handleFrom, loadGuest, lockAge, MIN_AGE } from '@/lib/guest';
-import { cn } from '@/lib/utils';
+import { HandleField, useHandleCheck } from '@/features/account/HandleField';
+import { fetchMe, useSetMe } from '@/features/account/useMe';
+import { api, type HandleCheck, type Me } from '@/lib/api/client';
+import { authClient } from '@/lib/auth-client';
+import { clearGuest } from '@/lib/guest';
 
-// Read once when the page loads; the age check doesn't need to tick
-const LOADED_AT = Date.now();
+type Step = 'loading' | 'method' | 'code' | 'age' | 'too-young' | 'character' | 'deleting';
 
-type Step = 'method' | 'code' | 'age' | 'too-young' | 'character';
+/** Where someone who's signed in picks up: the first sign-up step they haven't done. */
+function stepFor(me: Me | null): Step | 'home' {
+  if (!me || me.isGuest) return 'method';
+  if (me.deleteAt) return 'deleting';
+  if (!me.ageChecked) return 'age';
+  if (!me.signedUp) return 'character';
+  return 'home';
+}
 
 /**
- * Sign up / sign in: provider → (email code) → date of birth (13+) → your character and @handle.
- * `?from=guest` is a guest signing up from inside a room: their name and character carry over.
- * Under 13 gets a friendly stop, and this device waits a day before it can try another birthday.
+ * Sign up / sign in: provider → (email code) → birthday (13+) → your character and @handle.
+ * The server keeps where you are, so leaving halfway (or coming back from Google or Discord) picks up
+ * at the next step. A guest signing up from inside a room keeps their name and character.
+ * Under 13 gets a friendly stop; that sign-in and this browser wait a day before trying again.
  */
 export default function LoginPage() {
   // useSearchParams needs a Suspense boundary so the page can still be prerendered
@@ -35,35 +44,143 @@ export default function LoginPage() {
 
 function LoginFlow() {
   const router = useRouter();
-  const fromGuest = useSearchParams().get('from') === 'guest';
-  const [step, setStep] = useState<Step>('method');
+  const setMe = useSetMe();
+  const search = useSearchParams();
+  // Where to go once signed in (an invite link sends people here and back); only paths on this site
+  const nextPath = search.get('next');
+  const after = nextPath?.startsWith('/') && !nextPath.startsWith('//') ? nextPath : '/home';
+  const [step, setStep] = useState<Step>('loading');
+  const [busy, setBusy] = useState(false);
   const [email, setEmail] = useState('');
-  const [birth, setBirth] = useState('2004-05-14');
-  const [name, setName] = useState(ME.name);
-  const [handle, setHandle] = useState(ME.handle);
+  const [code, setCode] = useState('');
+  const [codeError, setCodeError] = useState<string | null>(null);
+  const [birth, setBirth] = useState('');
+  const [name, setName] = useState('');
+  const [handle, setHandle] = useState('');
   // The handle follows the display name until you type in it yourself
   const [handleEdited, setHandleEdited] = useState(false);
-  const [look, setLook] = useState<AvatarLook>(ME.look);
+  const [look, setLook] = useState<AvatarLook>(DEFAULT_LOOK);
   const [keptLook, setKeptLook] = useState(false);
+  const [taken, setTaken] = useState<HandleCheck | null>(null);
+  const [deleteAt, setDeleteAt] = useState<string | null>(null);
 
-  const age = Math.floor((LOADED_AT - new Date(birth).getTime()) / (365.25 * 24 * 3600 * 1000));
-  const tooYoung = Number.isFinite(age) && age < MIN_AGE;
-  const check = checkHandle(handle);
-
-  const toCharacter = () => {
-    const guest = fromGuest ? loadGuest() : null;
-    if (guest) {
-      setName(guest.name);
-      setHandle(handleFrom(guest.name));
-      setLook(guest.look);
-      setKeptLook(true);
+  /** Moves to wherever this person is up to (or Home), filling the character step from their account. */
+  const continueAs = (me: Me | null) => {
+    setMe(me);
+    const next = stepFor(me);
+    if (next === 'home') {
+      clearGuest();
+      router.replace(after);
+      return;
     }
-    setStep('character');
+    if (next === 'deleting' && me) setDeleteAt(me.deleteAt);
+    if (next === 'character' && me) {
+      setName(me.name.slice(0, DISPLAY_NAME_MAX));
+      setHandle(handleFrom(me.name));
+      if (me.look) {
+        setLook(me.look);
+        // A look before sign-up is finished can only have come from being a guest
+        setKeptLook(true);
+      }
+    }
+    setStep(next);
+  };
+
+  // Signed in already, or back from Google/Discord: pick up where this account is
+  useEffect(() => {
+    fetchMe()
+      .then(continueAs)
+      .catch(() => setStep('method'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on arrival
+  }, []);
+
+  const social = async (provider: 'google' | 'discord') => {
+    setBusy(true);
+    const { error } = await authClient.signIn.social({
+      provider,
+      // Back here after the provider (keeping where to go next); the effect above picks up at the right step
+      callbackURL: `/login?${search.toString()}`,
+      errorCallbackURL: '/login',
+    });
+    if (error) {
+      setBusy(false);
+      toast.error(
+        error.status === 404
+          ? `${provider === 'google' ? 'Google' : 'Discord'} sign-in isn't set up here yet. Try email.`
+          : "Couldn't start signing in. Try again?",
+      );
+    }
+  };
+
+  const sendCode = async () => {
+    setBusy(true);
+    const { error } = await authClient.emailOtp.sendVerificationOtp({ email, type: 'sign-in' });
+    setBusy(false);
+    if (error) {
+      toast.error(
+        error.status === 429 ? 'Too many codes for now. Wait a minute and try again.' : "Couldn't send the code. Check the address?",
+      );
+      return;
+    }
+    setCode('');
+    setCodeError(null);
+    setStep('code');
+  };
+
+  const checkCode = async () => {
+    setBusy(true);
+    const { error } = await authClient.signIn.emailOtp({ email, otp: code });
+    if (error) {
+      setBusy(false);
+      setCodeError(error.status === 429 ? 'Too many tries. Wait a minute.' : "That code doesn't match. Check the newest email?");
+      return;
+    }
+    continueAs(await fetchMe());
+    setBusy(false);
+  };
+
+  const sendBirthday = async () => {
+    setBusy(true);
+    const { data, response } = await api.POST('/api/me/birthday', { body: { birthday: birth } });
+    setBusy(false);
+    if (response.status === 403) return setStep('too-young');
+    if (!data) return toast.error("Couldn't save that. Try again?");
+    continueAs(data);
+  };
+
+  const finish = async () => {
+    setBusy(true);
+    const { data, error, response } = await api.POST('/api/me/sign-up', { body: { name: name.trim(), handle, look } });
+    setBusy(false);
+    if (response.status === 409 && error) return setTaken(error as HandleCheck);
+    if (!data) return toast.error("Couldn't finish signing up. Try again?");
+    continueAs(data);
+  };
+
+  const keep = async () => {
+    setBusy(true);
+    const { data } = await api.DELETE('/api/me/deletion');
+    setBusy(false);
+    if (!data) return toast.error("Couldn't keep it just now. Try again?");
+    toast.success('Welcome back! Your account is staying 💛');
+    continueAs(data);
+  };
+
+  const backToStart = async () => {
+    await authClient.signOut();
+    setMe(null);
+    setStep('method');
   };
 
   return (
     <SplitScreen aside={<LoginAside />}>
       <div className="rounded-[2rem] border bg-card p-6 shadow-soft sm:p-8">
+        {step === 'loading' && (
+          <div className="grid h-64 place-items-center">
+            <Loader2 className="size-6 animate-spin text-muted-foreground" aria-label="Loading" />
+          </div>
+        )}
+
         {step === 'method' && (
           <div className="flex flex-col gap-5">
             <div className="text-center">
@@ -71,12 +188,13 @@ function LoginFlow() {
               <p className="mt-1 text-sm text-muted-foreground">Sign in or make an account. It takes a minute.</p>
             </div>
             <div className="flex flex-col gap-2.5">
-              <Button variant="outline" className="h-12 rounded-2xl text-base font-bold" onClick={() => setStep('age')}>
+              <Button variant="outline" className="h-12 rounded-2xl text-base font-bold" disabled={busy} onClick={() => social('google')}>
                 <GoogleIcon /> Continue with Google
               </Button>
               <Button
                 className="h-12 rounded-2xl bg-[#5865f2] text-base font-bold text-white hover:bg-[#4752c4]"
-                onClick={() => setStep('age')}
+                disabled={busy}
+                onClick={() => social('discord')}
               >
                 <DiscordIcon /> Continue with Discord
               </Button>
@@ -88,7 +206,7 @@ function LoginFlow() {
               className="flex flex-col gap-2"
               onSubmit={(e) => {
                 e.preventDefault();
-                setStep('code');
+                void sendCode();
               }}
             >
               <Label htmlFor="email" className="sr-only">
@@ -98,12 +216,13 @@ function LoginFlow() {
                 id="email"
                 type="email"
                 required
+                autoComplete="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="h-12 rounded-2xl"
               />
-              <Button type="submit" variant="secondary" className="h-12 rounded-2xl text-base font-bold">
+              <Button type="submit" variant="secondary" disabled={busy} className="h-12 rounded-2xl text-base font-bold">
                 <Mail /> Email me a code
               </Button>
             </form>
@@ -118,25 +237,42 @@ function LoginFlow() {
             className="flex flex-col gap-5"
             onSubmit={(e) => {
               e.preventDefault();
-              setStep('age');
+              void checkCode();
             }}
           >
             <BackButton onClick={() => setStep('method')} />
             <div>
               <h1 className="text-2xl font-black tracking-[-0.03em]">Check your email</h1>
-              <p className="mt-1 text-sm text-muted-foreground">We sent a 6-digit code to {email || 'your email'}.</p>
+              <p className="mt-1 text-sm text-muted-foreground">We sent a 6-digit code to {email}.</p>
             </div>
-            <Input
-              autoFocus
-              inputMode="numeric"
-              maxLength={6}
-              defaultValue="482913"
-              className="h-14 rounded-2xl text-center font-mono text-2xl tracking-[0.5em]"
-              aria-label="Code"
-            />
-            <Button type="submit" className="h-12 rounded-2xl text-base font-extrabold">
+            <div className="flex flex-col gap-1.5">
+              <Input
+                autoFocus
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                value={code}
+                onChange={(e) => {
+                  setCode(e.target.value.replace(/\D/g, ''));
+                  setCodeError(null);
+                }}
+                className="h-14 rounded-2xl text-center font-mono text-2xl tracking-[0.5em]"
+                aria-label="Code"
+                aria-invalid={codeError !== null}
+              />
+              {codeError && <p className="text-center text-xs font-semibold text-destructive">{codeError}</p>}
+            </div>
+            <Button type="submit" disabled={busy || code.length !== 6} className="h-12 rounded-2xl text-base font-extrabold">
               Continue <ArrowRight />
             </Button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void sendCode()}
+              className="text-xs font-bold text-muted-foreground underline underline-offset-2"
+            >
+              Send a new code
+            </button>
           </form>
         )}
 
@@ -145,12 +281,10 @@ function LoginFlow() {
             className="flex flex-col gap-5"
             onSubmit={(e) => {
               e.preventDefault();
-              if (tooYoung) lockAge(LOADED_AT);
-              if (tooYoung || ageLocked(LOADED_AT)) setStep('too-young');
-              else toCharacter();
+              void sendBirthday();
             }}
           >
-            <BackButton onClick={() => setStep('method')} />
+            <BackButton onClick={() => void backToStart()} />
             <div>
               <h1 className="text-2xl font-black tracking-[-0.03em]">When’s your birthday? 🎂</h1>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -159,12 +293,13 @@ function LoginFlow() {
             </div>
             <Input
               type="date"
+              required
               value={birth}
               onChange={(e) => setBirth(e.target.value)}
               className="h-12 rounded-2xl"
               aria-label="Date of birth"
             />
-            <Button type="submit" className="h-12 rounded-2xl text-base font-extrabold">
+            <Button type="submit" disabled={busy || !birth} className="h-12 rounded-2xl text-base font-extrabold">
               Continue <ArrowRight />
             </Button>
           </form>
@@ -181,74 +316,133 @@ function LoginFlow() {
                 Connecta is for people {MIN_AGE} and older. We’ll keep a cosy spot for you until then 🌱
               </p>
             </div>
-            <Button asChild variant="outline" className="h-11 rounded-2xl px-6 font-bold">
-              <Link href="/">Back to the start</Link>
-            </Button>
-            {/* Demo only: the lock would otherwise stop you trying the flow again for a day */}
-            <button
-              type="button"
-              onClick={() => {
-                clearAgeLock();
-                setStep('age');
+            <Button
+              variant="outline"
+              className="h-11 rounded-2xl px-6 font-bold"
+              onClick={async () => {
+                await authClient.signOut();
+                setMe(null);
+                router.push('/');
               }}
-              className="text-xs font-bold text-muted-foreground underline underline-offset-2"
             >
-              Demo: clear the age lock
-            </button>
+              Back to the start
+            </Button>
+          </div>
+        )}
+
+        {step === 'deleting' && deleteAt && (
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="grid size-16 place-items-center rounded-full bg-peach text-3xl">🫶</div>
+            <div>
+              <h1 className="text-2xl font-black tracking-[-0.03em]">Keep your account?</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                You asked to delete it. It goes on{' '}
+                <span className="font-bold text-foreground">
+                  {new Date(deleteAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}
+                </span>{' '}
+                unless you keep it. Your friends, rooms and character are all still here.
+              </p>
+            </div>
+            <Button disabled={busy} className="h-12 w-full rounded-2xl text-base font-extrabold" onClick={() => void keep()}>
+              Keep my account
+            </Button>
+            <Button
+              variant="ghost"
+              disabled={busy}
+              className="rounded-2xl font-bold text-muted-foreground"
+              onClick={async () => {
+                await authClient.signOut();
+                setMe(null);
+                router.push('/');
+              }}
+            >
+              No, sign me out
+            </Button>
           </div>
         )}
 
         {step === 'character' && (
-          <form
-            className="flex flex-col gap-5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!check.ok) return;
-              clearGuest();
-              router.push('/home');
+          <CharacterStep
+            busy={busy}
+            keptLook={keptLook}
+            look={look}
+            onLook={setLook}
+            name={name}
+            onName={(n) => {
+              setName(n);
+              if (!handleEdited) setHandle(handleFrom(n));
             }}
-          >
-            <BackButton onClick={() => setStep('age')} />
-            <div>
-              <h1 className="text-2xl font-black tracking-[-0.03em]">{keptLook ? 'Keep your character?' : 'Make your character'}</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {keptLook
-                  ? 'It’s the one you walked around with as a guest. Change anything you like.'
-                  : 'This is you in every room. You can change it any time.'}
-              </p>
-            </div>
-            <CharacterEditor look={look} onChange={setLook}>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="name" className="text-xs font-bold text-muted-foreground">
-                  Display name
-                </Label>
-                <Input
-                  id="name"
-                  value={name}
-                  maxLength={16}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    if (!handleEdited) setHandle(handleFrom(e.target.value));
-                  }}
-                  className="rounded-xl"
-                />
-              </div>
-            </CharacterEditor>
-            <HandleField
-              handle={handle}
-              check={check}
-              onChange={(h) => {
-                setHandle(h);
-                setHandleEdited(true);
-              }}
-            />
-            <Button type="submit" disabled={!check.ok} className="h-12 rounded-2xl text-base font-extrabold">
-              Let’s go <ArrowRight />
-            </Button>
-          </form>
+            handle={handle}
+            onHandle={(h) => {
+              setHandle(h);
+              setHandleEdited(true);
+              setTaken(null);
+            }}
+            taken={taken?.handle === handle ? taken : null}
+            onBack={() => void backToStart()}
+            onSubmit={() => void finish()}
+          />
         )}
       </div>
     </SplitScreen>
+  );
+}
+
+/** The last step: your character, display name and @handle (checked with the server as you type). */
+function CharacterStep(props: {
+  busy: boolean;
+  keptLook: boolean;
+  look: AvatarLook;
+  onLook: (look: AvatarLook) => void;
+  name: string;
+  onName: (name: string) => void;
+  handle: string;
+  onHandle: (handle: string) => void;
+  /** The server said no on submit (someone took it meanwhile) */
+  taken: HandleCheck | null;
+  onBack: () => void;
+  onSubmit: () => void;
+}) {
+  const { handle } = props;
+  const check = useHandleCheck(handle, props.taken);
+  const canSubmit = check.ok === true && props.name.trim().length > 0 && !props.busy;
+
+  return (
+    <form
+      className="flex flex-col gap-5"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (canSubmit) props.onSubmit();
+      }}
+    >
+      <BackButton onClick={props.onBack} />
+      <div>
+        <h1 className="text-2xl font-black tracking-[-0.03em]">{props.keptLook ? 'Keep your character?' : 'Make your character'}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {props.keptLook
+            ? 'It’s the one you walked around with as a guest. Change anything you like.'
+            : 'This is you in every room. You can change it any time.'}
+        </p>
+      </div>
+      <CharacterEditor look={props.look} onChange={props.onLook}>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="name" className="text-xs font-bold text-muted-foreground">
+            Display name
+          </Label>
+          <Input
+            id="name"
+            value={props.name}
+            maxLength={DISPLAY_NAME_MAX}
+            onChange={(e) => props.onName(e.target.value)}
+            className="rounded-xl"
+          />
+        </div>
+      </CharacterEditor>
+      <HandleField handle={handle} check={check} onChange={props.onHandle} />
+      <Button type="submit" disabled={!canSubmit} className="h-12 rounded-2xl text-base font-extrabold">
+        Let’s go <ArrowRight />
+      </Button>
+    </form>
   );
 }
 
@@ -276,60 +470,6 @@ function LoginAside() {
         <span>✓ 13+</span>
       </p>
     </>
-  );
-}
-
-/** Your unique @handle: how friends add you and how @mentions find you. Checked as you type. */
-function HandleField({
-  handle,
-  check,
-  onChange,
-}: {
-  handle: string;
-  check: ReturnType<typeof checkHandle>;
-  onChange: (handle: string) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Label htmlFor="handle" className="text-xs font-bold text-muted-foreground">
-        Your @handle <span className="font-semibold">(friends add you with it)</span>
-      </Label>
-      <label
-        className={cn(
-          'flex h-11 items-center gap-1.5 rounded-xl border bg-card px-3 focus-within:ring-2',
-          check.ok ? 'focus-within:ring-primary/40' : 'border-destructive/50 focus-within:ring-destructive/30',
-        )}
-      >
-        <AtSign className="size-4 flex-none text-muted-foreground" />
-        <input
-          id="handle"
-          value={handle}
-          maxLength={20}
-          autoCapitalize="none"
-          spellCheck={false}
-          onChange={(e) => onChange(e.target.value.toLowerCase().replace(/\s/g, ''))}
-          className="min-w-0 flex-1 bg-transparent text-sm font-semibold outline-none"
-        />
-        {check.ok && <Check className="size-4 flex-none text-mint-ink" aria-label="Available" />}
-      </label>
-      {check.ok ? (
-        <p className="text-xs font-semibold text-mint-ink">@{handle} is yours if you want it</p>
-      ) : (
-        <div className="flex flex-wrap items-center gap-1.5 text-xs">
-          <span className="font-semibold text-destructive">{check.reason}</span>
-          {check.suggestions.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => onChange(s)}
-              className="rounded-full bg-secondary px-2 py-0.5 font-bold text-secondary-foreground hover:bg-secondary/70"
-            >
-              @{s}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
   );
 }
 
