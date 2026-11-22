@@ -198,14 +198,14 @@ build fits every environment ([decision](../decisions.md#engineering-and-infra))
 
 ### Local stand-ins (Docker Compose)
 
-| Production     | Local                                                                          |
-| -------------- | ------------------------------------------------------------------------------ |
-| RDS Postgres   | Postgres 17 container                                                          |
-| Redis, LiveKit | the same containers                                                            |
-| S3             | AWS Emulator (in memory; `pnpm db:seed` recreates the bucket)                  |
-| SES            | Mailpit, an inbox at http://localhost:8025 (tests use the AWS Emulator)        |
-| SSM parameters | `apps/api/.env`                                                                |
-| nginx          | the Next rewrite; the nginx config can run locally for a production-like check |
+| Production     | Local                                                                                                                                               |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RDS Postgres   | Postgres 17 container                                                                                                                               |
+| Redis, LiveKit | the same containers                                                                                                                                 |
+| S3             | AWS Emulator (in memory; `pnpm db:seed` recreates the bucket); browser links go through `/api/dev-storage` ([04](04-chat-and-dms.md#backend-notes)) |
+| SES            | Mailpit, an inbox at http://localhost:8025 (tests use the AWS Emulator)                                                                             |
+| SSM parameters | `apps/api/.env`                                                                                                                                     |
+| nginx          | the Next rewrite; the nginx config can run locally for a production-like check                                                                      |
 
 ## Monitoring on its own server (SRE practice)
 

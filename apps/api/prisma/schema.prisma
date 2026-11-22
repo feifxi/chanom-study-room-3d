@@ -59,6 +59,7 @@ model User {
   reactions        Reaction[]
   blocks           Block[]         @relation("blocker")
   blockedBy        Block[]         @relation("blocked")
+  pictures         Picture[]
 
   @@index([deleteAt])
   @@map("users")
@@ -354,6 +355,8 @@ model Message {
   editedAt     DateTime?  @map("edited_at")
   /// Deleted messages keep their row (text emptied) so replies can say the original is gone
   deletedAt    DateTime?  @map("deleted_at")
+  /// False while its pictures are still being shrunk and checked: only the author sees it until then
+  ready        Boolean    @default(true)
   pictures     Picture[]
   reactions    Reaction[]
 
@@ -361,18 +364,27 @@ model Message {
   @@map("messages")
 }
 
-/// A picture in a message (up to 4), stored in S3 as WebP.
+/// A picture in a message (up to 4). The browser uploads the original straight to S3
+/// (uploads/<id>); the pictures worker shrinks it to WebP (pictures/<id>.webp), checks it, and
+/// removes the original. Attached to a message when it's sent; never-sent ones go after a day.
 model Picture {
-  id        String  @id @default(uuid(7))
-  messageId String  @map("message_id")
-  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  key       String
-  width     Int
-  height    Int
-  bytes     Int
-  position  Int
+  id         String   @id @default(uuid(7))
+  uploaderId String   @map("uploader_id")
+  uploader   User     @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  messageId  String?  @map("message_id")
+  message    Message? @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  /// uploading, processing, ready or failed
+  status     String   @default("uploading")
+  /// The WebP's key, once it's ready
+  key        String?
+  width      Int      @default(0)
+  height     Int      @default(0)
+  bytes      Int      @default(0)
+  position   Int      @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
 
   @@index([messageId])
+  @@index([uploaderId, createdAt])
   @@map("pictures")
 }
 

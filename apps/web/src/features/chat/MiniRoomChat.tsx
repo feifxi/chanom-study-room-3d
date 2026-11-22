@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Composer } from '@/components/chat/Chat';
+import { Composer, pickedFile } from '@/components/chat/Chat';
+import { cn } from '@/lib/utils';
 import { UserAvatar } from '@/components/UserAvatar';
 import { useMe } from '@/features/account/useMe';
 import { useRoomChat } from './useRoomChat';
@@ -51,6 +52,29 @@ export function MiniRoomChat({ roomId, onOpen }: { roomId: string; onOpen: () =>
                       ↩ {m.replyTo.author.name}: {m.replyTo.deleted ? 'deleted' : m.replyTo.text}
                     </button>
                   )}
+                  {m.pictures.length > 0 && (
+                    <div className={cn('mt-1 grid w-44 max-w-full gap-1', m.pictures.length > 1 && 'grid-cols-2')}>
+                      {m.pictures.map((p) =>
+                        p.ready ? (
+                          <button
+                            key={p.id}
+                            onClick={onOpen}
+                            aria-label="Open photo"
+                            className="overflow-hidden rounded-xl border hover:opacity-90"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element -- already shrunk to WebP by the worker */}
+                            <img src={p.url} alt="" className="aspect-square w-full object-cover" />
+                          </button>
+                        ) : (
+                          <div
+                            key={p.id}
+                            className="aspect-square w-full animate-pulse rounded-xl border bg-muted"
+                            aria-label="Getting it ready"
+                          />
+                        ),
+                      )}
+                    </div>
+                  )}
                   <p>
                     {m.text}
                     {m.editedAt && <span className="ml-1 text-[10px] text-muted-foreground">(edited)</span>}
@@ -69,8 +93,9 @@ export function MiniRoomChat({ roomId, onOpen }: { roomId: string; onOpen: () =>
       <p className="h-4 px-1.5 text-[11px] text-muted-foreground">{chat.typing && `${chat.typing} is typing…`}</p>
       <Composer
         compact
+        pictures
         placeholder="Message the room"
-        onSend={(text) => text && chat.send.mutate({ text })}
+        onSend={(text, images) => chat.send.mutate({ text, files: images.map(pickedFile).filter((f): f is File => !!f) })}
         onTyping={(on) => on && chat.sendTyping()}
       />
     </>

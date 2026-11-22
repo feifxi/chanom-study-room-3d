@@ -2,8 +2,8 @@
 
 **Status:** room chat is built in the real app (2026-11-22): messages, replies, edits, deletes with
 Undo, reactions, @mentions and @room, "is typing", "New messages", unread counts and "@ you" on Home,
-live in every open tab, on the room's page and in 3D (the Chat panel and ⤢). Still to come in step 3:
-pictures, DMs, notifications. **Try it:** open a room at http://localhost:3000/home in two browsers
+live in every open tab, on the room's page and in 3D (the Chat panel and ⤢). Pictures
+too (up to 4 a message). Still to come in step 3: DMs, notifications. **Try it:** open a room at http://localhost:3000/home in two browsers
 after `pnpm dev`. The demo: http://localhost:3100/home/messages/mai (Mai types back),
 /home/messages/ken (unfriended).
 
@@ -84,5 +84,21 @@ Hover (or long-press on phones) shows a small toolbar:
 - **Rules on the server:** DMs only between friends; delete others' messages only as owner or mod of
   that room; @room only as owner or mod; blocked users' messages are filtered for the blocker;
   timed-out members can't post (feature 3); every message goes through `moderate()` (feature 14).
-- **Pictures:** the client asks for a presigned S3 upload URL; a small worker makes the WebP and
-  checks it with the moderation step before the message shows.
+- **Pictures:** the client asks for a presigned S3 upload URL (`POST /api/pictures`: an image type,
+  up to 10 MB, signed for that exact size, five minutes), PUTs the original straight to S3, and
+  says it's done (`POST /api/pictures/:id/uploaded`). The pictures worker (a BullMQ job in the API
+  process) makes the WebP (longest side 2048 px), runs the moderation check (a stand-in until
+  feature 14) and removes the original. Sending attaches the ids in order; the message shows only
+  to its author until every picture is ready, then goes to the room. A picture that fails is left
+  out (the author gets a toast); a message with nothing left goes. Opening one
+  (`GET /api/pictures/:id`) checks membership and redirects to a one-hour presigned link, so a
+  private room's pictures stay private. Deleting the message deletes them; uploads never sent go
+  after a day.
+  - **The bucket needs CORS** for browser PUTs from the web origin (`PUT`, `Content-Type`).
+    Before launch, test a browser upload and these rules once against real S3: locally they
+    can't be (next point).
+  - **Locally, links go through `/api/dev-storage`**, a pass-through to the AWS Emulator that only
+    exists when `AWS_ENDPOINT_URL` is set: the emulator refuses every request a browser sends from
+    another site, even with bucket CORS set
+    ([aws/aws-emulator#26](https://github.com/aws/aws-emulator/issues/26), open). Delete it when
+    that's fixed.

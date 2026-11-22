@@ -1637,6 +1637,85 @@
         ]
       }
     },
+    "/api/pictures": {
+      "post": {
+        "operationId": "PicturesController_start",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PictureUploadBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PictureUpload"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "chat"
+        ]
+      }
+    },
+    "/api/pictures/{pictureId}/uploaded": {
+      "post": {
+        "operationId": "PicturesController_uploaded",
+        "parameters": [
+          {
+            "name": "pictureId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "chat"
+        ]
+      }
+    },
+    "/api/pictures/{pictureId}": {
+      "get": {
+        "operationId": "PicturesController_open",
+        "parameters": [
+          {
+            "name": "pictureId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirects to a short-lived link to the WebP"
+          }
+        },
+        "tags": [
+          "chat"
+        ]
+      }
+    },
     "/api/friends": {
       "get": {
         "operationId": "FriendsController_list",
@@ -3302,6 +3381,9 @@
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
           },
+          "ready": {
+            "type": "boolean"
+          },
           "pictures": {
             "type": "array",
             "items": {
@@ -3325,6 +3407,7 @@
           "mentionsRoom",
           "createdAt",
           "editedAt",
+          "ready",
           "pictures",
           "reactions"
         ],
@@ -3333,6 +3416,9 @@
       "Picture": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "url": {
             "type": "string"
           },
@@ -3345,12 +3431,17 @@
             "type": "integer",
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
+          },
+          "ready": {
+            "type": "boolean"
           }
         },
         "required": [
+          "id",
           "url",
           "width",
-          "height"
+          "height",
+          "ready"
         ],
         "additionalProperties": false
       },
@@ -3383,6 +3474,15 @@
           "replyToId": {
             "type": "string",
             "maxLength": 40
+          },
+          "pictureIds": {
+            "default": [],
+            "maxItems": 4,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 40
+            }
           }
         },
         "required": [
@@ -3426,6 +3526,48 @@
         "required": [
           "emoji"
         ]
+      },
+      "PictureUploadBody": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "pattern": "^image\\/[\\w.+-]+$"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "contentType",
+          "bytes"
+        ]
+      },
+      "PictureUpload": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uploadUrl": {
+            "type": "string"
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "uploadUrl",
+          "headers"
+        ],
+        "additionalProperties": false
       },
       "Friend": {
         "type": "object",

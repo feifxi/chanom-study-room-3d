@@ -62,7 +62,8 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
    - ~~Room chat~~ done 2026-11-22 (text): the gateway (Socket.IO at `/live`, Redis), messages,
      replies, edits, deletes, reactions, mentions, typing, unread counts, on the room's page and in
      3D.
-   - Next: pictures in chat, then DMs, presence and the notification bell.
+   - ~~Pictures in chat~~ done 2026-11-22: presigned upload to S3, a worker makes the WebP, members only.
+   - Next: DMs, then presence and the notification bell.
 4. **Walking in a room:** the Colyseus game server, with V1's movement prediction and
    reconciliation copied in; voice and screen share; maps.
 5. **The rest, a feature at a time:** activities and table games, Plus, coins and quests, focus,

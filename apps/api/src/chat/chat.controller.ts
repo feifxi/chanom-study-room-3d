@@ -1,5 +1,15 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query } from '@nestjs/common';
-import { ApiCreatedResponse, ApiForbiddenResponse, ApiNoContentResponse, ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import type { Response } from 'express';
+import {
+  ApiCreatedResponse,
+  ApiFoundResponse,
+  ApiForbiddenResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import { z } from 'zod';
 import {
@@ -7,6 +17,9 @@ import {
   EditMessageBodySchema,
   MessagePageQuerySchema,
   MessagePageSchema,
+  PictureUploadBodySchema,
+  PictureUploadSchema,
+  type PictureUploadBody,
   ReactionBodySchema,
   ReadBodySchema,
   SendMessageBodySchema,
@@ -14,6 +27,7 @@ import {
   type MessagePage,
 } from './chat.schemas.js';
 import { ChatService } from './chat.service.js';
+import { PicturesService } from './pictures.service.js';
 
 const Id = { schema: z.string().max(40) };
 
@@ -94,5 +108,40 @@ export class ChatController {
     @Body({ schema: ReactionBodySchema }) body: z.infer<typeof ReactionBodySchema>,
   ): Promise<ChatMessage> {
     return this.chat.react(session.user.id, messageId, body.emoji, false);
+  }
+}
+
+/**
+ * Pictures in chat: ask for an upload link, PUT the file straight to storage, say it's uploaded
+ * (the worker takes over), then send its id with a message. Opening one redirects to a
+ * short-lived link, for members only.
+ */
+@ApiTags('chat')
+@Controller('pictures')
+export class PicturesController {
+  constructor(private readonly pictures: PicturesService) {}
+
+  @Post()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
+  @ApiCreatedResponse({ standardSchema: PictureUploadSchema })
+  start(@Session() session: UserSession, @Body({ schema: PictureUploadBodySchema }) body: PictureUploadBody) {
+    return this.pictures.start(session.user.id, body);
+  }
+
+  @Post(':pictureId/uploaded')
+  @HttpCode(204)
+  @ApiNoContentResponse()
+  uploaded(@Session() session: UserSession, @Param('pictureId', Id) id: string): Promise<void> {
+    return this.pictures.uploaded(session.user.id, id);
+  }
+
+  @Get(':pictureId')
+  @ApiFoundResponse({ description: 'Redirects to a short-lived link to the WebP' })
+  async open(@Session() session: UserSession, @Param('pictureId', Id) id: string, @Res() res: Response) {
+    const link = await this.pictures.open(session.user.id, id);
+    // Shorter than the link's hour, so the browser never follows an expired one
+    res.setHeader('Cache-Control', 'private, max-age=3000');
+    res.redirect(302, link);
   }
 }

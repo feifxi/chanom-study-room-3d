@@ -174,6 +174,11 @@ docs/        The plan, the decision log, the specs
 - **Live events:** a REST write that others should see live calls `LiveService` (`toRoom`,
   `toUser`); the gateway delivers it through Redis. The gateway itself only reads. API tests boot
   the gateway too (`createTestGateway`), so they need Redis as well as Postgres.
+- **Background jobs:** BullMQ on Redis (`@nestjs/bullmq`), workers in the API process for now; the
+  pictures worker is the first (`src/chat/pictures.processor.ts`). Timed jobs stay `@Cron`.
+- **Files:** browsers move the bytes through presigned links from `StorageService`; locally those
+  go through `/api/dev-storage` because the AWS Emulator refuses browsers (see the decision log).
+  Tests use `MemoryStorage`.
 - **API conventions:** one Nest module per feature (`src/<feature>/`: module, controller, service,
   schemas, `*.spec.ts` beside the code). Config is validated with Zod at startup
   (`src/config/env.ts`); add every new variable there and to `.env.example`. `src/setup.ts` holds

@@ -1,4 +1,4 @@
-import { MESSAGE_MAX, MESSAGES_PAGE } from '@connecta/shared';
+import { MESSAGE_MAX, MESSAGES_PAGE, PICTURES_MAX } from '@connecta/shared';
 import { z } from 'zod';
 import { PersonSchema } from '../rooms/rooms.schemas.js';
 
@@ -10,7 +10,34 @@ export const ReactionSchema = z
   })
   .meta({ id: 'Reaction' });
 
-export const PictureSchema = z.object({ url: z.string(), width: z.number().int(), height: z.number().int() }).meta({ id: 'Picture' });
+export const PictureSchema = z
+  .object({
+    id: z.string(),
+    /** Opens a short-lived link to the WebP (members only) */
+    url: z.string(),
+    width: z.number().int(),
+    height: z.number().int(),
+    /** False while the worker is still shrinking and checking it */
+    ready: z.boolean(),
+  })
+  .meta({ id: 'Picture' });
+
+export const PictureUploadBodySchema = z
+  .object({
+    contentType: z.string().regex(/^image\/[\w.+-]+$/, 'Pick a picture'),
+    bytes: z.number().int().positive(),
+  })
+  .meta({ id: 'PictureUploadBody' });
+export type PictureUploadBody = z.infer<typeof PictureUploadBodySchema>;
+
+export const PictureUploadSchema = z
+  .object({
+    id: z.string(),
+    /** PUT the file here, with these headers, within five minutes */
+    uploadUrl: z.string(),
+    headers: z.record(z.string(), z.string()),
+  })
+  .meta({ id: 'PictureUpload' });
 
 export const ChatMessageSchema = z
   .object({
@@ -35,6 +62,8 @@ export const ChatMessageSchema = z
     mentionsRoom: z.boolean(),
     createdAt: z.iso.datetime(),
     editedAt: z.iso.datetime().nullable(),
+    /** False only for its author, while its pictures are on their way (nobody else sees it yet) */
+    ready: z.boolean(),
     pictures: z.array(PictureSchema),
     reactions: z.array(ReactionSchema),
   })
@@ -63,8 +92,13 @@ export const MessagePageQuerySchema = z
 const Text = z.string().trim().max(MESSAGE_MAX);
 
 export const SendMessageBodySchema = z
-  .object({ text: Text, replyToId: z.string().max(40).optional() })
-  .refine((b) => b.text.length > 0, { message: 'Write something first', path: ['text'] })
+  .object({
+    text: Text,
+    replyToId: z.string().max(40).optional(),
+    /** Uploaded first (POST /api/pictures), in the order to show them */
+    pictureIds: z.array(z.string().max(40)).max(PICTURES_MAX).default([]),
+  })
+  .refine((b) => b.text.length > 0 || b.pictureIds.length > 0, { message: 'Write something first', path: ['text'] })
   .meta({ id: 'SendMessageBody' });
 
 export const EditMessageBodySchema = z.object({ text: Text.min(1) }).meta({ id: 'EditMessageBody' });

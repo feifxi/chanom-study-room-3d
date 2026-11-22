@@ -353,6 +353,18 @@ decision is made or changed: one line, a date, and the reason.
   from a member is plain text rather than an error. Slow mode, the word filter and "new members
   wait" are stored but wait for moderation (feature 14). `pnpm dev` runs one compiler and both
   entry points (`apps/api/scripts/dev.mjs`).
+- **Chat pictures as the spec says, with a dev-only pass-through** (2026-11-22, the owner): browsers
+  upload straight to S3 with presigned links and a worker shrinks and checks them, so the API never
+  carries the bytes; viewing is a members-only redirect to a short-lived link. The AWS Emulator
+  refuses all cross-site browser requests
+  ([aws/aws-emulator#26](https://github.com/aws/aws-emulator/issues/26)), so locally the links go
+  through `/api/dev-storage`, the same workaround people use in that issue. Turned down: uploading
+  through the API (puts every byte and resize on the API server) and a second local S3 (LocalStack
+  or MinIO) just for browsers. The cost: bucket CORS is only tested against real S3, once before
+  launch.
+- **Background jobs are BullMQ on Redis** (2026-11-22): the pictures worker is the first; it runs
+  inside the API process for now, with a per-environment prefix so tests never hand jobs to a
+  running dev server. Redis was already there for the gateway.
 - **One theme: Thai tea orange** (2026-11-22, the owner, reverses the ten drink palettes): Thai tea
   is Connecta's colour, so the app has it built in, in light and dark, and Settings → Appearance no
   longer offers palettes. The demo keeps its palettes as a design record.

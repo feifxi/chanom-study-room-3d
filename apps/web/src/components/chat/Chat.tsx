@@ -27,7 +27,8 @@ export interface ChatMessageView {
   text: string;
   /** The demo's placeholder picture (mock messages) */
   image?: boolean;
-  images?: string[];
+  /** Picture URLs; null while one is still being got ready (only its sender sees that) */
+  images?: (string | null)[];
   reactions: { emoji: string; count: number; mine: boolean }[];
   /** The message it answers, quoted above it */
   quote?: { name: string; text: string };
@@ -418,10 +419,19 @@ function Row({
         )}
         {m.images && (
           <div className={cn('mt-2 grid max-w-sm gap-1.5', m.images.length > 1 && 'grid-cols-2')}>
-            {m.images.map((src) => (
-              // eslint-disable-next-line @next/next/no-img-element -- object URLs and stored pictures, already sized
-              <img key={src} src={src} alt="Shared picture" className="aspect-[4/3] w-full rounded-2xl border object-cover" />
-            ))}
+            {m.images.map((src, i) =>
+              src ? (
+                // eslint-disable-next-line @next/next/no-img-element -- object URLs and stored pictures, already sized
+                <img key={src} src={src} alt="Shared picture" className="aspect-[4/3] w-full rounded-2xl border object-cover" />
+              ) : (
+                <div
+                  key={i}
+                  className="grid aspect-[4/3] w-full animate-pulse place-items-center rounded-2xl border bg-muted text-xs font-bold text-muted-foreground"
+                >
+                  Getting it ready…
+                </div>
+              ),
+            )}
           </div>
         )}
         {m.reactions.length > 0 && (
@@ -552,6 +562,10 @@ function EmojiPicker({
   );
 }
 
+/** The file behind each picked picture's preview, so a real chat can upload it when you send. */
+const PICKED = new Map<string, File>();
+export const pickedFile = (previewUrl: string) => PICKED.get(previewUrl);
+
 /** Pictures picked or pasted into a message box: images only, size and count capped (with a toast). */
 function takeImages(list: FileList | File[] | null, have: number): string[] {
   if (!list?.length) return [];
@@ -559,7 +573,11 @@ function takeImages(list: FileList | File[] | null, have: number): string[] {
   if (ok.length < list.length) toast(`Pictures only, up to ${MAX_IMAGE_MB} MB each`);
   const room = MAX_IMAGES - have;
   if (ok.length > room) toast(`Up to ${MAX_IMAGES} pictures a message`);
-  return ok.slice(0, Math.max(0, room)).map((f) => URL.createObjectURL(f));
+  return ok.slice(0, Math.max(0, room)).map((f) => {
+    const url = URL.createObjectURL(f);
+    PICKED.set(url, f);
+    return url;
+  });
 }
 
 function highlight(text: string) {

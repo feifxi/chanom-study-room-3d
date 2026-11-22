@@ -83,6 +83,9 @@ export function useRoomChat(roomId: string, enabled = true) {
     const onDeleted = (e: { roomId: string; id: string }) => {
       if (e.roomId === roomId) client.setQueryData<Pages>(key, (d) => patch(d, { remove: e.id }));
     };
+    const onPictureFailed = (e: { roomId: string }) => {
+      if (e.roomId === roomId) toast.error('A picture couldn’t be sent, so it was left out. Try another?');
+    };
     const onTyping = (e: { roomId: string; person: { name: string } }) => {
       if (e.roomId === roomId) setTyping({ name: e.person.name, until: Date.now() + TYPING_MS });
     };
@@ -91,7 +94,9 @@ export function useRoomChat(roomId: string, enabled = true) {
     socket.on('message', onMessage);
     socket.on('message:deleted', onDeleted);
     socket.on('typing', onTyping);
+    socket.on('picture:failed', onPictureFailed);
     return () => {
+      socket.off('picture:failed', onPictureFailed);
       socket.emit('unwatch', roomId);
       socket.off('connect', onConnect);
       socket.off('message', onMessage);
@@ -110,8 +115,11 @@ export function useRoomChat(roomId: string, enabled = true) {
   }, [typing]);
 
   const send = useMutation({
-    mutationFn: async (body: { text: string; replyToId?: string }) =>
-      ok(await api.POST('/api/rooms/{id}/messages', { params: { path: { id: roomId } }, body })),
+    mutationFn: async ({ files = [], ...body }: { text: string; replyToId?: string; files?: File[] }) => {
+      // Pictures go up first, then the message points at them (it shows once they're ready)
+      const pictureIds = await Promise.all(files.map(uploadPicture));
+      return ok(await api.POST('/api/rooms/{id}/messages', { params: { path: { id: roomId } }, body: { ...body, pictureIds } }));
+    },
     onSuccess: (m) => client.setQueryData<Pages>(key, (d) => patch(d, { upsert: m })),
     onError: (error) => toast.error(problem(error, 'Couldn’t send that. Try again?')),
   });
@@ -203,4 +211,16 @@ export function useRoomChat(roomId: string, enabled = true) {
     markRead,
     sendTyping,
   };
+}
+
+/**
+ * Uploads one picture straight to storage through a short-lived link, then tells the API it's
+ * there so the worker can shrink and check it.
+ */
+async function uploadPicture(file: File): Promise<string> {
+  const start = ok(await api.POST('/api/pictures', { body: { contentType: file.type, bytes: file.size } }));
+  const put = await fetch(start.uploadUrl, { method: 'PUT', headers: start.headers, body: file });
+  if (!put.ok) throw new Error('Couldn’t upload that picture. Try again?');
+  ok(await api.POST('/api/pictures/{pictureId}/uploaded', { params: { path: { pictureId: start.id } } }));
+  return start.id;
 }

@@ -548,6 +548,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/pictures": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PicturesController_start"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pictures/{pictureId}/uploaded": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PicturesController_uploaded"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pictures/{pictureId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PicturesController_open"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/friends": {
         parameters: {
             query?: never;
@@ -1053,13 +1101,16 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             editedAt: string | null;
+            ready: boolean;
             pictures: components["schemas"]["Picture"][];
             reactions: components["schemas"]["Reaction"][];
         };
         Picture: {
+            id: string;
             url: string;
             width: number;
             height: number;
+            ready: boolean;
         };
         Reaction: {
             emoji: string;
@@ -1068,6 +1119,8 @@ export interface components {
         SendMessageBody: {
             text: string;
             replyToId?: string;
+            /** @default [] */
+            pictureIds: string[];
         };
         ReadBody: {
             messageId: string;
@@ -1077,6 +1130,17 @@ export interface components {
         };
         ReactionBody: {
             emoji: string;
+        };
+        PictureUploadBody: {
+            contentType: string;
+            bytes: number;
+        };
+        PictureUpload: {
+            id: string;
+            uploadUrl: string;
+            headers: {
+                [key: string]: string;
+            };
         };
         Friend: {
             person: components["schemas"]["Person"];
@@ -2228,6 +2292,68 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ChatMessage"];
                 };
+            };
+        };
+    };
+    PicturesController_start: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PictureUploadBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PictureUpload"];
+                };
+            };
+        };
+    };
+    PicturesController_uploaded: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pictureId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PicturesController_open: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pictureId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Redirects to a short-lived link to the WebP */
+            302: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

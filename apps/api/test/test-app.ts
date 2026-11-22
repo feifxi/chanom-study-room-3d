@@ -5,6 +5,7 @@ import { AppModule } from '../src/app.module.js';
 import type { Mail } from '../src/mail/mail.service.js';
 import { MailService } from '../src/mail/mail.service.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
+import { StorageService } from '../src/storage/storage.service.js';
 import { APP_OPTIONS, configureApp } from '../src/setup.js';
 import { GatewayModule } from '../src/gateway/gateway.module.js';
 import { LIVE_PATH } from '../src/gateway/live.gateway.js';
@@ -14,17 +15,46 @@ import { io, type Socket as ClientSocket } from 'socket.io-client';
 
 export const ORIGIN = 'http://localhost:3000';
 
-/** The whole app on the test database, with email caught in `sent` instead of delivered. */
+/** S3 in memory: CI has no AWS Emulator, and storage leaves the machine in production. */
+export class MemoryStorage {
+  readonly files = new Map<string, { body: Buffer; contentType: string }>();
+  async put(key: string, body: Buffer, contentType: string) {
+    this.files.set(key, { body, contentType });
+  }
+  async get(key: string) {
+    const file = this.files.get(key);
+    if (!file) throw new Error(`No file ${key}`);
+    return file.body;
+  }
+  /** Tests "upload" by putting the file at the key themselves */
+  async uploadUrl(key: string) {
+    return `memory://put/${key}`;
+  }
+  async downloadUrl(key: string) {
+    return `memory://get/${key}`;
+  }
+  async remove(keys: string[]) {
+    for (const key of keys) this.files.delete(key);
+  }
+}
+
+/**
+ * The whole app on the test database, with email caught in `sent` instead of delivered and files
+ * kept in `storage` instead of S3.
+ */
 export async function createTestApp() {
   const sent: Mail[] = [];
+  const storage = new MemoryStorage();
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(MailService)
     .useValue({ deliver: async (mail: Mail) => void sent.push(mail) })
+    .overrideProvider(StorageService)
+    .useValue(storage)
     .compile();
   const app = moduleRef.createNestApplication({ ...APP_OPTIONS, logger: false });
   configureApp(app);
   await app.init();
-  return { app, sent, prisma: app.get(PrismaService) };
+  return { app, sent, storage, prisma: app.get(PrismaService) };
 }
 
 /** Empties the tables between tests (rooms and everything in them go with their users). */

@@ -4,6 +4,7 @@ import { requireSignedUp } from '../accounts/signed-up.js';
 import { Prisma } from '../generated/prisma/client.js';
 import { LiveService } from '../live/live.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { PicturesService, pictureUrl } from './pictures.service.js';
 import { toPerson } from '../rooms/person.js';
 import type { ChatMessage, MessagePage } from './chat.schemas.js';
 
@@ -21,6 +22,8 @@ export const CHAT_EVENTS = {
   message: 'message',
   /** { roomId, id } */
   deleted: 'message:deleted',
+  /** To the author: { roomId, messageId } — a picture couldn't be sent and was left out */
+  pictureFailed: 'picture:failed',
 } as const;
 
 function toMessage(m: MessageRow): ChatMessage {
@@ -42,8 +45,8 @@ function toMessage(m: MessageRow): ChatMessage {
     mentionsRoom: m.mentionsRoom,
     createdAt: m.createdAt.toISOString(),
     editedAt: m.editedAt?.toISOString() ?? null,
-    // Pictures come with uploads (next); the table is ready
-    pictures: [],
+    ready: m.ready,
+    pictures: m.pictures.map((p) => ({ id: p.id, url: pictureUrl(p.id), width: p.width, height: p.height, ready: p.status === 'ready' })),
     reactions: [...reactions].map(([emoji, userIds]) => ({ emoji, userIds })),
   };
 }
@@ -57,12 +60,14 @@ export class ChatService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly live: LiveService,
+    private readonly pictures: PicturesService,
   ) {}
 
   async page(userId: string, roomId: string, before?: string, limit = MESSAGES_PAGE): Promise<MessagePage> {
     const member = await this.member(userId, roomId);
     const rows = await this.prisma.message.findMany({
-      where: { roomId, deletedAt: null, ...(before ? { id: { lt: before } } : {}) },
+      // A message waiting on its pictures shows only to its author
+      where: { roomId, deletedAt: null, OR: [{ ready: true }, { authorId: userId }], ...(before ? { id: { lt: before } } : {}) },
       include: messageInclude,
       orderBy: { id: 'desc' },
       take: limit + 1,
@@ -74,23 +79,56 @@ export class ChatService {
     };
   }
 
-  async send(userId: string, roomId: string, input: { text: string; replyToId?: string }): Promise<ChatMessage> {
+  async send(userId: string, roomId: string, input: { text: string; replyToId?: string; pictureIds?: string[] }): Promise<ChatMessage> {
     const member = await this.member(userId, roomId);
     if (member.timedOutUntil && member.timedOutUntil > new Date()) {
       throw new ForbiddenException({ message: 'You’re timed out in this room for now.', code: 'timed_out', until: member.timedOutUntil });
     }
     if (input.replyToId) {
-      const original = await this.prisma.message.findFirst({ where: { id: input.replyToId, roomId } });
+      const original = await this.prisma.message.findFirst({ where: { id: input.replyToId, roomId, ready: true } });
       if (!original) throw new NotFoundException('That message is gone');
     }
     const { mentions, mentionsRoom } = await this.mentions(roomId, input.text, member.role !== 'member');
-    const row = await this.prisma.message.create({
-      data: { roomId, authorId: userId, text: input.text, replyToId: input.replyToId, mentions, mentionsRoom },
-      include: messageInclude,
+    const pictureIds = input.pictureIds ?? [];
+    const created = await this.prisma.message.create({
+      data: { roomId, authorId: userId, text: input.text, replyToId: input.replyToId, mentions, mentionsRoom, ready: !pictureIds.length },
     });
+    try {
+      await this.pictures.attach(userId, pictureIds, created.id);
+    } catch (error) {
+      await this.prisma.message.delete({ where: { id: created.id } });
+      throw error;
+    }
     // Sending means you've read up to here
-    await this.prisma.membership.update({ where: { roomId_userId: { roomId, userId } }, data: { lastReadId: row.id } });
-    return this.publish(row);
+    await this.prisma.membership.update({ where: { roomId_userId: { roomId, userId } }, data: { lastReadId: created.id } });
+    if (!pictureIds.length)
+      return this.publish(await this.prisma.message.findUniqueOrThrow({ where: { id: created.id }, include: messageInclude }));
+    // With pictures it shows once they're all ready: now, or when the worker finishes the last one
+    await this.release(created.id);
+    return toMessage(await this.prisma.message.findUniqueOrThrow({ where: { id: created.id }, include: messageInclude }));
+  }
+
+  /**
+   * Called when a message's pictures change (one ready, one dropped): shows it to the room once
+   * they're all ready. If a dropped picture leaves nothing to show, the message goes.
+   */
+  async release(messageId: string, { droppedPicture = false } = {}): Promise<void> {
+    const row = await this.prisma.message.findUnique({ where: { id: messageId }, include: messageInclude });
+    if (!row || row.deletedAt || !row.roomId) return;
+    const roomId = row.roomId;
+    if (droppedPicture) this.live.toUser(row.authorId, CHAT_EVENTS.pictureFailed, { roomId, messageId });
+    if (!row.text && !row.pictures.length) {
+      await this.prisma.message.delete({ where: { id: messageId } });
+      this.live.toUser(row.authorId, CHAT_EVENTS.deleted, { roomId, id: messageId });
+      return;
+    }
+    if (row.pictures.some((p) => p.status !== 'ready')) {
+      if (droppedPicture) this.live.toUser(row.authorId, CHAT_EVENTS.message, toMessage(row));
+      return;
+    }
+    // Only one caller wins, so the room hears about it once
+    const { count } = await this.prisma.message.updateMany({ where: { id: messageId, ready: false }, data: { ready: true } });
+    if (count) this.publish({ ...row, ready: true });
   }
 
   async edit(userId: string, messageId: string, text: string): Promise<ChatMessage> {
@@ -119,7 +157,7 @@ export class ChatService {
       }),
       this.prisma.reaction.deleteMany({ where: { messageId } }),
     ]);
-    // Pictures go from storage with the uploads work; the rows stay with the message for now
+    await this.pictures.removeFor(messageId);
     this.live.toRoom(message.roomId!, CHAT_EVENTS.deleted, { roomId: message.roomId, id: messageId });
   }
 
@@ -155,6 +193,7 @@ export class ChatService {
     const where: Prisma.MessageWhereInput = {
       roomId: member.roomId,
       deletedAt: null,
+      ready: true,
       authorId: { not: userId },
       ...(member.lastReadId ? { id: { gt: member.lastReadId } } : { createdAt: { gt: member.joinedAt } }),
     };
@@ -190,9 +229,11 @@ export class ChatService {
     return { mentions: people.map((p) => p.userId), mentionsRoom: moderator && handles.includes('room') };
   }
 
+  /** To the room, or only to its author while its pictures are still on their way. */
   private publish(row: MessageRow): ChatMessage {
     const message = toMessage(row);
-    this.live.toRoom(message.roomId, CHAT_EVENTS.message, message);
+    if (row.ready) this.live.toRoom(message.roomId, CHAT_EVENTS.message, message);
+    else this.live.toUser(row.authorId, CHAT_EVENTS.message, message);
     return message;
   }
 }

@@ -1,7 +1,8 @@
 'use client';
 
 import { useMemo, type ReactNode } from 'react';
-import { ChatView, type ChatMessageView } from '@/components/chat/Chat';
+import { toast } from 'sonner';
+import { ChatView, pickedFile, type ChatMessageView } from '@/components/chat/Chat';
 import { useMe } from '@/features/account/useMe';
 import { useBlocks } from '@/features/friends/useFriends';
 import { useMembers } from '@/features/rooms/useRooms';
@@ -50,7 +51,7 @@ export function RoomChat({
       mine: m.author.id === me?.id,
       at: chatTime(m.createdAt),
       text: m.text,
-      images: m.pictures.length ? m.pictures.map((p) => p.url) : undefined,
+      images: m.pictures.length ? m.pictures.map((p) => (p.ready ? p.url : null)) : undefined,
       reactions: m.reactions.map((r) => ({ emoji: r.emoji, count: r.userIds.length, mine: myReaction(r.userIds) })),
       quote: m.replyTo
         ? {
@@ -81,11 +82,19 @@ export function RoomChat({
       dividerAt={firstUnread(chat.messages, chat.lastReadId, me?.id)}
       typing={chat.typing}
       intro={intro}
-      // Pictures come with uploads, next in this step
-      pictures={false}
       hasMore={chat.query.hasNextPage}
       onLoadMore={() => void chat.query.fetchNextPage()}
-      onSend={(text, _images, replyTo) => chat.send.mutate({ text, replyToId: replyTo?.id })}
+      onSend={(text, images, replyTo) => {
+        const files = images.map(pickedFile).filter((f): f is File => !!f);
+        const sending = chat.send.mutateAsync({ text, replyToId: replyTo?.id, files });
+        if (files.length)
+          toast.promise(sending, {
+            loading: files.length === 1 ? 'Sending your picture…' : `Sending ${files.length} pictures…`,
+            success: 'Sent',
+            error: () => null,
+          });
+        sending.catch(() => {}).finally(() => images.forEach((url) => URL.revokeObjectURL(url)));
+      }}
       onEdit={(m, text) => chat.edit.mutate({ id: m.id, text })}
       onDelete={(m) => {
         const original = byId.get(m.id);
