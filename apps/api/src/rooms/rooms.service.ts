@@ -20,6 +20,7 @@ import { requireSignedUp } from '../accounts/signed-up.js';
 import { Prisma, type Membership } from '../generated/prisma/client.js';
 import { ChatService } from '../chat/chat.service.js';
 import { LiveService } from '../live/live.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { PresenceService } from '../presence/presence.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { toPerson } from './person.js';
@@ -78,6 +79,7 @@ export class RoomsService {
     private readonly chat: ChatService,
     private readonly live: LiveService,
     private readonly presence: PresenceService,
+    private readonly inbox: NotificationsService,
   ) {}
 
   // ── Your rooms ────────────────────────────────────────────────────────────────────────────────
@@ -220,6 +222,8 @@ export class RoomsService {
         create: { roomId, userId, ...data },
         update: data,
       });
+      const who = await this.person(userId);
+      if (who) await this.inbox.joinRequest(roomId, who);
     }
     return this.get(roomId, userId, now);
   }
@@ -245,6 +249,7 @@ export class RoomsService {
     }
     await this.addMember(roomId, whoId, now);
     await this.prisma.joinRequest.delete({ where: { roomId_userId: { roomId, userId: whoId } } });
+    await this.inbox.joined(whoId, roomId);
   }
 
   // ── Members and roles ─────────────────────────────────────────────────────────────────────────

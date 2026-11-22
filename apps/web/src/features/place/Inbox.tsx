@@ -2,78 +2,31 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { AtSign, Bell, CalendarHeart, CheckCheck, DoorOpen, Gift, ShieldAlert, UserCheck, UserPlus, type LucideIcon } from 'lucide-react';
+import { AtSign, Bell, CheckCheck, DoorOpen, MessageCircle, UserCheck, UserPlus, type LucideIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { UserAvatar } from '@/components/UserAvatar';
+import { PersonFace } from '@/components/PersonFace';
+import { useInbox, useReadInbox, type Notification } from '@/features/inbox/useInbox';
 import { cn } from '@/lib/utils';
-import { userById } from '@/lib/mock';
 
-type Kind = 'friend' | 'room' | 'mention' | 'space' | 'event' | 'team' | 'gift';
-
-interface Note {
-  id: string;
-  kind: Kind;
-  /** Who it's about, shown as their avatar; otherwise the kind's icon. */
-  from?: string;
-  text: string;
-  at: string;
-  href: string;
-  unread: boolean;
-}
+type Kind = Notification['kind'];
 
 const ICON: Record<Kind, [LucideIcon, string]> = {
-  friend: [UserPlus, 'bg-lavender text-lavender-ink'],
-  room: [UserCheck, 'bg-mint text-mint-ink'],
+  friend_request: [UserPlus, 'bg-lavender text-lavender-ink'],
+  friend_accepted: [UserPlus, 'bg-lavender text-lavender-ink'],
+  join_request: [UserCheck, 'bg-mint text-mint-ink'],
+  joined: [DoorOpen, 'bg-mint text-mint-ink'],
   mention: [AtSign, 'bg-sky text-sky-ink'],
-  space: [DoorOpen, 'bg-mint text-mint-ink'],
-  event: [CalendarHeart, 'bg-peach text-peach-ink'],
-  team: [ShieldAlert, 'bg-destructive/15 text-destructive'],
-  gift: [Gift, 'bg-secondary text-secondary-foreground'],
+  messages: [MessageCircle, 'bg-sky text-sky-ink'],
 };
 
-/** Demo inbox: one of each kind, newest first. Kept 30 days in the real app. */
-const NOTES: Note[] = [
-  {
-    id: 'n0',
-    kind: 'gift',
-    from: 'mai',
-    text: '**Mai** gifted you 1 month of Plus 🎁',
-    at: '2m',
-    href: '/home/messages/mai',
-    unread: true,
-  },
-  {
-    id: 'n1',
-    kind: 'mention',
-    from: 'jod',
-    text: '**Jod** mentioned you in Chanom Friends: “@feifei library at 8?”',
-    at: '5m',
-    href: '/home',
-    unread: true,
-  },
-  { id: 'n2', kind: 'friend', from: 'bow', text: '**Bow** sent you a friend request', at: '20m', href: '/home/friends', unread: true },
-  { id: 'n3', kind: 'room', text: '**2 people** want to join CPE Year 3 (you’re a mod)', at: '1h', href: '/home', unread: true },
-  { id: 'n4', kind: 'event', text: '**Draw & Guess · Sat 21:00** starts in 1 hour', at: '1h', href: '/home', unread: false },
-  { id: 'n5', kind: 'space', text: 'There’s space in **Exam Hall** now', at: '3h', href: '/home', unread: false },
-  {
-    id: 'n6',
-    kind: 'friend',
-    from: 'earth',
-    text: '**Earth** sent you an invite after you asked to join',
-    at: '5h',
-    href: '/home/messages',
-    unread: false,
-  },
-  { id: 'n7', kind: 'room', text: 'You’re in! **Game Night Club** approved your request', at: '1d', href: '/discover', unread: false },
-  {
-    id: 'n8',
-    kind: 'team',
-    text: '**Connecta team:** a picture you posted was removed (rule: nothing sexual). Reply to our email to appeal.',
-    at: '3d',
-    href: '/home',
-    unread: false,
-  },
-];
+/** "now", "5m", "3h", "2d" (outside the component: render can't read the clock). */
+function since(iso: string) {
+  const minutes = Math.floor((Date.now() - Date.parse(iso)) / 60_000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  return hours < 24 ? `${hours}h ago` : `${Math.floor(hours / 24)}d ago`;
+}
 
 /** "**bold** rest" → bold parts, so names stand out without HTML in the data. */
 function Rich({ text }: { text: string }) {
@@ -93,19 +46,22 @@ function Rich({ text }: { text: string }) {
 }
 
 /**
- * The inbox (🔔 in the header): everything that happened for you while you were elsewhere. Friend
- * requests and accepted asks, join requests (yours approved, or new ones for rooms you mod),
- * @mentions in room chats, space in a full room, events starting, and team actions on your account.
- * Plus gifts (also a card in the DM). Not DMs (Messages has its own badge) and not "a friend walked in" (decided: no pings for that).
- * Inside a room the same things arrive as toasts, and the inbox keeps them for later.
+ * The inbox (🔔 in the header): everything that happened for you while you were elsewhere, from the
+ * API, live. Friend requests and accepted ones, join requests (yours let in, or new ones for rooms
+ * you mod), @mentions and @room, and a room's messages if you picked Every message for it. Space in
+ * a full room, events, gifts and team actions join as their features are built. Not DMs (Messages
+ * has its own badge) and not "a friend walked in" (decided: no pings for that). Inside a room the
+ * same things arrive as toasts, and the inbox keeps them for later.
  */
 export function Inbox() {
   const [open, setOpen] = useState(false);
-  const [notes, setNotes] = useState(NOTES);
   const [onlyUnread, setOnlyUnread] = useState(false);
-  const unread = notes.filter((n) => n.unread).length;
+  const inbox = useInbox();
+  const markRead = useReadInbox();
+  const notes = inbox.data?.items ?? [];
+  const unread = inbox.data?.unread ?? 0;
   const shown = onlyUnread ? notes.filter((n) => n.unread) : notes;
-  const read = (id?: string) => setNotes((all) => all.map((n) => (!id || n.id === id ? { ...n, unread: false } : n)));
+  const read = (id?: string) => markRead.mutate(id ? [id] : undefined);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -147,13 +103,13 @@ export function Inbox() {
                 key={n.id}
                 href={n.href}
                 onClick={() => {
-                  read(n.id);
+                  if (n.unread) read(n.id);
                   setOpen(false);
                 }}
                 className="flex items-start gap-2.5 rounded-2xl px-2 py-2 hover:bg-muted"
               >
-                {n.from ? (
-                  <UserAvatar user={userById(n.from)} size={34} />
+                {n.person ? (
+                  <PersonFace who={n.person} size={34} />
                 ) : (
                   <span className={cn('grid size-[34px] flex-none place-items-center rounded-full', tint)}>
                     <Icon className="size-4" />
@@ -161,7 +117,7 @@ export function Inbox() {
                 )}
                 <span className={cn('min-w-0 flex-1 text-sm', !n.unread && 'text-muted-foreground')}>
                   <Rich text={n.text} />
-                  <span className="block text-xs text-muted-foreground">{n.at} ago</span>
+                  <span className="block text-xs text-muted-foreground">{since(n.at)}</span>
                 </span>
                 {n.unread && <span className="mt-1.5 size-2 flex-none rounded-full bg-primary" aria-label="New" />}
               </Link>

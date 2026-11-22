@@ -11,7 +11,15 @@ import {
   type ChatMessage,
   type MessagePage,
 } from '../chat/chat.schemas.js';
-import { AnswerAskBodySchema, DmOpenSchema, DmSummarySchema, InviteToRoomBodySchema, type DmOpen, type DmSummary } from './dms.schemas.js';
+import {
+  AnswerAskBodySchema,
+  DmOpenSchema,
+  DmSummarySchema,
+  InviteToRoomBodySchema,
+  MuteBodySchema,
+  type DmOpen,
+  type DmSummary,
+} from './dms.schemas.js';
 import { DmsService } from './dms.service.js';
 
 const Id = { schema: z.string().max(40) };
@@ -89,6 +97,18 @@ export class DmsController {
     @Body({ schema: SendMessageBodySchema }) body: z.infer<typeof SendMessageBodySchema>,
   ): Promise<ChatMessage> {
     return this.dms.send(session.user.id, id, body);
+  }
+
+  /** Mute or unmute this chat (yours alone). */
+  @Put(':id/mute')
+  @HttpCode(204)
+  @ApiNoContentResponse()
+  mute(
+    @Session() session: UserSession,
+    @Param('id', Id) id: string,
+    @Body({ schema: MuteBodySchema }) body: z.infer<typeof MuteBodySchema>,
+  ) {
+    return this.dms.mute(session.user.id, id, body.muted);
   }
 
   @Put(':id/read')

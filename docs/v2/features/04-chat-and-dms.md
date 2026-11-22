@@ -5,8 +5,8 @@ Undo, reactions, @mentions and @room, "is typing", "New messages", unread counts
 live in every open tab, on the room's page and in 3D (the Chat panel and ⤢). Pictures
 too (up to 4 a message). DMs too (2026-11-22): the Messages page, the header's popover and the
 Messages tab in 3D, with the same messages, pictures and typing, and read-only history once
-unfriended, plus the "Ask to join" and "Invite to a room" cards (feature 5). Still to come in step
-3: muting a DM and the notification bell. **Try it:** open a room, or Friends → 💬 on a friend,
+unfriended, plus the "Ask to join" and "Invite to a room" cards (feature 5), muting a DM, and
+@mentions in the 🔔 inbox by each room's Notifications setting. **Try it:** open a room, or Friends → 💬 on a friend,
 at http://localhost:3000/home in two browsers after `pnpm dev`. The demo: http://localhost:3100/home/messages/mai (Mai types back),
 /home/messages/ken (unfriended).
 
@@ -59,7 +59,10 @@ Hover (or long-press on phones) shows a small toolbar:
 - **"Mai is typing…"** in DMs and room chat.
 - **No "Seen" / read receipts**, like Discord: no pressure to answer, one less privacy setting.
 - **Notifications per room** (room "…" menu): Every message / **Only @mentions** (default) / Nothing.
-  DMs always notify unless you mute that chat.
+  They go to the 🔔 inbox (feature 1); Every message is one item per room that counts up while
+  unread. DMs aren't in the inbox: they count in the Messages badge and pop up as toasts inside a
+  room, unless you **mute** that chat (the DM's "…"; they're never told). A muted chat still shows
+  its unread count, greyed, in the Messages list.
 - **History** is kept forever for room chats and DMs (text is tiny). Search inside a chat comes later.
 
 ## Unfriend and block
@@ -84,7 +87,7 @@ Hover (or long-press on phones) shows a small toolbar:
   reacting use the same `/api/messages/:id` routes; a DM's events go to both people's own tabs, and
   typing is `typing:dm`. Tables: `dms` (one per pair, `pair` = the two user ids sorted, `last_id`
   for sorting) and `dm_members` (each person's read marker); messages carry `dm_id` instead of
-  `room_id`. Not friends any more (unfriended or blocked either way): sending, editing and
+  `room_id`; `dm_members.muted` is each person's mute (`PUT /api/dms/:id/mute`). Not friends any more (unfriended or blocked either way): sending, editing and
   reacting are refused (`not_friends`), deleting your own still works.
 - **API** (`apps/api/src/chat/`): `GET/POST /api/rooms/:id/messages` (pages by id, `before`),
   `PUT /api/rooms/:id/read`, `PATCH/DELETE /api/messages/:id`, `PUT/DELETE

@@ -2223,6 +2223,40 @@
         ]
       }
     },
+    "/api/dms/{id}/mute": {
+      "put": {
+        "operationId": "DmsController_mute",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MuteBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "dms"
+        ]
+      }
+    },
     "/api/dms/{id}/read": {
       "put": {
         "operationId": "DmsController_read",
@@ -2254,6 +2288,51 @@
         },
         "tags": [
           "dms"
+        ]
+      }
+    },
+    "/api/notifications": {
+      "get": {
+        "operationId": "NotificationsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Inbox"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/api/notifications/read": {
+      "post": {
+        "operationId": "NotificationsController_read",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReadNotificationsBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "inbox"
         ]
       }
     }
@@ -4216,6 +4295,9 @@
           "blocked": {
             "type": "boolean"
           },
+          "muted": {
+            "type": "boolean"
+          },
           "last": {
             "nullable": true,
             "type": "object",
@@ -4267,6 +4349,7 @@
           "with",
           "friend",
           "blocked",
+          "muted",
           "last",
           "unread"
         ],
@@ -4286,6 +4369,9 @@
             "type": "boolean"
           },
           "blocked": {
+            "type": "boolean"
+          },
+          "muted": {
             "type": "boolean"
           },
           "sharedRooms": {
@@ -4321,6 +4407,7 @@
           "with",
           "friend",
           "blocked",
+          "muted",
           "sharedRooms"
         ],
         "additionalProperties": false
@@ -4347,6 +4434,102 @@
         "required": [
           "send"
         ]
+      },
+      "MuteBody": {
+        "type": "object",
+        "properties": {
+          "muted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "muted"
+        ]
+      },
+      "Inbox": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Notification"
+            }
+          },
+          "unread": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "unread"
+        ],
+        "additionalProperties": false
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "friend_request",
+              "friend_accepted",
+              "join_request",
+              "joined",
+              "mention",
+              "messages"
+            ]
+          },
+          "text": {
+            "type": "string"
+          },
+          "href": {
+            "type": "string"
+          },
+          "person": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Person"
+              }
+            ]
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "unread": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "text",
+          "href",
+          "person",
+          "at",
+          "unread"
+        ],
+        "additionalProperties": false
+      },
+      "ReadNotificationsBody": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        }
       }
     }
   }

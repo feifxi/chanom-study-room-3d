@@ -1,4 +1,5 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { NotificationsService } from '../notifications/notifications.service.js';
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { mentionedHandles, MESSAGES_PAGE } from '@connecta/shared';
 import { requireSignedUp } from '../accounts/signed-up.js';
 import { Prisma } from '../generated/prisma/client.js';
@@ -71,7 +72,10 @@ export class ChatService {
     private readonly prisma: PrismaService,
     private readonly live: LiveService,
     private readonly pictures: PicturesService,
+    private readonly inbox: NotificationsService,
   ) {}
+
+  private readonly log = new Logger(ChatService.name);
 
   async page(userId: string, roomId: string, before?: string, limit = MESSAGES_PAGE): Promise<MessagePage> {
     const member = await this.member(userId, roomId);
@@ -133,8 +137,12 @@ export class ChatService {
       await this.prisma.message.delete({ where: { id: created.id } });
       throw error;
     }
-    if (!pictureIds.length)
-      return this.publish(await this.prisma.message.findUniqueOrThrow({ where: { id: created.id }, include: messageInclude }));
+    if (!pictureIds.length) {
+      const row = await this.prisma.message.findUniqueOrThrow({ where: { id: created.id }, include: messageInclude });
+      const message = this.publish(row);
+      await this.toInbox(row);
+      return message;
+    }
     // With pictures it shows once they're all ready: now, or when the worker finishes the last one
     await this.release(created.id);
     return toMessage(await this.prisma.message.findUniqueOrThrow({ where: { id: created.id }, include: messageInclude }));
@@ -160,7 +168,15 @@ export class ChatService {
     }
     // Only one caller wins, so the room hears about it once
     const { count } = await this.prisma.message.updateMany({ where: { id: messageId, ready: false }, data: { ready: true } });
-    if (count) this.publish({ ...row, ready: true });
+    if (!count) return;
+    this.publish({ ...row, ready: true });
+    await this.toInbox(row);
+  }
+
+  /** A room message just became visible: mentions and "every message" go to the 🔔 inbox. */
+  private async toInbox(row: MessageRow) {
+    if (!row.roomId || row.kind !== 'text') return;
+    await this.inbox.roomMessage({ ...row, roomId: row.roomId }).catch((error: unknown) => this.log.warn(`Inbox: ${String(error)}`));
   }
 
   async edit(userId: string, messageId: string, text: string): Promise<ChatMessage> {

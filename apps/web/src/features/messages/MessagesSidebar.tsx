@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Search } from 'lucide-react';
+import { BellOff, Search } from 'lucide-react';
 import { FriendFace } from '@/features/presence/FriendFace';
 import { lastLine, useDms } from '@/features/dms/useDms';
 import { useFriends } from '@/features/friends/useFriends';
@@ -53,6 +53,7 @@ export function MessagesSidebar({ className }: { className?: string }) {
             <span className="min-w-0 flex-1">
               <span className="flex items-baseline gap-2">
                 <span className={cn('truncate text-sm', d.unread ? 'font-black' : 'font-bold')}>{d.with.name}</span>
+                {d.muted && <BellOff className="size-3 flex-none text-muted-foreground" aria-label="Muted" />}
                 <span className="ml-auto flex-none text-[11px] text-muted-foreground">{d.last && chatTime(d.last.createdAt)}</span>
               </span>
               <span className={cn('block truncate text-xs', d.unread ? 'font-bold text-foreground' : 'text-muted-foreground')}>
@@ -60,7 +61,13 @@ export function MessagesSidebar({ className }: { className?: string }) {
               </span>
             </span>
             {d.unread > 0 && (
-              <span className="grid h-5 min-w-5 flex-none place-items-center rounded-full bg-primary px-1.5 text-[11px] font-black text-primary-foreground">
+              <span
+                className={cn(
+                  'grid h-5 min-w-5 flex-none place-items-center rounded-full px-1.5 text-[11px] font-black',
+                  // Muted: still counted here, quietly
+                  d.muted ? 'bg-muted text-muted-foreground' : 'bg-primary text-primary-foreground',
+                )}
+              >
                 {d.unread}
               </span>
             )}

@@ -820,6 +820,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/dms/{id}/mute': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put: operations['DmsController_mute'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/dms/{id}/read': {
     parameters: {
       query?: never;
@@ -830,6 +846,38 @@ export interface paths {
     get?: never;
     put: operations['DmsController_read'];
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/notifications': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['NotificationsController_list'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/notifications/read': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['NotificationsController_read'];
     delete?: never;
     options?: never;
     head?: never;
@@ -1338,6 +1386,7 @@ export interface components {
       with: components['schemas']['Person'];
       friend: boolean;
       blocked: boolean;
+      muted: boolean;
       last: {
         /** @enum {string} */
         kind: 'text' | 'ask' | 'invite';
@@ -1355,6 +1404,7 @@ export interface components {
       with: components['schemas']['Person'];
       friend: boolean;
       blocked: boolean;
+      muted: boolean;
       sharedRooms: {
         id: string;
         name: string;
@@ -1367,6 +1417,27 @@ export interface components {
     };
     AnswerAskBody: {
       send: boolean;
+    };
+    MuteBody: {
+      muted: boolean;
+    };
+    Inbox: {
+      items: components['schemas']['Notification'][];
+      unread: number;
+    };
+    Notification: {
+      id: string;
+      /** @enum {string} */
+      kind: 'friend_request' | 'friend_accepted' | 'join_request' | 'joined' | 'mention' | 'messages';
+      text: string;
+      href: string;
+      person: components['schemas']['Person'] | null;
+      /** Format: date-time */
+      at: string;
+      unread: boolean;
+    };
+    ReadNotificationsBody: {
+      ids?: string[];
     };
   };
   responses: never;
@@ -2918,6 +2989,29 @@ export interface operations {
       };
     };
   };
+  DmsController_mute: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MuteBody'];
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   DmsController_read: {
     parameters: {
       query?: never;
@@ -2930,6 +3024,46 @@ export interface operations {
     requestBody: {
       content: {
         'application/json': components['schemas']['ReadBody'];
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  NotificationsController_list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Inbox'];
+        };
+      };
+    };
+  };
+  NotificationsController_read: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ReadNotificationsBody'];
       };
     };
     responses: {

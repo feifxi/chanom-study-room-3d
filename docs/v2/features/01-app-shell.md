@@ -1,6 +1,10 @@
 # 1. App shell and navigation
 
-**Status:** decided and built in the demo. **Try it:** http://localhost:3100/home
+**Status:** decided and built in the demo. In the real app (2026-11-22) the header, Home (your
+rooms with who's inside, Friends out right now), Friends, Messages and the 🔔 inbox are on the API;
+the inbox has friend requests, join requests, being let in, @mentions and a room's "Every message"
+so far (the other kinds come with their features). **Try it:** http://localhost:3000/home after
+`pnpm dev` (the demo: http://localhost:3100/home)
 
 The shell follows Gather, not Discord: **the room is the app.** There's no server page and no
 channel list; Home lists your rooms, a room's page is its chat, and inside 3D everything is a panel
@@ -139,5 +143,14 @@ demo still has the ten drink palettes it was designed with, with Strawberry milk
 - **Home's live data** (who's inside, unread) comes from the presence gateway, not polling rooms.
 - **Capacity** is enforced by Colyseus at join (`maxClients` from the owner's plan and map size).
 - **Room pictures:** one static image per template to start; periodic snapshots later.
-- **Inbox:** `notifications(id, user_id, kind, payload jsonb, created_at, read_at)`, written by the
-  API, pushed through the gateway, rows older than 30 days deleted nightly.
+- **Inbox** (`apps/api/src/notifications/`): `notifications(id, user_id, kind, payload jsonb,
+group_key, created_at, read_at)`, written by the API where things happen (friends, rooms, chat),
+  pushed live (`notification` event with the unread count), rows older than 30 days deleted
+  nightly. `GET /api/notifications` (newest 50, unread count), `POST /api/notifications/read`
+  (`ids`, or none for all). Items with a `group_key` grow while unread instead of piling up: a
+  room's "Every message" ("5 new messages in Chanom Friends"), join requests per room ("2 people
+  want to join"), and one friend request per person. Mentions respect each member's room setting
+  (Nothing gets none) and skip people who blocked the author. A room message notifies once it's
+  visible (after its pictures); for big rooms on "Every message" this may move into a job later.
+- **Toasts in a room:** while the 3D page is open, new inbox items and DMs (unless that chat is
+  muted) also show as toasts (`InboxListener` in the web app).

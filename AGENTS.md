@@ -29,12 +29,14 @@ log. Keep them current in the same change that makes them stale.
    try-it link, a summary, how it works, backend notes).
 4. [`docs/v2/demo-guide.md`](docs/v2/demo-guide.md): how the demo is laid out, how maps work, its
    checks and gotchas. It applies to `apps/web` too until each part is ported.
+5. [`docs/v2/manual-tests.md`](docs/v2/manual-tests.md): the owner's hand-test list, run at the end.
 
 ## What's next
 
-Step 3 of the plan, **the gateway**: friends, room chat, pictures, DMs and presence are done; the
-in-app notification bell (with muting a DM) is left. Steps 1 and 2 (the skeleton; accounts and
-rooms with members, roles and invites) are done. The plan's
+Step 4 of the plan, **walking in a room**: the Colyseus game server (`apps/game`), with V1's
+movement prediction and reconciliation copied in; voice and screen share; maps. It also takes over
+"which room you're in" from the 3D page (presence, feature 5). Steps 1–3 (the skeleton; accounts and
+rooms; the gateway: friends, chat, pictures, DMs, presence and the 🔔 inbox) are done. The plan's
 [What's left](docs/v2-plan.md#whats-left) is the source of truth.
 
 ## Working agreements
@@ -45,6 +47,9 @@ rooms with members, roles and invites) are done. The plan's
   how it feels, panel or 3D), build it in `demo/` for approval, then write or update its spec and
   the plan. Don't build ahead of a decision.
 - **Ask in plain text** with options and a recommendation. Don't use pop-up question dialogs.
+- **The owner tests by hand at the end:** every feature you build adds its checks to
+  [`docs/v2/manual-tests.md`](docs/v2/manual-tests.md) in the same change (what to try and what
+  should happen). Tell the owner in your summary which checks you added.
 - **The seed is written once, at the end:** when every feature is on the API, one seed fills all
   the data (people, rooms, members, friends, DMs…) for the owner to test with. Don't grow it feature
   by feature; until then it holds only the demo people (to sign in) and the S3 bucket. Test a new

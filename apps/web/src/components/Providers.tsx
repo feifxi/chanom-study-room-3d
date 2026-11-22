@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { InboxListener } from '@/features/inbox/useInbox';
 import { PresenceReporter } from '@/features/presence/usePresence';
 import { loadViewer, useViewer } from '@/lib/viewer';
 
@@ -22,6 +23,7 @@ export function Providers({ children }: { children: ReactNode }) {
         <TooltipProvider delayDuration={200}>
           <Fragment key={viewer}>{children}</Fragment>
           <PresenceReporter />
+          <InboxListener />
           <Toaster position="top-center" />
         </TooltipProvider>
       </ThemeProvider>

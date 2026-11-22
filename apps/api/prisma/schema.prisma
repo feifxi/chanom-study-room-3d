@@ -67,6 +67,7 @@ model User {
   blockedBy        Block[]         @relation("blocked")
   pictures         Picture[]
   dmMembers        DmMember[]
+  notifications    Notification[]
 
   @@index([deleteAt])
   @@map("users")
@@ -400,6 +401,8 @@ model DmMember {
   user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   /// The newest message you've seen: drives "New messages" and unread counts, never shown to them
   lastReadId String? @map("last_read_id")
+  /// Muted: not in the Messages badge and no toasts in a room (the chat still shows its unread)
+  muted      Boolean @default(false)
 
   @@id([dmId, userId])
   @@index([userId])
@@ -440,4 +443,26 @@ model Reaction {
 
   @@id([messageId, userId, emoji])
   @@map("reactions")
+}
+
+// ── Inbox (docs/v2/features/01-app-shell.md#-inbox) ───────────────────────────────────────────
+
+/// One item in the 🔔 inbox. Kept 30 days.
+model Notification {
+  id        String    @id @default(uuid(7))
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// friend_request, friend_accepted, join_request, joined, mention, messages
+  kind      String
+  /// What the item shows and opens: text (with **bold**), href, person, room…
+  payload   Json
+  /// Items that pile up into one while unread ("5 new messages in Chanom Friends")
+  groupKey  String?   @map("group_key")
+  createdAt DateTime  @default(now()) @map("created_at")
+  readAt    DateTime? @map("read_at")
+
+  @@index([userId, createdAt])
+  @@index([userId, groupKey])
+  @@index([createdAt])
+  @@map("notifications")
 }

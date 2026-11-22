@@ -39,8 +39,8 @@ export function useDms() {
   return useQuery({ queryKey: DMS_KEY, queryFn: async () => ok(await api.GET('/api/dms')), enabled });
 }
 
-/** Unread DMs in total, for badges. */
-export const dmUnread = (dms?: DmSummary[]) => dms?.reduce((n, d) => n + d.unread, 0) ?? 0;
+/** Unread DMs in total, for badges (muted chats left out). */
+export const dmUnread = (dms?: DmSummary[]) => dms?.reduce((n, d) => n + (d.muted ? 0 : d.unread), 0) ?? 0;
 
 /** Your chat with someone (by @handle): its id, whether you're friends, the rooms you share. */
 export function useDmWith(handle: string) {
@@ -75,3 +75,8 @@ export const dmCards = {
   invite: async ({ handle, roomId }: { handle: string; roomId: string }) =>
     ok(await api.POST('/api/dms/with/{handle}/invite', { params: { path: { handle } }, body: { roomId } })),
 };
+
+/** Mute or unmute a chat for yourself; they're never told. */
+export async function muteDm({ id, muted }: { id: string; muted: boolean }) {
+  ok(await api.PUT('/api/dms/{id}/mute', { params: { path: { id } }, body: { muted } }));
+}

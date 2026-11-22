@@ -1,11 +1,11 @@
 # 3. Rooms and membership
 
 **Status:** built in the real app (2026-11-22): making rooms, Room settings, members and roles,
-Ask to join, invites and guest passes, kick, ban and time out, Discover's listed rooms. Waiting on
-later steps: who's inside and unread counts (presence and chat, step 3), notifications for
-requests, enforcing time outs and the safety switches (chat and the game server), uploading a
-thumbnail (it stays in your browser for now), reporting a room (feature 14), and "Invite a friend"
-in a DM (step 3). **Try it:** http://localhost:3000/home after `pnpm dev` (the demo is still at
+Ask to join, invites and guest passes, kick, ban and time out, Discover's listed rooms; and with
+step 3, who's inside, unread counts, the 🔔 for join requests and being let in, time outs in chat,
+and inviting a friend from Friends or a DM card (feature 5). Waiting on later steps: the safety
+switches in 3D (the game server), uploading a thumbnail (it stays in your browser for now) and
+reporting a room (feature 14). **Try it:** http://localhost:3000/home after `pnpm dev` (the demo is still at
 http://localhost:3100/home).
 
 Like Discord, you're a member of a room before you walk in. Three fixed roles, two kinds of invite

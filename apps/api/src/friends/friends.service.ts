@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { FRIEND_REQUEST_DAYS, FRIEND_REQUESTS_PER_DAY, FRIENDS_MAX, type RequestsFrom } from '@connecta/shared';
 import { requireSignedUp } from '../accounts/signed-up.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { PresenceService } from '../presence/presence.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { toPerson } from '../rooms/person.js';
@@ -25,6 +26,7 @@ export class FriendsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly presence: PresenceService,
+    private readonly inbox: NotificationsService,
   ) {}
 
   async list(userId: string): Promise<Friend[]> {
@@ -94,6 +96,7 @@ export class FriendsService {
     const theirs = await this.prisma.friendRequest.findUnique({ where: { fromId_toId: { fromId: them.id, toId: me.id } } });
     if (theirs && theirs.expiresAt > now && !(await this.blocked(them.id, me.id))) {
       await this.befriend(me.id, them.id);
+      await this.inbox.friendAccepted(them.id, toPerson(me));
       return { status: 'friends', person: toPerson(them) };
     }
 
@@ -105,7 +108,8 @@ export class FriendsService {
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
-    if (!(await this.blocked(them.id, me.id)) && !(await this.accepts(them.requestsFrom as RequestsFrom, me.id, them.id))) {
+    const blockedByThem = await this.blocked(them.id, me.id);
+    if (!blockedByThem && !(await this.accepts(them.requestsFrom as RequestsFrom, me.id, them.id))) {
       throw new ForbiddenException({ message: `${them.name} isn’t taking friend requests right now.`, code: 'not_accepting' });
     }
     const expiresAt = new Date(now.getTime() + FRIEND_REQUEST_DAYS * DAY_MS);
@@ -114,6 +118,8 @@ export class FriendsService {
       create: { fromId: me.id, toId: them.id, createdAt: now, expiresAt },
       update: { createdAt: now, expiresAt, ignoredAt: null },
     });
+    // Someone who blocked you never hears about it (it looks the same as being ignored)
+    if (!blockedByThem) await this.inbox.friendRequest(them.id, toPerson(me));
     return { status: 'sent', person: toPerson(them) };
   }
 
@@ -125,6 +131,7 @@ export class FriendsService {
     });
     if (!request || request.expiresAt <= now || (await this.blocked(userId, fromId))) throw new NotFoundException();
     const since = await this.befriend(userId, fromId);
+    await this.inbox.friendAccepted(fromId, toPerson(await this.prisma.user.findUniqueOrThrow({ where: { id: userId } })));
     const presence = await this.presence.views(userId, [fromId]);
     return { person: toPerson(request.from), since: since.toISOString(), presence: presence.get(fromId)! };
   }

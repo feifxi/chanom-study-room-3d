@@ -61,6 +61,7 @@ export class DmsService {
                 createdAt: last.createdAt.toISOString(),
               }
             : null,
+          muted: m.muted,
           unread: await this.unreadIn(m.dmId, userId, m.lastReadId),
         };
       }),
@@ -92,7 +93,8 @@ export class DmsService {
       orderBy: { name: 'asc' },
       take: 20,
     });
-    return { id: dm?.id ?? null, with: toPerson(other), ...standing, sharedRooms: shared };
+    const mine = dm && (await this.prisma.dmMember.findUnique({ where: { dmId_userId: { dmId: dm.id, userId } } }));
+    return { id: dm?.id ?? null, with: toPerson(other), ...standing, muted: !!mine?.muted, sharedRooms: shared };
   }
 
   async page(userId: string, dmId: string, before?: string, limit = MESSAGES_PAGE): Promise<MessagePage> {
@@ -218,6 +220,12 @@ export class DmsService {
     if (member.lastReadId && member.lastReadId >= messageId) return;
     if (!(await this.prisma.message.count({ where: { id: messageId, dmId } }))) throw new NotFoundException();
     await this.prisma.dmMember.update({ where: { dmId_userId: { dmId, userId } }, data: { lastReadId: messageId } });
+  }
+
+  /** Mute or unmute a chat for yourself; they're never told. */
+  async mute(userId: string, dmId: string, muted: boolean): Promise<void> {
+    await this.member(userId, dmId);
+    await this.prisma.dmMember.update({ where: { dmId_userId: { dmId, userId } }, data: { muted } });
   }
 
   private unreadIn(dmId: string, userId: string, lastReadId: string | null) {

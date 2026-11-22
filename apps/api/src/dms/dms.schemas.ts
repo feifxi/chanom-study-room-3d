@@ -7,6 +7,8 @@ const Standing = {
   friend: z.boolean(),
   /** You blocked them (they can't message you) */
   blocked: z.boolean(),
+  /** You muted this chat: left out of the Messages badge, no toasts in a room */
+  muted: z.boolean(),
 };
 
 export const DmSummarySchema = z
@@ -30,6 +32,8 @@ export const DmSummarySchema = z
   })
   .meta({ id: 'DmSummary' });
 export type DmSummary = z.infer<typeof DmSummarySchema>;
+
+export const MuteBodySchema = z.object({ muted: z.boolean() }).meta({ id: 'MuteBody' });
 
 export const InviteToRoomBodySchema = z.object({ roomId: z.string().max(40) }).meta({ id: 'InviteToRoomBody' });
 export const AnswerAskBodySchema = z.object({ send: z.boolean() }).meta({ id: 'AnswerAskBody' });

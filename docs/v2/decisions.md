@@ -379,6 +379,12 @@ decision is made or changed: one line, a date, and the reason.
   Redis (each tab says it's there every minute; one silent for 2.5 minutes is dropped); only "last
   seen" is stored. A room someone's in that's listed (Open or Ask to join) is named on Friends; a
   non-member gets one card per friend for rooms they can't walk into, so nobody learns who's together.
+- **The 🔔 inbox as built** (2026-11-22, the owner): in it now are the kinds whose features exist
+  (friend requests and accepted ones, join requests to rooms you run and being let in, @mentions and
+  @room); space in a full room, events and team actions come with their features. A room's
+  "Every message" setting is real, as one item per room that counts up while unread, not one per
+  message. Muting a DM takes it out of the Messages badge and its toasts; it still shows its unread
+  count in the list. Inside a room (3D open) inbox items and unmuted DMs also arrive as toasts.
 - **Background jobs are BullMQ on Redis** (2026-11-22): the pictures worker is the first; it runs
   inside the API process for now, with a per-environment prefix so tests never hand jobs to a
   running dev server. Redis was already there for the gateway.

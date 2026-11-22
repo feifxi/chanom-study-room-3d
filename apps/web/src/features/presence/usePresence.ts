@@ -18,6 +18,9 @@ let roomId: string | null = null;
 let lastInput = Date.now();
 let report: (() => void) | null = null;
 
+/** This tab has a room open in 3D (inbox items and DMs arrive as toasts there). */
+export const inRoomNow = () => roomId !== null;
+
 /**
  * While the 3D room is open, this tab is "in" it (presence, feature 5). In build step 4 the game
  * server takes this over.

@@ -55,6 +55,8 @@ export class PresenceService implements OnModuleDestroy {
     private readonly live: LiveService,
   ) {
     this.redis = new Redis(config.get('REDIS_URL', { infer: true }), { maxRetriesPerRequest: 2 });
+    // A dropped connection reconnects by itself; say so instead of an unhandled error
+    this.redis.on('error', (error) => this.log.warn(`Redis: ${error.message}`));
   }
 
   async onModuleDestroy() {

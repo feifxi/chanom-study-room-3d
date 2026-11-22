@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Ban, Flag, MoreHorizontal, UserMinus } from 'lucide-react';
+import { ArrowLeft, Ban, Bell, BellOff, Flag, MoreHorizontal, UserMinus } from 'lucide-react';
 import { toast } from 'sonner';
 import { PersonFace } from '@/components/PersonFace';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DmChat } from '@/features/dms/DmChat';
-import { useDmWith } from '@/features/dms/useDms';
+import { muteDm, useDmWith } from '@/features/dms/useDms';
 import { friendsApi, useFriendAction } from '@/features/friends/useFriends';
 import { mapFor } from '@/features/place/model';
 
@@ -23,13 +23,16 @@ const AvatarPreview = dynamic(() => import('@/features/avatar/AvatarPreview').th
 
 /**
  * A 1-to-1 chat (no calls: to talk, meet in a room). Their profile is on the side with the rooms
- * you share, so "come join" is one tap. Where they are right now comes with presence.
+ * you share, so "come join" is one tap. "…" mutes the chat (out of the badge, no toasts in a room).
  */
 export default function DmPage() {
   const { handle } = useParams<{ handle: string }>();
   const dm = useDmWith(handle);
   const u = dm.data?.with;
   const remove = useFriendAction(friendsApi.remove, () => toast(`Removed ${u?.name}. They won’t be told.`));
+  const mute = useFriendAction(muteDm, (_, { muted }) =>
+    toast(muted ? `Muted. ${u?.name}’s messages won’t count in your badge.` : 'Unmuted'),
+  );
   const block = useFriendAction(friendsApi.block, () => toast(`${u?.name} is blocked. Their messages are hidden in rooms you share.`));
 
   return (
@@ -56,6 +59,19 @@ export default function DmPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-2xl p-1.5">
+                {dm.data?.id && (
+                  <DropdownMenuItem onSelect={() => mute.mutate({ id: dm.data!.id!, muted: !dm.data!.muted })}>
+                    {dm.data.muted ? (
+                      <>
+                        <Bell /> Unmute
+                      </>
+                    ) : (
+                      <>
+                        <BellOff /> Mute
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                )}
                 {dm.data?.friend && (
                   <DropdownMenuItem onSelect={() => remove.mutate(u.id)}>
                     <UserMinus /> Remove friend
