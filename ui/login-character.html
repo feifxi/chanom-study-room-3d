@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en" class="nunito_22336911-module__FLPYxG__variable ibm_plex_sans_thai_24e7d61f-module__Gz-8DG__variable jetbrains_mono_f5d41edc-module__R56YrG__variable" data-ui-page="login-character">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Make your character · Connecta</title>
+    <link rel="stylesheet" href="assets/source/4f2683abfb221e.css">
+    <link rel="stylesheet" href="assets/overrides.css">
+    <link rel="stylesheet" href="assets/ui-consistency.css">
+    <link rel="stylesheet" href="assets/auth-layout.css">
+    <script src="assets/theme.js"></script>
+  </head>
+  <body class="app-bg">
+    <div class="auth-split">
+      <aside class="auth-intro" aria-labelledby="auth-intro-title">
+        <div class="auth-intro-copy">
+          <h2 id="auth-intro-title">Your friends are <span>waiting</span></h2>
+          <p>A cosy 3D room for your people. Walk over to talk, play a game, or just be there.</p>
+        </div>
+        <img
+          class="auth-intro-scene"
+          src="assets/captures/library-social-cover.png"
+          alt="Friends together in the Connecta Library"
+          width="1440"
+          height="800"
+        />
+        <ul class="auth-intro-notes" aria-label="About Connecta">
+          <li>Free</li>
+          <li>No download</li>
+          <li>13+</li>
+        </ul>
+      </aside>
+      <main class="flex flex-col items-center justify-center auth-character-main">
+        <div class="w-full auth-character-shell">
+          <div class="rounded-[2rem] border bg-card shadow-soft auth-character-card">
+            <form class="auth-character-form" data-auth-character="member">
+              <div class="auth-character-topbar">
+                <button
+                  type="button"
+                  class="flex w-fit items-center gap-1 text-sm font-bold text-muted-foreground hover:text-foreground"
+                  data-ui-go="signup.html"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-arrow-left size-4"
+                    aria-hidden="true"
+                  >
+                    <path d="m12 19-7-7 7-7"></path>
+                    <path d="M19 12H5"></path>
+                  </svg>
+                  Back
+                </button>
+                <a class="auth-character-brand" href="index.html"
+                  ><span class="flex items-center gap-2"
+                    ><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true">
+                      <path
+                        d="M 25.85 17.74 A 10 10 0 1 1 16 6"
+                        fill="none"
+                        stroke="var(--primary)"
+                        stroke-width="6"
+                        stroke-linecap="round"
+                      ></path>
+                      <circle cx="23.66" cy="9.57" r="3.6" fill="var(--tea)"></circle></svg
+                    ><span class="text-lg font-black tracking-[-0.03em]">Connecta</span></span
+                  ></a
+                >
+              </div>
+              <div>
+                <h1 class="text-2xl font-black tracking-[-0.03em]">Make your character</h1>
+                <p class="mt-1 text-sm text-muted-foreground">This is you in every room. You can change it any time.</p>
+              </div>
+              <div class="auth-character-identity">
+                <div class="flex flex-col gap-1.5">
+                  <label
+                    data-slot="label"
+                    class="flex items-center gap-2 select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 text-xs font-bold text-muted-foreground"
+                    for="name"
+                    >Display name</label
+                  ><input
+                    data-slot="input"
+                    class="h-11 w-full min-w-0 border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 rounded-xl"
+                    id="name"
+                    maxlength="16"
+                    required
+                    style=""
+                  />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label
+                    data-slot="label"
+                    class="flex items-center gap-2 select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 text-xs font-bold text-muted-foreground"
+                    for="handle"
+                    >Your @handle</label
+                  ><label
+                    class="flex h-11 items-center gap-1.5 rounded-xl border bg-card px-3 focus-within:ring-2 focus-within:ring-primary/40"
+                    ><svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-at-sign size-4 flex-none text-muted-foreground"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="4"></circle>
+                      <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"></path></svg
+                    ><input
+                      id="handle"
+                      minlength="3"
+                      maxlength="20"
+                      pattern="[a-z0-9_]{3,20}"
+                      aria-describedby="handle-help"
+                      autocapitalize="none"
+                      spellcheck="false"
+                      class="min-w-0 flex-1 bg-transparent text-sm font-semibold outline-none"
+                      required
+                      /></label>
+                  <p class="auth-help" id="handle-help">3–20 characters. Use letters, numbers or underscores.</p>
+                </div>
+              </div>
+              <section class="auth-character-look" aria-labelledby="character-look-title">
+                <h2 id="character-look-title">Customize your look</h2>
+              </section>
+              <button
+                data-slot="button"
+                data-variant="default"
+                data-size="default"
+                class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 bg-primary text-primary-foreground hover:bg-primary/80 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 h-12 rounded-2xl text-base font-extrabold"
+                type="submit"
+              >
+                Let’s go
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-arrow-right"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14"></path>
+                  <path d="m12 5 7 7-7 7"></path>
+                </svg>
+              </button>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="assets/auth-flow.js" defer></script>
+    <button class="auth-demo-control" type="button" data-ui-toolbar aria-label="Demo controls">Demo</button>
+    <script src="assets/prototype.js"></script>
+  </body>
+</html>

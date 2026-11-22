@@ -1,0 +1,149 @@
+{
+  "issues": [],
+  "views": [
+    {
+      "width": 318,
+      "theme": "light",
+      "overflow": false,
+      "popups": 0,
+      "rows": 9,
+      "header": {
+        "x": 65,
+        "y": 7,
+        "width": 318,
+        "height": 185.1875,
+        "top": 7,
+        "right": 383,
+        "bottom": 192.1875,
+        "left": 65
+      },
+      "active": "inbox.html"
+    },
+    {
+      "width": 318,
+      "theme": "dark",
+      "overflow": false,
+      "popups": 0,
+      "rows": 9,
+      "header": {
+        "x": 65,
+        "y": 7,
+        "width": 318,
+        "height": 185.1875,
+        "top": 7,
+        "right": 383,
+        "bottom": 192.1875,
+        "left": 65
+      },
+      "active": "inbox.html"
+    },
+    {
+      "width": 668,
+      "theme": "light",
+      "overflow": false,
+      "popups": 0,
+      "rows": 9,
+      "header": {
+        "x": 88,
+        "y": 12,
+        "width": 668,
+        "height": 152.296875,
+        "top": 12,
+        "right": 756,
+        "bottom": 164.296875,
+        "left": 88
+      },
+      "active": "inbox.html"
+    },
+    {
+      "width": 668,
+      "theme": "dark",
+      "overflow": false,
+      "popups": 0,
+      "rows": 9,
+      "header": {
+        "x": 88,
+        "y": 12,
+        "width": 668,
+        "height": 152.296875,
+        "top": 12,
+        "right": 756,
+        "bottom": 164.296875,
+        "left": 88
+      },
+      "active": "inbox.html"
+    },
+    {
+      "width": 924,
+      "theme": "light",
+      "overflow": false,
+      "popups": 0,
+      "rows": 9,
+      "header": {
+        "x": 88,
+        "y": 12,
+        "width": 924,
+        "height": 156.296875,
+        "top": 12,
+        "right": 1012,
+        "bottom": 168.296875,
+        "left": 88
+      },
+      "active": "inbox.html"
+    },
+    {
+      "width": 924,
+      "theme": "dark",
+      "overflow": false,
+      "popups": 0,
+      "rows": 9,
+      "header": {
+        "x": 88,
+        "y": 12,
+        "width": 924,
+        "height": 156.296875,
+        "top": 12,
+        "right": 1012,
+        "bottom": 168.296875,
+        "left": 88
+      },
+      "active": "inbox.html"
+    },
+    {
+      "width": 1340,
+      "theme": "light",
+      "overflow": false,
+      "popups": 0,
+      "rows": 9,
+      "header": {
+        "x": 88,
+        "y": 12,
+        "width": 1340,
+        "height": 156.296875,
+        "top": 12,
+        "right": 1428,
+        "bottom": 168.296875,
+        "left": 88
+      },
+      "active": "inbox.html"
+    },
+    {
+      "width": 1340,
+      "theme": "dark",
+      "overflow": false,
+      "popups": 0,
+      "rows": 9,
+      "header": {
+        "x": 88,
+        "y": 12,
+        "width": 1340,
+        "height": 156.296875,
+        "top": 12,
+        "right": 1428,
+        "bottom": 168.296875,
+        "left": 88
+      },
+      "active": "inbox.html"
+    }
+  ]
+}

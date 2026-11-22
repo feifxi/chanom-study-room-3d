@@ -1,0 +1,518 @@
+[
+  {
+    "id": "room-chanom",
+    "kind": "room",
+    "file": "room-chanom.html",
+    "name": "Chanom Friends",
+    "emoji": "🍓",
+    "summary": "📚 Cosy Library · 3/100 inside",
+    "walk": "walk-library.html",
+    "description": "Our little corner. Study, chill, play cards on Friday.",
+    "membersSummary": "9 members · you’re the owner",
+    "pinned": "Werewolf night · Fri 20:00",
+    "messages": [
+      {
+        "author": "Ploy",
+        "time": "Today 20:41",
+        "html": "who's free friday? werewolf night 🐺",
+        "text": "who's free friday? werewolf night 🐺",
+        "reactions": []
+      },
+      {
+        "author": "Ken",
+        "time": "Today 20:43",
+        "html": "<span class=\"rounded-md bg-primary/15 px-1 font-bold text-primary\">@feifei</span> you coming?",
+        "text": "@feifei you coming?",
+        "reactions": [
+          "👀 2"
+        ]
+      },
+      {
+        "author": "Mai",
+        "time": "Today 20:44",
+        "html": "yes!! I'll bring snacks (virtually)",
+        "text": "yes!! I'll bring snacks (virtually)",
+        "reactions": [
+          "🍪 3"
+        ]
+      },
+      {
+        "author": "Jod",
+        "time": "Today 20:50",
+        "html": "the library is so cosy tonight, come study",
+        "text": "the library is so cosy tonight, come study",
+        "image": "assets/source/38e6ff301baf81.png",
+        "reactions": []
+      },
+      {
+        "author": "Nam",
+        "time": "Today 20:55",
+        "html": "me!! 🙋 count me in for friday<span class=\"ml-1 text-[11px] text-muted-foreground\">(edited)</span>",
+        "text": "me!! 🙋 count me in for friday(edited)",
+        "reactions": []
+      },
+      {
+        "author": "feifei",
+        "time": "Today 20:56",
+        "html": "I’m coming! Save me a seat 🐱",
+        "text": "I’m coming! Save me a seat 🐱",
+        "reactions": []
+      }
+    ],
+    "groups": [
+      {
+        "title": "Inside now · 3",
+        "members": [
+          {
+            "name": "Mai",
+            "activity": "📖 Focusing · Calculus",
+            "presence": "focusing"
+          },
+          {
+            "name": "Jod",
+            "activity": "📖 Focusing · Kuy pawa",
+            "presence": "focusing"
+          },
+          {
+            "name": "Ploy",
+            "activity": "Walking around the Library",
+            "presence": "online"
+          }
+        ]
+      },
+      {
+        "title": "Members",
+        "members": [
+          {
+            "name": "Nam",
+            "activity": "☕ On a break",
+            "presence": "away"
+          },
+          {
+            "name": "Bow",
+            "activity": "Offline",
+            "presence": "offline"
+          },
+          {
+            "name": "Pim",
+            "activity": "Offline",
+            "presence": "offline"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Mai",
+    "summary": "Focusing · Calculus",
+    "messages": [
+      {
+        "author": "feifei",
+        "time": "09:12",
+        "html": "are you studying today?",
+        "text": "are you studying today?",
+        "reactions": []
+      },
+      {
+        "author": "Mai",
+        "time": "09:14",
+        "html": "yes!! come to the library, the cat is here 🐱",
+        "text": "yes!! come to the library, the cat is here 🐱",
+        "reactions": []
+      },
+      {
+        "author": "Mai",
+        "time": "09:14",
+        "html": "bring your calculus notes",
+        "text": "bring your calculus notes",
+        "reactions": []
+      }
+    ],
+    "groups": [],
+    "id": "messages-mai",
+    "kind": "dm",
+    "file": "messages-mai.html",
+    "preview": "bring your calculus notes",
+    "time": "09:15"
+  },
+  {
+    "id": "room-cpe",
+    "kind": "room",
+    "file": "room-cpe.html",
+    "name": "CPE Year 3",
+    "emoji": "📐",
+    "summary": "📚 Cosy Library · 25/25 inside · full",
+    "description": "Computer Engineering, class of 2027. Exam season survival.",
+    "membersSummary": "64 members · you’re a mod",
+    "messages": [],
+    "groups": [
+      {
+        "title": "Inside now · 25",
+        "members": [
+          {
+            "name": "Nam",
+            "activity": "☕ On a break",
+            "presence": "away"
+          },
+          {
+            "name": "Pim",
+            "activity": "Offline",
+            "presence": "offline"
+          },
+          {
+            "name": "Ken",
+            "activity": "🎴 Playing Slave",
+            "presence": "online"
+          }
+        ]
+      },
+      {
+        "title": "Members",
+        "members": []
+      }
+    ]
+  },
+  {
+    "name": "Jod",
+    "summary": "Focusing · Kuy pawa",
+    "messages": [
+      {
+        "author": "Jod",
+        "time": "Yesterday",
+        "html": "ok see you at 8",
+        "text": "ok see you at 8",
+        "reactions": []
+      },
+      {
+        "author": "feifei",
+        "time": "Yesterday",
+        "html": "👍",
+        "text": "👍",
+        "reactions": []
+      }
+    ],
+    "groups": [],
+    "id": "messages-jod",
+    "kind": "dm",
+    "file": "messages-jod.html",
+    "preview": "You: 👍",
+    "time": "Yesterday"
+  },
+  {
+    "id": "room-gamenight",
+    "kind": "room",
+    "file": "room-gamenight.html",
+    "name": "Game Night Club",
+    "emoji": "🎴",
+    "summary": "🌙 Starry Rooftop · 0/25 inside",
+    "walk": "walk-rooftop.html",
+    "description": "Werewolf, cards and drawing games every weekend. Everyone welcome!",
+    "membersSummary": "230 members · you’re a member",
+    "pinned": "Draw & Guess · Sat 21:00",
+    "messages": [],
+    "groups": [
+      {
+        "title": "Inside now · 0",
+        "members": []
+      },
+      {
+        "title": "Members",
+        "members": [
+          {
+            "name": "Ploy",
+            "activity": "Walking around the Library",
+            "presence": "online"
+          },
+          {
+            "name": "Bow",
+            "activity": "Offline",
+            "presence": "offline"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Ken",
+    "summary": "Online",
+    "messages": [
+      {
+        "author": "Ken",
+        "time": "Mon",
+        "html": "gg last night 🎴",
+        "text": "gg last night 🎴",
+        "reactions": []
+      }
+    ],
+    "groups": [],
+    "id": "messages-ken",
+    "kind": "dm",
+    "file": "messages-ken.html",
+    "preview": "gg last night 🎴",
+    "time": "Mon"
+  },
+  {
+    "id": "room-study-sprint",
+    "kind": "room",
+    "file": "room-study-sprint.html",
+    "name": "Study Sprint Squad",
+    "emoji": "⏱️",
+    "summary": "📚 Cosy Library · 0/25 inside",
+    "walk": "walk-library.html",
+    "description": "Study Sprint Squad. Come hang out.",
+    "membersSummary": "24 members · you’re the owner",
+    "messages": [],
+    "groups": [
+      {
+        "title": "Inside now · 0",
+        "members": []
+      },
+      {
+        "title": "Members",
+        "members": [
+          {
+            "name": "Nam",
+            "activity": "☕ On a break",
+            "presence": "away"
+          },
+          {
+            "name": "Pim",
+            "activity": "Offline",
+            "presence": "offline"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "room-ielts-buddies",
+    "kind": "room",
+    "file": "room-ielts-buddies.html",
+    "name": "IELTS Buddies",
+    "emoji": "🗣️",
+    "summary": "🐈 Cat Café · 2/25 inside",
+    "walk": "walk-cafe.html",
+    "description": "IELTS Buddies. Come hang out.",
+    "membersSummary": "19 members · you’re a member",
+    "messages": [],
+    "groups": [
+      {
+        "title": "Inside now · 2",
+        "members": []
+      },
+      {
+        "title": "Members",
+        "members": [
+          {
+            "name": "Nam",
+            "activity": "☕ On a break",
+            "presence": "away"
+          },
+          {
+            "name": "Pim",
+            "activity": "Offline",
+            "presence": "offline"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "room-band",
+    "kind": "room",
+    "file": "room-band.html",
+    "name": "Band Practice",
+    "emoji": "🎸",
+    "summary": "🌙 Starry Rooftop · 0/25 inside",
+    "walk": "walk-rooftop.html",
+    "description": "Band Practice. Come hang out.",
+    "membersSummary": "19 members · you’re a member",
+    "messages": [],
+    "groups": [
+      {
+        "title": "Inside now · 0",
+        "members": []
+      },
+      {
+        "title": "Members",
+        "members": [
+          {
+            "name": "Nam",
+            "activity": "☕ On a break",
+            "presence": "away"
+          },
+          {
+            "name": "Pim",
+            "activity": "Offline",
+            "presence": "offline"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "room-family",
+    "kind": "room",
+    "file": "room-family.html",
+    "name": "Family Room",
+    "emoji": "🏠",
+    "summary": "🐈 Cat Café · 0/25 inside",
+    "walk": "walk-cafe.html",
+    "description": "Family Room. Come hang out.",
+    "membersSummary": "17 members · you’re the owner",
+    "messages": [],
+    "groups": [
+      {
+        "title": "Inside now · 0",
+        "members": []
+      },
+      {
+        "title": "Members",
+        "members": [
+          {
+            "name": "Nam",
+            "activity": "☕ On a break",
+            "presence": "away"
+          },
+          {
+            "name": "Pim",
+            "activity": "Offline",
+            "presence": "offline"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "room-manga",
+    "kind": "room",
+    "file": "room-manga.html",
+    "name": "Manga Club",
+    "emoji": "📖",
+    "summary": "📚 Cosy Library · 1/25 inside",
+    "walk": "walk-library.html",
+    "description": "Manga Club. Come hang out.",
+    "membersSummary": "16 members · you’re a mod",
+    "messages": [],
+    "groups": [
+      {
+        "title": "Inside now · 1",
+        "members": []
+      },
+      {
+        "title": "Members",
+        "members": [
+          {
+            "name": "Nam",
+            "activity": "☕ On a break",
+            "presence": "away"
+          },
+          {
+            "name": "Pim",
+            "activity": "Offline",
+            "presence": "offline"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "room-dorm-3b",
+    "kind": "room",
+    "file": "room-dorm-3b.html",
+    "name": "Dorm 3B",
+    "emoji": "🛏️",
+    "summary": "🌙 Starry Rooftop · 0/25 inside",
+    "walk": "walk-rooftop.html",
+    "description": "Dorm 3B. Come hang out.",
+    "membersSummary": "13 members · you’re a member",
+    "messages": [],
+    "groups": [
+      {
+        "title": "Inside now · 0",
+        "members": []
+      },
+      {
+        "title": "Members",
+        "members": [
+          {
+            "name": "Nam",
+            "activity": "☕ On a break",
+            "presence": "away"
+          },
+          {
+            "name": "Pim",
+            "activity": "Offline",
+            "presence": "offline"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "room-cpe-lab",
+    "kind": "room",
+    "file": "room-cpe-lab.html",
+    "name": "CPE Lab Group 4",
+    "emoji": "🧪",
+    "summary": "📚 Cosy Library · 0/25 inside",
+    "walk": "walk-library.html",
+    "description": "CPE Lab Group 4. Come hang out.",
+    "membersSummary": "21 members · you’re a member",
+    "messages": [],
+    "groups": [
+      {
+        "title": "Inside now · 0",
+        "members": []
+      },
+      {
+        "title": "Members",
+        "members": [
+          {
+            "name": "Nam",
+            "activity": "☕ On a break",
+            "presence": "away"
+          },
+          {
+            "name": "Pim",
+            "activity": "Offline",
+            "presence": "offline"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "room-werewolf",
+    "kind": "room",
+    "file": "room-werewolf.html",
+    "name": "Werewolf Fridays",
+    "emoji": "🐺",
+    "summary": "🌙 Starry Rooftop · 3/25 inside",
+    "walk": "walk-rooftop.html",
+    "description": "Werewolf Fridays. Come hang out.",
+    "membersSummary": "22 members · you’re a member",
+    "messages": [],
+    "groups": [
+      {
+        "title": "Inside now · 3",
+        "members": []
+      },
+      {
+        "title": "Members",
+        "members": [
+          {
+            "name": "Nam",
+            "activity": "☕ On a break",
+            "presence": "away"
+          },
+          {
+            "name": "Pim",
+            "activity": "Offline",
+            "presence": "offline"
+          }
+        ]
+      }
+    ]
+  }
+]

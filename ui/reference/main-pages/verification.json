@@ -1,0 +1,299 @@
+{
+  "issues": [],
+  "measurements": [
+    {
+      "file": "friends.html",
+      "overflow": false,
+      "images": [],
+      "popup": null,
+      "rail": {
+        "left": 0,
+        "right": 76,
+        "top": 12,
+        "bottom": 988,
+        "height": 976
+      },
+      "hero": null,
+      "promo": null,
+      "people": 6,
+      "private": false,
+      "products": 0
+    },
+    {
+      "file": "friend-add.html",
+      "overflow": false,
+      "images": [],
+      "popup": null,
+      "rail": {
+        "left": 0,
+        "right": 76,
+        "top": 12,
+        "bottom": 988,
+        "height": 976
+      },
+      "hero": null,
+      "promo": null,
+      "people": 6,
+      "private": false,
+      "products": 0
+    },
+    {
+      "file": "friend-requests.html",
+      "overflow": false,
+      "images": [],
+      "popup": null,
+      "rail": {
+        "left": 0,
+        "right": 76,
+        "top": 12,
+        "bottom": 988,
+        "height": 976
+      },
+      "hero": null,
+      "promo": null,
+      "people": 6,
+      "private": false,
+      "products": 0
+    },
+    {
+      "file": "discover.html",
+      "overflow": false,
+      "images": [],
+      "popup": null,
+      "rail": {
+        "left": 0,
+        "right": 76,
+        "top": 12,
+        "bottom": 988,
+        "height": 976
+      },
+      "hero": {
+        "left": 172,
+        "right": 1344,
+        "top": 36,
+        "bottom": 189.5,
+        "height": 153.5
+      },
+      "promo": null,
+      "people": 0,
+      "private": false,
+      "products": 0
+    },
+    {
+      "file": "discover-guest.html",
+      "overflow": false,
+      "images": [],
+      "popup": null,
+      "rail": {
+        "left": 0,
+        "right": 76,
+        "top": 12,
+        "bottom": 988,
+        "height": 976
+      },
+      "hero": {
+        "left": 172,
+        "right": 1344,
+        "top": 36,
+        "bottom": 189.5,
+        "height": 153.5
+      },
+      "promo": null,
+      "people": 0,
+      "private": false,
+      "products": 0
+    },
+    {
+      "file": "shop.html",
+      "overflow": false,
+      "images": [],
+      "popup": null,
+      "rail": {
+        "left": 0,
+        "right": 76,
+        "top": 12,
+        "bottom": 988,
+        "height": 976
+      },
+      "hero": null,
+      "promo": {
+        "left": 348,
+        "right": 1404,
+        "top": 32,
+        "bottom": 175,
+        "height": 143
+      },
+      "people": 0,
+      "private": false,
+      "products": 13
+    },
+    {
+      "file": "shop-outfits.html",
+      "overflow": false,
+      "images": [],
+      "popup": null,
+      "rail": {
+        "left": 0,
+        "right": 76,
+        "top": 12,
+        "bottom": 988,
+        "height": 976
+      },
+      "hero": null,
+      "promo": {
+        "left": 348,
+        "right": 1404,
+        "top": 32,
+        "bottom": 175,
+        "height": 143
+      },
+      "people": 0,
+      "private": false,
+      "products": 4
+    },
+    {
+      "file": "shop-accessories.html",
+      "overflow": false,
+      "images": [],
+      "popup": null,
+      "rail": {
+        "left": 0,
+        "right": 76,
+        "top": 12,
+        "bottom": 988,
+        "height": 976
+      },
+      "hero": null,
+      "promo": {
+        "left": 348,
+        "right": 1404,
+        "top": 32,
+        "bottom": 175,
+        "height": 143
+      },
+      "people": 0,
+      "private": false,
+      "products": 4
+    },
+    {
+      "file": "shop-pets.html",
+      "overflow": false,
+      "images": [],
+      "popup": null,
+      "rail": {
+        "left": 0,
+        "right": 76,
+        "top": 12,
+        "bottom": 988,
+        "height": 976
+      },
+      "hero": null,
+      "promo": {
+        "left": 348,
+        "right": 1404,
+        "top": 32,
+        "bottom": 175,
+        "height": 143
+      },
+      "people": 0,
+      "private": false,
+      "products": 3
+    },
+    {
+      "file": "shop-frames.html",
+      "overflow": false,
+      "images": [],
+      "popup": null,
+      "rail": {
+        "left": 0,
+        "right": 76,
+        "top": 12,
+        "bottom": 988,
+        "height": 976
+      },
+      "hero": null,
+      "promo": {
+        "left": 348,
+        "right": 1404,
+        "top": 32,
+        "bottom": 175,
+        "height": 143
+      },
+      "people": 0,
+      "private": false,
+      "products": 2
+    },
+    {
+      "file": "shop-try-on.html",
+      "overflow": false,
+      "images": [],
+      "popup": null,
+      "rail": {
+        "left": 0,
+        "right": 76,
+        "top": 12,
+        "bottom": 988,
+        "height": 976
+      },
+      "hero": null,
+      "promo": {
+        "left": 348,
+        "right": 1404,
+        "top": 32,
+        "bottom": 175,
+        "height": 143
+      },
+      "people": 0,
+      "private": false,
+      "products": 13
+    },
+    {
+      "file": "inbox.html",
+      "overflow": false,
+      "images": [],
+      "popup": {
+        "left": 86,
+        "right": 426,
+        "top": 283.5,
+        "bottom": 843.5,
+        "height": 560
+      },
+      "rail": {
+        "left": 0,
+        "right": 76,
+        "top": 12,
+        "bottom": 988,
+        "height": 976
+      },
+      "hero": null,
+      "promo": null,
+      "people": 0,
+      "private": false,
+      "products": 0
+    },
+    {
+      "file": "profile-menu.html",
+      "overflow": false,
+      "images": [],
+      "popup": {
+        "left": 86,
+        "right": 326,
+        "top": 801,
+        "bottom": 983,
+        "height": 182
+      },
+      "rail": {
+        "left": 0,
+        "right": 76,
+        "top": 12,
+        "bottom": 988,
+        "height": 976
+      },
+      "hero": null,
+      "promo": null,
+      "people": 0,
+      "private": false,
+      "products": 0
+    }
+  ]
+}

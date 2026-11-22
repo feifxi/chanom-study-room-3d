@@ -1,0 +1,620 @@
+<!doctype html>
+<html
+  lang="en"
+  class="nunito_22336911-module__FLPYxG__variable ibm_plex_sans_thai_24e7d61f-module__Gz-8DG__variable jetbrains_mono_f5d41edc-module__R56YrG__variable h-full light"
+  data-palette="strawberry"
+  data-ui-page="friend-requests"
+  data-ui-layout="chat-first"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Friend requests · Connecta UI</title>
+    <link rel="stylesheet" href="assets/source/4f2683abfb221e.css" />
+    <link rel="stylesheet" href="assets/overrides.css" />
+    <link rel="stylesheet" href="assets/chat-layout.css" />
+
+    <link rel="stylesheet" href="assets/main-pages.css" />
+
+    <link rel="stylesheet" href="assets/ui-consistency.css" />
+
+    <script src="assets/theme.js"></script>
+    <link rel="stylesheet" href="assets/inbox-flyout.css" />
+  </head>
+  <body class="app-bg ui-with-rail" data-ui-back="friends.html">
+    <!-- Chat-first HTML prototype. Edit this markup and assets/chat-layout.css. -->
+    <div class="rail-page-layout">
+      <nav class="app-rail" aria-label="App">
+        <a class="rail-brand" href="home.html" aria-label="Connecta"
+          ><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+            <path
+              d="M25.85 17.74A10 10 0 1 1 16 6"
+              fill="none"
+              stroke="var(--primary)"
+              stroke-width="6"
+              stroke-linecap="round"
+            ></path>
+            <circle cx="23.66" cy="9.57" r="3.6" fill="var(--tea)"></circle></svg
+        ></a>
+        <div class="rail-links">
+          <a class="rail-link" href="home-dashboard.html" aria-label="Home"
+            ><svg
+              class="chat-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-8H9v8H4a1 1 0 0 1-1-1z"></path></svg
+            ><span>Home</span></a
+          >
+          <a class="rail-link" href="home.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"
+                ></path></svg></span
+            ><span>Chat</span></a
+          ><a class="rail-link is-active" href="friends.html" aria-current="page"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+                ></path>
+                <circle cx="9" cy="7" r="4"></circle></svg
+              ><span class="rail-badge">1</span></span
+            ><span>Friends</span></a
+          ><a class="rail-link" href="focus.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 3v18h18M7 14v3m5-8v8m5-12v12"></path></svg></span
+            ><span>Focus</span></a
+          ><a class="rail-link" href="discover.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12Z"></path></svg></span
+            ><span>Discover</span></a
+          ><a class="rail-link" href="shop.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M6 3 3 7v13a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7l-3-4ZM3 7h18M8 11a4 4 0 0 0 8 0"
+                ></path></svg></span
+            ><span>Shop</span></a
+          >
+          <a class="rail-link" href="plus.html"
+            ><svg
+              class="chat-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m2 5 5 4 5-6 5 6 5-4-3 14H5L2 5Zm3 17h14"></path></svg
+            ><span>Plus</span></a
+          ><button class="rail-link" data-ui-go="inbox.html" aria-label="Inbox, 4 new">
+            <span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg
+              ><span class="rail-badge">4</span></span
+            ><span>Inbox</span></button
+          >
+        </div>
+        <div class="rail-bottom">
+          <button class="rail-profile" aria-label="You" data-ui-go="profile-menu.html">
+            <span class="chat-avatar" style="--avatar-color: #bc4678"
+              ><span>f</span><i class="presence-online" aria-label="online"></i></span
+            ><span>feifei</span>
+          </button>
+        </div>
+      </nav>
+
+      <main class="rail-page-content">
+        <div class="friends-page page-refined">
+          <header class="friends-heading">
+            <div>
+              <h1>Friends</h1>
+              <p>Your people, a little closer.</p>
+            </div>
+            <div class="friends-header-actions">
+              <button class="page-button page-button-quiet" data-ui-go="friend-requests.html">
+                Requests <span class="friend-request-count">1</span></button
+              ><button class="page-button page-button-primary" data-ui-go="friend-add.html">
+                <svg
+                  class="chat-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M12 5v14M5 12h14"></path></svg
+                >Add friend
+              </button>
+            </div>
+          </header>
+          <section class="friends-now" aria-labelledby="friends-now-title">
+            <div class="friends-section-heading">
+              <h2 id="friends-now-title">Hanging out now</h2>
+              <span>5 friends around</span>
+            </div>
+            <div class="friends-hangouts">
+              <article class="friend-hangout friend-hangout-library">
+                <div class="friend-hangout-copy">
+                  <div class="friend-face-stack" aria-hidden="true">
+                    <span class="friend-avatar" style="--friend-color: #7758c4"
+                      ><span>M</span><i class="friend-presence-focus" aria-label="focus"></i></span
+                    ><span class="friend-avatar" style="--friend-color: #a65728"
+                      ><span>J</span><i class="friend-presence-focus" aria-label="focus"></i></span
+                    ><span class="friend-avatar" style="--friend-color: #a65728"
+                      ><span>P</span><i class="friend-presence-online" aria-label="online"></i
+                    ></span>
+                  </div>
+                  <h3>Mai, Jod and Ploy</h3>
+                  <p>Together in Chanom Friends</p>
+                  <a class="friend-join" href="walk-library.html"
+                    >Join them
+                    <svg
+                      class="chat-icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M5 12h14m-6-6 6 6-6 6"></path></svg
+                  ></a>
+                </div>
+                <div class="friend-hangout-image">
+                  <img
+                    src="assets/captures/library-social-cover.png"
+                    alt="The original 3D Library where friends are hanging out"
+                  />
+                </div>
+              </article>
+              <article class="friend-hangout friend-hangout-cafe">
+                <div class="friend-hangout-copy">
+                  <div class="friend-face-stack" aria-hidden="true">
+                    <span class="friend-avatar" style="--friend-color: #8652a0"
+                      ><span>M</span><i class="friend-presence-online" aria-label="online"></i
+                    ></span>
+                  </div>
+                  <h3>Mook is hanging out</h3>
+                  <p>Cat Café Common Room #2</p>
+                  <a class="friend-join" href="common-cafe-2.html"
+                    >Join Mook
+                    <svg
+                      class="chat-icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M5 12h14m-6-6 6 6-6 6"></path></svg
+                  ></a>
+                </div>
+                <div class="friend-hangout-image">
+                  <img src="assets/captures/walk-cafe-0.png" alt="The original 3D Cat Café Common room" />
+                </div>
+              </article>
+            </div>
+          </section>
+          <section class="friends-directory" aria-labelledby="friends-directory-title">
+            <div class="friends-directory-heading">
+              <div>
+                <h2 id="friends-directory-title">Your friends <span>6</span></h2>
+                <p>A face, a status, and a way to say hello.</p>
+              </div>
+              <label class="friends-search"
+                ><svg
+                  class="chat-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="10.5" cy="10.5" r="7.5"></circle>
+                  <path d="m16 16 5 5"></path></svg
+                ><input
+                  type="search"
+                  placeholder="Search friends"
+                  aria-label="Search friends"
+                  data-friends-search=""
+                  autocomplete="off"
+              /></label>
+            </div>
+            <div class="friends-roster">
+              <article class="friend-row" data-friend-row="" data-friend-search="mai maimai focusing · calculus">
+                <span class="friend-avatar" style="--friend-color: #7758c4"
+                  ><span>M</span><i class="friend-presence-focus" aria-label="focus"></i
+                ></span>
+                <div class="friend-row-identity">
+                  <h3>Mai</h3>
+                  <p>@maimai</p>
+                </div>
+                <div class="friend-row-activity"><span>Focusing · Calculus</span><small>Chanom Friends</small></div>
+                <span class="friend-status friend-status-focus">Focusing</span>
+                <div class="friend-row-actions">
+                  <a href="walk-library.html" class="friend-row-join">Join</a
+                  ><a href="messages-mai.html" class="chat-icon-button" aria-label="Message Mai"
+                    ><svg
+                      class="chat-icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"
+                      ></path></svg
+                  ></a>
+                </div>
+              </article>
+              <article class="friend-row" data-friend-row="" data-friend-search="jod jod.dev focusing · kuy pawa">
+                <span class="friend-avatar" style="--friend-color: #a65728"
+                  ><span>J</span><i class="friend-presence-focus" aria-label="focus"></i
+                ></span>
+                <div class="friend-row-identity">
+                  <h3>Jod</h3>
+                  <p>@jod.dev</p>
+                </div>
+                <div class="friend-row-activity"><span>Focusing · Kuy pawa</span><small>Chanom Friends</small></div>
+                <span class="friend-status friend-status-focus">Focusing</span>
+                <div class="friend-row-actions">
+                  <a href="walk-library.html" class="friend-row-join">Join</a
+                  ><a href="messages-jod.html" class="chat-icon-button" aria-label="Message Jod"
+                    ><svg
+                      class="chat-icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"
+                      ></path></svg
+                  ></a>
+                </div>
+              </article>
+              <article class="friend-row" data-friend-row="" data-friend-search="ploy ployy walking around the library">
+                <span class="friend-avatar" style="--friend-color: #a65728"
+                  ><span>P</span><i class="friend-presence-online" aria-label="online"></i
+                ></span>
+                <div class="friend-row-identity">
+                  <h3>Ploy</h3>
+                  <p>@ployy</p>
+                </div>
+                <div class="friend-row-activity">
+                  <span>Walking around the Library</span><small>Chanom Friends</small>
+                </div>
+                <span class="friend-status friend-status-online">Online</span>
+                <div class="friend-row-actions">
+                  <a href="walk-library.html" class="friend-row-join">Join</a
+                  ><button class="chat-icon-button" aria-label="Message Ploy" data-page-preview="">
+                    <svg
+                      class="chat-icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"
+                      ></path>
+                    </svg>
+                  </button>
+                </div>
+              </article>
+              <article class="friend-row" data-friend-row="" data-friend-search="mook mookie in a common room">
+                <span class="friend-avatar" style="--friend-color: #8652a0"
+                  ><span>M</span><i class="friend-presence-online" aria-label="online"></i
+                ></span>
+                <div class="friend-row-identity">
+                  <h3>Mook</h3>
+                  <p>@mookie</p>
+                </div>
+                <div class="friend-row-activity"><span>In a Common room</span><small>Cat Café</small></div>
+                <span class="friend-status friend-status-online">Online</span>
+                <div class="friend-row-actions">
+                  <a href="common-cafe-2.html" class="friend-row-join">Join</a
+                  ><button class="chat-icon-button" aria-label="Message Mook" data-page-preview="">
+                    <svg
+                      class="chat-icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"
+                      ></path>
+                    </svg>
+                  </button>
+                </div>
+              </article>
+              <article class="friend-row" data-friend-row="" data-friend-search="earth earth.k jamming">
+                <span class="friend-avatar" style="--friend-color: #2f7755"
+                  ><span>E</span><i class="friend-presence-online" aria-label="online"></i
+                ></span>
+                <div class="friend-row-identity">
+                  <h3>Earth</h3>
+                  <p>@earth.k</p>
+                </div>
+                <div class="friend-row-activity"><span>Jamming</span></div>
+                <span class="friend-status friend-status-online">Online</span>
+                <div class="friend-row-actions">
+                  <button class="chat-icon-button" aria-label="Message Earth" data-page-preview="">
+                    <svg
+                      class="chat-icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"
+                      ></path>
+                    </svg>
+                  </button>
+                </div>
+              </article>
+              <article class="friend-row" data-friend-row="" data-friend-search="nam namwhan on a break">
+                <span class="friend-avatar" style="--friend-color: #2e6ea8"
+                  ><span>N</span><i class="friend-presence-idle" aria-label="idle"></i
+                ></span>
+                <div class="friend-row-identity">
+                  <h3>Nam</h3>
+                  <p>@namwhan</p>
+                </div>
+                <div class="friend-row-activity"><span>On a break</span></div>
+                <span class="friend-status friend-status-idle">Away</span>
+                <div class="friend-row-actions">
+                  <button class="chat-icon-button" aria-label="Message Nam" data-page-preview="">
+                    <svg
+                      class="chat-icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"
+                      ></path>
+                    </svg>
+                  </button>
+                </div>
+              </article>
+              <p class="friends-empty" role="status" hidden="">No friends found. Try another name.</p>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <div
+      data-state="open"
+      data-slot="dialog-overlay"
+      class="fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0"
+      style="pointer-events: auto"
+      data-ui-go="friends.html"
+    ></div>
+    <div
+      role="dialog"
+      id="radix-_R_39bn5ritqitqbmmlb_"
+      data-state="open"
+      data-slot="dialog-content"
+      class="fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 gap-4 bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 max-w-[calc(100%-2rem)] rounded-3xl sm:max-w-md"
+      tabindex="-1"
+      aria-labelledby="radix-_R_39bn5ritqitqbmmlbH1_"
+      aria-describedby="radix-_R_39bn5ritqitqbmmlbH2_"
+      style="pointer-events: auto"
+    >
+      <div data-slot="dialog-header" class="flex flex-col gap-2">
+        <h2 id="radix-_R_39bn5ritqitqbmmlbH1_" data-slot="dialog-title" class="font-heading text-xl font-black">
+          Friend requests
+        </h2>
+        <p
+          id="radix-_R_39bn5ritqitqbmmlbH2_"
+          data-slot="dialog-description"
+          class="text-sm text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground"
+        >
+          Ignoring is silent: they just see “Pending”. Requests expire after 30 days.
+        </p>
+      </div>
+      <div class="grid grid-cols-2 gap-1 rounded-2xl bg-muted p-1">
+        <button class="rounded-xl py-1.5 text-sm font-bold bg-card shadow-sm">Incoming · 1</button
+        ><button class="rounded-xl py-1.5 text-sm font-bold text-muted-foreground">Sent · 1</button>
+      </div>
+      <div class="flex min-h-24 flex-col gap-2">
+        <div class="flex items-center gap-3 rounded-2xl border p-2.5">
+          <span class="relative inline-flex flex-none" style="width: 38px; height: 38px"
+            ><span
+              class="grid size-full place-items-center rounded-full font-black text-white select-none"
+              style="
+                background: linear-gradient(145deg, rgb(192, 58, 114), color-mix(rgb(192, 58, 114) 70%, white 30%));
+                font-size: 15.2px;
+              "
+              >B</span
+            ></span
+          >
+          <div class="min-w-0 flex-1">
+            <p class="font-extrabold">Bow <span class="text-xs font-semibold text-muted-foreground">@bowbow</span></p>
+            <p class="text-xs text-muted-foreground">You’re both in Chanom Friends</p>
+          </div>
+          <button
+            data-slot="button"
+            data-variant="default"
+            data-size="icon-sm"
+            class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 bg-primary text-primary-foreground hover:bg-primary/80 size-7 in-data-[slot=button-group]:rounded-lg rounded-full"
+            aria-label="Accept Bow"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-check"
+              aria-hidden="true"
+            >
+              <path d="M20 6 9 17l-5-5"></path>
+            </svg></button
+          ><button
+            data-slot="button"
+            data-variant="outline"
+            data-size="icon-sm"
+            class="group/button inline-flex shrink-0 items-center justify-center border bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50 size-7 in-data-[slot=button-group]:rounded-lg rounded-full"
+            aria-label="Ignore Bow"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-x"
+              aria-hidden="true"
+            >
+              <path d="M18 6 6 18"></path>
+              <path d="m6 6 12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <button
+        data-slot="dialog-close"
+        data-variant="ghost"
+        data-size="icon-sm"
+        class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50 size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg absolute top-2 right-2"
+        type="button"
+        data-ui-go="friends.html"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-x"
+          aria-hidden="true"
+        >
+          <path d="M18 6 6 18"></path>
+          <path d="m6 6 12 12"></path></svg
+        ><span class="sr-only">Close</span>
+      </button>
+    </div>
+    <button class="chat-demo-control" aria-label="Demo controls" data-ui-toolbar="">Demo</button>
+
+    <script src="assets/prototype.js"></script>
+    <script src="assets/inbox-flyout.js"></script>
+    <script src="assets/chat-layout.js"></script>
+    <script src="assets/main-pages.js"></script>
+  </body>
+</html>

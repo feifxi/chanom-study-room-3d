@@ -1,0 +1,1114 @@
+<!doctype html>
+<html
+  lang="en"
+  class="nunito_22336911-module__FLPYxG__variable ibm_plex_sans_thai_24e7d61f-module__Gz-8DG__variable jetbrains_mono_f5d41edc-module__R56YrG__variable h-full light"
+  data-palette="strawberry"
+  data-ui-page="room-invite"
+  data-ui-layout="chat-first"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Invite friends · Connecta UI</title>
+    <link rel="stylesheet" href="assets/source/4f2683abfb221e.css" />
+    <link rel="stylesheet" href="assets/overrides.css" />
+    <link rel="stylesheet" href="assets/chat-layout.css" />
+
+    <link rel="stylesheet" href="assets/ui-consistency.css" />
+
+    <script src="assets/theme.js"></script>
+    <link rel="stylesheet" href="assets/inbox-flyout.css" />
+  </head>
+  <body class="app-bg ui-with-rail" data-ui-back="room-chanom.html">
+    <!-- Chat-first HTML prototype. Edit this markup and assets/chat-layout.css. -->
+    <div class="chat-layout" data-chat-layout="" data-mobile-view="list">
+      <nav class="app-rail" aria-label="App">
+        <a class="rail-brand" href="home.html" aria-label="Connecta"
+          ><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+            <path
+              d="M25.85 17.74A10 10 0 1 1 16 6"
+              fill="none"
+              stroke="var(--primary)"
+              stroke-width="6"
+              stroke-linecap="round"
+            ></path>
+            <circle cx="23.66" cy="9.57" r="3.6" fill="var(--tea)"></circle></svg
+        ></a>
+        <div class="rail-links">
+          <a class="rail-link" href="home-dashboard.html" aria-label="Home"
+            ><svg
+              class="chat-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-8H9v8H4a1 1 0 0 1-1-1z"></path></svg
+            ><span>Home</span></a
+          >
+          <a class="rail-link is-active" href="home.html" aria-current="page"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"
+                ></path></svg></span
+            ><span>Chat</span></a
+          ><a class="rail-link" href="friends.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+                ></path>
+                <circle cx="9" cy="7" r="4"></circle></svg
+              ><span class="rail-badge">1</span></span
+            ><span>Friends</span></a
+          ><a class="rail-link" href="focus.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 3v18h18M7 14v3m5-8v8m5-12v12"></path></svg></span
+            ><span>Focus</span></a
+          ><a class="rail-link" href="discover.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12Z"></path></svg></span
+            ><span>Discover</span></a
+          ><a class="rail-link" href="shop.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M6 3 3 7v13a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7l-3-4ZM3 7h18M8 11a4 4 0 0 0 8 0"
+                ></path></svg></span
+            ><span>Shop</span></a
+          >
+          <a class="rail-link" href="plus.html"
+            ><svg
+              class="chat-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m2 5 5 4 5-6 5 6 5-4-3 14H5L2 5Zm3 17h14"></path></svg
+            ><span>Plus</span></a
+          ><button class="rail-link" data-ui-go="inbox.html" aria-label="Inbox, 4 new">
+            <span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg
+              ><span class="rail-badge">4</span></span
+            ><span>Inbox</span></button
+          >
+        </div>
+        <div class="rail-bottom">
+          <button class="rail-profile" aria-label="You" data-ui-go="profile-menu.html">
+            <span class="chat-avatar" style="--avatar-color: #bc4678"
+              ><span>f</span><i class="presence-online" aria-label="online"></i></span
+            ><span>feifei</span>
+          </button>
+        </div>
+      </nav>
+
+      <aside class="conversation-list" aria-label="Chats">
+        <header class="chat-list-header">
+          <h1>Chats</h1>
+          <div>
+            <button class="chat-icon-button" aria-label="Make a room" data-ui-go="create-room.html">
+              <svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14M5 12h14"></path>
+              </svg></button
+            ><a class="chat-icon-button" href="friend-add.html" aria-label="New message"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-7M15 3l6 6M10 14l1-5 8-8 5 5-8 8-6 1Z"
+                ></path></svg
+            ></a>
+          </div>
+        </header>
+        <label class="chat-list-search"
+          ><svg
+            class="chat-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="10.5" cy="10.5" r="7.5"></circle>
+            <path d="m16 16 5 5"></path></svg
+          ><input
+            type="search"
+            aria-label="Search chats"
+            placeholder="Search chats"
+            data-chat-search=""
+            autocomplete="off"
+        /></label>
+        <nav class="conversation-rows" aria-label="Conversations">
+          <a
+            href="room-chanom.html"
+            class="conversation-row is-active has-unread"
+            data-chat-row=""
+            data-chat-name="chanom friends"
+            aria-current="page"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span
+              ><i class="presence-online" aria-label="online"></i></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Chanom Friends</span
+              ><span class="conversation-preview">You: I’m coming! Save me a seat </span></span
+            ><span class="conversation-meta"><time>20:56</time><span class="unread-count">3</span></span></a
+          ><a href="messages-mai.html" class="conversation-row has-unread" data-chat-row="" data-chat-name="mai"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #7758c4"
+              ><span>M</span><i class="presence-focus" aria-label="focus"></i></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Mai</span
+              ><span class="conversation-preview">bring your calculus notes</span></span
+            ><span class="conversation-meta"><time>09:15</time><span class="unread-count">2</span></span></a
+          ><a href="room-cpe.html" class="conversation-row has-unread" data-chat-row="" data-chat-name="cpe year 3"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span
+              ><i class="presence-online" aria-label="online"></i></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">CPE Year 3</span
+              ><span class="conversation-preview"
+                >Computer Engineering, class of 2027. Exam season survival.</span
+              ></span
+            ><span class="conversation-meta"><time>Yesterday</time><span class="unread-count">12</span></span></a
+          ><a href="messages-jod.html" class="conversation-row" data-chat-row="" data-chat-name="jod"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #b3612f"
+              ><span>J</span><i class="presence-focus" aria-label="focus"></i></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Jod</span
+              ><span class="conversation-preview">You: Sounds good.</span></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a href="room-gamenight.html" class="conversation-row" data-chat-row="" data-chat-name="game night club"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Game Night Club</span
+              ><span class="conversation-preview"
+                >Werewolf, cards and drawing games every weekend. Everyone welcome!</span
+              ></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a href="messages-ken.html" class="conversation-row" data-chat-row="" data-chat-name="ken"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #2f7d55"
+              ><span>K</span><i class="presence-online" aria-label="online"></i></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Ken</span><span class="conversation-preview">gg last night </span></span
+            ><span class="conversation-meta"><time>Mon</time></span></a
+          ><a
+            href="room-study-sprint.html"
+            class="conversation-row"
+            data-chat-row=""
+            data-chat-name="study sprint squad"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Study Sprint Squad</span
+              ><span class="conversation-preview">Study Sprint Squad. Come hang out.</span></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a href="room-ielts-buddies.html" class="conversation-row" data-chat-row="" data-chat-name="ielts buddies"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">IELTS Buddies</span
+              ><span class="conversation-preview">IELTS Buddies. Come hang out.</span></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a href="room-band.html" class="conversation-row" data-chat-row="" data-chat-name="band practice"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Band Practice</span
+              ><span class="conversation-preview">Band Practice. Come hang out.</span></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a href="room-family.html" class="conversation-row" data-chat-row="" data-chat-name="family room"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Family Room</span
+              ><span class="conversation-preview">Family Room. Come hang out.</span></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a href="room-manga.html" class="conversation-row" data-chat-row="" data-chat-name="manga club"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Manga Club</span
+              ><span class="conversation-preview">Manga Club. Come hang out.</span></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a href="room-dorm-3b.html" class="conversation-row" data-chat-row="" data-chat-name="dorm 3b"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Dorm 3B</span
+              ><span class="conversation-preview">Dorm 3B. Come hang out.</span></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a href="room-cpe-lab.html" class="conversation-row" data-chat-row="" data-chat-name="cpe lab group 4"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">CPE Lab Group 4</span
+              ><span class="conversation-preview">CPE Lab Group 4. Come hang out.</span></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a href="room-werewolf.html" class="conversation-row" data-chat-row="" data-chat-name="werewolf fridays"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Werewolf Fridays</span
+              ><span class="conversation-preview">Werewolf Fridays. Come hang out.</span></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          >
+          <p class="chat-search-empty" hidden="" role="status">No chats found. Try another name.</p>
+        </nav>
+      </aside>
+      <main class="chat-main" aria-label="Chanom Friends conversation" data-members="auto">
+        <header class="conversation-header">
+          <a class="chat-icon-button chat-mobile-back" href="home.html" aria-label="Back to chats"
+            ><svg
+              class="chat-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m12 19-7-7 7-7m-7 7h16"></path></svg
+          ></a>
+          <div class="conversation-identity">
+            <span class="chat-avatar" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span
+              ><i class="presence-online" aria-label="online"></i
+            ></span>
+            <div>
+              <h2>Chanom Friends<span class="chat-plus-badge">Plus</span></h2>
+              <p>Cosy Library · 3/100 inside</p>
+            </div>
+          </div>
+          <div class="conversation-actions">
+            <button class="chat-icon-button" aria-label="Search in conversation" data-chat-find="">
+              <svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="10.5" cy="10.5" r="7.5"></circle>
+                <path d="m16 16 5 5"></path>
+              </svg></button
+            ><a class="chat-walk-in" href="walk-library.html" aria-label="Walk in"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5m5 5H3"></path></svg
+              ><span>Walk in</span></a
+            ><button
+              class="chat-icon-button members-toggle"
+              aria-label="Show members"
+              aria-controls="chat-members"
+              aria-expanded="true"
+              data-chat-members=""
+            >
+              <svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+                ></path>
+                <circle cx="9" cy="7" r="4"></circle>
+              </svg></button
+            ><button class="chat-icon-button" aria-label="More for Chanom Friends" data-ui-go="room-menu.html">
+              <svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="5" cy="12" r="1"></circle>
+                <circle cx="12" cy="12" r="1"></circle>
+                <circle cx="19" cy="12" r="1"></circle>
+              </svg>
+            </button>
+          </div>
+        </header>
+        <a class="pinned-message" href="room-about.html" aria-label="Pinned event: Werewolf night · Fri 20:00"
+          ><svg
+            class="chat-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m16 3 5 5-4 1-4 5v4l-3-3-6 6m1-12 4 4 5-5 1-4 1-1Z"></path></svg
+          ><span><small>Room event</small><strong>Werewolf night · Fri 20:00</strong></span
+          ><svg
+            class="chat-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m9 5 7 7-7 7"></path></svg
+        ></a>
+        <div class="chat-find" hidden="">
+          <label
+            ><svg
+              class="chat-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="10.5" cy="10.5" r="7.5"></circle>
+              <path d="m16 16 5 5"></path></svg
+            ><input
+              type="search"
+              placeholder="Search in conversation"
+              aria-label="Search in conversation"
+              data-chat-find-input="" /></label
+          ><button class="chat-icon-button" aria-label="Close search" data-chat-find-close="">
+            <svg
+              class="chat-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m6 6 12 12M6 18 18 6"></path>
+            </svg></button
+          ><span role="status" data-chat-find-status=""></span>
+        </div>
+        <div class="conversation-body">
+          <section class="chat-thread" aria-label="Room chat">
+            <div class="chat-timeline" data-chat-timeline="">
+              <div class="chat-date"><span>Today</span></div>
+              <article class="chat-message" data-chat-message="">
+                <span class="chat-avatar" style="--avatar-color: #b3612f"
+                  ><span>P</span><i class="presence-online" aria-label="online"></i
+                ></span>
+                <div class="message-content">
+                  <p class="message-author">Ploy</p>
+                  <div class="message-bubble"><p>who's free friday? werewolf night</p></div>
+                  <time class="message-time">Today 20:41</time>
+                </div>
+              </article>
+              <article class="chat-message" data-chat-message="">
+                <span class="chat-avatar" style="--avatar-color: #2f7d55"
+                  ><span>K</span><i class="presence-online" aria-label="online"></i
+                ></span>
+                <div class="message-content">
+                  <p class="message-author">Ken</p>
+                  <div class="message-bubble">
+                    <p><span class="rounded-md bg-primary/15 px-1 font-bold text-primary">@feifei</span> you coming?</p>
+                  </div>
+                  <div class="bubble-reactions">
+                    <button type="button" aria-label="2 reactions" data-chat-reaction="">
+                      <svg
+                        class="ui-line-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        aria-hidden="true"
+                      >
+                        <path d="M20 4c-3-3-7-1-8 1-1-2-5-4-8-1-6 6 8 17 8 17S26 10 20 4z"></path></svg
+                      ><span>2</span>
+                    </button>
+                  </div>
+                  <time class="message-time">Today 20:43</time>
+                </div>
+              </article>
+              <article class="chat-message" data-chat-message="">
+                <span class="chat-avatar" style="--avatar-color: #7758c4"
+                  ><span>M</span><i class="presence-focus" aria-label="focus"></i
+                ></span>
+                <div class="message-content">
+                  <p class="message-author">Mai</p>
+                  <div class="message-bubble"><p>yes!! I'll bring snacks (virtually)</p></div>
+                  <div class="bubble-reactions">
+                    <button type="button" aria-label="3 reactions" data-chat-reaction="">
+                      <svg
+                        class="ui-line-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        aria-hidden="true"
+                      >
+                        <path d="M20 4c-3-3-7-1-8 1-1-2-5-4-8-1-6 6 8 17 8 17S26 10 20 4z"></path></svg
+                      ><span>3</span>
+                    </button>
+                  </div>
+                  <time class="message-time">Today 20:44</time>
+                </div>
+              </article>
+              <article class="chat-message" data-chat-message="">
+                <span class="chat-avatar" style="--avatar-color: #b3612f"
+                  ><span>J</span><i class="presence-focus" aria-label="focus"></i
+                ></span>
+                <div class="message-content">
+                  <p class="message-author">Jod</p>
+                  <div class="message-bubble">
+                    <p>the library is so cosy tonight, come study</p>
+                    <a class="bubble-photo" href="assets/source/38e6ff301baf81.png" aria-label="Open room photo"
+                      ><img src="assets/source/38e6ff301baf81.png" alt="Photo shared from the original study room demo"
+                    /></a>
+                  </div>
+                  <time class="message-time">Today 20:50</time>
+                </div>
+              </article>
+              <article class="chat-message" data-chat-message="">
+                <span class="chat-avatar" style="--avatar-color: #2e6ea8"
+                  ><span>N</span><i class="presence-idle" aria-label="idle"></i
+                ></span>
+                <div class="message-content">
+                  <p class="message-author">Nam</p>
+                  <div class="message-bubble">
+                    <p>
+                      me!! count me in for friday<span class="ml-1 text-[11px] text-muted-foreground">(edited)</span>
+                    </p>
+                  </div>
+                  <time class="message-time">Today 20:55</time>
+                </div>
+              </article>
+              <div class="chat-time-divider">20:56</div>
+              <article class="chat-message is-mine" data-chat-message="">
+                <div class="message-content">
+                  <div class="message-bubble"><p>I’m coming! Save me a seat</p></div>
+                  <time class="message-time">Today 20:56</time>
+                </div>
+              </article>
+            </div>
+            <form class="chat-composer" aria-label="Message composer">
+              <button type="button" class="chat-icon-button" aria-label="Add attachment" data-chat-preview="">
+                <svg
+                  class="chat-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M12 5v14M5 12h14"></path>
+                </svg></button
+              ><button type="button" class="chat-icon-button" aria-label="Attach image" data-chat-preview="">
+                <svg
+                  class="chat-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+                  <circle cx="8" cy="8" r="1.5"></circle>
+                  <path d="m21 15-5-5L5 21"></path>
+                </svg></button
+              ><label class="composer-field"
+                ><span class="sr-only">Message the room</span
+                ><input
+                  placeholder="Message the room…"
+                  autocomplete="off"
+                  aria-label="Message the room"
+                  maxlength="2000" /><button
+                  type="button"
+                  class="chat-icon-button"
+                  aria-label="Emoji"
+                  data-chat-preview=""
+                >
+                  <svg
+                    class="chat-icon"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M8 14s1.5 2 4 2 4-2 4-2M8 8h.01M16 8h.01"></path>
+                  </svg></button></label
+              ><button type="submit" class="chat-send" aria-label="Send" title="Static UI preview">
+                <svg
+                  class="chat-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m22 2-7 20-4-9-9-4 20-7ZM22 2 11 13"></path>
+                </svg>
+              </button>
+            </form>
+          </section>
+          <aside class="chat-members" id="chat-members" aria-label="Members">
+            <header>
+              <h2>Members</h2>
+              <button class="chat-icon-button members-close" aria-label="Close members" data-chat-members-close="">
+                <svg
+                  class="chat-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m6 6 12 12M6 18 18 6"></path>
+                </svg>
+              </button>
+            </header>
+            <section class="member-group">
+              <h3>In the room · 3</h3>
+              <a class="member-row" href="messages-mai.html"
+                ><span class="chat-avatar" style="--avatar-color: #7758c4"
+                  ><span>M</span><i class="presence-focus" aria-label="focus"></i></span
+                ><span><strong>Mai</strong><span> Focusing · Calculus</span></span></a
+              ><a class="member-row" href="messages-jod.html"
+                ><span class="chat-avatar" style="--avatar-color: #b3612f"
+                  ><span>J</span><i class="presence-focus" aria-label="focus"></i></span
+                ><span><strong>Jod</strong><span> Focusing · Kuy pawa</span></span></a
+              ><a class="member-row" href="friends.html"
+                ><span class="chat-avatar" style="--avatar-color: #b3612f"
+                  ><span>P</span><i class="presence-online" aria-label="online"></i></span
+                ><span><strong>Ploy</strong><span>Walking around the Library</span></span></a
+              >
+            </section>
+            <section class="member-group">
+              <h3>Other members · 3</h3>
+              <a class="member-row" href="friends.html"
+                ><span class="chat-avatar" style="--avatar-color: #2e6ea8"
+                  ><span>N</span><i class="presence-idle" aria-label="idle"></i></span
+                ><span><strong>Nam</strong><span> On a break</span></span></a
+              ><a class="member-row is-offline" href="friends.html"
+                ><span class="chat-avatar" style="--avatar-color: #a63367"
+                  ><span>B</span><i class="presence-offline" aria-label="offline"></i></span
+                ><span><strong>Bow</strong><span>Offline</span></span></a
+              ><a class="member-row is-offline" href="friends.html"
+                ><span class="chat-avatar" style="--avatar-color: #7a6a3a"
+                  ><span>P</span><i class="presence-offline" aria-label="offline"></i></span
+                ><span><strong>Pim</strong><span>Offline</span></span></a
+              >
+            </section>
+            <a class="members-invite" href="room-invite.html"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14M5 12h14"></path></svg
+              >Invite friends</a
+            >
+          </aside>
+        </div>
+      </main>
+    </div>
+    <div
+      data-state="open"
+      data-slot="dialog-overlay"
+      class="fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0"
+      style="pointer-events: auto"
+      data-ui-go="room-chanom.html"
+    ></div>
+    <div
+      role="dialog"
+      id="radix-_R_7bd5ritqbmmlb_"
+      data-state="open"
+      data-slot="dialog-content"
+      class="fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 gap-4 bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 max-w-[calc(100%-2rem)] rounded-3xl sm:max-w-md"
+      tabindex="-1"
+      aria-labelledby="radix-_R_7bd5ritqbmmlbH1_"
+      aria-describedby="radix-_R_7bd5ritqbmmlbH2_"
+      style="pointer-events: auto"
+    >
+      <div data-slot="dialog-header" class="flex flex-col gap-2">
+        <h2 id="radix-_R_7bd5ritqbmmlbH1_" data-slot="dialog-title" class="font-heading text-xl font-black">
+          Invite to Chanom Friends
+        </h2>
+        <p
+          id="radix-_R_7bd5ritqbmmlbH2_"
+          data-slot="dialog-description"
+          class="text-sm text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground"
+        >
+          Members join the room. Guests just visit, no account.
+        </p>
+      </div>
+      <div class="grid grid-cols-2 gap-2 rounded-2xl bg-muted p-1">
+        <button class="flex items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-bold bg-card shadow-sm">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-user-plus size-4"
+            aria-hidden="true"
+          >
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <line x1="19" x2="19" y1="8" y2="14"></line>
+            <line x1="22" x2="16" y1="11" y2="11"></line>
+          </svg>
+          Member invite</button
+        ><button
+          class="flex items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-bold text-muted-foreground"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-door-open size-4"
+            aria-hidden="true"
+          >
+            <path d="M10 21H2"></path>
+            <path d="M10 3H7a2 2 0 00-2 2v16"></path>
+            <path d="M14 12h.01"></path>
+            <path d="M19 21V5a2 2 0 00-1.675-1.974l-6.163-1.013A1 1 0 0010 3v18a1 1 0 001.124.992z"></path>
+            <path d="M22 21h-3"></path>
+          </svg>
+          Guest pass
+        </button>
+      </div>
+      <div class="flex gap-2">
+        <input
+          data-slot="input"
+          class="w-full min-w-0 border border-input bg-transparent px-2.5 py-1 transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 h-11 rounded-2xl font-mono text-sm"
+          readonly=""
+          aria-label="Invite link"
+          value="connecta.app/i/k3y9"
+        /><button
+          data-slot="button"
+          data-variant="default"
+          data-size="default"
+          class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 bg-primary text-primary-foreground hover:bg-primary/80 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 h-11 rounded-2xl font-extrabold"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-copy"
+            aria-hidden="true"
+          >
+            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+          </svg>
+          Copy
+        </button>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 text-sm">
+        <span class="text-muted-foreground">Expires after</span
+        ><button
+          type="button"
+          role="combobox"
+          aria-expanded="false"
+          aria-autocomplete="none"
+          dir="ltr"
+          data-state="closed"
+          data-slot="select-trigger"
+          data-size="sm"
+          class="flex w-fit items-center justify-between gap-1.5 border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-placeholder:text-muted-foreground data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-md),10px)] *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 rounded-full"
+        >
+          <span data-slot="select-value" style="pointer-events: none">7 days</span
+          ><svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-chevron-down pointer-events-none size-4 text-muted-foreground"
+            aria-hidden="true"
+          >
+            <path d="m6 9 6 6 6-6"></path>
+          </svg></button
+        ><button
+          type="button"
+          role="combobox"
+          aria-expanded="false"
+          aria-autocomplete="none"
+          dir="ltr"
+          data-state="closed"
+          data-slot="select-trigger"
+          data-size="sm"
+          class="flex w-fit items-center justify-between gap-1.5 border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-placeholder:text-muted-foreground data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-md),10px)] *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 rounded-full"
+        >
+          <span data-slot="select-value" style="pointer-events: none">No limit</span
+          ><svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-chevron-down pointer-events-none size-4 text-muted-foreground"
+            aria-hidden="true"
+          >
+            <path d="m6 9 6 6 6-6"></path>
+          </svg></button
+        ><button
+          class="ml-auto grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-muted"
+          aria-label="New link"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-refresh-cw size-4"
+            aria-hidden="true"
+          >
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+            <path d="M21 3v5h-5"></path>
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+            <path d="M8 16H3v5"></path>
+          </svg>
+        </button>
+      </div>
+      <p class="-mt-2 text-xs text-muted-foreground">Stops working after 7 days.</p>
+      <div>
+        <p class="mb-2 text-xs font-black tracking-wider text-muted-foreground uppercase">Invite a friend</p>
+        <div class="flex items-center gap-2 py-1.5">
+          <span class="relative inline-flex flex-none" style="width: 32px; height: 32px"
+            ><span
+              class="grid size-full place-items-center rounded-full font-black text-white select-none"
+              style="
+                background: linear-gradient(145deg, rgb(47, 125, 85), color-mix(rgb(47, 125, 85) 70%, white 30%));
+                font-size: 12.8px;
+              "
+              >K</span
+            ><span
+              class="absolute -right-0.5 -bottom-0.5 rounded-full border-2 border-card bg-online"
+              aria-label="Online"
+              style="width: 10px; height: 10px"
+            ></span></span
+          ><span class="flex-1 text-sm font-bold">Ken</span
+          ><button
+            data-slot="button"
+            data-variant="secondary"
+            data-size="sm"
+            class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground h-7 gap-1 px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&amp;_svg:not([class*='size-'])]:size-3.5 rounded-full font-bold"
+          >
+            Invite
+          </button>
+        </div>
+        <div class="flex items-center gap-2 py-1.5">
+          <span class="relative inline-flex flex-none" style="width: 32px; height: 32px"
+            ><span
+              class="grid size-full place-items-center rounded-full font-black text-white select-none"
+              style="
+                background: linear-gradient(145deg, rgb(176, 124, 198), color-mix(rgb(176, 124, 198) 70%, white 30%));
+                font-size: 12.8px;
+              "
+              >M</span
+            ><span
+              class="absolute -right-0.5 -bottom-0.5 rounded-full border-2 border-card bg-online"
+              aria-label="Online"
+              style="width: 10px; height: 10px"
+            ></span></span
+          ><span class="flex-1 text-sm font-bold">Mook</span
+          ><button
+            data-slot="button"
+            data-variant="secondary"
+            data-size="sm"
+            class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground h-7 gap-1 px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&amp;_svg:not([class*='size-'])]:size-3.5 rounded-full font-bold"
+          >
+            Invite
+          </button>
+        </div>
+        <div class="flex items-center gap-2 py-1.5">
+          <span class="relative inline-flex flex-none" style="width: 32px; height: 32px"
+            ><span
+              class="grid size-full place-items-center rounded-full font-black text-white select-none"
+              style="
+                background: linear-gradient(145deg, rgb(63, 143, 107), color-mix(rgb(63, 143, 107) 70%, white 30%));
+                font-size: 12.8px;
+              "
+              >E</span
+            ><span
+              class="absolute -right-0.5 -bottom-0.5 rounded-full border-2 border-card bg-online"
+              aria-label="Online"
+              style="width: 10px; height: 10px"
+            ></span></span
+          ><span class="flex-1 text-sm font-bold">Earth</span
+          ><button
+            data-slot="button"
+            data-variant="secondary"
+            data-size="sm"
+            class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground h-7 gap-1 px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&amp;_svg:not([class*='size-'])]:size-3.5 rounded-full font-bold"
+          >
+            Invite
+          </button>
+        </div>
+      </div>
+      <button
+        data-slot="dialog-close"
+        data-variant="ghost"
+        data-size="icon-sm"
+        class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50 size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg absolute top-2 right-2"
+        type="button"
+        data-ui-go="room-chanom.html"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-x"
+          aria-hidden="true"
+        >
+          <path d="M18 6 6 18"></path>
+          <path d="m6 6 12 12"></path></svg
+        ><span class="sr-only">Close</span>
+      </button>
+    </div>
+    <button class="chat-demo-control" aria-label="Demo controls" data-ui-toolbar="">Demo</button>
+
+    <script src="assets/prototype.js"></script>
+    <script src="assets/inbox-flyout.js"></script>
+    <script src="assets/chat-layout.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1461 @@
+{
+  "capturedAt": "2026-11-12T18:15:34.571Z",
+  "source": "D:/A_SIT04/SIT4-TERM1/a_M_CapStone/Project-StudyRoom3d",
+  "pages": [
+    {
+      "id": "index",
+      "file": "index.html",
+      "url": "/",
+      "title": "Landing",
+      "group": "Welcome"
+    },
+    {
+      "id": "login",
+      "file": "login.html",
+      "url": "/login",
+      "title": "Sign in",
+      "group": "Welcome"
+    },
+    {
+      "id": "home",
+      "file": "home.html",
+      "url": "/home",
+      "title": "Chats",
+      "group": "App"
+    },
+    {
+      "id": "friends",
+      "file": "friends.html",
+      "url": "/home/friends",
+      "title": "Friends",
+      "group": "App"
+    },
+    {
+      "id": "messages",
+      "file": "messages.html",
+      "url": "/home/messages",
+      "title": "Chats · messages",
+      "group": "App"
+    },
+    {
+      "id": "messages-mai",
+      "file": "messages-mai.html",
+      "url": "/home/messages/mai",
+      "title": "Messages · mai",
+      "group": "App"
+    },
+    {
+      "id": "messages-jod",
+      "file": "messages-jod.html",
+      "url": "/home/messages/jod",
+      "title": "Messages · jod",
+      "group": "App"
+    },
+    {
+      "id": "messages-ken",
+      "file": "messages-ken.html",
+      "url": "/home/messages/ken",
+      "title": "Messages · ken",
+      "group": "App"
+    },
+    {
+      "id": "focus",
+      "file": "focus.html",
+      "url": "/home/focus",
+      "title": "Focus",
+      "group": "App"
+    },
+    {
+      "id": "shop",
+      "file": "shop.html",
+      "url": "/home/shop",
+      "title": "Shop",
+      "group": "App"
+    },
+    {
+      "id": "plus",
+      "file": "plus.html",
+      "url": "/home/plus",
+      "title": "Connecta Plus",
+      "group": "App"
+    },
+    {
+      "id": "discover",
+      "file": "discover.html",
+      "url": "/discover",
+      "title": "Discover",
+      "group": "App"
+    },
+    {
+      "id": "checkout",
+      "file": "checkout.html",
+      "url": "/checkout?plan=yearly",
+      "title": "Checkout · yearly",
+      "group": "Welcome"
+    },
+    {
+      "id": "checkout-monthly",
+      "file": "checkout-monthly.html",
+      "url": "/checkout?plan=monthly",
+      "title": "Checkout · monthly",
+      "group": "Welcome"
+    },
+    {
+      "id": "checkout-promptpay",
+      "file": "checkout-promptpay.html",
+      "url": "/checkout?plan=yearly&method=promptpay",
+      "title": "Checkout · PromptPay",
+      "group": "Welcome"
+    },
+    {
+      "id": "invite",
+      "file": "invite.html",
+      "url": "/invite/cafe-chanom",
+      "title": "Room invitation",
+      "group": "Welcome"
+    },
+    {
+      "id": "room-chanom",
+      "file": "room-chanom.html",
+      "url": "/servers/chanom",
+      "title": "Room · chanom",
+      "group": "Rooms"
+    },
+    {
+      "id": "room-cpe",
+      "file": "room-cpe.html",
+      "url": "/servers/cpe",
+      "title": "Room · cpe",
+      "group": "Rooms"
+    },
+    {
+      "id": "room-gamenight",
+      "file": "room-gamenight.html",
+      "url": "/servers/gamenight",
+      "title": "Room · gamenight",
+      "group": "Rooms"
+    },
+    {
+      "id": "room-study-sprint",
+      "file": "room-study-sprint.html",
+      "url": "/servers/study-sprint",
+      "title": "Room · study-sprint",
+      "group": "Rooms"
+    },
+    {
+      "id": "room-ielts-buddies",
+      "file": "room-ielts-buddies.html",
+      "url": "/servers/ielts-buddies",
+      "title": "Room · ielts-buddies",
+      "group": "Rooms"
+    },
+    {
+      "id": "room-band",
+      "file": "room-band.html",
+      "url": "/servers/band",
+      "title": "Room · band",
+      "group": "Rooms"
+    },
+    {
+      "id": "room-family",
+      "file": "room-family.html",
+      "url": "/servers/family",
+      "title": "Room · family",
+      "group": "Rooms"
+    },
+    {
+      "id": "room-manga",
+      "file": "room-manga.html",
+      "url": "/servers/manga",
+      "title": "Room · manga",
+      "group": "Rooms"
+    },
+    {
+      "id": "room-dorm-3b",
+      "file": "room-dorm-3b.html",
+      "url": "/servers/dorm-3b",
+      "title": "Room · dorm-3b",
+      "group": "Rooms"
+    },
+    {
+      "id": "room-cpe-lab",
+      "file": "room-cpe-lab.html",
+      "url": "/servers/cpe-lab",
+      "title": "Room · cpe-lab",
+      "group": "Rooms"
+    },
+    {
+      "id": "room-werewolf",
+      "file": "room-werewolf.html",
+      "url": "/servers/werewolf",
+      "title": "Room · werewolf",
+      "group": "Rooms"
+    },
+    {
+      "id": "walk-library",
+      "file": "walk-library.html",
+      "url": "/servers/chanom/rooms/library",
+      "title": "Room view · library",
+      "group": "Room views"
+    },
+    {
+      "id": "walk-cafe",
+      "file": "walk-cafe.html",
+      "url": "/servers/chanom/rooms/cafe",
+      "title": "Room view · cafe",
+      "group": "Room views"
+    },
+    {
+      "id": "walk-rooftop",
+      "file": "walk-rooftop.html",
+      "url": "/servers/chanom/rooms/rooftop",
+      "title": "Room view · rooftop",
+      "group": "Room views"
+    },
+    {
+      "id": "common-library-1",
+      "file": "common-library-1.html",
+      "url": "/servers/public/rooms/library-1",
+      "title": "Common room · library-1",
+      "group": "Room views"
+    },
+    {
+      "id": "common-library-2",
+      "file": "common-library-2.html",
+      "url": "/servers/public/rooms/library-2",
+      "title": "Common room · library-2",
+      "group": "Room views"
+    },
+    {
+      "id": "common-cafe-1",
+      "file": "common-cafe-1.html",
+      "url": "/servers/public/rooms/cafe-1",
+      "title": "Common room · cafe-1",
+      "group": "Room views"
+    },
+    {
+      "id": "common-cafe-2",
+      "file": "common-cafe-2.html",
+      "url": "/servers/public/rooms/cafe-2",
+      "title": "Common room · cafe-2",
+      "group": "Room views"
+    },
+    {
+      "id": "common-rooftop-1",
+      "file": "common-rooftop-1.html",
+      "url": "/servers/public/rooms/rooftop-1",
+      "title": "Common room · rooftop-1",
+      "group": "Room views"
+    },
+    {
+      "id": "admin",
+      "file": "admin.html",
+      "url": "/admin",
+      "title": "Admin · overview",
+      "group": "Admin"
+    },
+    {
+      "id": "admin-reports",
+      "file": "admin-reports.html",
+      "url": "/admin/reports",
+      "title": "Admin · reports",
+      "group": "Admin"
+    },
+    {
+      "id": "admin-users",
+      "file": "admin-users.html",
+      "url": "/admin/users",
+      "title": "Admin · users",
+      "group": "Admin"
+    },
+    {
+      "id": "admin-rooms",
+      "file": "admin-rooms.html",
+      "url": "/admin/rooms",
+      "title": "Admin · rooms",
+      "group": "Admin"
+    },
+    {
+      "id": "admin-common",
+      "file": "admin-common.html",
+      "url": "/admin/common",
+      "title": "Admin · common",
+      "group": "Admin"
+    },
+    {
+      "id": "admin-money",
+      "file": "admin-money.html",
+      "url": "/admin/money",
+      "title": "Admin · money",
+      "group": "Admin"
+    },
+    {
+      "id": "admin-moderation",
+      "file": "admin-moderation.html",
+      "url": "/admin/moderation",
+      "title": "Admin · moderation",
+      "group": "Admin"
+    },
+    {
+      "id": "admin-maps",
+      "file": "admin-maps.html",
+      "url": "/admin/maps",
+      "title": "Admin · maps",
+      "group": "Admin"
+    },
+    {
+      "id": "admin-audit",
+      "file": "admin-audit.html",
+      "url": "/admin/audit",
+      "title": "Admin · audit",
+      "group": "Admin"
+    },
+    {
+      "id": "home-you-run",
+      "file": "home-you-run.html",
+      "url": "/home",
+      "title": "Chats · legacy entry",
+      "group": "App states",
+      "back": "home"
+    },
+    {
+      "id": "home-active",
+      "file": "home-active.html",
+      "url": "/home",
+      "title": "Chats · legacy entry",
+      "group": "App states",
+      "back": "home"
+    },
+    {
+      "id": "create-room",
+      "file": "create-room.html",
+      "url": "/home",
+      "title": "Make a room",
+      "group": "Dialogs",
+      "back": "home"
+    },
+    {
+      "id": "friend-add",
+      "file": "friend-add.html",
+      "url": "/home/friends",
+      "title": "Add friend",
+      "group": "Dialogs",
+      "back": "friends"
+    },
+    {
+      "id": "friend-requests",
+      "file": "friend-requests.html",
+      "url": "/home/friends",
+      "title": "Friend requests",
+      "group": "Dialogs",
+      "back": "friends"
+    },
+    {
+      "id": "inbox",
+      "file": "inbox.html",
+      "url": "/home",
+      "title": "Inbox",
+      "group": "Dialogs",
+      "back": "home"
+    },
+    {
+      "id": "profile-menu",
+      "file": "profile-menu.html",
+      "url": "/home",
+      "title": "Your menu",
+      "group": "Dialogs",
+      "back": "home"
+    },
+    {
+      "id": "settings-profile",
+      "file": "settings-profile.html",
+      "url": "/home",
+      "title": "My profile",
+      "group": "Settings",
+      "back": "home"
+    },
+    {
+      "id": "settings-character",
+      "file": "settings-character.html",
+      "url": "/home",
+      "title": "My character",
+      "group": "Settings",
+      "back": "home"
+    },
+    {
+      "id": "settings-appearance",
+      "file": "settings-appearance.html",
+      "url": "/home",
+      "title": "Appearance",
+      "group": "Settings",
+      "back": "home"
+    },
+    {
+      "id": "settings-voice",
+      "file": "settings-voice.html",
+      "url": "/home",
+      "title": "Voice & sound",
+      "group": "Settings",
+      "back": "home"
+    },
+    {
+      "id": "settings-controls",
+      "file": "settings-controls.html",
+      "url": "/home",
+      "title": "Controls",
+      "group": "Settings",
+      "back": "home"
+    },
+    {
+      "id": "settings-notifications",
+      "file": "settings-notifications.html",
+      "url": "/home",
+      "title": "Notifications",
+      "group": "Settings",
+      "back": "home"
+    },
+    {
+      "id": "settings-privacy",
+      "file": "settings-privacy.html",
+      "url": "/home",
+      "title": "Privacy & safety",
+      "group": "Settings",
+      "back": "home"
+    },
+    {
+      "id": "settings-plus",
+      "file": "settings-plus.html",
+      "url": "/home",
+      "title": "Plus & billing",
+      "group": "Settings",
+      "back": "home"
+    },
+    {
+      "id": "settings-account",
+      "file": "settings-account.html",
+      "url": "/home",
+      "title": "Account",
+      "group": "Settings",
+      "back": "home"
+    },
+    {
+      "id": "room-menu",
+      "file": "room-menu.html",
+      "url": "/servers/chanom",
+      "title": "Room menu",
+      "group": "Dialogs",
+      "back": "room-chanom"
+    },
+    {
+      "id": "room-about",
+      "file": "room-about.html",
+      "url": "/servers/chanom",
+      "title": "About this room",
+      "group": "Dialogs",
+      "back": "room-chanom"
+    },
+    {
+      "id": "room-invite",
+      "file": "room-invite.html",
+      "url": "/servers/chanom",
+      "title": "Invite friends",
+      "group": "Dialogs",
+      "back": "room-chanom"
+    },
+    {
+      "id": "room-settings-overview",
+      "file": "room-settings-overview.html",
+      "url": "/servers/chanom",
+      "title": "Room settings · Overview",
+      "group": "Room settings",
+      "back": "room-chanom"
+    },
+    {
+      "id": "room-settings-map",
+      "file": "room-settings-map.html",
+      "url": "/servers/chanom",
+      "title": "Room settings · Map & look",
+      "group": "Room settings",
+      "back": "room-chanom"
+    },
+    {
+      "id": "room-settings-members",
+      "file": "room-settings-members.html",
+      "url": "/servers/chanom",
+      "title": "Room settings · Members & roles",
+      "group": "Room settings",
+      "back": "room-chanom"
+    },
+    {
+      "id": "room-settings-invites",
+      "file": "room-settings-invites.html",
+      "url": "/servers/chanom",
+      "title": "Room settings · Invites",
+      "group": "Room settings",
+      "back": "room-chanom"
+    },
+    {
+      "id": "room-settings-safety",
+      "file": "room-settings-safety.html",
+      "url": "/servers/chanom",
+      "title": "Room settings · Rules & safety",
+      "group": "Room settings",
+      "back": "room-chanom"
+    },
+    {
+      "id": "shop-outfits",
+      "file": "shop-outfits.html",
+      "url": "/home/shop",
+      "title": "Shop · Outfits",
+      "group": "App states",
+      "back": "shop"
+    },
+    {
+      "id": "shop-accessories",
+      "file": "shop-accessories.html",
+      "url": "/home/shop",
+      "title": "Shop · Accessories",
+      "group": "App states",
+      "back": "shop"
+    },
+    {
+      "id": "shop-pets",
+      "file": "shop-pets.html",
+      "url": "/home/shop",
+      "title": "Shop · Pets",
+      "group": "App states",
+      "back": "shop"
+    },
+    {
+      "id": "shop-frames",
+      "file": "shop-frames.html",
+      "url": "/home/shop",
+      "title": "Shop · Photo frames",
+      "group": "App states",
+      "back": "shop"
+    },
+    {
+      "id": "shop-try-on",
+      "file": "shop-try-on.html",
+      "url": "/home/shop",
+      "title": "Shop · try on",
+      "group": "App states",
+      "back": "shop"
+    },
+    {
+      "id": "signup",
+      "file": "signup.html",
+      "url": "/signup",
+      "title": "Sign up",
+      "group": "Welcome",
+      "back": "login"
+    },
+    {
+      "id": "login-character",
+      "file": "login-character.html",
+      "url": "/login",
+      "title": "Sign up · character",
+      "group": "Welcome",
+      "back": "signup"
+    },
+    {
+      "id": "guest-character",
+      "file": "guest-character.html",
+      "url": "/guest/character",
+      "title": "Guest · browse rooms",
+      "group": "Welcome",
+      "back": "index"
+    },
+    {
+      "id": "invite-character",
+      "file": "invite-character.html",
+      "url": "/invite/cafe-chanom",
+      "title": "Guest · invitation character",
+      "group": "Welcome",
+      "back": "invite"
+    },
+    {
+      "id": "walk-study",
+      "file": "walk-study.html",
+      "url": "/servers/chanom/rooms/library",
+      "title": "Room panel · study",
+      "group": "Room panels",
+      "back": "walk-library"
+    },
+    {
+      "id": "walk-quests",
+      "file": "walk-quests.html",
+      "url": "/servers/chanom/rooms/library",
+      "title": "Room panel · quests",
+      "group": "Room panels",
+      "back": "walk-library"
+    },
+    {
+      "id": "walk-help",
+      "file": "walk-help.html",
+      "url": "/servers/chanom/rooms/library",
+      "title": "Room panel · help",
+      "group": "Room panels",
+      "back": "walk-library"
+    },
+    {
+      "id": "walk-people",
+      "file": "walk-people.html",
+      "url": "/servers/chanom/rooms/library",
+      "title": "Room panel · people",
+      "group": "Room panels",
+      "back": "walk-library"
+    },
+    {
+      "id": "walk-activities",
+      "file": "walk-activities.html",
+      "url": "/servers/chanom/rooms/library",
+      "title": "Room panel · activities",
+      "group": "Room panels",
+      "back": "walk-library"
+    },
+    {
+      "id": "walk-tools",
+      "file": "walk-tools.html",
+      "url": "/servers/chanom/rooms/library",
+      "title": "Room panel · tools",
+      "group": "Room panels",
+      "back": "walk-library"
+    },
+    {
+      "id": "walk-card",
+      "file": "walk-card.html",
+      "url": "/servers/chanom/rooms/library",
+      "title": "Room panel · card",
+      "group": "Room panels",
+      "back": "walk-library"
+    },
+    {
+      "id": "discover-guest",
+      "file": "discover-guest.html",
+      "url": "/discover",
+      "title": "Discover · guest",
+      "group": "Guest"
+    },
+    {
+      "id": "walk-guest",
+      "file": "walk-guest.html",
+      "url": "/servers/chanom/rooms/library?guest=Guest",
+      "title": "Room view · guest",
+      "group": "Guest"
+    },
+    {
+      "id": "home-old",
+      "file": "home-old.html",
+      "url": "/home",
+      "title": "Original Home",
+      "group": "Comparison",
+      "restoredFrom": "home"
+    },
+    {
+      "id": "home-old-active",
+      "file": "home-old-active.html",
+      "url": "/home",
+      "title": "Original Home · Active",
+      "group": "Comparison",
+      "restoredFrom": "home-active"
+    },
+    {
+      "id": "home-old-you-run",
+      "file": "home-old-you-run.html",
+      "url": "/home",
+      "title": "Original Home · You run",
+      "group": "Comparison",
+      "restoredFrom": "home-you-run"
+    },
+    {
+      "id": "home-chat",
+      "file": "home-chat.html",
+      "title": "Chat only · before room preview",
+      "group": "Comparison",
+      "url": "/home",
+      "preservedFrom": "home"
+    },
+    {
+      "id": "home-dashboard",
+      "file": "home-dashboard.html",
+      "title": "Home · original dashboard",
+      "group": "Main",
+      "url": "/home",
+      "adaptedFrom": "home-old.html"
+    },
+    {
+      "id": "home-dashboard-active",
+      "file": "home-dashboard-active.html",
+      "title": "Home · active rooms",
+      "group": "Main",
+      "url": "/home",
+      "adaptedFrom": "home-old-active.html"
+    },
+    {
+      "id": "home-dashboard-you-run",
+      "file": "home-dashboard-you-run.html",
+      "title": "Home · rooms you run",
+      "group": "Main",
+      "url": "/home",
+      "adaptedFrom": "home-old-you-run.html"
+    }
+  ],
+  "failures": [],
+  "uiRevision": {
+    "date": "2026-11-16",
+    "name": "Chat-first home with labeled left navigation",
+    "files": [
+      "home.html",
+      "home-active.html",
+      "home-you-run.html",
+      "messages.html",
+      "room-chanom.html",
+      "messages-mai.html",
+      "room-cpe.html",
+      "messages-jod.html",
+      "room-gamenight.html",
+      "messages-ken.html",
+      "room-study-sprint.html",
+      "room-ielts-buddies.html",
+      "room-band.html",
+      "room-family.html",
+      "room-manga.html",
+      "room-dorm-3b.html",
+      "room-cpe-lab.html",
+      "room-werewolf.html",
+      "friends.html",
+      "focus.html",
+      "shop.html",
+      "plus.html",
+      "discover.html",
+      "create-room.html",
+      "friend-add.html",
+      "friend-requests.html",
+      "inbox.html",
+      "profile-menu.html",
+      "settings-profile.html",
+      "settings-character.html",
+      "settings-appearance.html",
+      "settings-voice.html",
+      "settings-controls.html",
+      "settings-notifications.html",
+      "settings-privacy.html",
+      "settings-plus.html",
+      "settings-account.html",
+      "room-menu.html",
+      "room-about.html",
+      "room-invite.html",
+      "room-settings-overview.html",
+      "room-settings-map.html",
+      "room-settings-members.html",
+      "room-settings-invites.html",
+      "room-settings-safety.html",
+      "shop-outfits.html",
+      "shop-accessories.html",
+      "shop-pets.html",
+      "shop-frames.html",
+      "shop-try-on.html",
+      "discover-guest.html"
+    ]
+  },
+  "roomPreviewRevision": {
+    "date": "2026-11-16",
+    "description": "A real room screenshot, named presence and primary Walk in above room chat",
+    "files": [
+      "home.html",
+      "messages.html",
+      "home-active.html",
+      "home-you-run.html",
+      "room-chanom.html",
+      "room-cpe.html",
+      "room-gamenight.html",
+      "room-study-sprint.html",
+      "room-ielts-buddies.html",
+      "room-band.html",
+      "room-family.html",
+      "room-manga.html",
+      "room-dorm-3b.html",
+      "room-cpe-lab.html",
+      "room-werewolf.html"
+    ],
+    "comparison": "home-chat.html",
+    "capture": "assets/captures/library-social-cover.png",
+    "collapsible": true,
+    "pins": "Header icon opens pinned messages; no pinned strip below preview"
+  },
+  "chatTypeRevision": {
+    "date": "2026-11-16",
+    "description": "Dropdown title switches GroupChat rooms and PrivateChat one-to-one conversations",
+    "files": [
+      "home.html",
+      "messages.html",
+      "home-active.html",
+      "home-you-run.html",
+      "room-chanom.html",
+      "room-cpe.html",
+      "room-gamenight.html",
+      "room-study-sprint.html",
+      "room-ielts-buddies.html",
+      "room-band.html",
+      "room-family.html",
+      "room-manga.html",
+      "room-dorm-3b.html",
+      "room-cpe-lab.html",
+      "room-werewolf.html",
+      "messages-mai.html",
+      "messages-jod.html",
+      "messages-ken.html"
+    ]
+  },
+  "mainPagesRevision": {
+    "date": "2026-11-16",
+    "description": "Rail-safe account popovers, compact Discover and Shop, profile-led Friends",
+    "files": [
+      "friends.html",
+      "friend-add.html",
+      "friend-requests.html",
+      "discover.html",
+      "discover-guest.html",
+      "shop.html",
+      "shop-outfits.html",
+      "shop-accessories.html",
+      "shop-pets.html",
+      "shop-frames.html",
+      "shop-try-on.html"
+    ]
+  },
+  "uiConsistencyRevision": {
+    "date": "2026-11-17",
+    "sourceImages": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\Project-StudyRoom3d\\demo\\public\\images",
+    "files": [
+      {
+        "file": "admin-audit.html",
+        "replacements": 0,
+        "hud": false
+      },
+      {
+        "file": "admin-common.html",
+        "replacements": 3,
+        "hud": false
+      },
+      {
+        "file": "admin-maps.html",
+        "replacements": 43,
+        "hud": false
+      },
+      {
+        "file": "admin-moderation.html",
+        "replacements": 0,
+        "hud": false
+      },
+      {
+        "file": "admin-money.html",
+        "replacements": 1,
+        "hud": false
+      },
+      {
+        "file": "admin-reports.html",
+        "replacements": 0,
+        "hud": false
+      },
+      {
+        "file": "admin-rooms.html",
+        "replacements": 10,
+        "hud": false
+      },
+      {
+        "file": "admin-users.html",
+        "replacements": 2,
+        "hud": false
+      },
+      {
+        "file": "admin.html",
+        "replacements": 0,
+        "hud": false
+      },
+      {
+        "file": "catalogue.html",
+        "replacements": 0,
+        "hud": false
+      },
+      {
+        "file": "checkout-monthly.html",
+        "replacements": 0,
+        "hud": false
+      },
+      {
+        "file": "checkout-promptpay.html",
+        "replacements": 0,
+        "hud": false
+      },
+      {
+        "file": "checkout.html",
+        "replacements": 0,
+        "hud": false
+      },
+      {
+        "file": "common-cafe-1.html",
+        "replacements": 18,
+        "hud": true
+      },
+      {
+        "file": "common-cafe-2.html",
+        "replacements": 18,
+        "hud": true
+      },
+      {
+        "file": "common-library-1.html",
+        "replacements": 20,
+        "hud": true
+      },
+      {
+        "file": "common-library-2.html",
+        "replacements": 16,
+        "hud": true
+      },
+      {
+        "file": "common-rooftop-1.html",
+        "replacements": 16,
+        "hud": true
+      },
+      {
+        "file": "create-room.html",
+        "replacements": 29,
+        "hud": false
+      },
+      {
+        "file": "discover-guest.html",
+        "replacements": 9,
+        "hud": false
+      },
+      {
+        "file": "discover.html",
+        "replacements": 9,
+        "hud": false
+      },
+      {
+        "file": "focus.html",
+        "replacements": 2,
+        "hud": false
+      },
+      {
+        "file": "friend-add.html",
+        "replacements": 0,
+        "hud": false
+      },
+      {
+        "file": "friend-requests.html",
+        "replacements": 0,
+        "hud": false
+      },
+      {
+        "file": "friends.html",
+        "replacements": 0,
+        "hud": false
+      },
+      {
+        "file": "home-active.html",
+        "replacements": 24,
+        "hud": false
+      },
+      {
+        "file": "home-you-run.html",
+        "replacements": 24,
+        "hud": false
+      },
+      {
+        "file": "home.html",
+        "replacements": 24,
+        "hud": false
+      },
+      {
+        "file": "inbox.html",
+        "replacements": 25,
+        "hud": false
+      },
+      {
+        "file": "index.html",
+        "replacements": 29,
+        "hud": false
+      },
+      {
+        "file": "invite-character.html",
+        "replacements": 7,
+        "hud": false
+      },
+      {
+        "file": "invite.html",
+        "replacements": 7,
+        "hud": false
+      },
+      {
+        "file": "login-age.html",
+        "replacements": 4,
+        "hud": false
+      },
+      {
+        "file": "login-character.html",
+        "replacements": 3,
+        "hud": false
+      },
+      {
+        "file": "login-code.html",
+        "replacements": 3,
+        "hud": false
+      },
+      {
+        "file": "login.html",
+        "replacements": 4,
+        "hud": false
+      },
+      {
+        "file": "messages-jod.html",
+        "replacements": 15,
+        "hud": false
+      },
+      {
+        "file": "messages-ken.html",
+        "replacements": 15,
+        "hud": false
+      },
+      {
+        "file": "messages-mai.html",
+        "replacements": 15,
+        "hud": false
+      },
+      {
+        "file": "messages.html",
+        "replacements": 24,
+        "hud": false
+      },
+      {
+        "file": "plus.html",
+        "replacements": 9,
+        "hud": false
+      },
+      {
+        "file": "profile-menu.html",
+        "replacements": 26,
+        "hud": false
+      },
+      {
+        "file": "room-about.html",
+        "replacements": 26,
+        "hud": false
+      },
+      {
+        "file": "room-band.html",
+        "replacements": 18,
+        "hud": false
+      },
+      {
+        "file": "room-chanom.html",
+        "replacements": 24,
+        "hud": false
+      },
+      {
+        "file": "room-cpe-lab.html",
+        "replacements": 18,
+        "hud": false
+      },
+      {
+        "file": "room-cpe.html",
+        "replacements": 19,
+        "hud": false
+      },
+      {
+        "file": "room-dorm-3b.html",
+        "replacements": 18,
+        "hud": false
+      },
+      {
+        "file": "room-family.html",
+        "replacements": 18,
+        "hud": false
+      },
+      {
+        "file": "room-gamenight.html",
+        "replacements": 17,
+        "hud": false
+      },
+      {
+        "file": "room-ielts-buddies.html",
+        "replacements": 18,
+        "hud": false
+      },
+      {
+        "file": "room-invite.html",
+        "replacements": 24,
+        "hud": false
+      },
+      {
+        "file": "room-manga.html",
+        "replacements": 18,
+        "hud": false
+      },
+      {
+        "file": "room-menu.html",
+        "replacements": 24,
+        "hud": false
+      },
+      {
+        "file": "room-settings-invites.html",
+        "replacements": 25,
+        "hud": false
+      },
+      {
+        "file": "room-settings-map.html",
+        "replacements": 33,
+        "hud": false
+      },
+      {
+        "file": "room-settings-members.html",
+        "replacements": 25,
+        "hud": false
+      },
+      {
+        "file": "room-settings-overview.html",
+        "replacements": 26,
+        "hud": false
+      },
+      {
+        "file": "room-settings-safety.html",
+        "replacements": 25,
+        "hud": false
+      },
+      {
+        "file": "room-study-sprint.html",
+        "replacements": 18,
+        "hud": false
+      },
+      {
+        "file": "room-werewolf.html",
+        "replacements": 18,
+        "hud": false
+      },
+      {
+        "file": "settings-account.html",
+        "replacements": 24,
+        "hud": false
+      },
+      {
+        "file": "settings-appearance.html",
+        "replacements": 24,
+        "hud": false
+      },
+      {
+        "file": "settings-character.html",
+        "replacements": 27,
+        "hud": false
+      },
+      {
+        "file": "settings-controls.html",
+        "replacements": 24,
+        "hud": false
+      },
+      {
+        "file": "settings-notifications.html",
+        "replacements": 24,
+        "hud": false
+      },
+      {
+        "file": "settings-plus.html",
+        "replacements": 25,
+        "hud": false
+      },
+      {
+        "file": "settings-privacy.html",
+        "replacements": 24,
+        "hud": false
+      },
+      {
+        "file": "settings-profile.html",
+        "replacements": 24,
+        "hud": false
+      },
+      {
+        "file": "settings-voice.html",
+        "replacements": 24,
+        "hud": false
+      },
+      {
+        "file": "shop-accessories.html",
+        "replacements": 11,
+        "hud": false
+      },
+      {
+        "file": "shop-frames.html",
+        "replacements": 9,
+        "hud": false
+      },
+      {
+        "file": "shop-outfits.html",
+        "replacements": 11,
+        "hud": false
+      },
+      {
+        "file": "shop-pets.html",
+        "replacements": 10,
+        "hud": false
+      },
+      {
+        "file": "shop-try-on.html",
+        "replacements": 21,
+        "hud": false
+      },
+      {
+        "file": "shop.html",
+        "replacements": 20,
+        "hud": false
+      },
+      {
+        "file": "walk-activities.html",
+        "replacements": 34,
+        "hud": true
+      },
+      {
+        "file": "walk-cafe.html",
+        "replacements": 18,
+        "hud": true
+      },
+      {
+        "file": "walk-card.html",
+        "replacements": 24,
+        "hud": true
+      },
+      {
+        "file": "walk-guest.html",
+        "replacements": 26,
+        "hud": true
+      },
+      {
+        "file": "walk-help.html",
+        "replacements": 24,
+        "hud": true
+      },
+      {
+        "file": "walk-library.html",
+        "replacements": 23,
+        "hud": true
+      },
+      {
+        "file": "walk-people.html",
+        "replacements": 30,
+        "hud": true
+      },
+      {
+        "file": "walk-quests.html",
+        "replacements": 38,
+        "hud": true
+      },
+      {
+        "file": "walk-rooftop.html",
+        "replacements": 18,
+        "hud": true
+      },
+      {
+        "file": "walk-study.html",
+        "replacements": 24,
+        "hud": true
+      },
+      {
+        "file": "walk-tools.html",
+        "replacements": 24,
+        "hud": true
+      }
+    ]
+  },
+  "homeNavigationRevision": {
+    "date": "2026-11-18",
+    "home": "home-dashboard.html",
+    "files": [
+      "home-dashboard.html",
+      "home-dashboard-active.html",
+      "home-dashboard-you-run.html",
+      "create-room.html",
+      "discover-guest.html",
+      "discover.html",
+      "focus.html",
+      "friend-add.html",
+      "friend-requests.html",
+      "friends.html",
+      "home-active.html",
+      "home-chat.html",
+      "home-you-run.html",
+      "home.html",
+      "inbox.html",
+      "messages-jod.html",
+      "messages-ken.html",
+      "messages-mai.html",
+      "messages.html",
+      "plus.html",
+      "profile-menu.html",
+      "room-about.html",
+      "room-band.html",
+      "room-chanom.html",
+      "room-cpe-lab.html",
+      "room-cpe.html",
+      "room-dorm-3b.html",
+      "room-family.html",
+      "room-gamenight.html",
+      "room-ielts-buddies.html",
+      "room-invite.html",
+      "room-manga.html",
+      "room-menu.html",
+      "room-settings-invites.html",
+      "room-settings-map.html",
+      "room-settings-members.html",
+      "room-settings-overview.html",
+      "room-settings-safety.html",
+      "room-study-sprint.html",
+      "room-werewolf.html",
+      "settings-account.html",
+      "settings-appearance.html",
+      "settings-character.html",
+      "settings-controls.html",
+      "settings-notifications.html",
+      "settings-plus.html",
+      "settings-privacy.html",
+      "settings-profile.html",
+      "settings-voice.html",
+      "shop-accessories.html",
+      "shop-frames.html",
+      "shop-outfits.html",
+      "shop-pets.html",
+      "shop-try-on.html",
+      "shop.html"
+    ]
+  },
+  "homeOverviewRevision": {
+    "date": "2026-11-18",
+    "files": [
+      "create-room.html",
+      "discover-guest.html",
+      "discover.html",
+      "focus.html",
+      "friend-add.html",
+      "friend-requests.html",
+      "friends.html",
+      "home-active.html",
+      "home-dashboard-active.html",
+      "home-dashboard-you-run.html",
+      "home-dashboard.html",
+      "home-you-run.html",
+      "home.html",
+      "inbox.html",
+      "messages-jod.html",
+      "messages-ken.html",
+      "messages-mai.html",
+      "messages.html",
+      "plus.html",
+      "profile-menu.html",
+      "room-about.html",
+      "room-band.html",
+      "room-chanom.html",
+      "room-cpe-lab.html",
+      "room-cpe.html",
+      "room-dorm-3b.html",
+      "room-family.html",
+      "room-gamenight.html",
+      "room-ielts-buddies.html",
+      "room-invite.html",
+      "room-manga.html",
+      "room-menu.html",
+      "room-settings-invites.html",
+      "room-settings-map.html",
+      "room-settings-members.html",
+      "room-settings-overview.html",
+      "room-settings-safety.html",
+      "room-study-sprint.html",
+      "room-werewolf.html",
+      "settings-account.html",
+      "settings-appearance.html",
+      "settings-character.html",
+      "settings-controls.html",
+      "settings-notifications.html",
+      "settings-plus.html",
+      "settings-privacy.html",
+      "settings-profile.html",
+      "settings-voice.html",
+      "shop-accessories.html",
+      "shop-frames.html",
+      "shop-outfits.html",
+      "shop-pets.html",
+      "shop-try-on.html",
+      "shop.html",
+      "home-dashboard-guest.html"
+    ],
+    "home": "home-dashboard.html",
+    "newUser": "home-dashboard-guest.html",
+    "status": "reverted",
+    "archivedHome": "home-overview-preview.html",
+    "archivedNewUser": "home-overview-preview-guest.html"
+  },
+  "homeFitRevision": {
+    "date": "2026-11-18",
+    "files": [
+      "create-room.html",
+      "discover-guest.html",
+      "discover.html",
+      "focus.html",
+      "friend-add.html",
+      "friend-requests.html",
+      "friends.html",
+      "home-active.html",
+      "home-dashboard-active.html",
+      "home-dashboard-you-run.html",
+      "home-dashboard.html",
+      "home-you-run.html",
+      "home.html",
+      "inbox.html",
+      "messages-jod.html",
+      "messages-ken.html",
+      "messages-mai.html",
+      "messages.html",
+      "plus.html",
+      "profile-menu.html",
+      "room-about.html",
+      "room-band.html",
+      "room-chanom.html",
+      "room-cpe-lab.html",
+      "room-cpe.html",
+      "room-dorm-3b.html",
+      "room-family.html",
+      "room-gamenight.html",
+      "room-ielts-buddies.html",
+      "room-invite.html",
+      "room-manga.html",
+      "room-menu.html",
+      "room-settings-invites.html",
+      "room-settings-map.html",
+      "room-settings-members.html",
+      "room-settings-overview.html",
+      "room-settings-safety.html",
+      "room-study-sprint.html",
+      "room-werewolf.html",
+      "settings-account.html",
+      "settings-appearance.html",
+      "settings-character.html",
+      "settings-controls.html",
+      "settings-notifications.html",
+      "settings-plus.html",
+      "settings-privacy.html",
+      "settings-profile.html",
+      "settings-voice.html",
+      "shop-accessories.html",
+      "shop-frames.html",
+      "shop-outfits.html",
+      "shop-pets.html",
+      "shop-try-on.html",
+      "shop.html"
+    ],
+    "description": "Compact original Home, aligned public-room actions, contiguous rail destinations"
+  },
+  "inboxPageRevision": {
+    "date": "2026-11-19",
+    "file": "inbox.html",
+    "previous": "inbox-popup.html",
+    "description": "Full-page notifications using existing mock content"
+  }
+}

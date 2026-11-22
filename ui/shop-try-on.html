@@ -1,0 +1,911 @@
+<!doctype html>
+<html
+  lang="en"
+  class="nunito_22336911-module__FLPYxG__variable ibm_plex_sans_thai_24e7d61f-module__Gz-8DG__variable jetbrains_mono_f5d41edc-module__R56YrG__variable h-full light"
+  data-palette="strawberry"
+  data-ui-page="shop-try-on"
+  data-ui-layout="chat-first"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Shop · try on · Connecta UI</title>
+    <link rel="stylesheet" href="assets/source/4f2683abfb221e.css" />
+    <link rel="stylesheet" href="assets/overrides.css" />
+    <link rel="stylesheet" href="assets/chat-layout.css" />
+
+    <link rel="stylesheet" href="assets/main-pages.css" />
+
+    <link rel="stylesheet" href="assets/ui-consistency.css" />
+
+    <script src="assets/theme.js"></script>
+    <link rel="stylesheet" href="assets/inbox-flyout.css" />
+  </head>
+  <body class="app-bg ui-with-rail" data-ui-back="shop.html">
+    <!-- Chat-first HTML prototype. Edit this markup and assets/chat-layout.css. -->
+    <div class="rail-page-layout">
+      <nav class="app-rail" aria-label="App">
+        <a class="rail-brand" href="home.html" aria-label="Connecta"
+          ><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+            <path
+              d="M25.85 17.74A10 10 0 1 1 16 6"
+              fill="none"
+              stroke="var(--primary)"
+              stroke-width="6"
+              stroke-linecap="round"
+            ></path>
+            <circle cx="23.66" cy="9.57" r="3.6" fill="var(--tea)"></circle></svg
+        ></a>
+        <div class="rail-links">
+          <a class="rail-link" href="home-dashboard.html" aria-label="Home"
+            ><svg
+              class="chat-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-8H9v8H4a1 1 0 0 1-1-1z"></path></svg
+            ><span>Home</span></a
+          >
+          <a class="rail-link" href="home.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"
+                ></path></svg></span
+            ><span>Chat</span></a
+          ><a class="rail-link" href="friends.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+                ></path>
+                <circle cx="9" cy="7" r="4"></circle></svg
+              ><span class="rail-badge">1</span></span
+            ><span>Friends</span></a
+          ><a class="rail-link" href="focus.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 3v18h18M7 14v3m5-8v8m5-12v12"></path></svg></span
+            ><span>Focus</span></a
+          ><a class="rail-link" href="discover.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12Z"></path></svg></span
+            ><span>Discover</span></a
+          ><a class="rail-link is-active" href="shop.html" aria-current="page"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M6 3 3 7v13a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7l-3-4ZM3 7h18M8 11a4 4 0 0 0 8 0"
+                ></path></svg></span
+            ><span>Shop</span></a
+          >
+          <a class="rail-link" href="plus.html"
+            ><svg
+              class="chat-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m2 5 5 4 5-6 5 6 5-4-3 14H5L2 5Zm3 17h14"></path></svg
+            ><span>Plus</span></a
+          ><button class="rail-link" data-ui-go="inbox.html" aria-label="Inbox, 4 new">
+            <span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg
+              ><span class="rail-badge">4</span></span
+            ><span>Inbox</span></button
+          >
+        </div>
+        <div class="rail-bottom">
+          <button class="rail-profile" aria-label="You" data-ui-go="profile-menu.html">
+            <span class="chat-avatar" style="--avatar-color: #bc4678"
+              ><span>f</span><i class="presence-online" aria-label="online"></i></span
+            ><span>feifei</span>
+          </button>
+        </div>
+      </nav>
+
+      <main class="rail-page-content">
+        <div class="flex h-full flex-col lg:flex-row shop-layout">
+          <aside class="flex flex-none flex-col gap-4 border-b p-5 lg:w-80 lg:border-r lg:border-b-0 shop-sidebar">
+            <div class="flex items-center justify-between shop-heading">
+              <h1 class="text-2xl font-black tracking-[-0.03em]">Shop</h1>
+              <span class="flex items-center gap-1.5 rounded-full bg-peach px-3 py-1 text-sm font-black text-peach-ink"
+                ><svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-coins size-4"
+                  aria-hidden="true"
+                >
+                  <path d="M13.744 17.736a6 6 0 1 1-7.48-7.48"></path>
+                  <path d="M15 6h1v4"></path>
+                  <path d="m6.134 14.768.866-.5 2 3.464"></path>
+                  <circle cx="16" cy="8" r="6"></circle>
+                </svg>
+                1,240</span
+              >
+            </div>
+            <div
+              class="relative h-72 overflow-hidden rounded-3xl bg-gradient-to-b from-lavender via-secondary to-peach shop-avatar"
+            >
+              <div style="position: relative; width: 100%; height: 100%; overflow: hidden; pointer-events: auto">
+                <div style="width: 100%; height: 100%">
+                  <img
+                    src="assets/feifei-avatar.png"
+                    alt="Feifei character preview"
+                    class="captured-scene character-cutout"
+                    style="display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none"
+                  />
+                </div>
+              </div>
+              <span class="absolute top-3 left-3 rounded-full bg-card/90 px-2.5 py-1 text-xs font-bold"
+                >Your character</span
+              >
+            </div>
+            <button
+              data-slot="button"
+              data-variant="secondary"
+              data-size="default"
+              class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 h-11 rounded-2xl font-bold shop-preview-action"
+            >
+              Pick something to try on
+            </button>
+            <details class="shop-quests">
+              <summary><span>Today’s quests</span><span>0 / 3</span></summary>
+              <section class="flex flex-col gap-2">
+                <h2 class="flex items-baseline justify-between text-sm font-black">
+                  Today’s quests <span class="text-[11px] font-bold text-muted-foreground">new at midnight</span>
+                </h2>
+                <ul class="flex flex-col gap-1.5">
+                  <li class="rounded-2xl p-2.5 bg-muted/60">
+                    <div class="flex items-center gap-2 text-sm">
+                      <span class="text-base"
+                        ><span class="ui-inline-icon"
+                          ><svg
+                            class="ui-line-icon"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path
+                              d="M12 7v14M3 3h6a3 3 0 0 1 3 3 3 3 0 0 1 3-3h6v16h-6a3 3 0 0 0-3 2 3 3 0 0 0-3-2H3z"
+                            ></path></svg></span></span
+                      ><span class="min-w-0 flex-1 font-bold">Focus for 1 hour</span
+                      ><span class="flex flex-none items-center gap-0.5 text-xs font-black">+25 </span>
+                    </div>
+                    <div class="mt-1.5 flex items-center gap-2">
+                      <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-card">
+                        <div class="h-full rounded-full bg-primary" style="width: 20%"></div>
+                      </div>
+                      <span class="font-mono text-[10px] text-muted-foreground">12 / 60 min</span>
+                    </div>
+                  </li>
+                  <li class="rounded-2xl p-2.5 bg-muted/60">
+                    <div class="flex items-center gap-2 text-sm">
+                      <span class="text-base"
+                        ><span class="ui-inline-icon"
+                          ><svg
+                            class="ui-line-icon"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path
+                              d="M21 11a9 9 0 0 1-9 9 12 12 0 0 1-5-1l-5 3 2-6a9 9 0 1 1 17-5z"
+                            ></path></svg></span></span
+                      ><span class="min-w-0 flex-1 font-bold">Say 5 things (bubbles or Room chat)</span
+                      ><span class="flex flex-none items-center gap-0.5 text-xs font-black">+20 </span>
+                    </div>
+                    <div class="mt-1.5 flex items-center gap-2">
+                      <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-card">
+                        <div class="h-full rounded-full bg-primary" style="width: 0%"></div>
+                      </div>
+                      <span class="font-mono text-[10px] text-muted-foreground">0 / 5</span>
+                    </div>
+                  </li>
+                  <li class="rounded-2xl p-2.5 bg-muted/60">
+                    <div class="flex items-center gap-2 text-sm">
+                      <span class="text-base"
+                        ><span class="ui-inline-icon"
+                          ><svg
+                            class="ui-line-icon"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path
+                              d="M12 7v14M3 3h6a3 3 0 0 1 3 3 3 3 0 0 1 3-3h6v16h-6a3 3 0 0 0-3 2 3 3 0 0 0-3-2H3z"
+                            ></path></svg></span></span
+                      ><span class="min-w-0 flex-1 font-bold">Pet a cat 3 times</span
+                      ><span class="flex flex-none items-center gap-0.5 text-xs font-black">+15 </span>
+                    </div>
+                    <div class="mt-1.5 flex items-center gap-2">
+                      <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-card">
+                        <div class="h-full rounded-full bg-primary" style="width: 0%"></div>
+                      </div>
+                      <span class="font-mono text-[10px] text-muted-foreground">0 / 3</span>
+                    </div>
+                  </li>
+                </ul>
+              </section>
+            </details>
+            <p class="text-xs text-muted-foreground shop-note">
+              Everything here is just for looks. Coins can’t be bought: you earn them with quests. Premium skins come
+              with Plus.
+            </p>
+          </aside>
+          <section class="min-w-0 flex-1 overflow-y-auto p-5 shop-catalogue">
+            <div
+              class="relative mb-6 grid items-center gap-4 overflow-hidden rounded-[2rem] bg-gradient-to-br from-mint via-sky to-lavender p-6 sm:grid-cols-[1fr_auto] sm:p-8 shop-promo"
+            >
+              <div class="flex flex-col items-start gap-2">
+                <h2>Pet Duckling</h2>
+
+                <p class="max-w-sm text-sm">Waddles after you in every room. Quacks when you finish a Pomodoro.</p>
+                <div class="mt-2 flex flex-wrap items-center gap-2">
+                  <span class="flex items-center gap-1 rounded-full bg-card px-3 py-1.5 text-sm font-black"
+                    ><svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-coins size-4 text-gold"
+                      aria-hidden="true"
+                    >
+                      <path d="M13.744 17.736a6 6 0 1 1-7.48-7.48"></path>
+                      <path d="M15 6h1v4"></path>
+                      <path d="m6.134 14.768.866-.5 2 3.464"></path>
+                      <circle cx="16" cy="8" r="6"></circle>
+                    </svg>
+                    450</span
+                  ><button
+                    data-slot="button"
+                    data-variant="default"
+                    data-size="default"
+                    class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 bg-primary text-primary-foreground hover:bg-primary/80 h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 rounded-full font-extrabold"
+                    data-shop-featured-try
+                  >
+                    Try it on</button
+                  ><button
+                    data-slot="button"
+                    data-variant="secondary"
+                    data-size="default"
+                    class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 rounded-full bg-card font-extrabold"
+                  >
+                    Buy
+                  </button>
+                </div>
+              </div>
+              <div class="relative mx-auto grid size-40 place-items-center sm:size-48 shop-feature-art">
+                <span
+                  class="relative animate-[hop_1.6s_ease-in-out_infinite] text-8xl shop-promo-emoji project-art-holder"
+                  ><img
+                    src="assets/project-images/shop/pet-duck.webp"
+                    alt="Pet Duckling"
+                    class="project-art"
+                    loading="lazy"
+                /></span>
+              </div>
+            </div>
+            <div
+              dir="ltr"
+              data-orientation="horizontal"
+              data-slot="tabs"
+              class="group/tabs flex gap-2 data-horizontal:flex-col shop-tabs"
+            >
+              <div
+                role="tablist"
+                aria-orientation="horizontal"
+                data-slot="tabs-list"
+                data-variant="default"
+                class="group/tabs-list inline-flex w-fit items-center justify-center p-[3px] text-muted-foreground group-data-horizontal/tabs:h-8 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col data-[variant=line]:rounded-none bg-muted h-10 flex-wrap rounded-2xl"
+                tabindex="0"
+                data-orientation="horizontal"
+                style="outline: none"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="radix-_R_59bn5ritqitqbmmlb_-content-all"
+                  data-state="active"
+                  id="radix-_R_59bn5ritqitqbmmlb_-trigger-all"
+                  data-slot="tabs-trigger"
+                  class="relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 border border-transparent py-0.5 text-sm whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100 rounded-xl px-3 font-bold"
+                  tabindex="-1"
+                  data-orientation="horizontal"
+                  data-radix-collection-item=""
+                  data-ui-go="shop.html"
+                >
+                  Everything</button
+                ><button
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="radix-_R_59bn5ritqitqbmmlb_-content-outfits"
+                  data-state="inactive"
+                  id="radix-_R_59bn5ritqitqbmmlb_-trigger-outfits"
+                  data-slot="tabs-trigger"
+                  class="relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 border border-transparent py-0.5 text-sm whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100 rounded-xl px-3 font-bold"
+                  tabindex="-1"
+                  data-orientation="horizontal"
+                  data-radix-collection-item=""
+                  data-ui-go="shop-outfits.html"
+                >
+                  Outfits</button
+                ><button
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="radix-_R_59bn5ritqitqbmmlb_-content-accessories"
+                  data-state="inactive"
+                  id="radix-_R_59bn5ritqitqbmmlb_-trigger-accessories"
+                  data-slot="tabs-trigger"
+                  class="relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 border border-transparent py-0.5 text-sm whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100 rounded-xl px-3 font-bold"
+                  tabindex="-1"
+                  data-orientation="horizontal"
+                  data-radix-collection-item=""
+                  data-ui-go="shop-accessories.html"
+                >
+                  Accessories</button
+                ><button
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="radix-_R_59bn5ritqitqbmmlb_-content-pets"
+                  data-state="inactive"
+                  id="radix-_R_59bn5ritqitqbmmlb_-trigger-pets"
+                  data-slot="tabs-trigger"
+                  class="relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 border border-transparent py-0.5 text-sm whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100 rounded-xl px-3 font-bold"
+                  tabindex="-1"
+                  data-orientation="horizontal"
+                  data-radix-collection-item=""
+                  data-ui-go="shop-pets.html"
+                >
+                  Pets</button
+                ><button
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="radix-_R_59bn5ritqitqbmmlb_-content-frames"
+                  data-state="inactive"
+                  id="radix-_R_59bn5ritqitqbmmlb_-trigger-frames"
+                  data-slot="tabs-trigger"
+                  class="relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 border border-transparent py-0.5 text-sm whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100 rounded-xl px-3 font-bold"
+                  tabindex="-1"
+                  data-orientation="horizontal"
+                  data-radix-collection-item=""
+                  data-ui-go="shop-frames.html"
+                >
+                  Photo frames
+                </button>
+              </div>
+            </div>
+            <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 shop-product-grid">
+              <button
+                class="group flex flex-col overflow-hidden rounded-3xl border bg-card text-left transition hover:-translate-y-0.5 hover:shadow-soft shop-product-card"
+              >
+                <span
+                  class="relative grid h-32 place-items-center bg-[radial-gradient(circle,rgb(255_255_255/0.55)_1.5px,transparent_1.5px)] bg-[length:14px_14px] text-6xl bg-secondary shop-product-art"
+                  ><span
+                    class="drop-shadow-md transition-transform group-hover:-translate-y-1.5 group-hover:scale-110 project-art-holder"
+                    ><img
+                      src="assets/project-images/shop/strawberry-dress.webp"
+                      alt="Strawberry Dress"
+                      class="project-art"
+                      loading="lazy" /></span
+                  ><span
+                    class="absolute top-2 left-2 rounded-full bg-primary px-2 text-[10px] font-black text-primary-foreground"
+                    >NEW</span
+                  ></span
+                ><span class="p-3 shop-product-info"
+                  ><span class="block truncate text-sm font-extrabold">Strawberry Dress</span
+                  ><span class="mt-0.5 flex items-center gap-1 text-sm font-bold text-muted-foreground"
+                    ><svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-coins size-3.5 text-gold"
+                      aria-hidden="true"
+                    >
+                      <path d="M13.744 17.736a6 6 0 1 1-7.48-7.48"></path>
+                      <path d="M15 6h1v4"></path>
+                      <path d="m6.134 14.768.866-.5 2 3.464"></path>
+                      <circle cx="16" cy="8" r="6"></circle>
+                    </svg>
+                    300</span
+                  ></span
+                ></button
+              ><button
+                class="group flex flex-col overflow-hidden rounded-3xl border bg-card text-left transition hover:-translate-y-0.5 hover:shadow-soft shop-product-card"
+              >
+                <span
+                  class="relative grid h-32 place-items-center bg-[radial-gradient(circle,rgb(255_255_255/0.55)_1.5px,transparent_1.5px)] bg-[length:14px_14px] text-6xl bg-mint shop-product-art"
+                  ><span
+                    class="drop-shadow-md transition-transform group-hover:-translate-y-1.5 group-hover:scale-110 project-art-holder"
+                    ><img
+                      src="assets/project-images/shop/matcha-hoodie.webp"
+                      alt="Matcha Hoodie"
+                      class="project-art"
+                      loading="lazy" /></span></span
+                ><span class="p-3 shop-product-info"
+                  ><span class="block truncate text-sm font-extrabold">Matcha Hoodie</span
+                  ><span class="mt-0.5 flex items-center gap-1 text-sm font-bold text-muted-foreground"
+                    ><svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-coins size-3.5 text-gold"
+                      aria-hidden="true"
+                    >
+                      <path d="M13.744 17.736a6 6 0 1 1-7.48-7.48"></path>
+                      <path d="M15 6h1v4"></path>
+                      <path d="m6.134 14.768.866-.5 2 3.464"></path>
+                      <circle cx="16" cy="8" r="6"></circle>
+                    </svg>
+                    280</span
+                  ></span
+                ></button
+              ><button
+                class="group flex flex-col overflow-hidden rounded-3xl border bg-card text-left transition hover:-translate-y-0.5 hover:shadow-soft shop-product-card"
+              >
+                <span
+                  class="relative grid h-32 place-items-center bg-[radial-gradient(circle,rgb(255_255_255/0.55)_1.5px,transparent_1.5px)] bg-[length:14px_14px] text-6xl bg-lavender shop-product-art"
+                  ><span
+                    class="drop-shadow-md transition-transform group-hover:-translate-y-1.5 group-hover:scale-110 project-art-holder"
+                    ><img
+                      src="assets/project-images/shop/starry-pajamas.webp"
+                      alt="Starry Pajamas"
+                      class="project-art"
+                      loading="lazy" /></span
+                  ><span
+                    class="absolute top-2 right-2 flex items-center gap-0.5 rounded-full bg-card px-2 text-[10px] font-black"
+                    ><svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-crown size-3"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"
+                      ></path>
+                      <path d="M5 21h14"></path>
+                    </svg>
+                    Plus</span
+                  ></span
+                ><span class="p-3 shop-product-info"
+                  ><span class="block truncate text-sm font-extrabold">Starry Pajamas</span
+                  ><span class="mt-0.5 flex items-center gap-1 text-sm font-bold text-muted-foreground"
+                    ><span class="text-mint-ink">Yours with Plus ✓</span></span
+                  ></span
+                ></button
+              ><button
+                class="group flex flex-col overflow-hidden rounded-3xl border bg-card text-left transition hover:-translate-y-0.5 hover:shadow-soft shop-product-card"
+              >
+                <span
+                  class="relative grid h-32 place-items-center bg-[radial-gradient(circle,rgb(255_255_255/0.55)_1.5px,transparent_1.5px)] bg-[length:14px_14px] text-6xl bg-sky shop-product-art"
+                  ><span
+                    class="drop-shadow-md transition-transform group-hover:-translate-y-1.5 group-hover:scale-110 project-art-holder"
+                    ><img
+                      src="assets/project-images/shop/school-uniform.webp"
+                      alt="School Uniform"
+                      class="project-art"
+                      loading="lazy" /></span></span
+                ><span class="p-3 shop-product-info"
+                  ><span class="block truncate text-sm font-extrabold">School Uniform</span
+                  ><span class="mt-0.5 flex items-center gap-1 text-sm font-bold text-muted-foreground"
+                    ><span class="text-mint-ink">Owned ✓</span></span
+                  ></span
+                ></button
+              ><button
+                class="group flex flex-col overflow-hidden rounded-3xl border bg-card text-left transition hover:-translate-y-0.5 hover:shadow-soft shop-product-card"
+              >
+                <span
+                  class="relative grid h-32 place-items-center bg-[radial-gradient(circle,rgb(255_255_255/0.55)_1.5px,transparent_1.5px)] bg-[length:14px_14px] text-6xl bg-secondary shop-product-art"
+                  ><span
+                    class="drop-shadow-md transition-transform group-hover:-translate-y-1.5 group-hover:scale-110 project-art-holder"
+                    ><img
+                      src="assets/project-images/shop/bunny-ears.webp"
+                      alt="Bunny Ears"
+                      class="project-art"
+                      loading="lazy" /></span></span
+                ><span class="p-3 shop-product-info"
+                  ><span class="block truncate text-sm font-extrabold">Bunny Ears</span
+                  ><span class="mt-0.5 flex items-center gap-1 text-sm font-bold text-muted-foreground"
+                    ><svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-coins size-3.5 text-gold"
+                      aria-hidden="true"
+                    >
+                      <path d="M13.744 17.736a6 6 0 1 1-7.48-7.48"></path>
+                      <path d="M15 6h1v4"></path>
+                      <path d="m6.134 14.768.866-.5 2 3.464"></path>
+                      <circle cx="16" cy="8" r="6"></circle>
+                    </svg>
+                    150</span
+                  ></span
+                ></button
+              ><button
+                class="group flex flex-col overflow-hidden rounded-3xl border bg-card text-left transition hover:-translate-y-0.5 hover:shadow-soft shop-product-card"
+              >
+                <span
+                  class="relative grid h-32 place-items-center bg-[radial-gradient(circle,rgb(255_255_255/0.55)_1.5px,transparent_1.5px)] bg-[length:14px_14px] text-6xl bg-peach shop-product-art"
+                  ><span
+                    class="drop-shadow-md transition-transform group-hover:-translate-y-1.5 group-hover:scale-110 project-art-holder"
+                    ><img
+                      src="assets/project-images/shop/flower-crown.webp"
+                      alt="Flower Crown"
+                      class="project-art"
+                      loading="lazy" /></span
+                  ><span
+                    class="absolute top-2 left-2 rounded-full bg-primary px-2 text-[10px] font-black text-primary-foreground"
+                    >NEW</span
+                  ></span
+                ><span class="p-3 shop-product-info"
+                  ><span class="block truncate text-sm font-extrabold">Flower Crown</span
+                  ><span class="mt-0.5 flex items-center gap-1 text-sm font-bold text-muted-foreground"
+                    ><svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-coins size-3.5 text-gold"
+                      aria-hidden="true"
+                    >
+                      <path d="M13.744 17.736a6 6 0 1 1-7.48-7.48"></path>
+                      <path d="M15 6h1v4"></path>
+                      <path d="m6.134 14.768.866-.5 2 3.464"></path>
+                      <circle cx="16" cy="8" r="6"></circle>
+                    </svg>
+                    180</span
+                  ></span
+                ></button
+              ><button
+                class="group flex flex-col overflow-hidden rounded-3xl border bg-card text-left transition hover:-translate-y-0.5 hover:shadow-soft shop-product-card"
+              >
+                <span
+                  class="relative grid h-32 place-items-center bg-[radial-gradient(circle,rgb(255_255_255/0.55)_1.5px,transparent_1.5px)] bg-[length:14px_14px] text-6xl bg-lavender shop-product-art"
+                  ><span
+                    class="drop-shadow-md transition-transform group-hover:-translate-y-1.5 group-hover:scale-110 project-art-holder"
+                    ><img
+                      src="assets/project-images/shop/round-glasses.webp"
+                      alt="Round Glasses"
+                      class="project-art"
+                      loading="lazy" /></span></span
+                ><span class="p-3 shop-product-info"
+                  ><span class="block truncate text-sm font-extrabold">Round Glasses</span
+                  ><span class="mt-0.5 flex items-center gap-1 text-sm font-bold text-muted-foreground"
+                    ><span class="text-mint-ink">Owned ✓</span></span
+                  ></span
+                ></button
+              ><button
+                class="group flex flex-col overflow-hidden rounded-3xl border bg-card text-left transition hover:-translate-y-0.5 hover:shadow-soft shop-product-card"
+              >
+                <span
+                  class="relative grid h-32 place-items-center bg-[radial-gradient(circle,rgb(255_255_255/0.55)_1.5px,transparent_1.5px)] bg-[length:14px_14px] text-6xl bg-mint shop-product-art"
+                  ><span
+                    class="drop-shadow-md transition-transform group-hover:-translate-y-1.5 group-hover:scale-110 project-art-holder"
+                    ><img
+                      src="assets/project-images/shop/cat-ears.webp"
+                      alt="Cat Ears"
+                      class="project-art"
+                      loading="lazy" /></span></span
+                ><span class="p-3 shop-product-info"
+                  ><span class="block truncate text-sm font-extrabold">Cat Ears</span
+                  ><span class="mt-0.5 flex items-center gap-1 text-sm font-bold text-muted-foreground"
+                    ><span class="text-mint-ink">Owned ✓</span></span
+                  ></span
+                ></button
+              ><button
+                class="group flex flex-col overflow-hidden rounded-3xl border bg-card text-left transition hover:-translate-y-0.5 hover:shadow-soft shop-product-card"
+              >
+                <span
+                  class="relative grid h-32 place-items-center bg-[radial-gradient(circle,rgb(255_255_255/0.55)_1.5px,transparent_1.5px)] bg-[length:14px_14px] text-6xl bg-peach shop-product-art"
+                  ><span
+                    class="drop-shadow-md transition-transform group-hover:-translate-y-1.5 group-hover:scale-110 project-art-holder"
+                    ><img
+                      src="assets/project-images/shop/pet-cat.webp"
+                      alt="Pet Kitten"
+                      class="project-art"
+                      loading="lazy" /></span></span
+                ><span class="p-3 shop-product-info"
+                  ><span class="block truncate text-sm font-extrabold">Pet Kitten</span
+                  ><span class="mt-0.5 flex items-center gap-1 text-sm font-bold text-muted-foreground"
+                    ><svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-coins size-3.5 text-gold"
+                      aria-hidden="true"
+                    >
+                      <path d="M13.744 17.736a6 6 0 1 1-7.48-7.48"></path>
+                      <path d="M15 6h1v4"></path>
+                      <path d="m6.134 14.768.866-.5 2 3.464"></path>
+                      <circle cx="16" cy="8" r="6"></circle>
+                    </svg>
+                    500</span
+                  ></span
+                ></button
+              ><button
+                class="group flex flex-col overflow-hidden rounded-3xl border bg-card text-left transition hover:-translate-y-0.5 hover:shadow-soft ring-[3px] ring-primary shop-product-card"
+              >
+                <span
+                  class="relative grid h-32 place-items-center bg-[radial-gradient(circle,rgb(255_255_255/0.55)_1.5px,transparent_1.5px)] bg-[length:14px_14px] text-6xl bg-mint shop-product-art"
+                  ><span
+                    class="drop-shadow-md transition-transform group-hover:-translate-y-1.5 group-hover:scale-110 project-art-holder"
+                    ><img
+                      src="assets/project-images/shop/pet-duck.webp"
+                      alt="Pet Duckling"
+                      class="project-art"
+                      loading="lazy" /></span
+                  ><span
+                    class="absolute top-2 left-2 rounded-full bg-primary px-2 text-[10px] font-black text-primary-foreground"
+                    >NEW</span
+                  ></span
+                ><span class="p-3 shop-product-info"
+                  ><span class="block truncate text-sm font-extrabold">Pet Duckling</span
+                  ><span class="mt-0.5 flex items-center gap-1 text-sm font-bold text-muted-foreground"
+                    ><svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-coins size-3.5 text-gold"
+                      aria-hidden="true"
+                    >
+                      <path d="M13.744 17.736a6 6 0 1 1-7.48-7.48"></path>
+                      <path d="M15 6h1v4"></path>
+                      <path d="m6.134 14.768.866-.5 2 3.464"></path>
+                      <circle cx="16" cy="8" r="6"></circle>
+                    </svg>
+                    450</span
+                  ></span
+                ></button
+              ><button
+                class="group flex flex-col overflow-hidden rounded-3xl border bg-card text-left transition hover:-translate-y-0.5 hover:shadow-soft shop-product-card"
+              >
+                <span
+                  class="relative grid h-32 place-items-center bg-[radial-gradient(circle,rgb(255_255_255/0.55)_1.5px,transparent_1.5px)] bg-[length:14px_14px] text-6xl bg-lavender shop-product-art"
+                  ><span
+                    class="drop-shadow-md transition-transform group-hover:-translate-y-1.5 group-hover:scale-110 project-art-holder"
+                    ><img
+                      src="assets/project-images/shop/pet-bunny.webp"
+                      alt="Pet Bunny"
+                      class="project-art"
+                      loading="lazy" /></span
+                  ><span
+                    class="absolute top-2 right-2 flex items-center gap-0.5 rounded-full bg-card px-2 text-[10px] font-black"
+                    ><svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-crown size-3"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"
+                      ></path>
+                      <path d="M5 21h14"></path>
+                    </svg>
+                    Plus</span
+                  ></span
+                ><span class="p-3 shop-product-info"
+                  ><span class="block truncate text-sm font-extrabold">Pet Bunny</span
+                  ><span class="mt-0.5 flex items-center gap-1 text-sm font-bold text-muted-foreground"
+                    ><span class="text-mint-ink">Yours with Plus ✓</span></span
+                  ></span
+                ></button
+              ><button
+                class="group flex flex-col overflow-hidden rounded-3xl border bg-card text-left transition hover:-translate-y-0.5 hover:shadow-soft shop-product-card"
+              >
+                <span
+                  class="relative grid h-32 place-items-center bg-[radial-gradient(circle,rgb(255_255_255/0.55)_1.5px,transparent_1.5px)] bg-[length:14px_14px] text-6xl bg-secondary shop-product-art"
+                  ><span
+                    class="drop-shadow-md transition-transform group-hover:-translate-y-1.5 group-hover:scale-110 project-art-holder"
+                    ><img
+                      src="assets/project-images/shop/frame-sakura.webp"
+                      alt="Sakura Photo Frame"
+                      class="project-art"
+                      loading="lazy" /></span></span
+                ><span class="p-3 shop-product-info"
+                  ><span class="block truncate text-sm font-extrabold">Sakura Photo Frame</span
+                  ><span class="mt-0.5 flex items-center gap-1 text-sm font-bold text-muted-foreground"
+                    ><svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-coins size-3.5 text-gold"
+                      aria-hidden="true"
+                    >
+                      <path d="M13.744 17.736a6 6 0 1 1-7.48-7.48"></path>
+                      <path d="M15 6h1v4"></path>
+                      <path d="m6.134 14.768.866-.5 2 3.464"></path>
+                      <circle cx="16" cy="8" r="6"></circle>
+                    </svg>
+                    100</span
+                  ></span
+                ></button
+              ><button
+                class="group flex flex-col overflow-hidden rounded-3xl border bg-card text-left transition hover:-translate-y-0.5 hover:shadow-soft shop-product-card"
+              >
+                <span
+                  class="relative grid h-32 place-items-center bg-[radial-gradient(circle,rgb(255_255_255/0.55)_1.5px,transparent_1.5px)] bg-[length:14px_14px] text-6xl bg-sky shop-product-art"
+                  ><span
+                    class="drop-shadow-md transition-transform group-hover:-translate-y-1.5 group-hover:scale-110 project-art-holder"
+                    ><img
+                      src="assets/project-images/shop/frame-polaroid.webp"
+                      alt="Polaroid Frame"
+                      class="project-art"
+                      loading="lazy" /></span></span
+                ><span class="p-3 shop-product-info"
+                  ><span class="block truncate text-sm font-extrabold">Polaroid Frame</span
+                  ><span class="mt-0.5 flex items-center gap-1 text-sm font-bold text-muted-foreground"
+                    ><span class="text-mint-ink">Owned ✓</span></span
+                  ></span
+                >
+              </button>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <button class="chat-demo-control" aria-label="Demo controls" data-ui-toolbar="">Demo</button>
+
+    <script src="assets/prototype.js"></script>
+    <script src="assets/inbox-flyout.js"></script>
+    <script src="assets/chat-layout.js"></script>
+    <script src="assets/main-pages.js"></script>
+    <script src="assets/shop-try-on.js"></script>
+  </body>
+</html>

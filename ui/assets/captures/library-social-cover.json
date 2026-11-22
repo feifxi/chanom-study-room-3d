@@ -1,0 +1,11 @@
+{
+  "sourceUrl": "http://localhost:3100/servers/chanom/rooms/library",
+  "method": "Playwright canvas screenshot after walking in the original demo; HUD hidden only for capture",
+  "image": "library-social-cover.png",
+  "viewport": {
+    "width": 1440,
+    "height": 800
+  },
+  "capturedAt": "2026-11-16T10:29:10.434Z",
+  "generated": false
+}

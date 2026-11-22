@@ -1,0 +1,66 @@
+/* Edit this file to try shared UI changes. Loaded after the original CSS.
+   Original colors and font variables are in assets/source/*.css.
+   Page markup stays in the individual .html files.
+
+   Example:
+   :root { --radius: 0.75rem; --primary: #9272de; }
+   .dark { --primary: #b49af0; }
+*/
+
+:root { --page-title-size: 1.75rem; --page-title-weight: 800; }
+@media (max-width: 767px) { :root { --page-title-size: 1.5rem; } }
+
+img.character-cutout { object-fit: contain !important; }
+
+.ui-phone { display: none; }
+@media (max-width: 767px), (max-height: 500px) {
+  .ui-desktop { display: none; }
+  .ui-phone { display: contents; }
+}
+.ui-desktop, .ui-phone { height: 100%; }
+button[data-ui-go], [role="menuitem"][data-ui-go] { cursor: pointer; }
+button[disabled] { cursor: default; }
+
+/* The following controls belong only to this HTML playground. */
+.ui-preview-dialog {
+  position: fixed;
+  inset: 16px 16px 16px auto;
+  margin: 0;
+  width: min(380px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow: var(--shadow-soft);
+  z-index: 1000;
+}
+.ui-preview-dialog::backdrop { background: rgb(0 0 0 / .25); }
+.ui-preview-dialog h2 { font-size: 20px; font-weight: 900; }
+.ui-preview-dialog h3 { margin: 18px 0 7px; font-size: 12px; font-weight: 800; color: var(--muted-foreground); }
+.ui-preview-dialog a, .ui-preview-dialog button, .ui-preview-dialog select {
+  border: 1px solid var(--border);
+  background: var(--background);
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+}
+.ui-preview-dialog a { display: block; margin: 4px 0; }
+.ui-preview-dialog a:hover, .ui-preview-dialog button:hover { background: var(--secondary); }
+.ui-preview-dialog .ui-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.ui-preview-dialog .ui-close { float: right; padding: 3px 9px; }
+.ui-preview-dialog select { width: 100%; }
+.ui-preview-dialog p { font-size: 12px; color: var(--muted-foreground); margin-top: 8px; }
+.ui-preview-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  z-index: 1200; padding: 10px 18px; border: 1px solid var(--border);
+  border-radius: 100px; color: var(--foreground); background: var(--card);
+  box-shadow: var(--shadow-soft); font-size: 13px; font-weight: 800;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

@@ -1,0 +1,2705 @@
+<!doctype html>
+<html
+  lang="en"
+  class="nunito_22336911-module__FLPYxG__variable ibm_plex_sans_thai_24e7d61f-module__Gz-8DG__variable jetbrains_mono_f5d41edc-module__R56YrG__variable h-full light"
+  data-palette="strawberry"
+  data-ui-page="walk-activities"
+>
+  <head>
+    <link rel="stylesheet" href="assets/source/4f2683abfb221e.css" />
+    <style type="text/css">
+      [data-sonner-toaster][dir="ltr"],
+      html[dir="ltr"] {
+        --toast-icon-margin-start: -3px;
+        --toast-icon-margin-end: 4px;
+        --toast-svg-margin-start: -1px;
+        --toast-svg-margin-end: 0px;
+        --toast-button-margin-start: auto;
+        --toast-button-margin-end: 0;
+        --toast-close-button-start: 0;
+        --toast-close-button-end: unset;
+        --toast-close-button-transform: translate(-35%, -35%);
+      }
+      [data-sonner-toaster][dir="rtl"],
+      html[dir="rtl"] {
+        --toast-icon-margin-start: 4px;
+        --toast-icon-margin-end: -3px;
+        --toast-svg-margin-start: 0px;
+        --toast-svg-margin-end: -1px;
+        --toast-button-margin-start: 0;
+        --toast-button-margin-end: auto;
+        --toast-close-button-start: unset;
+        --toast-close-button-end: 0;
+        --toast-close-button-transform: translate(35%, -35%);
+      }
+      [data-sonner-toaster] {
+        position: fixed;
+        width: var(--width);
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          Segoe UI,
+          Roboto,
+          Helvetica Neue,
+          Arial,
+          Noto Sans,
+          sans-serif,
+          Apple Color Emoji,
+          Segoe UI Emoji,
+          Segoe UI Symbol,
+          Noto Color Emoji;
+        --gray1: hsl(0, 0%, 99%);
+        --gray2: hsl(0, 0%, 97.3%);
+        --gray3: hsl(0, 0%, 95.1%);
+        --gray4: hsl(0, 0%, 93%);
+        --gray5: hsl(0, 0%, 90.9%);
+        --gray6: hsl(0, 0%, 88.7%);
+        --gray7: hsl(0, 0%, 85.8%);
+        --gray8: hsl(0, 0%, 78%);
+        --gray9: hsl(0, 0%, 56.1%);
+        --gray10: hsl(0, 0%, 52.3%);
+        --gray11: hsl(0, 0%, 43.5%);
+        --gray12: hsl(0, 0%, 9%);
+        --border-radius: 8px;
+        box-sizing: border-box;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        outline: 0;
+        z-index: 999999999;
+        transition: transform 0.4s ease;
+      }
+      @media (hover: none) and (pointer: coarse) {
+        [data-sonner-toaster][data-lifted="true"] {
+          transform: none;
+        }
+      }
+      [data-sonner-toaster][data-x-position="right"] {
+        right: var(--offset-right);
+      }
+      [data-sonner-toaster][data-x-position="left"] {
+        left: var(--offset-left);
+      }
+      [data-sonner-toaster][data-x-position="center"] {
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      [data-sonner-toaster][data-y-position="top"] {
+        top: var(--offset-top);
+      }
+      [data-sonner-toaster][data-y-position="bottom"] {
+        bottom: var(--offset-bottom);
+      }
+      [data-sonner-toast] {
+        --y: translateY(100%);
+        --lift-amount: calc(var(--lift) * var(--gap));
+        z-index: var(--z-index);
+        position: absolute;
+        opacity: 0;
+        transform: var(--y);
+        touch-action: none;
+        transition:
+          transform 0.4s,
+          opacity 0.4s,
+          height 0.4s,
+          box-shadow 0.2s;
+        box-sizing: border-box;
+        outline: 0;
+        overflow-wrap: anywhere;
+      }
+      [data-sonner-toast][data-styled="true"] {
+        padding: 16px;
+        background: var(--normal-bg);
+        border: 1px solid var(--normal-border);
+        color: var(--normal-text);
+        border-radius: var(--border-radius);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        width: var(--width);
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      [data-sonner-toast]:focus-visible {
+        box-shadow:
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          0 0 0 2px rgba(0, 0, 0, 0.2);
+      }
+      [data-sonner-toast][data-y-position="top"] {
+        top: 0;
+        --y: translateY(-100%);
+        --lift: 1;
+        --lift-amount: calc(1 * var(--gap));
+      }
+      [data-sonner-toast][data-y-position="bottom"] {
+        bottom: 0;
+        --y: translateY(100%);
+        --lift: -1;
+        --lift-amount: calc(var(--lift) * var(--gap));
+      }
+      [data-sonner-toast][data-styled="true"] [data-description] {
+        font-weight: 400;
+        line-height: 1.4;
+        color: #3f3f3f;
+      }
+      [data-rich-colors="true"][data-sonner-toast][data-styled="true"] [data-description] {
+        color: inherit;
+      }
+      [data-sonner-toaster][data-sonner-theme="dark"] [data-description] {
+        color: #e8e8e8;
+      }
+      [data-sonner-toast][data-styled="true"] [data-title] {
+        font-weight: 500;
+        line-height: 1.5;
+        color: inherit;
+      }
+      [data-sonner-toast][data-styled="true"] [data-icon] {
+        display: flex;
+        height: 16px;
+        width: 16px;
+        position: relative;
+        justify-content: flex-start;
+        align-items: center;
+        flex-shrink: 0;
+        margin-left: var(--toast-icon-margin-start);
+        margin-right: var(--toast-icon-margin-end);
+      }
+      [data-sonner-toast][data-promise="true"] [data-icon] > svg {
+        opacity: 0;
+        transform: scale(0.8);
+        transform-origin: center;
+        animation: sonner-fade-in 0.3s ease forwards;
+      }
+      [data-sonner-toast][data-styled="true"] [data-icon] > * {
+        flex-shrink: 0;
+      }
+      [data-sonner-toast][data-styled="true"] [data-icon] svg {
+        margin-left: var(--toast-svg-margin-start);
+        margin-right: var(--toast-svg-margin-end);
+      }
+      [data-sonner-toast][data-styled="true"] [data-content] {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+        min-width: 0;
+      }
+      [data-sonner-toast][data-styled="true"] [data-button] {
+        border-radius: 4px;
+        padding-left: 8px;
+        padding-right: 8px;
+        height: 24px;
+        font-size: 12px;
+        color: var(--normal-bg);
+        background: var(--normal-text);
+        margin-left: var(--toast-button-margin-start);
+        margin-right: var(--toast-button-margin-end);
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+        outline: 0;
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        transition:
+          opacity 0.4s,
+          box-shadow 0.2s;
+      }
+      [data-sonner-toast][data-styled="true"] [data-button]:focus-visible {
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.4);
+      }
+      [data-sonner-toast][data-styled="true"] [data-button]:first-of-type {
+        margin-left: var(--toast-button-margin-start);
+        margin-right: var(--toast-button-margin-end);
+      }
+      [data-sonner-toast][data-styled="true"] [data-cancel] {
+        color: var(--normal-text);
+        background: rgba(0, 0, 0, 0.08);
+      }
+      [data-sonner-toaster][data-sonner-theme="dark"] [data-sonner-toast][data-styled="true"] [data-cancel] {
+        background: rgba(255, 255, 255, 0.3);
+      }
+      [data-sonner-toast][data-styled="true"] [data-close-button] {
+        position: absolute;
+        left: var(--toast-close-button-start);
+        right: var(--toast-close-button-end);
+        top: 0;
+        height: 20px;
+        width: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
+        color: var(--normal-text);
+        background: var(--normal-bg);
+        border: 1px solid var(--normal-border);
+        transform: var(--toast-close-button-transform);
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 1;
+        transition:
+          opacity 0.1s,
+          background 0.2s,
+          border-color 0.2s;
+      }
+      [data-sonner-toast][data-styled="true"] [data-close-button]:focus-visible {
+        box-shadow:
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          0 0 0 2px rgba(0, 0, 0, 0.2);
+      }
+      [data-sonner-toast][data-styled="true"] [data-disabled="true"] {
+        cursor: not-allowed;
+      }
+      [data-sonner-toast][data-styled="true"]:hover [data-close-button]:hover {
+        background: var(--gray2);
+        border-color: var(--gray5);
+      }
+      [data-sonner-toast][data-swiping="true"]::before {
+        content: "";
+        position: absolute;
+        left: -100%;
+        right: -100%;
+        height: 100%;
+        z-index: -1;
+      }
+      [data-sonner-toast][data-y-position="top"][data-swiping="true"]::before {
+        bottom: 50%;
+        transform: scaleY(3) translateY(50%);
+      }
+      [data-sonner-toast][data-y-position="bottom"][data-swiping="true"]::before {
+        top: 50%;
+        transform: scaleY(3) translateY(-50%);
+      }
+      [data-sonner-toast][data-swiping="false"][data-removed="true"]::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        transform: scaleY(2);
+      }
+      [data-sonner-toast][data-expanded="true"]::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        height: calc(var(--gap) + 1px);
+        bottom: 100%;
+        width: 100%;
+      }
+      [data-sonner-toast][data-mounted="true"] {
+        --y: translateY(0);
+        opacity: 1;
+      }
+      [data-sonner-toast][data-expanded="false"][data-front="false"] {
+        --scale: var(--toasts-before) * 0.05 + 1;
+        --y: translateY(calc(var(--lift-amount) * var(--toasts-before))) scale(calc(-1 * var(--scale)));
+        height: var(--front-toast-height);
+      }
+      [data-sonner-toast] > * {
+        transition: opacity 0.4s;
+      }
+      [data-sonner-toast][data-x-position="right"] {
+        right: 0;
+      }
+      [data-sonner-toast][data-x-position="left"] {
+        left: 0;
+      }
+      [data-sonner-toast][data-expanded="false"][data-front="false"][data-styled="true"] > * {
+        opacity: 0;
+      }
+      [data-sonner-toast][data-visible="false"] {
+        opacity: 0;
+        pointer-events: none;
+      }
+      [data-sonner-toast][data-mounted="true"][data-expanded="true"] {
+        --y: translateY(calc(var(--lift) * var(--offset)));
+        height: var(--initial-height);
+      }
+      [data-sonner-toast][data-removed="true"][data-front="true"][data-swipe-out="false"] {
+        --y: translateY(calc(var(--lift) * -100%));
+        opacity: 0;
+      }
+      [data-sonner-toast][data-removed="true"][data-front="false"][data-swipe-out="false"][data-expanded="true"] {
+        --y: translateY(calc(var(--lift) * var(--offset) + var(--lift) * -100%));
+        opacity: 0;
+      }
+      [data-sonner-toast][data-removed="true"][data-front="false"][data-swipe-out="false"][data-expanded="false"] {
+        --y: translateY(40%);
+        opacity: 0;
+        transition:
+          transform 0.5s,
+          opacity 0.2s;
+      }
+      [data-sonner-toast][data-removed="true"][data-front="false"]::before {
+        height: calc(var(--initial-height) + 20%);
+      }
+      [data-sonner-toast][data-swiping="true"] {
+        transform: var(--y) translateY(var(--swipe-amount-y, 0)) translateX(var(--swipe-amount-x, 0));
+        transition: none;
+      }
+      [data-sonner-toast][data-swiped="true"] {
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      [data-sonner-toast][data-swipe-out="true"][data-y-position="bottom"],
+      [data-sonner-toast][data-swipe-out="true"][data-y-position="top"] {
+        animation-duration: 0.2s;
+        animation-timing-function: ease-out;
+        animation-fill-mode: forwards;
+      }
+      [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="left"] {
+        animation-name: swipe-out-left;
+      }
+      [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="right"] {
+        animation-name: swipe-out-right;
+      }
+      [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="up"] {
+        animation-name: swipe-out-up;
+      }
+      [data-sonner-toast][data-swipe-out="true"][data-swipe-direction="down"] {
+        animation-name: swipe-out-down;
+      }
+      @keyframes swipe-out-left {
+        from {
+          transform: var(--y) translateX(var(--swipe-amount-x));
+          opacity: 1;
+        }
+        to {
+          transform: var(--y) translateX(calc(var(--swipe-amount-x) - 100%));
+          opacity: 0;
+        }
+      }
+      @keyframes swipe-out-right {
+        from {
+          transform: var(--y) translateX(var(--swipe-amount-x));
+          opacity: 1;
+        }
+        to {
+          transform: var(--y) translateX(calc(var(--swipe-amount-x) + 100%));
+          opacity: 0;
+        }
+      }
+      @keyframes swipe-out-up {
+        from {
+          transform: var(--y) translateY(var(--swipe-amount-y));
+          opacity: 1;
+        }
+        to {
+          transform: var(--y) translateY(calc(var(--swipe-amount-y) - 100%));
+          opacity: 0;
+        }
+      }
+      @keyframes swipe-out-down {
+        from {
+          transform: var(--y) translateY(var(--swipe-amount-y));
+          opacity: 1;
+        }
+        to {
+          transform: var(--y) translateY(calc(var(--swipe-amount-y) + 100%));
+          opacity: 0;
+        }
+      }
+      @media (max-width: 600px) {
+        [data-sonner-toaster] {
+          position: fixed;
+          right: var(--mobile-offset-right);
+          left: var(--mobile-offset-left);
+          width: 100%;
+        }
+        [data-sonner-toaster][dir="rtl"] {
+          left: calc(var(--mobile-offset-left) * -1);
+        }
+        [data-sonner-toaster] [data-sonner-toast] {
+          left: 0;
+          right: 0;
+          width: calc(100% - var(--mobile-offset-left) * 2);
+        }
+        [data-sonner-toaster][data-x-position="left"] {
+          left: var(--mobile-offset-left);
+        }
+        [data-sonner-toaster][data-y-position="bottom"] {
+          bottom: var(--mobile-offset-bottom);
+        }
+        [data-sonner-toaster][data-y-position="top"] {
+          top: var(--mobile-offset-top);
+        }
+        [data-sonner-toaster][data-x-position="center"] {
+          left: var(--mobile-offset-left);
+          right: var(--mobile-offset-right);
+          transform: none;
+        }
+      }
+      [data-sonner-toaster][data-sonner-theme="light"] {
+        --normal-bg: #fff;
+        --normal-border: var(--gray4);
+        --normal-text: var(--gray12);
+        --success-bg: hsl(143, 85%, 96%);
+        --success-border: hsl(145, 92%, 87%);
+        --success-text: hsl(140, 100%, 27%);
+        --info-bg: hsl(208, 100%, 97%);
+        --info-border: hsl(221, 91%, 93%);
+        --info-text: hsl(210, 92%, 45%);
+        --warning-bg: hsl(49, 100%, 97%);
+        --warning-border: hsl(49, 91%, 84%);
+        --warning-text: hsl(31, 92%, 45%);
+        --error-bg: hsl(359, 100%, 97%);
+        --error-border: hsl(359, 100%, 94%);
+        --error-text: hsl(360, 100%, 45%);
+      }
+      [data-sonner-toaster][data-sonner-theme="light"] [data-sonner-toast][data-invert="true"] {
+        --normal-bg: #000;
+        --normal-border: hsl(0, 0%, 20%);
+        --normal-text: var(--gray1);
+      }
+      [data-sonner-toaster][data-sonner-theme="dark"] [data-sonner-toast][data-invert="true"] {
+        --normal-bg: #fff;
+        --normal-border: var(--gray3);
+        --normal-text: var(--gray12);
+      }
+      [data-sonner-toaster][data-sonner-theme="dark"] {
+        --normal-bg: #000;
+        --normal-bg-hover: hsl(0, 0%, 12%);
+        --normal-border: hsl(0, 0%, 20%);
+        --normal-border-hover: hsl(0, 0%, 25%);
+        --normal-text: var(--gray1);
+        --success-bg: hsl(150, 100%, 6%);
+        --success-border: hsl(147, 100%, 12%);
+        --success-text: hsl(150, 86%, 65%);
+        --info-bg: hsl(215, 100%, 6%);
+        --info-border: hsl(223, 43%, 17%);
+        --info-text: hsl(216, 87%, 65%);
+        --warning-bg: hsl(64, 100%, 6%);
+        --warning-border: hsl(60, 100%, 9%);
+        --warning-text: hsl(46, 87%, 65%);
+        --error-bg: hsl(358, 76%, 10%);
+        --error-border: hsl(357, 89%, 16%);
+        --error-text: hsl(358, 100%, 81%);
+      }
+      [data-sonner-toaster][data-sonner-theme="dark"] [data-sonner-toast] [data-close-button] {
+        background: var(--normal-bg);
+        border-color: var(--normal-border);
+        color: var(--normal-text);
+      }
+      [data-sonner-toaster][data-sonner-theme="dark"] [data-sonner-toast] [data-close-button]:hover {
+        background: var(--normal-bg-hover);
+        border-color: var(--normal-border-hover);
+      }
+      [data-rich-colors="true"][data-sonner-toast][data-type="success"] {
+        background: var(--success-bg);
+        border-color: var(--success-border);
+        color: var(--success-text);
+      }
+      [data-rich-colors="true"][data-sonner-toast][data-type="success"] [data-close-button] {
+        background: var(--success-bg);
+        border-color: var(--success-border);
+        color: var(--success-text);
+      }
+      [data-rich-colors="true"][data-sonner-toast][data-type="info"] {
+        background: var(--info-bg);
+        border-color: var(--info-border);
+        color: var(--info-text);
+      }
+      [data-rich-colors="true"][data-sonner-toast][data-type="info"] [data-close-button] {
+        background: var(--info-bg);
+        border-color: var(--info-border);
+        color: var(--info-text);
+      }
+      [data-rich-colors="true"][data-sonner-toast][data-type="warning"] {
+        background: var(--warning-bg);
+        border-color: var(--warning-border);
+        color: var(--warning-text);
+      }
+      [data-rich-colors="true"][data-sonner-toast][data-type="warning"] [data-close-button] {
+        background: var(--warning-bg);
+        border-color: var(--warning-border);
+        color: var(--warning-text);
+      }
+      [data-rich-colors="true"][data-sonner-toast][data-type="error"] {
+        background: var(--error-bg);
+        border-color: var(--error-border);
+        color: var(--error-text);
+      }
+      [data-rich-colors="true"][data-sonner-toast][data-type="error"] [data-close-button] {
+        background: var(--error-bg);
+        border-color: var(--error-border);
+        color: var(--error-text);
+      }
+      .sonner-loading-wrapper {
+        --size: 16px;
+        height: var(--size);
+        width: var(--size);
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+      }
+      .sonner-loading-wrapper[data-visible="false"] {
+        transform-origin: center;
+        animation: sonner-fade-out 0.2s ease forwards;
+      }
+      .sonner-spinner {
+        position: relative;
+        top: 50%;
+        left: 50%;
+        height: var(--size);
+        width: var(--size);
+      }
+      .sonner-loading-bar {
+        animation: sonner-spin 1.2s linear infinite;
+        background: var(--gray11);
+        border-radius: 6px;
+        height: 8%;
+        left: -10%;
+        position: absolute;
+        top: -3.9%;
+        width: 24%;
+      }
+      .sonner-loading-bar:first-child {
+        animation-delay: -1.2s;
+        transform: rotate(0.0001deg) translate(146%);
+      }
+      .sonner-loading-bar:nth-child(2) {
+        animation-delay: -1.1s;
+        transform: rotate(30deg) translate(146%);
+      }
+      .sonner-loading-bar:nth-child(3) {
+        animation-delay: -1s;
+        transform: rotate(60deg) translate(146%);
+      }
+      .sonner-loading-bar:nth-child(4) {
+        animation-delay: -0.9s;
+        transform: rotate(90deg) translate(146%);
+      }
+      .sonner-loading-bar:nth-child(5) {
+        animation-delay: -0.8s;
+        transform: rotate(120deg) translate(146%);
+      }
+      .sonner-loading-bar:nth-child(6) {
+        animation-delay: -0.7s;
+        transform: rotate(150deg) translate(146%);
+      }
+      .sonner-loading-bar:nth-child(7) {
+        animation-delay: -0.6s;
+        transform: rotate(180deg) translate(146%);
+      }
+      .sonner-loading-bar:nth-child(8) {
+        animation-delay: -0.5s;
+        transform: rotate(210deg) translate(146%);
+      }
+      .sonner-loading-bar:nth-child(9) {
+        animation-delay: -0.4s;
+        transform: rotate(240deg) translate(146%);
+      }
+      .sonner-loading-bar:nth-child(10) {
+        animation-delay: -0.3s;
+        transform: rotate(270deg) translate(146%);
+      }
+      .sonner-loading-bar:nth-child(11) {
+        animation-delay: -0.2s;
+        transform: rotate(300deg) translate(146%);
+      }
+      .sonner-loading-bar:nth-child(12) {
+        animation-delay: -0.1s;
+        transform: rotate(330deg) translate(146%);
+      }
+      @keyframes sonner-fade-in {
+        0% {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      @keyframes sonner-fade-out {
+        0% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        100% {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+      }
+      @keyframes sonner-spin {
+        0% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.15;
+        }
+      }
+      @media (prefers-reduced-motion) {
+        .sonner-loading-bar,
+        [data-sonner-toast],
+        [data-sonner-toast] > * {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+      .sonner-loader {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        transform-origin: center;
+        transition:
+          opacity 0.2s,
+          transform 0.2s;
+      }
+      .sonner-loader[data-visible="false"] {
+        opacity: 0;
+        transform: scale(0.8) translate(-50%, -50%);
+      }
+    </style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="next-size-adjust" content="" />
+    <title>Room panel · activities · Connecta UI</title>
+    <meta name="description" content="Frontend-only demo of the V2 design: cosy 3D rooms with their own chat." />
+    <link rel="stylesheet" href="assets/overrides.css" />
+
+    <link rel="stylesheet" href="assets/ui-consistency.css" />
+
+    <script src="assets/theme.js"></script>
+  </head>
+  <body class="app-bg min-h-full" data-ui-back="walk-library.html">
+    <!-- Editable HTML captured from /servers/chanom/rooms/library. Custom styles belong in assets/overrides.css. -->
+    <div class="ui-desktop">
+      <div hidden=""></div>
+      <div
+        class="fixed inset-0 flex overflow-hidden transition-[background] duration-1000"
+        style="background: linear-gradient(rgb(29, 34, 56), rgb(43, 49, 80))"
+      >
+        <div class="relative min-w-0 flex-1 overflow-hidden">
+          <div
+            style="
+              position: relative;
+              width: 100%;
+              height: 100%;
+              overflow: hidden;
+              pointer-events: auto;
+              touch-action: none;
+            "
+          >
+            <div style="width: 100%; height: 100%">
+              <img
+                src="assets/captures/walk-activities-0.png"
+                alt="Screenshot of the original demo 3D room"
+                class="captured-scene"
+                data-source="Original demo canvas capture"
+                style="display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none"
+              />
+            </div>
+          </div>
+          <div class="">
+            <div class="pointer-events-none absolute inset-0 overflow-hidden">
+              <div
+                class="absolute top-0 left-0 flex flex-col items-center gap-1.5"
+                style="visibility: visible; transform: translate(-50%, -100%); left: 50%; top: 40.73%"
+              >
+                <div class="typing-dots" aria-label="Typing" style="display: none">
+                  <span></span><span></span><span></span>
+                </div>
+                <div
+                  class="rounded-lg px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-white shadow-sm bg-primary"
+                >
+                  feifei (you)
+                </div>
+              </div>
+              <div
+                class="absolute top-0 left-0 flex flex-col items-center gap-1.5"
+                style="visibility: visible; transform: translate(-50%, -100%); left: 76.9514%; top: -29.97%"
+              >
+                <div class="typing-dots" aria-label="Typing" style="display: none">
+                  <span></span><span></span><span></span>
+                </div>
+                <div
+                  class="rounded-lg px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-white shadow-sm bg-cocoa/85"
+                >
+                  <span class="mr-1 opacity-50"
+                    ><span class="ui-inline-icon"
+                      ><svg
+                        class="ui-line-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+                        <path d="M5 10v2a7 7 0 0 0 14 0v-2m-7 9v3m-4 0h8"></path></svg></span></span
+                  ><span class="mr-1"
+                    ><span class="ui-inline-icon"
+                      ><svg
+                        class="ui-line-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M12 7v14M3 3h6a3 3 0 0 1 3 3 3 3 0 0 1 3-3h6v16h-6a3 3 0 0 0-3 2 3 3 0 0 0-3-2H3z"
+                        ></path></svg></span></span
+                  >Mai<span class="ml-1 font-semibold opacity-75">· 32m · Calculus</span>
+                </div>
+              </div>
+              <div
+                class="absolute top-0 left-0 flex flex-col items-center gap-1.5"
+                style="visibility: visible; transform: translate(-50%, -100%); left: 112.097%; top: 8.61%"
+              >
+                <div class="typing-dots" aria-label="Typing" style="display: none">
+                  <span></span><span></span><span></span>
+                </div>
+                <div
+                  class="rounded-lg px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-white shadow-sm bg-cocoa/85"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-headphone-off mr-1 inline size-3 -translate-y-px text-[#ffb3c4]"
+                    aria-label="Deafened"
+                  >
+                    <path d="M21 14h-1.343"></path>
+                    <path d="M9.128 3.47A9 9 0 0 1 21 12v3.343"></path>
+                    <path d="m2 2 20 20"></path>
+                    <path d="M20.414 20.414A2 2 0 0 1 19 21h-1a2 2 0 0 1-2-2v-3"></path>
+                    <path
+                      d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 2.636-6.364"
+                    ></path></svg
+                  ><span class="mr-1"
+                    ><span class="ui-inline-icon"
+                      ><svg
+                        class="ui-line-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M12 7v14M3 3h6a3 3 0 0 1 3 3 3 3 0 0 1 3-3h6v16h-6a3 3 0 0 0-3 2 3 3 0 0 0-3-2H3z"
+                        ></path></svg></span></span
+                  >Jod<span class="ml-1 font-semibold opacity-75">· 9m · Kuy pawa</span>
+                </div>
+              </div>
+              <div
+                class="absolute top-0 left-0 flex flex-col items-center gap-1.5"
+                style="visibility: visible; transform: translate(-50%, -100%); left: 68.25%; top: 15.08%"
+              >
+                <div class="typing-dots" aria-label="Typing" style="display: none">
+                  <span></span><span></span><span></span>
+                </div>
+                <div
+                  class="w-max max-w-56 rounded-xl bg-white px-2.5 py-1.5 text-center text-xs leading-snug font-semibold text-[#45323d] shadow-md"
+                >
+                  come sit with us!
+                </div>
+                <div
+                  class="rounded-lg px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-white shadow-sm bg-cocoa/85 speaking"
+                >
+                  <span class="mr-1"
+                    ><span class="ui-inline-icon"
+                      ><svg
+                        class="ui-line-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+                        <path d="M5 10v2a7 7 0 0 0 14 0v-2m-7 9v3m-4 0h8"></path></svg></span></span
+                  >Ploy
+                </div>
+              </div>
+              <div
+                class="absolute top-0 left-0 flex flex-col items-center gap-1.5"
+                style="visibility: visible; transform: translate(-50%, -100%); left: 11.2153%; top: 17.1%"
+              >
+                <div
+                  class="flex items-center gap-1 rounded-lg bg-lavender/95 px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-lavender-ink shadow-sm"
+                >
+                  <span></span>Mochi<span class="rounded bg-white/80 px-1 text-[9px] tracking-wide">NPC</span>
+                </div>
+              </div>
+              <div
+                class="absolute top-0 left-0 flex flex-col items-center gap-1.5"
+                style="visibility: visible; transform: translate(-50%, -100%); left: 15.1736%; top: 5.16%"
+              >
+                <div
+                  class="flex items-center gap-1 rounded-lg bg-lavender/95 px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-lavender-ink shadow-sm"
+                >
+                  <span></span>Tofu<span class="rounded bg-white/80 px-1 text-[9px] tracking-wide">NPC</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="flex flex-col items-start gap-2 absolute top-3 left-3 z-30 room-hud-identity">
+              <button class="room-hud-leave" aria-label="Leave room" data-ui-go="home.html">
+                <svg
+                  class="ui-line-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M9 5H4v14h5m5-14 7 7-7 7M8 12h13"></path>
+                </svg>
+              </button>
+              <div aria-label="Room: Chanom Friends" role="group" class="flex max-w-full items-center gap-2.5 p-2 pr-4 text-left room-hud-card">
+                <span class="min-w-0 flex-1"
+                  ><span class="flex items-center gap-1 text-[15px] font-black"
+                    ><span class="truncate">Chanom Friends</span></span
+                  ><span class="flex items-center gap-1.5 truncate text-xs text-muted-foreground"
+                    ><span class="size-2 flex-none rounded-full bg-online"></span> Cosy Library · 4 here</span
+                  ></span
+                >
+              </div>
+            </div>
+            <div class="absolute right-3 flex items-start gap-2 top-3 room-hud-presence">
+              <div class="relative">
+                <button
+                  aria-expanded="false"
+                  class="panel flex h-[58px] items-center gap-2 px-3 room-hud-people"
+                  aria-label="In this room · 4"
+                  data-ui-go="walk-people.html"
+                >
+                  <span class="flex -space-x-2"
+                    ><span class="relative inline-flex flex-none" style="width: 28px; height: 28px"
+                      ><span
+                        class="grid size-full place-items-center rounded-full font-black text-white select-none speaking"
+                        style="
+                          background: linear-gradient(
+                            145deg,
+                            rgb(179, 97, 47),
+                            color-mix(rgb(179, 97, 47) 70%, white 30%)
+                          );
+                          font-size: 11.2px;
+                        "
+                        >P</span
+                      ></span
+                    ><span class="relative inline-flex flex-none" style="width: 28px; height: 28px"
+                      ><span
+                        class="grid size-full place-items-center rounded-full font-black text-white select-none"
+                        style="
+                          background: linear-gradient(
+                            145deg,
+                            rgb(223, 99, 146),
+                            color-mix(rgb(223, 99, 146) 70%, white 30%)
+                          );
+                          font-size: 11.2px;
+                        "
+                        >F</span
+                      ></span
+                    ><span class="relative inline-flex flex-none" style="width: 28px; height: 28px"
+                      ><span
+                        class="grid size-full place-items-center rounded-full font-black text-white select-none"
+                        style="
+                          background: linear-gradient(
+                            145deg,
+                            rgb(119, 88, 196),
+                            color-mix(rgb(119, 88, 196) 70%, white 30%)
+                          );
+                          font-size: 11.2px;
+                        "
+                        >M</span
+                      ></span
+                    ><span class="relative inline-flex flex-none" style="width: 28px; height: 28px"
+                      ><span
+                        class="grid size-full place-items-center rounded-full font-black text-white select-none"
+                        style="
+                          background: linear-gradient(
+                            145deg,
+                            rgb(233, 149, 90),
+                            color-mix(rgb(233, 149, 90) 70%, white 30%)
+                          );
+                          font-size: 11.2px;
+                        "
+                        >J</span
+                      ></span
+                    ></span
+                  ><span class="text-sm font-black">4</span>
+                </button>
+              </div>
+              <button class="room-hud-more panel" aria-label="Room menu" popovertarget="room-menu-desktop">
+                <svg
+                  class="ui-line-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="5" r="1"></circle>
+                  <circle cx="12" cy="12" r="1"></circle>
+                  <circle cx="12" cy="19" r="1"></circle>
+                </svg>
+              </button>
+            </div>
+            <div class="absolute right-3 z-20 top-[72px]"></div>
+            <div class="flex items-start gap-2 absolute left-3 z-20 top-[88px] room-hud-tool-column">
+              <nav aria-label="Room tools" class="panel flex flex-col gap-1 p-1.5">
+                <button
+                  aria-pressed="false"
+                  aria-label="Study session: focus timer, to-do and today’s focus"
+                  class="relative flex size-11 flex-col items-center justify-center gap-0.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
+                  data-state="closed"
+                  data-slot="tooltip-trigger"
+                  data-ui-go="walk-study.html"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-book-open-text size-5"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 5v16"></path>
+                    <path d="M16 13h2"></path>
+                    <path d="M16 9h2"></path>
+                    <path
+                      d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z"
+                    ></path>
+                    <path d="M6 13h2"></path>
+                    <path d="M6 9h2"></path>
+                  </svg></button
+                ><button
+                  aria-pressed="false"
+                  aria-label="Music"
+                  class="relative flex size-11 flex-col items-center justify-center gap-0.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
+                  data-state="closed"
+                  data-slot="tooltip-trigger"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-eighth-note lucide-music-2 size-5"
+                    aria-hidden="true"
+                  >
+                    <path d="m19 6-5.2-3.9a.5.5 0 0 0-.8.4V18"></path>
+                    <circle cx="9" cy="18" r="4"></circle>
+                  </svg></button
+                ><button
+                  aria-pressed="false"
+                  aria-label="Today’s quests: 0 of 3 done"
+                  class="relative flex size-11 flex-col items-center justify-center gap-0.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
+                  data-state="closed"
+                  data-slot="tooltip-trigger"
+                  data-ui-go="walk-quests.html"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-target size-5"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <circle cx="12" cy="12" r="6"></circle>
+                    <circle cx="12" cy="12" r="2"></circle></svg
+                  ><span class="font-mono text-[9px] leading-none font-black text-primary">0/3</span></button
+                ><button
+                  aria-pressed="false"
+                  aria-label="How to play"
+                  class="relative flex size-11 flex-col items-center justify-center gap-0.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
+                  data-state="closed"
+                  data-slot="tooltip-trigger"
+                  data-ui-go="walk-help.html"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-circle-question-mark lucide-help-circle lucide-circle-help size-5"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                    <path d="M12 17h.01"></path>
+                  </svg>
+                </button>
+              </nav>
+              <div class="w-[min(300px,calc(100vw-5.5rem))]">
+                <div class="hidden">
+                  <section class="panel flex flex-col gap-3 p-3" aria-label="Study session">
+                    <div class="flex items-baseline gap-2 px-1">
+                      <h2 class="flex-1 text-sm font-black">Study session</h2>
+                      <span class="text-[11px] text-muted-foreground">only you see this</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1 rounded-2xl bg-muted p-1">
+                      <button
+                        class="flex items-center justify-center gap-1.5 rounded-xl py-1.5 text-xs font-bold bg-card text-primary shadow-sm"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="lucide lucide-timer size-3.5"
+                          aria-hidden="true"
+                        >
+                          <line x1="10" x2="14" y1="2" y2="2"></line>
+                          <line x1="12" x2="15" y1="14" y2="11"></line>
+                          <circle cx="12" cy="14" r="8"></circle></svg
+                        >Timer</button
+                      ><button
+                        class="flex items-center justify-center gap-1.5 rounded-xl py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="lucide lucide-list-checks size-3.5"
+                          aria-hidden="true"
+                        >
+                          <path d="M13 5h8"></path>
+                          <path d="M13 12h8"></path>
+                          <path d="M13 19h8"></path>
+                          <path d="m3 17 2 2 4-4"></path>
+                          <path d="m3 7 2 2 4-4"></path></svg
+                        >To-do<span class="rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground"
+                          >2</span
+                        ></button
+                      ><button
+                        class="flex items-center justify-center gap-1.5 rounded-xl py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="lucide lucide-trophy size-3.5"
+                          aria-hidden="true"
+                        >
+                          <path d="M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2"></path>
+                          <path d="M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2"></path>
+                          <path d="M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3"></path>
+                          <path d="M4 22h16"></path>
+                          <path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"></path>
+                          <path d="M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3"></path></svg
+                        >Today
+                      </button>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                      <div class="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-secondary to-peach p-3">
+                        <div class="relative grid size-16 flex-none place-items-center">
+                          <svg viewBox="0 0 36 36" class="absolute inset-0 -rotate-90">
+                            <circle
+                              cx="18"
+                              cy="18"
+                              r="15.5"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="3"
+                              class="text-card/70"
+                            ></circle>
+                            <circle
+                              cx="18"
+                              cy="18"
+                              r="15.5"
+                              fill="none"
+                              stroke="var(--primary)"
+                              stroke-width="3"
+                              stroke-linecap="round"
+                              stroke-dasharray="0 97.4"
+                            ></circle></svg
+                          ><span class="text-2xl project-art-holder project-cover-holder"
+                            ><img
+                              src="assets/project-images/covers/library.webp"
+                              alt="Cosy Library"
+                              class="project-art"
+                              loading="lazy"
+                          /></span>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                          <p class="text-xs font-bold text-muted-foreground">Not started</p>
+                          <p class="font-mono text-3xl font-black tabular-nums">25:00</p>
+                        </div>
+                      </div>
+                      <div class="grid grid-cols-2 gap-2">
+                        <button
+                          class="rounded-xl bg-primary py-2 text-sm font-extrabold text-primary-foreground hover:bg-primary-ink"
+                        >
+                          25 / 5 min</button
+                        ><button
+                          class="rounded-xl bg-primary py-2 text-sm font-extrabold text-primary-foreground hover:bg-primary-ink"
+                        >
+                          50 / 10 min
+                        </button>
+                      </div>
+                      <label class="flex flex-col gap-1 text-xs font-bold text-muted-foreground"
+                        >Studying (shown above your head)<input
+                          data-slot="input"
+                          class="w-full min-w-0 border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 h-9 rounded-xl"
+                          maxlength="24"
+                          placeholder="e.g. Calculus"
+                          value=""
+                          style=""
+                      /></label>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </div>
+            <div class="absolute bottom-3 left-3 room-hud-chat-position">
+              <section
+                class="panel flex flex-col gap-2 p-2 h-[360px] w-[364px] room-hud-chat"
+                aria-label="Chat"
+                data-ui-chat-panel=""
+              >
+                <div class="flex items-center gap-1">
+                  <div class="flex min-w-0 flex-1 gap-0.5 rounded-xl bg-muted p-0.5" role="tablist">
+                    <button
+                      role="tab"
+                      aria-selected="true"
+                      class="flex min-w-0 flex-auto items-center justify-center gap-1 rounded-[10px] px-1.5 py-1 text-xs font-extrabold whitespace-nowrap bg-card text-primary shadow-sm"
+                    >
+                      <span class="truncate">Bubbles</span></button
+                    ><button
+                      role="tab"
+                      aria-selected="false"
+                      class="flex min-w-0 flex-auto items-center justify-center gap-1 rounded-[10px] px-1.5 py-1 text-xs font-extrabold whitespace-nowrap text-muted-foreground hover:text-foreground"
+                    >
+                      <span class="truncate">Room chat</span
+                      ><span class="rounded-full bg-primary px-1.5 text-[10px] font-black text-primary-foreground"
+                        >@3</span
+                      ></button
+                    ><button
+                      role="tab"
+                      aria-selected="false"
+                      class="flex min-w-0 flex-auto items-center justify-center gap-1 rounded-[10px] px-1.5 py-1 text-xs font-extrabold whitespace-nowrap text-muted-foreground hover:text-foreground"
+                    >
+                      <span class="truncate">Messages</span
+                      ><span class="rounded-full bg-primary px-1.5 text-[10px] font-black text-primary-foreground"
+                        >2</span
+                      >
+                    </button>
+                  </div>
+                  <button
+                    class="rounded-lg p-1.5 text-muted-foreground hover:bg-muted"
+                    aria-label="Hide chat"
+                    data-ui-hide-chat=""
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-x size-4"
+                      aria-hidden="true"
+                    >
+                      <path d="M18 6 6 18"></path>
+                      <path d="m6 6 12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+                <p class="px-1.5 text-[11px] text-muted-foreground">Pops over your head · gone when everyone leaves</p>
+                <div class="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto px-1.5">
+                  <p class="rounded-xl bg-muted px-2.5 py-1 text-xs text-muted-foreground">
+                    You walked into the Library
+                  </p>
+                  <p class="text-sm"><span class="font-black">Ploy</span> come sit with us!</p>
+                </div>
+                <form
+                  class="flex flex-col border bg-card shadow-sm focus-within:border-primary rounded-xl p-1"
+                  data-ui-form=""
+                >
+                  <div class="flex items-center gap-0.5">
+                    <button
+                      data-slot="popover-trigger"
+                      data-variant="ghost"
+                      data-size="icon"
+                      class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50 size-8 rounded-lg text-muted-foreground"
+                      type="button"
+                      aria-label="Emoji"
+                      aria-haspopup="dialog"
+                      aria-expanded="false"
+                      data-state="closed"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-face-slightly-smiling lucide-smile"
+                        aria-hidden="true"
+                      >
+                        <path d="M15 10V9"></path>
+                        <path d="M16.472 15a6 6 0 01-8.943 0"></path>
+                        <path d="M9 10V9"></path>
+                        <circle cx="12" cy="12" r="10"></circle>
+                      </svg></button
+                    ><input
+                      maxlength="120"
+                      placeholder="Say something out loud"
+                      class="h-9 min-w-0 flex-1 bg-transparent px-2 text-sm outline-none"
+                      aria-label="Say something out loud"
+                      value=""
+                      style=""
+                      readonly=""
+                      title="Static UI preview"
+                    /><button
+                      data-slot="button"
+                      data-variant="default"
+                      data-size="icon"
+                      class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 bg-primary text-primary-foreground hover:bg-primary/80 size-8 rounded-xl"
+                      type="submit"
+                      aria-label="Send"
+                      disabled=""
+                      title="Static UI preview"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-send"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"
+                        ></path>
+                        <path d="m21.854 2.147-10.94 10.939"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </form>
+              </section>
+            </div>
+            <div class="absolute bottom-[96px] left-1/2 z-20 -translate-x-1/2">
+              <div class="panel flex w-[360px] max-w-[calc(100vw-2rem)] flex-col gap-2 p-3">
+                <div class="flex items-center gap-2 px-1">
+                  <h2 class="flex-1 text-sm font-black">Things to do here</h2>
+                </div>
+                <div class="flex items-center gap-3 rounded-2xl border bg-card/70 p-2">
+                  <span
+                    class="relative grid size-10 flex-none place-items-center rounded-xl text-xl bg-sky project-art-holder project-cover-holder"
+                    ><img
+                      src="assets/project-images/covers/library.webp"
+                      alt="Cosy Library"
+                      class="project-art"
+                      loading="lazy" /></span
+                  ><span class="min-w-0 flex-1"
+                    ><span class="block text-sm font-extrabold">Watch together</span
+                    ><span class="block truncate text-[11px] text-muted-foreground"
+                      >At the big screen · press E to watch</span
+                    ></span
+                  ><button class="rounded-full px-3 py-1 text-xs font-extrabold border bg-card hover:bg-muted">
+                    Go there
+                  </button>
+                </div>
+                <div class="flex items-center gap-3 rounded-2xl border bg-card/70 p-2">
+                  <span
+                    class="relative grid size-10 flex-none place-items-center rounded-xl text-xl bg-mint project-art-holder project-cover-holder"
+                    ><img
+                      src="assets/project-images/covers/library.webp"
+                      alt="Cosy Library"
+                      class="project-art"
+                      loading="lazy" /></span
+                  ><span class="min-w-0 flex-1"
+                    ><span class="block text-sm font-extrabold">Card games</span
+                    ><span class="block truncate text-[11px] text-muted-foreground"
+                      >At the card table · sit down to start</span
+                    ></span
+                  ><button class="rounded-full px-3 py-1 text-xs font-extrabold border bg-card hover:bg-muted">
+                    Go there
+                  </button>
+                </div>
+                <div class="flex items-center gap-3 rounded-2xl border bg-card/70 p-2 opacity-50">
+                  <span
+                    class="relative grid size-10 flex-none place-items-center rounded-xl text-xl bg-lavender project-art-holder project-cover-holder"
+                    ><img
+                      src="assets/project-images/covers/library.webp"
+                      alt="Cosy Library"
+                      class="project-art"
+                      loading="lazy" /></span
+                  ><span class="min-w-0 flex-1"
+                    ><span class="block text-sm font-extrabold">Werewolf</span
+                    ><span class="block truncate text-[11px] text-muted-foreground">Comes with feature 12</span></span
+                  >
+                </div>
+                <div class="flex items-center gap-3 rounded-2xl border bg-card/70 p-2">
+                  <span
+                    class="relative grid size-10 flex-none place-items-center rounded-xl text-xl bg-peach project-art-holder project-cover-holder"
+                    ><img
+                      src="assets/project-images/covers/library.webp"
+                      alt="Cosy Library"
+                      class="project-art"
+                      loading="lazy" /></span
+                  ><span class="min-w-0 flex-1"
+                    ><span class="block text-sm font-extrabold">Draw &amp; Guess</span
+                    ><span class="block truncate text-[11px] text-muted-foreground"
+                      >At the art corner · press E to start</span
+                    ></span
+                  ><button class="rounded-full px-3 py-1 text-xs font-extrabold border bg-card hover:bg-muted">
+                    Go there
+                  </button>
+                </div>
+                <div class="flex items-center gap-3 rounded-2xl border bg-card/70 p-2">
+                  <span
+                    class="relative grid size-10 flex-none place-items-center rounded-xl text-xl bg-secondary project-art-holder project-cover-holder"
+                    ><img
+                      src="assets/project-images/covers/library.webp"
+                      alt="Cosy Library"
+                      class="project-art"
+                      loading="lazy" /></span
+                  ><span class="min-w-0 flex-1"
+                    ><span class="block text-sm font-extrabold">Pick a Side</span
+                    ><span class="block truncate text-[11px] text-muted-foreground"
+                      >At the open floor · press E to start</span
+                    ></span
+                  ><button class="rounded-full px-3 py-1 text-xs font-extrabold border bg-card hover:bg-muted">
+                    Go there
+                  </button>
+                </div>
+              </div>
+            </div>
+            <nav
+              class="dock flex items-center gap-1.5 p-1.5 absolute bottom-3 left-1/2 -translate-x-1/2 room-hud-dock"
+              aria-label="Controls"
+            >
+              <span data-state="closed" data-slot="tooltip-trigger"
+                ><button aria-pressed="false" class="dock-btn !bg-[#7a3442]">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-mic-off size-5"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 19v3"></path>
+                    <path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"></path>
+                    <path d="M16.95 16.95A7 7 0 0 1 5 12v-2"></path>
+                    <path d="M18.89 13.23A7 7 0 0 0 19 12v-2"></path>
+                    <path d="m2 2 20 20"></path>
+                    <path d="M9 9v3a3 3 0 0 0 5.12 2.12"></path></svg
+                  >Mic off
+                </button></span
+              ><button aria-pressed="false" aria-label="Deafen" class="dock-btn">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-headphones size-5"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"
+                  ></path></svg
+                >Sound</button
+              ><button aria-pressed="true" aria-label="Chat" class="dock-btn relative" data-ui-hide-chat="">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-message-circle size-5"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"
+                  ></path></svg
+                >Chat</button
+              ><button aria-label="Photo" class="dock-btn relative">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-camera size-5"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"
+                  ></path>
+                  <circle cx="12" cy="13" r="3"></circle></svg
+                >Photo</button
+              ><button
+                aria-pressed="true"
+                aria-label="Activities"
+                class="dock-btn relative"
+                data-ui-go="walk-library.html"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-sparkles lucide-stars size-5"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"
+                  ></path>
+                  <path d="M20 2v4"></path>
+                  <path d="M22 4h-4"></path>
+                  <circle cx="4" cy="20" r="2"></circle></svg
+                >Activities</button
+              ><span class="mx-0.5 h-7 w-px bg-white/20"></span
+              ><button
+                aria-label="Room tools"
+                class="dock-btn"
+                type="button"
+                aria-haspopup="dialog"
+                aria-expanded="false"
+                data-state="closed"
+                data-slot="popover-trigger"
+                popovertarget="room-menu-desktop"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-shield-check size-5"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
+                  ></path>
+                  <path d="m9 12 2 2 4-4"></path></svg
+                >Room
+              </button>
+            </nav>
+            <div class="panel flex items-center gap-1 p-1.5 absolute right-3 bottom-3 room-hud-zoom">
+              <button
+                aria-label="Zoom out"
+                class="grid size-9 place-items-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
+                data-ui-zoom="-1"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-minus size-4"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14"></path>
+                </svg></button
+              ><span class="w-12 text-center text-sm font-bold tabular-nums">100%</span
+              ><button
+                aria-label="Zoom in"
+                class="grid size-9 place-items-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
+                data-ui-zoom="1"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-plus size-4"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14"></path>
+                  <path d="M12 5v14"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button
+        class="fixed top-1/2 right-0 z-[60] flex -translate-y-1/2 flex-col items-center gap-1 rounded-l-xl border border-r-0 border-dashed border-primary/60 bg-card/90 px-1 py-2 text-[10px] font-extrabold text-muted-foreground shadow-soft backdrop-blur [writing-mode:vertical-rl] hover:text-foreground"
+        aria-label="Demo controls"
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        data-state="closed"
+        data-slot="popover-trigger"
+        data-ui-toolbar=""
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-palette size-3.5"
+          aria-hidden="true"
+        >
+          <path
+            d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"
+          ></path>
+          <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+          <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+          <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+          <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+        </svg>
+        Demo
+      </button>
+      <section
+        aria-label="Notifications alt+T"
+        tabindex="-1"
+        aria-live="polite"
+        aria-relevant="additions text"
+        aria-atomic="false"
+        data-react-aria-top-layer="true"
+      ></section>
+      <next-route-announcer style="position: absolute"></next-route-announcer>
+      <div id="room-menu-desktop" class="room-settings-popover" popover="auto" aria-label="Room menu">
+        <div class="hud-menu-heading"><strong>This room</strong><span>for everyone</span></div>
+        <div class="hud-room-actions">
+          <button class="hud-invite" data-hud-preview="">
+            <svg
+              class="ui-line-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-2 2m3 6a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l2-2"
+              ></path></svg
+            >Invite</button
+          ><button data-hud-preview="">
+            <svg
+              class="ui-line-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m9 3-1 3-3 1-2 5 2 5 3 1 1 3h6l1-3 3-1 2-5-2-5-3-1-1-3z"></path>
+              <circle cx="12" cy="12" r="3"></circle></svg
+            >Room settings
+          </button>
+        </div>
+        <section class="hud-personal">
+          <div class="hud-menu-heading"><strong>Your settings</strong><span>only you</span></div>
+          <div class="hud-personal-grid">
+            <button data-hud-preview="">
+              <svg
+                class="ui-line-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m8 3-5 3-2 5 5 2v8h12v-8l5-2-2-5-5-3a4 4 0 0 1-8 0z"></path></svg
+              >My look</button
+            ><button data-hud-preview="">
+              <svg
+                class="ui-line-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+                <path d="M5 10v2a7 7 0 0 0 14 0v-2m-7 9v3m-4 0h8"></path></svg
+              >Voice &amp; sound</button
+            ><button data-hud-preview="">
+              <svg
+                class="ui-line-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12h4"></path></svg
+              >Notifications</button
+            ><button data-hud-preview="">
+              <svg
+                class="ui-line-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m12 2 9 4v6c0 6-9 10-9 10S3 18 3 12V6z"></path></svg
+              >Privacy
+            </button>
+          </div>
+          <button class="hud-setting-toggle" aria-pressed="false">
+            <svg
+              class="ui-line-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M20 3c-7 0-15 1-15 9a6 6 0 0 0 6 6c8 0 9-8 9-15ZM3 21 14 10"></path></svg
+            ><span>Battery saver</span><b>Off</b></button
+          ><button class="hud-setting-toggle" aria-pressed="true">
+            <svg
+              class="ui-line-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m4 3 6 18 3-8 8-3zM2 9H0m10-7V0m-7 3L1 1"></path></svg
+            ><span>Click to walk</span><b>On</b></button
+          ><button class="hud-all-settings" data-hud-preview="">All your settings →</button>
+        </section>
+        <button class="hud-report" data-hud-preview="">
+          <svg
+            class="ui-line-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M4 22V3m0 1c5-5 11 5 16 0v10c-5 5-11-5-16 0"></path></svg
+          >Report this room
+        </button>
+      </div>
+    </div>
+    <div class="ui-phone">
+      <div hidden=""></div>
+      <div
+        class="fixed inset-0 flex overflow-hidden transition-[background] duration-1000"
+        style="background: linear-gradient(rgb(29, 34, 56), rgb(43, 49, 80))"
+      >
+        <div class="relative min-w-0 flex-1 overflow-hidden">
+          <div
+            style="
+              position: relative;
+              width: 100%;
+              height: 100%;
+              overflow: hidden;
+              pointer-events: auto;
+              touch-action: none;
+            "
+          >
+            <div style="width: 100%; height: 100%">
+              <img
+                src="assets/captures/walk-activities-phone-0.png"
+                alt="Character screenshot from the original demo"
+                class="captured-scene"
+                data-source="Original demo canvas capture"
+                style="display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none"
+              />
+            </div>
+          </div>
+          <div class="">
+            <div class="pointer-events-none absolute inset-0 overflow-hidden">
+              <div
+                class="absolute top-0 left-0 flex flex-col items-center gap-1.5"
+                style="visibility: visible; transform: translate(-50%, -100%); left: 50%; top: 44.0995%"
+              >
+                <div class="typing-dots" aria-label="Typing" style="display: none">
+                  <span></span><span></span><span></span>
+                </div>
+                <div
+                  class="rounded-lg px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-white shadow-sm bg-primary"
+                >
+                  feifei (you)
+                </div>
+              </div>
+              <div
+                class="absolute top-0 left-0 flex flex-col items-center gap-1.5"
+                style="visibility: visible; transform: translate(-50%, -100%); left: 103.513%; top: -0.947867%"
+              >
+                <div class="typing-dots" aria-label="Typing" style="display: none">
+                  <span></span><span></span><span></span>
+                </div>
+                <div
+                  class="rounded-lg px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-white shadow-sm bg-cocoa/85"
+                >
+                  <span class="mr-1 opacity-50"
+                    ><span class="ui-inline-icon"
+                      ><svg
+                        class="ui-line-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+                        <path d="M5 10v2a7 7 0 0 0 14 0v-2m-7 9v3m-4 0h8"></path></svg></span></span
+                  ><span class="mr-1"
+                    ><span class="ui-inline-icon"
+                      ><svg
+                        class="ui-line-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M12 7v14M3 3h6a3 3 0 0 1 3 3 3 3 0 0 1 3-3h6v16h-6a3 3 0 0 0-3 2 3 3 0 0 0-3-2H3z"
+                        ></path></svg></span></span
+                  >Mai<span class="ml-1 font-semibold opacity-75">· 32m · Calculus</span>
+                </div>
+              </div>
+              <div
+                class="absolute top-0 left-0 flex flex-col items-center gap-1.5"
+                style="visibility: visible; transform: translate(-50%, -100%); left: 173.282%; top: 23.6374%"
+              >
+                <div class="typing-dots" aria-label="Typing" style="display: none">
+                  <span></span><span></span><span></span>
+                </div>
+                <div
+                  class="rounded-lg px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-white shadow-sm bg-cocoa/85"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-headphone-off mr-1 inline size-3 -translate-y-px text-[#ffb3c4]"
+                    aria-label="Deafened"
+                  >
+                    <path d="M21 14h-1.343"></path>
+                    <path d="M9.128 3.47A9 9 0 0 1 21 12v3.343"></path>
+                    <path d="m2 2 20 20"></path>
+                    <path d="M20.414 20.414A2 2 0 0 1 19 21h-1a2 2 0 0 1-2-2v-3"></path>
+                    <path
+                      d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 2.636-6.364"
+                    ></path></svg
+                  ><span class="mr-1"
+                    ><span class="ui-inline-icon"
+                      ><svg
+                        class="ui-line-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M12 7v14M3 3h6a3 3 0 0 1 3 3 3 3 0 0 1 3-3h6v16h-6a3 3 0 0 0-3 2 3 3 0 0 0-3-2H3z"
+                        ></path></svg></span></span
+                  >Jod<span class="ml-1 font-semibold opacity-75">· 9m · Kuy pawa</span>
+                </div>
+              </div>
+              <div
+                class="absolute top-0 left-0 flex flex-col items-center gap-1.5"
+                style="visibility: visible; transform: translate(-50%, -100%); left: 66.3077%; top: 22.9384%"
+              >
+                <div class="typing-dots" aria-label="Typing" style="display: none">
+                  <span></span><span></span><span></span>
+                </div>
+                <div
+                  class="w-max max-w-56 rounded-xl bg-white px-2.5 py-1.5 text-center text-xs leading-snug font-semibold text-[#45323d] shadow-md"
+                >
+                  come sit with us!
+                </div>
+                <div
+                  class="rounded-lg px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-white shadow-sm bg-cocoa/85 speaking"
+                >
+                  <span class="mr-1"
+                    ><span class="ui-inline-icon"
+                      ><svg
+                        class="ui-line-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+                        <path d="M5 10v2a7 7 0 0 0 14 0v-2m-7 9v3m-4 0h8"></path></svg></span></span
+                  >Ploy
+                </div>
+              </div>
+              <div
+                class="absolute top-0 left-0 flex flex-col items-center gap-1.5"
+                style="visibility: visible; transform: translate(-50%, -100%); left: -27%; top: 29.0403%"
+              >
+                <div
+                  class="flex items-center gap-1 rounded-lg bg-lavender/95 px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-lavender-ink shadow-sm"
+                >
+                  <span></span>Mochi<span class="rounded bg-white/80 px-1 text-[9px] tracking-wide">NPC</span>
+                </div>
+              </div>
+              <div
+                class="absolute top-0 left-0 flex flex-col items-center gap-1.5"
+                style="visibility: visible; transform: translate(-50%, -100%); left: -19.1282%; top: 21.4455%"
+              >
+                <div
+                  class="flex items-center gap-1 rounded-lg bg-lavender/95 px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-lavender-ink shadow-sm"
+                >
+                  <span></span>Tofu<span class="rounded bg-white/80 px-1 text-[9px] tracking-wide">NPC</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="flex flex-col items-start gap-2 absolute top-3 left-3 z-30 right-3 room-hud-identity">
+              <button class="room-hud-leave" aria-label="Leave room" data-ui-go="home.html">
+                <svg
+                  class="ui-line-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M9 5H4v14h5m5-14 7 7-7 7M8 12h13"></path>
+                </svg>
+              </button>
+              <div aria-label="Room: Chanom Friends" role="group" class="flex max-w-full items-center gap-2.5 p-2 pr-4 text-left room-hud-card">
+                <span class="min-w-0 flex-1"
+                  ><span class="flex items-center gap-1 text-[15px] font-black"
+                    ><span class="truncate">Chanom Friends</span></span
+                  ><span class="flex items-center gap-1.5 truncate text-xs text-muted-foreground"
+                    ><span class="size-2 flex-none rounded-full bg-online"></span> Cosy Library · 4 here</span
+                  ></span
+                >
+              </div>
+            </div>
+            <div class="absolute right-3 flex items-start gap-2 top-[80px]"></div>
+            <div class="absolute right-3 z-20 top-[132px]"></div>
+            <div class="flex items-start gap-2 absolute left-3 z-20 top-[132px] room-hud-tool-column">
+              <nav aria-label="Room tools" class="panel flex flex-col gap-1 p-1.5">
+                <button
+                  aria-pressed="false"
+                  aria-label="Study session: focus timer, to-do and today’s focus"
+                  class="relative flex size-11 flex-col items-center justify-center gap-0.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
+                  data-state="closed"
+                  data-slot="tooltip-trigger"
+                  data-ui-go="walk-study.html"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-book-open-text size-5"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 5v16"></path>
+                    <path d="M16 13h2"></path>
+                    <path d="M16 9h2"></path>
+                    <path
+                      d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z"
+                    ></path>
+                    <path d="M6 13h2"></path>
+                    <path d="M6 9h2"></path>
+                  </svg></button
+                ><button
+                  aria-pressed="false"
+                  aria-label="Music"
+                  class="relative flex size-11 flex-col items-center justify-center gap-0.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
+                  data-state="closed"
+                  data-slot="tooltip-trigger"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-eighth-note lucide-music-2 size-5"
+                    aria-hidden="true"
+                  >
+                    <path d="m19 6-5.2-3.9a.5.5 0 0 0-.8.4V18"></path>
+                    <circle cx="9" cy="18" r="4"></circle>
+                  </svg></button
+                ><button
+                  aria-pressed="false"
+                  aria-label="Today’s quests: 0 of 3 done"
+                  class="relative flex size-11 flex-col items-center justify-center gap-0.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
+                  data-state="closed"
+                  data-slot="tooltip-trigger"
+                  data-ui-go="walk-quests.html"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-target size-5"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <circle cx="12" cy="12" r="6"></circle>
+                    <circle cx="12" cy="12" r="2"></circle></svg
+                  ><span class="font-mono text-[9px] leading-none font-black text-primary">0/3</span></button
+                ><button
+                  aria-pressed="false"
+                  aria-label="How to play"
+                  class="relative flex size-11 flex-col items-center justify-center gap-0.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
+                  data-state="closed"
+                  data-slot="tooltip-trigger"
+                  data-ui-go="walk-help.html"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-circle-question-mark lucide-help-circle lucide-circle-help size-5"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                    <path d="M12 17h.01"></path>
+                  </svg>
+                </button>
+              </nav>
+              <div class="w-[min(300px,calc(100vw-5.5rem))]">
+                <div class="hidden">
+                  <section class="panel flex flex-col gap-3 p-3" aria-label="Study session">
+                    <div class="flex items-baseline gap-2 px-1">
+                      <h2 class="flex-1 text-sm font-black">Study session</h2>
+                      <span class="text-[11px] text-muted-foreground">only you see this</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1 rounded-2xl bg-muted p-1">
+                      <button
+                        class="flex items-center justify-center gap-1.5 rounded-xl py-1.5 text-xs font-bold bg-card text-primary shadow-sm"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="lucide lucide-timer size-3.5"
+                          aria-hidden="true"
+                        >
+                          <line x1="10" x2="14" y1="2" y2="2"></line>
+                          <line x1="12" x2="15" y1="14" y2="11"></line>
+                          <circle cx="12" cy="14" r="8"></circle></svg
+                        >Timer</button
+                      ><button
+                        class="flex items-center justify-center gap-1.5 rounded-xl py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="lucide lucide-list-checks size-3.5"
+                          aria-hidden="true"
+                        >
+                          <path d="M13 5h8"></path>
+                          <path d="M13 12h8"></path>
+                          <path d="M13 19h8"></path>
+                          <path d="m3 17 2 2 4-4"></path>
+                          <path d="m3 7 2 2 4-4"></path></svg
+                        >To-do<span class="rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground"
+                          >2</span
+                        ></button
+                      ><button
+                        class="flex items-center justify-center gap-1.5 rounded-xl py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="lucide lucide-trophy size-3.5"
+                          aria-hidden="true"
+                        >
+                          <path d="M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2"></path>
+                          <path d="M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2"></path>
+                          <path d="M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3"></path>
+                          <path d="M4 22h16"></path>
+                          <path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"></path>
+                          <path d="M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3"></path></svg
+                        >Today
+                      </button>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                      <div class="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-secondary to-peach p-3">
+                        <div class="relative grid size-16 flex-none place-items-center">
+                          <svg viewBox="0 0 36 36" class="absolute inset-0 -rotate-90">
+                            <circle
+                              cx="18"
+                              cy="18"
+                              r="15.5"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="3"
+                              class="text-card/70"
+                            ></circle>
+                            <circle
+                              cx="18"
+                              cy="18"
+                              r="15.5"
+                              fill="none"
+                              stroke="var(--primary)"
+                              stroke-width="3"
+                              stroke-linecap="round"
+                              stroke-dasharray="0 97.4"
+                            ></circle></svg
+                          ><span class="text-2xl project-art-holder project-cover-holder"
+                            ><img
+                              src="assets/project-images/covers/library.webp"
+                              alt="Cosy Library"
+                              class="project-art"
+                              loading="lazy"
+                          /></span>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                          <p class="text-xs font-bold text-muted-foreground">Not started</p>
+                          <p class="font-mono text-3xl font-black tabular-nums">25:00</p>
+                        </div>
+                      </div>
+                      <div class="grid grid-cols-2 gap-2">
+                        <button
+                          class="rounded-xl bg-primary py-2 text-sm font-extrabold text-primary-foreground hover:bg-primary-ink"
+                        >
+                          25 / 5 min</button
+                        ><button
+                          class="rounded-xl bg-primary py-2 text-sm font-extrabold text-primary-foreground hover:bg-primary-ink"
+                        >
+                          50 / 10 min
+                        </button>
+                      </div>
+                      <label class="flex flex-col gap-1 text-xs font-bold text-muted-foreground"
+                        >Studying (shown above your head)<input
+                          data-slot="input"
+                          class="w-full min-w-0 border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 h-9 rounded-xl"
+                          maxlength="24"
+                          placeholder="e.g. Calculus"
+                          value=""
+                          style=""
+                      /></label>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </div>
+            <div class="absolute bottom-[96px] left-1/2 z-20 -translate-x-1/2">
+              <div class="panel flex w-[360px] max-w-[calc(100vw-2rem)] flex-col gap-2 p-3">
+                <div class="flex items-center gap-2 px-1">
+                  <h2 class="flex-1 text-sm font-black">Things to do here</h2>
+                </div>
+                <div class="flex items-center gap-3 rounded-2xl border bg-card/70 p-2">
+                  <span
+                    class="relative grid size-10 flex-none place-items-center rounded-xl text-xl bg-sky project-art-holder project-cover-holder"
+                    ><img
+                      src="assets/project-images/covers/library.webp"
+                      alt="Cosy Library"
+                      class="project-art"
+                      loading="lazy" /></span
+                  ><span class="min-w-0 flex-1"
+                    ><span class="block text-sm font-extrabold">Watch together</span
+                    ><span class="block truncate text-[11px] text-muted-foreground"
+                      >At the big screen · press E to watch</span
+                    ></span
+                  ><button class="rounded-full px-3 py-1 text-xs font-extrabold border bg-card hover:bg-muted">
+                    Go there
+                  </button>
+                </div>
+                <div class="flex items-center gap-3 rounded-2xl border bg-card/70 p-2">
+                  <span
+                    class="relative grid size-10 flex-none place-items-center rounded-xl text-xl bg-mint project-art-holder project-cover-holder"
+                    ><img
+                      src="assets/project-images/covers/library.webp"
+                      alt="Cosy Library"
+                      class="project-art"
+                      loading="lazy" /></span
+                  ><span class="min-w-0 flex-1"
+                    ><span class="block text-sm font-extrabold">Card games</span
+                    ><span class="block truncate text-[11px] text-muted-foreground"
+                      >At the card table · sit down to start</span
+                    ></span
+                  ><button class="rounded-full px-3 py-1 text-xs font-extrabold border bg-card hover:bg-muted">
+                    Go there
+                  </button>
+                </div>
+                <div class="flex items-center gap-3 rounded-2xl border bg-card/70 p-2 opacity-50">
+                  <span
+                    class="relative grid size-10 flex-none place-items-center rounded-xl text-xl bg-lavender project-art-holder project-cover-holder"
+                    ><img
+                      src="assets/project-images/covers/library.webp"
+                      alt="Cosy Library"
+                      class="project-art"
+                      loading="lazy" /></span
+                  ><span class="min-w-0 flex-1"
+                    ><span class="block text-sm font-extrabold">Werewolf</span
+                    ><span class="block truncate text-[11px] text-muted-foreground">Comes with feature 12</span></span
+                  >
+                </div>
+                <div class="flex items-center gap-3 rounded-2xl border bg-card/70 p-2">
+                  <span
+                    class="relative grid size-10 flex-none place-items-center rounded-xl text-xl bg-peach project-art-holder project-cover-holder"
+                    ><img
+                      src="assets/project-images/covers/library.webp"
+                      alt="Cosy Library"
+                      class="project-art"
+                      loading="lazy" /></span
+                  ><span class="min-w-0 flex-1"
+                    ><span class="block text-sm font-extrabold">Draw &amp; Guess</span
+                    ><span class="block truncate text-[11px] text-muted-foreground"
+                      >At the art corner · press E to start</span
+                    ></span
+                  ><button class="rounded-full px-3 py-1 text-xs font-extrabold border bg-card hover:bg-muted">
+                    Go there
+                  </button>
+                </div>
+                <div class="flex items-center gap-3 rounded-2xl border bg-card/70 p-2">
+                  <span
+                    class="relative grid size-10 flex-none place-items-center rounded-xl text-xl bg-secondary project-art-holder project-cover-holder"
+                    ><img
+                      src="assets/project-images/covers/library.webp"
+                      alt="Cosy Library"
+                      class="project-art"
+                      loading="lazy" /></span
+                  ><span class="min-w-0 flex-1"
+                    ><span class="block text-sm font-extrabold">Pick a Side</span
+                    ><span class="block truncate text-[11px] text-muted-foreground"
+                      >At the open floor · press E to start</span
+                    ></span
+                  ><button class="rounded-full px-3 py-1 text-xs font-extrabold border bg-card hover:bg-muted">
+                    Go there
+                  </button>
+                </div>
+              </div>
+            </div>
+            <nav
+              class="dock flex items-center gap-1.5 p-1.5 absolute bottom-3 left-1/2 -translate-x-1/2 room-hud-dock"
+              aria-label="Controls"
+            >
+              <span data-state="closed" data-slot="tooltip-trigger"
+                ><button aria-pressed="false" class="dock-btn min-w-0 px-3 !bg-[#7a3442]">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-mic-off size-5"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 19v3"></path>
+                    <path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"></path>
+                    <path d="M16.95 16.95A7 7 0 0 1 5 12v-2"></path>
+                    <path d="M18.89 13.23A7 7 0 0 0 19 12v-2"></path>
+                    <path d="m2 2 20 20"></path>
+                    <path d="M9 9v3a3 3 0 0 0 5.12 2.12"></path>
+                  </svg></button></span
+              ><button aria-pressed="false" aria-label="Deafen" class="dock-btn min-w-0 px-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-headphones size-5"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"
+                  ></path>
+                </svg></button
+              ><button
+                aria-pressed="false"
+                aria-label="Chat"
+                class="dock-btn relative min-w-0 px-3"
+                data-ui-hide-chat=""
+                data-ui-go="walk-people.html"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-message-circle size-5"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"
+                  ></path>
+                </svg></button
+              ><button aria-label="Photo" class="dock-btn relative min-w-0 px-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-camera size-5"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"
+                  ></path>
+                  <circle cx="12" cy="13" r="3"></circle>
+                </svg></button
+              ><button
+                aria-pressed="true"
+                aria-label="Activities"
+                class="dock-btn relative min-w-0 px-3"
+                data-ui-go="walk-library.html"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-sparkles lucide-stars size-5"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"
+                  ></path>
+                  <path d="M20 2v4"></path>
+                  <path d="M22 4h-4"></path>
+                  <circle cx="4" cy="20" r="2"></circle>
+                </svg></button
+              ><span class="mx-0.5 h-7 w-px bg-white/20"></span
+              ><button
+                aria-label="Room tools"
+                class="dock-btn min-w-0 px-3"
+                type="button"
+                aria-haspopup="dialog"
+                aria-expanded="false"
+                data-state="closed"
+                data-slot="popover-trigger"
+                popovertarget="room-menu-phone"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-shield-check size-5"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
+                  ></path>
+                  <path d="m9 12 2 2 4-4"></path>
+                </svg>
+              </button>
+            </nav>
+            <div
+              role="application"
+              aria-label="Movement joystick"
+              class="grid size-28 touch-none place-items-center rounded-full border border-white/60 bg-white/35 shadow-lg backdrop-blur-sm select-none absolute bottom-[84px] left-4"
+            >
+              <div
+                class="size-12 rounded-full bg-primary/90 shadow-md ring-4 ring-white/70"
+                style="transform: translate(0px, 0px)"
+              ></div>
+            </div>
+          </div>
+          <div class="room-hud-presence">
+            <button class="room-hud-more panel" aria-label="Room menu" popovertarget="room-menu-phone">
+              <svg
+                class="ui-line-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="5" r="1"></circle>
+                <circle cx="12" cy="12" r="1"></circle>
+                <circle cx="12" cy="19" r="1"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <button
+        class="fixed top-1/2 right-0 z-[60] flex -translate-y-1/2 flex-col items-center gap-1 rounded-l-xl border border-r-0 border-dashed border-primary/60 bg-card/90 px-1 py-2 text-[10px] font-extrabold text-muted-foreground shadow-soft backdrop-blur [writing-mode:vertical-rl] hover:text-foreground"
+        aria-label="Demo controls"
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        data-state="closed"
+        data-slot="popover-trigger"
+        data-ui-toolbar=""
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-palette size-3.5"
+          aria-hidden="true"
+        >
+          <path
+            d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"
+          ></path>
+          <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+          <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+          <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+          <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+        </svg>
+        Demo
+      </button>
+      <section
+        aria-label="Notifications alt+T"
+        tabindex="-1"
+        aria-live="polite"
+        aria-relevant="additions text"
+        aria-atomic="false"
+        data-react-aria-top-layer="true"
+      ></section>
+      <next-route-announcer style="position: absolute"></next-route-announcer>
+      <div id="room-menu-phone" class="room-settings-popover" popover="auto" aria-label="Room menu">
+        <div class="hud-menu-heading"><strong>This room</strong><span>for everyone</span></div>
+        <div class="hud-room-actions">
+          <button class="hud-invite" data-hud-preview="">
+            <svg
+              class="ui-line-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-2 2m3 6a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l2-2"
+              ></path></svg
+            >Invite</button
+          ><button data-hud-preview="">
+            <svg
+              class="ui-line-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m9 3-1 3-3 1-2 5 2 5 3 1 1 3h6l1-3 3-1 2-5-2-5-3-1-1-3z"></path>
+              <circle cx="12" cy="12" r="3"></circle></svg
+            >Room settings
+          </button>
+        </div>
+        <section class="hud-personal">
+          <div class="hud-menu-heading"><strong>Your settings</strong><span>only you</span></div>
+          <div class="hud-personal-grid">
+            <button data-hud-preview="">
+              <svg
+                class="ui-line-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m8 3-5 3-2 5 5 2v8h12v-8l5-2-2-5-5-3a4 4 0 0 1-8 0z"></path></svg
+              >My look</button
+            ><button data-hud-preview="">
+              <svg
+                class="ui-line-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+                <path d="M5 10v2a7 7 0 0 0 14 0v-2m-7 9v3m-4 0h8"></path></svg
+              >Voice &amp; sound</button
+            ><button data-hud-preview="">
+              <svg
+                class="ui-line-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12h4"></path></svg
+              >Notifications</button
+            ><button data-hud-preview="">
+              <svg
+                class="ui-line-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m12 2 9 4v6c0 6-9 10-9 10S3 18 3 12V6z"></path></svg
+              >Privacy
+            </button>
+          </div>
+          <button class="hud-setting-toggle" aria-pressed="false">
+            <svg
+              class="ui-line-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M20 3c-7 0-15 1-15 9a6 6 0 0 0 6 6c8 0 9-8 9-15ZM3 21 14 10"></path></svg
+            ><span>Battery saver</span><b>Off</b></button
+          ><button class="hud-setting-toggle" aria-pressed="true">
+            <svg
+              class="ui-line-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m4 3 6 18 3-8 8-3zM2 9H0m10-7V0m-7 3L1 1"></path></svg
+            ><span>Click to walk</span><b>On</b></button
+          ><button class="hud-all-settings" data-hud-preview="">All your settings →</button>
+        </section>
+        <button class="hud-report" data-hud-preview="">
+          <svg
+            class="ui-line-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M4 22V3m0 1c5-5 11 5 16 0v10c-5 5-11-5-16 0"></path></svg
+          >Report this room
+        </button>
+      </div>
+    </div>
+
+    <script src="assets/prototype.js"></script>
+    <script src="assets/room-hud.js"></script>
+  </body>
+</html>

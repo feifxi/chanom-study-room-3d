@@ -1,0 +1,88 @@
+/* A window into the selected room. The conversation remains independently scrollable. */
+.room-peek {
+  position: relative;
+  isolation: isolate;
+  flex: none;
+  height: 198px;
+  margin: 14px 18px 10px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #514b49;
+  color: #fff;
+}
+.room-peek-image { position: absolute; inset: 0; z-index: -2; display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 51%; transition: transform 220ms ease-out; }
+.room-peek::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(180deg, rgb(23 17 27 / .18) 0%, transparent 32%, rgb(23 17 27 / .26) 52%, rgb(23 17 27 / .9) 100%); }
+.room-peek-image-link { position: absolute; inset: 0; z-index: 0; border-radius: inherit; }
+.room-peek:has(.room-peek-image-link:hover) .room-peek-image { transform: scale(1.025); }
+.room-peek-map, .room-peek-snapshot { position: absolute; top: 12px; z-index: 1; pointer-events: none; border-radius: 7px; padding: 4px 8px; background: rgb(23 17 27 / .75); color: #fff; font-size: 11px; font-weight: 750; line-height: 1.4; }
+.room-peek-map { left: 13px; }
+.room-peek-snapshot { right: 13px; font-weight: 600; }
+.room-peek-caption { position: absolute; left: 16px; right: 16px; bottom: 15px; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 14px; pointer-events: none; }
+.room-peek-invitation { display: flex; align-items: center; min-width: 0; gap: 11px; }
+.room-peek-invitation > div:last-child { min-width: 0; }
+.room-peek h3 { margin: 0; color: #fff; font-size: 15px; line-height: 1.4; font-weight: 850; text-wrap: balance; }
+.room-peek p { margin: 3px 0 0; color: #f5edf3; font-size: 12px; line-height: 1.4; }
+.room-peek-faces { display: flex; flex: none; padding-left: 7px; }
+.room-peek-faces span { display: grid; place-items: center; flex: none; width: 29px; height: 29px; margin-left: -7px; border-radius: 50%; border: 2px solid #f9edf5; background: var(--face-color); color: #fff; font-size: 11px; font-weight: 850; }
+.room-peek-enter { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: none; min-width: 122px; min-height: 44px; padding: 10px 17px; border: 1px solid rgb(255 255 255 / .12); border-radius: 12px; background: var(--chat-solid); color: var(--primary-foreground); text-decoration: none; font-size: 14px; font-weight: 850; line-height: 1.3; pointer-events: auto; transition: background 150ms, transform 150ms; }
+.room-peek-enter .chat-icon { width: 20px; height: 20px; }
+.room-peek-enter:hover { background: color-mix(in srgb, var(--chat-solid) 85%, var(--foreground)); color: var(--primary-foreground); transform: translateY(-1px); }
+.room-peek-enter:active { transform: translateY(0); }
+.room-peek-enter:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.room-peek-enter:disabled { color: #f5edf3; background: #625667; cursor: default; border-color: #918397; }
+.chat-thread > .pinned-message { min-height: 48px; padding: 6px 20px 10px; }
+.conversation-room-status { display: flex; align-items: center; gap: 4px; margin-top: 1px; color: var(--chat-accent-ink); font-size: 11px; line-height: 1.4; font-weight: 700; }
+.conversation-room-status .chat-icon { width: 12px; height: 12px; }
+@media (min-width: 1700px) { .room-peek { height: 210px; margin-left: 24px; margin-right: 24px; } .room-peek h3 { font-size: 17px; } }
+@media (max-width: 1100px) { .room-peek { height: 184px; margin: 11px 12px 8px; } .room-peek-caption { left: 12px; right: 12px; bottom: 12px; gap: 8px; } .room-peek h3 { font-size: 14px; } .room-peek-faces { display: none; } .room-peek-enter { min-width: 108px; min-height: 42px; padding: 9px 12px; font-size: 13px; } }
+@media (max-width: 900px) and (min-width: 768px) { .room-peek h3 { font-size: 13px; } .room-peek p { font-size: 11px; } .room-peek-caption { gap: 6px; } .room-peek-enter { min-width: 93px; padding: 9px; gap: 5px; font-size: 12px; } }
+@media (max-width: 767px) {
+  .chat-layout[data-mobile-view="thread"] .conversation-header { min-height: 98px; }
+  .room-peek { height: 190px; margin: 10px 9px 6px; border-radius: 12px; }
+  .room-peek-image { object-position: 51% 49%; }
+  .room-peek-map, .room-peek-snapshot { top: 9px; padding: 3px 6px; font-size: 11px; }
+  .room-peek-map { left: 9px; }
+  .room-peek-snapshot { right: 9px; }
+  .room-peek-caption { align-items: flex-end; left: 11px; right: 11px; bottom: 11px; gap: 8px; }
+  .room-peek h3 { font-size: 13px; line-height: 1.35; }
+  .room-peek p { font-size: 11px; line-height: 1.4; }
+  .room-peek-enter { min-width: 99px; min-height: 43px; padding: 8px 10px; font-size: 12px; gap: 5px; }
+  .room-peek-enter .chat-icon { width: 17px; height: 17px; }
+  .chat-thread > .pinned-message { min-height: 46px; padding: 6px 12px 8px; }
+  .chat-main[data-members="visible"] .chat-members { top: 98px; }
+}
+@media (max-height: 650px) { .room-peek { height: 145px; margin-top: 8px; } .room-peek-caption { bottom: 10px; } .room-peek-map, .room-peek-snapshot { top: 8px; } }
+@media (prefers-reduced-motion: reduce) { .room-peek-image, .room-peek-enter { transition: none; } }
+
+/* Fold the image into a compact room entry; the Walk in action stays in place. */
+.room-peek-compact-map { display: none; }
+.room-peek-toggle { position: absolute; top: 10px; right: 11px; z-index: 2; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 31px; padding: 5px 8px; border-radius: 8px; background: rgb(23 17 27 / .82); color: #fff; font-size: 11px; font-weight: 700; line-height: 1.3; cursor: pointer; }
+.room-peek-toggle:hover { background: #342936; }
+.room-peek-toggle:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.room-peek-toggle .chat-icon { width: 16px; height: 16px; }
+.room-peek[data-collapsed="true"] { display: flex; align-items: center; gap: 8px; height: 66px; padding: 10px 12px; background: var(--muted); color: var(--foreground); }
+.room-peek[data-collapsed="true"]::after,
+.room-peek[data-collapsed="true"] .room-peek-image,
+.room-peek[data-collapsed="true"] .room-peek-image-link,
+.room-peek[data-collapsed="true"] .room-peek-map,
+.room-peek[data-collapsed="true"] .room-peek-invitation p { display: none; }
+.room-peek[data-collapsed="true"] .room-peek-faces { display: flex; }
+.room-peek[data-collapsed="true"] .room-peek-caption { position: static; flex: 1; min-width: 0; gap: 10px; align-items: center; }
+.room-peek[data-collapsed="true"] .room-peek-compact-map { display: block; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--foreground); font-size: 13px; font-weight: 850; line-height: 1.25; }
+.room-peek[data-collapsed="true"] h3 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--chat-secondary-text); font-size: 11px; font-weight: 650; line-height: 1.3; }
+.room-peek[data-collapsed="true"] .room-peek-toggle { position: static; flex: none; width: 35px; min-height: 38px; padding: 7px; background: transparent; color: var(--chat-secondary-text); }
+.room-peek[data-collapsed="true"] .room-peek-toggle:hover { background: var(--accent); color: var(--foreground); }
+.room-peek[data-collapsed="true"] .room-peek-toggle span { display: none; }
+.room-peek[data-collapsed="true"] .room-peek-toggle .chat-icon { transform: rotate(180deg); }
+.room-peek[data-collapsed="true"] .room-peek-enter { min-height: 39px; }
+@media (max-width: 767px) {
+  .room-peek-toggle { top: 8px; right: 8px; }
+  .room-peek[data-collapsed="true"] { height: 65px; padding: 9px 10px; gap: 5px; }
+  .room-peek[data-collapsed="true"] .room-peek-caption { gap: 7px; }
+  .room-peek[data-collapsed="true"] .room-peek-invitation { gap: 6px; }
+  .room-peek[data-collapsed="true"] .room-peek-faces span { width: 24px; height: 24px; border-width: 1.5px; }
+  .room-peek[data-collapsed="true"] .room-peek-enter { min-width: 91px; min-height: 40px; padding: 8px; }
+  .room-peek[data-collapsed="true"] .room-peek-toggle { width: 31px; padding: 5px; }
+}
+
+.pinned-toggle[aria-expanded="true"] { background: var(--secondary); }

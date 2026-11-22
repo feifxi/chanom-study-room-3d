@@ -1,0 +1,91 @@
+/* Shared room card for Discover and Home "Open now" (2026-11-21).
+   Wide cover with type badge + chips, then name, one-line description, people stack + stats,
+   optional friend, action. Every space, gap and size sits on a 4px grid; targets are >= 44px. */
+*:has(> .room-card) { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 20px !important; align-items: stretch; }
+@media (max-width: 1099px) { *:has(> .room-card) { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
+@media (max-width: 639px) { *:has(> .room-card) { grid-template-columns: minmax(0, 1fr) !important; gap: 16px !important; } }
+
+.room-card { --tone: var(--lavender); --tone-ink: var(--lavender-ink); display: flex; flex-direction: column; min-width: 0; height: 100%; overflow: hidden; border-radius: 20px; border: 1px solid color-mix(in srgb, var(--foreground) 12%, var(--border)); background: color-mix(in srgb, var(--card) 92%, var(--tone)); color: var(--foreground); text-align: left; text-decoration: none; cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .15s; }
+.room-tone-peach { --tone: var(--peach); --tone-ink: var(--peach-ink); }
+.room-tone-sky { --tone: var(--sky); --tone-ink: var(--sky-ink); }
+.room-card:hover { border-color: var(--primary); box-shadow: 0 8px 24px color-mix(in srgb, var(--primary) 18%, transparent); transform: translateY(-4px); }
+.room-card:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
+
+/* Cover */
+.room-card-cover { position: relative; display: block; aspect-ratio: 2 / 1; background: var(--tone); overflow: hidden; }
+.room-card-cover img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .25s; }
+.room-card:hover .room-card-cover img { transform: scale(1.04); }
+.room-card-cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgb(0 0 0 / .28), transparent 40%, transparent 60%, rgb(0 0 0 / .44)); pointer-events: none; }
+.room-card-type { position: absolute; z-index: 1; top: 12px; left: 12px; padding: 4px 12px; border-radius: 999px; background: rgb(20 12 24 / .72); color: #fff; font-size: 12px; line-height: 16px; font-weight: 900; backdrop-filter: blur(4px); }
+.room-card-chips { position: absolute; z-index: 1; left: 12px; right: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+.room-card-chips span { padding: 4px 8px; border-radius: 8px; background: var(--card); color: var(--foreground); font-size: 12px; line-height: 16px; font-weight: 800; }
+.room-card-chips span:first-child { background: var(--tone); color: var(--tone-ink); }
+
+/* Body */
+.room-card-body { display: flex; flex-direction: column; gap: 8px; flex: 1; padding: 16px 20px 0; }
+.room-card-title { font-size: 20px; line-height: 28px; font-weight: 900; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.room-card-desc { margin-top: -4px; font-size: 14px; line-height: 20px; color: var(--muted-foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.room-card-stats { display: flex; align-items: center; gap: 12px; margin-top: 4px; min-height: 32px; }
+.room-card-count { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+.room-card-count b { color: var(--foreground); font-weight: 900; }
+.room-card-sep { opacity: .6; }
+
+/* People stack: max 5 circles, the 5th shows how many more are inside. */
+.room-card-people { display: flex; flex: none; padding-left: 8px; }
+.room-card-people > span { display: grid; place-items: center; width: 32px; height: 32px; margin-left: -8px; border-radius: 50%; border: 2px solid var(--card); background: linear-gradient(145deg, var(--avatar, var(--muted)), color-mix(in oklab, var(--avatar, var(--muted)) 70%, white)); color: #fff; font-size: 12px; line-height: 1; font-weight: 900; }
+.room-card-people > .room-card-more { background: var(--secondary); color: var(--primary); font-size: 12px; letter-spacing: -.02em; }
+
+.room-card-full { padding: 4px 8px; border-radius: 999px; background: color-mix(in srgb, var(--destructive, #d9534f) 16%, transparent); color: var(--destructive, #d9534f); font-size: 12px; line-height: 12px; font-weight: 900; }
+.room-card-friend { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 20px; font-weight: 800; }
+.room-card-avatar { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(145deg, var(--avatar), color-mix(in oklab, var(--avatar) 70%, white)); color: #fff; font-size: 12px; font-weight: 900; }
+
+/* Action */
+.room-card-action { display: flex; align-items: center; justify-content: center; min-height: 44px; margin: 16px 20px 20px; border-radius: 12px; background: var(--primary); color: var(--primary-foreground); font-size: 16px; line-height: 20px; font-weight: 900; }
+.room-card:hover .room-card-action { background: color-mix(in srgb, var(--primary) 88%, var(--foreground)); }
+.room-card.is-full { cursor: not-allowed; }
+.room-card.is-full:hover { transform: none; border-color: color-mix(in srgb, var(--foreground) 12%, var(--border)); box-shadow: none; }
+.room-card.is-full .room-card-cover img { filter: grayscale(.45); }
+.room-card.is-full .room-card-action, .room-card.is-full:hover .room-card-action { background: transparent; border: 2px dashed color-mix(in srgb, var(--muted-foreground) 55%, transparent); color: var(--muted-foreground); }
+.room-card[hidden] { display: none; }
+
+/* ---------- Filters pop-up (Discover open rooms) ---------- */
+.room-filter { position: relative; margin-bottom: 20px; }
+.room-filter-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.room-filter-button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--foreground); font-size: 14px; font-weight: 900; cursor: pointer; }
+.room-filter-button svg { width: 20px; height: 20px; }
+.room-filter-button:hover, .room-filter-button[aria-expanded="true"] { border-color: var(--primary); color: var(--primary); }
+.room-filter-badge { display: grid; place-items: center; min-width: 20px; height: 20px; padding: 0 4px; border-radius: 999px; background: var(--primary); color: var(--primary-foreground); font-size: 12px; }
+.room-filter-badge[hidden] { display: none; }
+.room-filter-pills { display: contents; }
+.room-filter-pill { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 8px 8px 8px 12px; border-radius: 999px; background: var(--secondary); color: var(--primary); font-size: 13px; font-weight: 800; cursor: pointer; }
+.room-filter-pill span { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: color-mix(in srgb, var(--primary) 18%, transparent); font-size: 14px; line-height: 1; }
+.room-filter-count { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--muted-foreground); }
+.room-filter-pop { position: absolute; z-index: 40; top: calc(100% + 8px); left: 0; width: min(440px, calc(100vw - 32px)); padding: 20px; border-radius: 20px; border: 1px solid var(--border); background: var(--popover, var(--card)); color: var(--foreground); box-shadow: 0 20px 48px rgb(0 0 0 / .28); }
+.room-filter-pop[hidden] { display: none; }
+.room-filter-pop header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.room-filter-pop h3 { font-size: 18px; font-weight: 900; }
+.room-filter-close { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; color: var(--muted-foreground); cursor: pointer; }
+.room-filter-close:hover { background: var(--muted); color: var(--foreground); }
+.room-filter-close svg { width: 20px; height: 20px; }
+.room-filter-pop section { padding: 12px 0 16px; border-top: 1px solid var(--border); }
+.room-filter-pop h4 { margin-bottom: 8px; font-size: 14px; font-weight: 900; }
+.room-filter-pop h4 small { margin-left: 8px; font-size: 12px; font-weight: 700; color: var(--muted-foreground); }
+.room-filter-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.room-filter-options button { min-height: 40px; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--foreground); font-size: 14px; font-weight: 800; cursor: pointer; }
+.room-filter-options button:hover { border-color: color-mix(in srgb, var(--primary) 50%, var(--border)); }
+.room-filter-options button[aria-pressed="true"], .room-filter-options button[aria-checked="true"] { background: var(--secondary); border-color: var(--primary); color: var(--primary); }
+.room-filter-pop footer { display: flex; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid var(--border); }
+.room-filter-clear, .room-filter-apply { min-height: 44px; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 900; cursor: pointer; }
+.room-filter-clear { background: var(--muted); color: var(--foreground); }
+.room-filter-apply { flex: 1; background: var(--primary); color: var(--primary-foreground); }
+.room-filter-empty { padding: 32px 16px; border-radius: 20px; border: 1px dashed var(--border); text-align: center; font-size: 14px; color: var(--muted-foreground); }
+.room-filter-empty[hidden] { display: none; }
+.room-filter-empty button { margin-left: 8px; font-weight: 900; color: var(--primary); text-decoration: underline; cursor: pointer; }
+.room-filter :focus-visible, .room-filter-empty :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .room-card, .room-card-cover img { transition: none; } .room-card:hover { transform: none; } }
+@media (max-width: 639px) {
+  .room-card-body { padding: 16px 16px 0; }
+  .room-card-action { margin: 16px; }
+  .room-filter-count { width: 100%; margin-left: 0; }
+  .room-filter-pop { position: fixed; top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: calc(100dvh - 32px); overflow-y: auto; }
+}

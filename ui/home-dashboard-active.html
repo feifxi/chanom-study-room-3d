@@ -1,0 +1,1046 @@
+<!doctype html>
+<html
+  lang="en"
+  class="nunito_22336911-module__FLPYxG__variable ibm_plex_sans_thai_24e7d61f-module__Gz-8DG__variable jetbrains_mono_f5d41edc-module__R56YrG__variable h-full light"
+  data-ui-page="home-dashboard-active"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Home · Connecta UI</title>
+    <link rel="stylesheet" href="assets/source/4f2683abfb221e.css" />
+    <link rel="stylesheet" href="assets/overrides.css" />
+    <link rel="stylesheet" href="assets/chat-layout.css" />
+
+    <link rel="stylesheet" href="assets/room-preview.css" />
+
+    <link rel="stylesheet" href="assets/ui-consistency.css" />
+
+    <link rel="stylesheet" href="assets/home-fit.css" />
+
+    <script src="assets/theme.js"></script>
+    <link rel="stylesheet" href="assets/inbox-flyout.css" />
+    <link rel="stylesheet" href="assets/room-card.css" />
+    <link rel="stylesheet" href="assets/room-detail.css" />
+  </head>
+  <body class="ui-with-rail app-bg">
+    <div class="rail-page-layout">
+      <nav class="app-rail" aria-label="App">
+        <a class="rail-brand" href="home.html" aria-label="Connecta"
+          ><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+            <path
+              d="M25.85 17.74A10 10 0 1 1 16 6"
+              fill="none"
+              stroke="var(--primary)"
+              stroke-width="6"
+              stroke-linecap="round"
+            ></path>
+            <circle cx="23.66" cy="9.57" r="3.6" fill="var(--tea)"></circle></svg
+        ></a>
+        <div class="rail-links">
+          <a class="rail-link is-active" href="home-dashboard.html" aria-label="Home" aria-current="page"
+            ><svg
+              class="chat-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-8H9v8H4a1 1 0 0 1-1-1z"></path></svg
+            ><span>Home</span></a
+          >
+          <a class="rail-link" href="home.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"
+                ></path></svg></span
+            ><span>Chat</span></a
+          ><a class="rail-link" href="friends.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+                ></path>
+                <circle cx="9" cy="7" r="4"></circle></svg
+              ><span class="rail-badge">1</span></span
+            ><span>Friends</span></a
+          ><a class="rail-link" href="focus.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 3v18h18M7 14v3m5-8v8m5-12v12"></path></svg></span
+            ><span>Focus</span></a
+          ><a class="rail-link" href="discover.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12Z"></path></svg></span
+            ><span>Discover</span></a
+          ><a class="rail-link" href="shop.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M6 3 3 7v13a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7l-3-4ZM3 7h18M8 11a4 4 0 0 0 8 0"
+                ></path></svg></span
+            ><span>Shop</span></a
+          >
+          <a class="rail-link" href="plus.html"
+            ><svg
+              class="chat-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m2 5 5 4 5-6 5 6 5-4-3 14H5L2 5Zm3 17h14"></path></svg
+            ><span>Plus</span></a
+          ><button class="rail-link" data-ui-go="inbox.html" aria-label="Inbox, 4 new">
+            <span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg
+              ><span class="rail-badge">4</span></span
+            ><span>Inbox</span></button
+          >
+        </div>
+        <div class="rail-bottom">
+          <button class="rail-profile" aria-label="You" data-ui-go="profile-menu.html">
+            <span class="chat-avatar" style="--avatar-color: #bc4678"
+              ><span>f</span><i class="presence-online" aria-label="online"></i></span
+            ><span>feifei</span>
+          </button>
+        </div>
+      </nav>
+
+      <main class="rail-page-content original-home-content home-fitted">
+        <div class="mx-auto flex max-w-6xl flex-col gap-8 p-5 sm:p-8 home-fitted-body">
+          <header class="home-greeting">
+            <p class="text-sm font-bold text-muted-foreground">Saturday evening</p>
+            <h1 class="text-3xl font-black tracking-[-0.03em]">Where to tonight, feifei?</h1>
+          </header>
+          <section class="home-friends-band">
+            <div class="home-friends-heading">
+              <h2 class="mb-3 text-lg font-black">Friends out right now</h2>
+              <div class="home-friends-arrows" aria-label="Browse friends">
+                <button
+                  type="button"
+                  class="home-friends-arrow"
+                  aria-label="Previous friends"
+                  aria-controls="home-friends-strip"
+                  data-friends-previous
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m15 5-7 7 7 7" />
+                  </svg></button
+                ><button
+                  type="button"
+                  class="home-friends-arrow"
+                  aria-label="Next friends"
+                  aria-controls="home-friends-strip"
+                  data-friends-next
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m9 5 7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div
+              id="home-friends-strip"
+              class="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] home-friends-strip"
+            >
+              <a class="home-friend-link" href="walk-library.html" aria-label="Join Mai in Chanom Friends"
+                ><span class="relative inline-flex flex-none home-friend-avatar" style="width: 38px; height: 38px"
+                  ><span
+                    class="grid size-full place-items-center rounded-full font-black text-white select-none"
+                    style="background: rgb(119, 88, 196); font-size: 15px"
+                    >M</span
+                  ><span
+                    class="absolute -right-0.5 -bottom-0.5 rounded-full border-2 border-card bg-primary"
+                    style="width: 10px; height: 10px"
+                    aria-label="Focusing"
+                  ></span></span
+                ><span class="home-friend-copy"><strong>Mai</strong><span>Chanom Friends</span></span
+                ><span class="home-friend-join" aria-hidden="true"
+                  >Join<svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M5 12h14m-5-5 5 5-5 5"></path></svg></span></a
+              ><a class="home-friend-link" href="walk-library.html" aria-label="Join Jod in Chanom Friends"
+                ><span class="relative inline-flex flex-none home-friend-avatar" style="width: 38px; height: 38px"
+                  ><span
+                    class="grid size-full place-items-center rounded-full font-black text-white select-none"
+                    style="background: rgb(167, 82, 48); font-size: 15px"
+                    >J</span
+                  ><span
+                    class="absolute -right-0.5 -bottom-0.5 rounded-full border-2 border-card bg-primary"
+                    style="width: 10px; height: 10px"
+                    aria-label="Focusing"
+                  ></span></span
+                ><span class="home-friend-copy"><strong>Jod</strong><span>Chanom Friends</span></span
+                ><span class="home-friend-join" aria-hidden="true"
+                  >Join<svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M5 12h14m-5-5 5 5-5 5"></path></svg></span></a
+              ><a class="home-friend-link" href="walk-library.html" aria-label="Join Ken in CPE Year 3"
+                ><span class="relative inline-flex flex-none home-friend-avatar" style="width: 38px; height: 38px"
+                  ><span
+                    class="grid size-full place-items-center rounded-full font-black text-white select-none"
+                    style="background: rgb(46, 119, 93); font-size: 15px"
+                    >K</span
+                  ><span
+                    class="absolute -right-0.5 -bottom-0.5 rounded-full border-2 border-card bg-online"
+                    style="width: 10px; height: 10px"
+                    aria-label="Online"
+                  ></span></span
+                ><span class="home-friend-copy"><strong>Ken</strong><span>CPE Year 3</span></span
+                ><span class="home-friend-join" aria-hidden="true"
+                  >Join<svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M5 12h14m-5-5 5 5-5 5"></path></svg></span></a
+              ><a class="home-friend-link" href="walk-library.html" aria-label="Join Ploy in Chanom Friends"
+                ><span class="relative inline-flex flex-none home-friend-avatar" style="width: 38px; height: 38px"
+                  ><span
+                    class="grid size-full place-items-center rounded-full font-black text-white select-none"
+                    style="background: rgb(161, 84, 44); font-size: 15px"
+                    >P</span
+                  ><span
+                    class="absolute -right-0.5 -bottom-0.5 rounded-full border-2 border-card bg-online"
+                    style="width: 10px; height: 10px"
+                    aria-label="Online"
+                  ></span></span
+                ><span class="home-friend-copy"><strong>Ploy</strong><span>Chanom Friends</span></span
+                ><span class="home-friend-join" aria-hidden="true"
+                  >Join<svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M5 12h14m-5-5 5 5-5 5"></path></svg></span></a
+              ><a class="home-friend-link" href="common-cafe-2.html" aria-label="Join Mook in Cat Café #2"
+                ><span class="relative inline-flex flex-none home-friend-avatar" style="width: 38px; height: 38px"
+                  ><span
+                    class="grid size-full place-items-center rounded-full font-black text-white select-none"
+                    style="background: rgb(131, 81, 161); font-size: 15px"
+                    >M</span
+                  ><span
+                    class="absolute -right-0.5 -bottom-0.5 rounded-full border-2 border-card bg-online"
+                    style="width: 10px; height: 10px"
+                    aria-label="Online"
+                  ></span></span
+                ><span class="home-friend-copy"><strong>Mook</strong><span>Cat Café #2</span></span
+                ><span class="home-friend-join" aria-hidden="true"
+                  >Join<svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M5 12h14m-5-5 5 5-5 5"></path></svg></span
+              ></a>
+            </div>
+          </section>
+          <section class="home-your-rooms">
+            <div class="mb-3 flex flex-wrap items-center gap-2 home-rooms-toolbar">
+              <h2 class="text-lg font-black">
+                Your rooms <span class="text-sm font-semibold text-muted-foreground">· 11</span>
+              </h2>
+              <div class="flex gap-1">
+                <button
+                  aria-pressed="false"
+                  class="rounded-full px-3 py-1 text-xs font-bold bg-card text-muted-foreground hover:text-foreground"
+                  data-ui-go="home-dashboard.html"
+                >
+                  All</button
+                ><button
+                  aria-pressed="false"
+                  class="rounded-full px-3 py-1 text-xs font-bold bg-card text-muted-foreground hover:text-foreground"
+                  data-ui-go="home-dashboard-you-run.html"
+                >
+                  You run</button
+                ><button
+                  aria-pressed="true"
+                  class="rounded-full px-3 py-1 text-xs font-bold bg-primary text-primary-foreground"
+                  data-ui-go="home-dashboard-active.html"
+                >
+                  Active
+                </button>
+              </div>
+              <label class="ml-auto flex h-9 w-full items-center gap-2 rounded-full border bg-card px-3 sm:w-56"
+                ><svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-search size-4 text-muted-foreground"
+                  aria-hidden="true"
+                >
+                  <path d="m21 21-4.34-4.34"></path>
+                  <circle cx="11" cy="11" r="8"></circle></svg
+                ><input
+                  placeholder="Find a room"
+                  aria-label="Find a room"
+                  class="min-w-0 flex-1 bg-transparent text-sm outline-none"
+                  value=""
+                  data-ui-search="" /></label
+              ><button
+                data-slot="button"
+                data-variant="default"
+                data-size="default"
+                class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 bg-primary text-primary-foreground hover:bg-primary/80 h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 rounded-full font-extrabold"
+                data-ui-go="create-room.html"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-plus"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14"></path>
+                  <path d="M12 5v14"></path>
+                </svg>
+                Make a room
+              </button>
+            </div>
+            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 home-featured-grid">
+              <article
+                class="group relative isolate flex min-h-64 flex-col overflow-hidden rounded-[2rem] text-white shadow-soft home-featured-room"
+                data-ui-search-item="3/100inside @ you · 3 new plus🍓chanom friendsowner📚 cosy library · werewolf night · fri 20:00 walk in chatmjp"
+              >
+                <img src="assets/project-images/covers/library.webp" alt="" class="home-room-cover" />
+                <div class="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-black/25 to-black/10"></div>
+                <a class="absolute inset-0" aria-label="Open Chanom Friends" href="room-chanom.html"></a>
+                <div class="pointer-events-none relative flex flex-wrap items-start gap-1.5 p-4 pr-14 home-room-status"><span
+                    class="flex items-center gap-1.5 rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-extrabold backdrop-blur"
+                    ><span class="size-2 animate-pulse rounded-full bg-online"></span
+                    ><span class="font-mono">3/100</span>inside</span
+                  ></div>
+                <span class="home-room-icons"><span class="home-room-icon" title="Pinned" aria-label="Pinned"><svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-pin size-3"
+                      aria-hidden="true"
+                    >
+                      <path d="M12 17v5"></path>
+                      <path
+                        d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"
+                      ></path></svg></span><span class="home-room-icon" title="Plus room" aria-label="Plus room"><svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-crown size-3"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"
+                      ></path>
+                      <path d="M5 21h14"></path>
+                    </svg></span></span>
+                <span class="absolute top-4 right-4"
+                  ><button
+                    class="grid size-8 place-items-center rounded-full bg-black/35 text-white backdrop-blur hover:bg-black/55"
+                    aria-label="More for Chanom Friends"
+                    type="button"
+                    id="radix-_R_1kl4lritqitqbmmlb_"
+                    aria-haspopup="menu"
+                    aria-expanded="false"
+                    data-state="closed"
+                    data-slot="dropdown-menu-trigger"
+                    data-ui-go="room-menu.html"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-ellipsis lucide-more-horizontal size-4"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <circle cx="19" cy="12" r="1"></circle>
+                      <circle cx="5" cy="12" r="1"></circle>
+                    </svg></button
+                ></span>
+                <div class="pointer-events-none relative mt-auto flex flex-col gap-3 p-4 home-room-content">
+                  <div>
+                    <p class="flex items-center gap-2 text-2xl font-black tracking-[-0.02em] home-room-title">
+                      <span class="grid size-9 place-items-center rounded-xl text-lg bg-secondary original-home-art"
+                        ><img src="assets/project-images/covers/library.webp" alt="" /></span
+                      ><span class="home-room-name">Chanom Friends</span><span
+                        class="rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-extrabold tracking-normal backdrop-blur"
+                        >owner</span
+                      >
+                    </p>
+                    <p class="mt-1 text-xs text-white/80 home-room-description">
+                      Cosy Library · Werewolf night · Fri 20:00
+                    </p>
+                  </div>
+                  <div class="pointer-events-auto flex items-center gap-2">
+                    <a
+                      data-slot="button"
+                      data-variant="default"
+                      data-size="default"
+                      class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 rounded-full bg-white font-extrabold text-[#45323d] hover:bg-primary hover:text-primary-foreground"
+                      href="walk-library.html"
+                      ><svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-play fill-current"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"
+                        ></path>
+                      </svg>
+                      Walk in</a
+                    ><a
+                      data-slot="button"
+                      data-variant="ghost"
+                      data-size="default"
+                      class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50 h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 rounded-full bg-white/15 font-extrabold text-white backdrop-blur hover:bg-white/25 hover:text-white"
+                      href="room-chanom.html"
+                      ><svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-message-circle"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"
+                        ></path>
+                      </svg>
+                      Chat<span class="home-chat-badge" title="@ you · 3 new" aria-label="3 new mentions of you">@3</span></a
+                    >
+                  <span class="home-room-people room-card-people" aria-label="3 people inside"><span style="--avatar:#7758c4">M</span><span style="--avatar:#e9955a">J</span><span style="--avatar:#b3612f">P</span></span></div>
+                </div>
+              </article>
+              <article
+                class="group relative isolate flex min-h-64 flex-col overflow-hidden rounded-[2rem] text-white shadow-soft home-featured-room"
+                data-ui-search-item="25/25full 3 asking to join📐cpe year 3mod📚 cosy library · computer engineering, class of 2027. exam season survival. full · notify me chatnpk"
+              >
+                <img src="assets/project-images/covers/library.webp" alt="" class="home-room-cover" />
+                <div class="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-black/25 to-black/10"></div>
+                <a class="absolute inset-0" aria-label="Open CPE Year 3" href="room-cpe.html"></a>
+                <div class="pointer-events-none relative flex flex-wrap items-start gap-1.5 p-4 pr-14 home-room-status"><span
+                    class="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-extrabold backdrop-blur bg-peach text-peach-ink"
+                    ><span class="font-mono">25/25</span>full</span
+                  ><span class="home-room-requests" title="3 asking to join" aria-label="3 asking to join"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>3</span></div>
+                <span class="absolute top-4 right-4"
+                  ><button
+                    class="grid size-8 place-items-center rounded-full bg-black/35 text-white backdrop-blur hover:bg-black/55"
+                    aria-label="More for CPE Year 3"
+                    type="button"
+                    id="radix-_R_1l54lritqitqbmmlb_"
+                    aria-haspopup="menu"
+                    aria-expanded="false"
+                    data-state="closed"
+                    data-slot="dropdown-menu-trigger"
+                    data-ui-go="room-menu.html"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-ellipsis lucide-more-horizontal size-4"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <circle cx="19" cy="12" r="1"></circle>
+                      <circle cx="5" cy="12" r="1"></circle>
+                    </svg></button
+                ></span>
+                <div class="pointer-events-none relative mt-auto flex flex-col gap-3 p-4 home-room-content">
+                  <div>
+                    <p class="flex items-center gap-2 text-2xl font-black tracking-[-0.02em] home-room-title">
+                      <span class="grid size-9 place-items-center rounded-xl text-lg bg-lavender original-home-art"
+                        ><img src="assets/project-images/covers/library.webp" alt="" /></span
+                      ><span class="home-room-name">CPE Year 3</span><span
+                        class="rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-extrabold tracking-normal backdrop-blur"
+                        >mod</span
+                      >
+                    </p>
+                    <p class="mt-1 text-xs text-white/80 home-room-description">
+                      Cosy Library · Computer Engineering, class of 2027. Exam season survival.
+                    </p>
+                  </div>
+                  <div class="pointer-events-auto flex items-center gap-2">
+                    <button
+                      data-slot="button"
+                      data-variant="default"
+                      data-size="default"
+                      class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 rounded-full bg-white/90 font-extrabold text-[#45323d] hover:bg-white"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-bell"
+                        aria-hidden="true"
+                      >
+                        <path d="M10.268 21a2 2 0 0 0 3.464 0"></path>
+                        <path
+                          d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"
+                        ></path>
+                      </svg>
+                      Full · notify me</button
+                    ><a
+                      data-slot="button"
+                      data-variant="ghost"
+                      data-size="default"
+                      class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50 h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 rounded-full bg-white/15 font-extrabold text-white backdrop-blur hover:bg-white/25 hover:text-white"
+                      href="room-cpe.html"
+                      ><svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-message-circle"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"
+                        ></path>
+                      </svg>
+                      Chat</a
+                    >
+                  <span class="home-room-people room-card-people" aria-label="25 people inside"><span style="--avatar:#2e6ea8">N</span><span style="--avatar:#7a6a3a">P</span><span style="--avatar:#2f7d55">K</span><span class="room-card-more">+22</span></span></div>
+                </div>
+              </article>
+              <article
+                class="group relative isolate flex min-h-64 flex-col overflow-hidden rounded-[2rem] text-white shadow-soft home-featured-room"
+                data-ui-search-item="🌙3/25inside🐺werewolf fridays🌙 starry rooftop · werewolf fridays. come hang out. walk in chat"
+              >
+                <img src="assets/project-images/covers/rooftop.webp" alt="" class="home-room-cover" />
+                <div class="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-black/25 to-black/10"></div>
+                <a class="absolute inset-0" aria-label="Open Werewolf Fridays" href="room-werewolf.html"></a>
+                <div class="pointer-events-none relative flex flex-wrap items-start gap-1.5 p-4 pr-14 home-room-status"><span
+                    class="flex items-center gap-1.5 rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-extrabold backdrop-blur"
+                    ><span class="size-2 animate-pulse rounded-full bg-online"></span
+                    ><span class="font-mono">3/25</span>inside</span
+                  ></div>
+                <span class="absolute top-4 right-4"
+                  ><button
+                    class="grid size-8 place-items-center rounded-full bg-black/35 text-white backdrop-blur hover:bg-black/55"
+                    aria-label="More for Werewolf Fridays"
+                    type="button"
+                    id="radix-_R_1ll4lritqitqbmmlb_"
+                    aria-haspopup="menu"
+                    aria-expanded="false"
+                    data-state="closed"
+                    data-slot="dropdown-menu-trigger"
+                    data-ui-go="room-menu.html"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-ellipsis lucide-more-horizontal size-4"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <circle cx="19" cy="12" r="1"></circle>
+                      <circle cx="5" cy="12" r="1"></circle>
+                    </svg></button
+                ></span>
+                <div class="pointer-events-none relative mt-auto flex flex-col gap-3 p-4 home-room-content">
+                  <div>
+                    <p class="flex items-center gap-2 text-2xl font-black tracking-[-0.02em] home-room-title">
+                      <span class="grid size-9 place-items-center rounded-xl text-lg bg-lavender original-home-art"
+                        ><img src="assets/project-images/covers/rooftop.webp" alt="" /></span
+                      ><span class="home-room-name">Werewolf Fridays</span></p>
+                    <p class="mt-1 text-xs text-white/80 home-room-description">
+                      Starry Rooftop · Werewolf Fridays. Come hang out.
+                    </p>
+                  </div>
+                  <div class="pointer-events-auto flex items-center gap-2">
+                    <a
+                      data-slot="button"
+                      data-variant="default"
+                      data-size="default"
+                      class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 rounded-full bg-white font-extrabold text-[#45323d] hover:bg-primary hover:text-primary-foreground"
+                      href="walk-rooftop.html"
+                      ><svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-play fill-current"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"
+                        ></path>
+                      </svg>
+                      Walk in</a
+                    ><a
+                      data-slot="button"
+                      data-variant="ghost"
+                      data-size="default"
+                      class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50 h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 rounded-full bg-white/15 font-extrabold text-white backdrop-blur hover:bg-white/25 hover:text-white"
+                      href="room-werewolf.html"
+                      ><svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-message-circle"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"
+                        ></path>
+                      </svg>
+                      Chat</a
+                    >
+                  <span class="home-room-people room-card-people" aria-label="3 people inside"><span style="--avatar:#7758c4">T</span><span style="--avatar:#e9955a">W</span><span style="--avatar:#3a8fb7">N</span></span></div>
+                </div>
+              </article>
+              <article
+                class="group relative isolate flex min-h-64 flex-col overflow-hidden rounded-[2rem] text-white shadow-soft home-featured-room"
+                data-ui-search-item="🐈2/25inside🗣️ielts buddies🐈 cat café · ielts buddies. come hang out. walk in chat"
+              >
+                <img src="assets/project-images/covers/cafe.webp" alt="" class="home-room-cover" />
+                <div class="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-black/25 to-black/10"></div>
+                <a class="absolute inset-0" aria-label="Open IELTS Buddies" href="room-ielts-buddies.html"></a>
+                <div class="pointer-events-none relative flex flex-wrap items-start gap-1.5 p-4 pr-14 home-room-status"><span
+                    class="flex items-center gap-1.5 rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-extrabold backdrop-blur"
+                    ><span class="size-2 animate-pulse rounded-full bg-online"></span
+                    ><span class="font-mono">2/25</span>inside</span
+                  ></div>
+                <span class="absolute top-4 right-4"
+                  ><button
+                    class="grid size-8 place-items-center rounded-full bg-black/35 text-white backdrop-blur hover:bg-black/55"
+                    aria-label="More for IELTS Buddies"
+                    type="button"
+                    id="radix-_R_1m54lritqitqbmmlb_"
+                    aria-haspopup="menu"
+                    aria-expanded="false"
+                    data-state="closed"
+                    data-slot="dropdown-menu-trigger"
+                    data-ui-go="room-menu.html"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-ellipsis lucide-more-horizontal size-4"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <circle cx="19" cy="12" r="1"></circle>
+                      <circle cx="5" cy="12" r="1"></circle>
+                    </svg></button
+                ></span>
+                <div class="pointer-events-none relative mt-auto flex flex-col gap-3 p-4 home-room-content">
+                  <div>
+                    <p class="flex items-center gap-2 text-2xl font-black tracking-[-0.02em] home-room-title">
+                      <span class="grid size-9 place-items-center rounded-xl text-lg bg-sky original-home-art"
+                        ><img src="assets/project-images/covers/cafe.webp" alt="" /></span
+                      ><span class="home-room-name">IELTS Buddies</span></p>
+                    <p class="mt-1 text-xs text-white/80 home-room-description">
+                      Cat Café · IELTS Buddies. Come hang out.
+                    </p>
+                  </div>
+                  <div class="pointer-events-auto flex items-center gap-2">
+                    <a
+                      data-slot="button"
+                      data-variant="default"
+                      data-size="default"
+                      class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 rounded-full bg-white font-extrabold text-[#45323d] hover:bg-primary hover:text-primary-foreground"
+                      href="walk-cafe.html"
+                      ><svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-play fill-current"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"
+                        ></path>
+                      </svg>
+                      Walk in</a
+                    ><a
+                      data-slot="button"
+                      data-variant="ghost"
+                      data-size="default"
+                      class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50 h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 rounded-full bg-white/15 font-extrabold text-white backdrop-blur hover:bg-white/25 hover:text-white"
+                      href="room-ielts-buddies.html"
+                      ><svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-message-circle"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"
+                        ></path>
+                      </svg>
+                      Chat</a
+                    >
+                  <span class="home-room-people room-card-people" aria-label="2 people inside"><span style="--avatar:#c0587e">S</span><span style="--avatar:#7758c4">T</span></span></div>
+                </div>
+              </article>
+              <article
+                class="group relative isolate flex min-h-64 flex-col overflow-hidden rounded-[2rem] text-white shadow-soft home-featured-room"
+                data-ui-search-item="1/25inside📖manga clubmod📚 cosy library · manga club. come hang out. walk in chat"
+              >
+                <img src="assets/project-images/covers/library.webp" alt="" class="home-room-cover" />
+                <div class="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-black/25 to-black/10"></div>
+                <a class="absolute inset-0" aria-label="Open Manga Club" href="room-manga.html"></a>
+                <div class="pointer-events-none relative flex flex-wrap items-start gap-1.5 p-4 pr-14 home-room-status"><span
+                    class="flex items-center gap-1.5 rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-extrabold backdrop-blur"
+                    ><span class="size-2 animate-pulse rounded-full bg-online"></span
+                    ><span class="font-mono">1/25</span>inside</span
+                  ></div>
+                <span class="absolute top-4 right-4"
+                  ><button
+                    class="grid size-8 place-items-center rounded-full bg-black/35 text-white backdrop-blur hover:bg-black/55"
+                    aria-label="More for Manga Club"
+                    type="button"
+                    id="radix-_R_1ml4lritqitqbmmlb_"
+                    aria-haspopup="menu"
+                    aria-expanded="false"
+                    data-state="closed"
+                    data-slot="dropdown-menu-trigger"
+                    data-ui-go="room-menu.html"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-ellipsis lucide-more-horizontal size-4"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <circle cx="19" cy="12" r="1"></circle>
+                      <circle cx="5" cy="12" r="1"></circle>
+                    </svg></button
+                ></span>
+                <div class="pointer-events-none relative mt-auto flex flex-col gap-3 p-4 home-room-content">
+                  <div>
+                    <p class="flex items-center gap-2 text-2xl font-black tracking-[-0.02em] home-room-title">
+                      <span class="grid size-9 place-items-center rounded-xl text-lg bg-lavender original-home-art"
+                        ><img src="assets/project-images/covers/library.webp" alt="" /></span
+                      ><span class="home-room-name">Manga Club</span><span
+                        class="rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-extrabold tracking-normal backdrop-blur"
+                        >mod</span
+                      >
+                    </p>
+                    <p class="mt-1 text-xs text-white/80 home-room-description">
+                      Cosy Library · Manga Club. Come hang out.
+                    </p>
+                  </div>
+                  <div class="pointer-events-auto flex items-center gap-2">
+                    <a
+                      data-slot="button"
+                      data-variant="default"
+                      data-size="default"
+                      class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 rounded-full bg-white font-extrabold text-[#45323d] hover:bg-primary hover:text-primary-foreground"
+                      href="walk-library.html"
+                      ><svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-play fill-current"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"
+                        ></path>
+                      </svg>
+                      Walk in</a
+                    ><a
+                      data-slot="button"
+                      data-variant="ghost"
+                      data-size="default"
+                      class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50 h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 rounded-full bg-white/15 font-extrabold text-white backdrop-blur hover:bg-white/25 hover:text-white"
+                      href="room-manga.html"
+                      ><svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-message-circle"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"
+                        ></path>
+                      </svg>
+                      Chat</a
+                    >
+                  <span class="home-room-people room-card-people" aria-label="1 person inside"><span style="--avatar:#2e775d">K</span></span></div>
+                </div>
+              </article>
+            </div>
+          </section>
+          <section class="home-open-section">
+            <div class="mb-3 flex items-baseline gap-2">
+              <h2 class="text-lg font-black">Open now</h2>
+              <span class="text-sm text-muted-foreground">rooms anyone can walk into</span
+              ><a
+                class="ml-auto flex items-center gap-1 text-sm font-extrabold text-primary hover:underline"
+                href="discover-guest.html"
+                >See all in Discover
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-arrow-right size-4"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14"></path>
+                  <path d="m12 5 7 7-7 7"></path></svg
+              ></a>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <button class="room-card room-tone-lavender" type="button" data-room-tags="study" data-room-lang="English"
+                ><span class="room-card-cover"><img src="assets/project-images/covers/library.webp" alt="" loading="lazy" /><span class="room-card-type">Open room</span><span class="room-card-chips"><span>English</span><span>Study</span></span></span
+                ><span class="room-card-body"><span class="room-card-title">Lo-fi Study Hall</span><span class="room-card-desc">Silent study all day, group sprints every hour.</span><span class="room-card-stats"><span class="room-card-people" aria-hidden="true"><span style="--avatar:#2e6ea8">A</span><span style="--avatar:#2e775d">K</span><span style="--avatar:#c0587e">S</span><span style="--avatar:#7758c4">T</span><span class="room-card-more">+92</span></span><span class="room-card-count"><b>96/100</b> here<span class="room-card-sep">·</span>980 members</span></span></span
+                ><span class="room-card-action">Join &amp; walk in</span></button
+              ><a class="room-card room-tone-lavender" href="common-library-2.html"
+                ><span class="room-card-cover"><img src="assets/project-images/covers/library.webp" alt="" loading="lazy" /><span class="room-card-type">Common room</span><span class="room-card-chips"><span>Text only</span></span></span
+                ><span class="room-card-body"><span class="room-card-title">Library</span><span class="room-card-desc">Quiet study with a library ambience.</span><span class="room-card-stats"><span class="room-card-people" aria-hidden="true"><span style="--avatar:#a7522f">J</span><span style="--avatar:#aa356a">B</span><span style="--avatar:#2e6ea8">A</span><span style="--avatar:#2e775d">K</span><span class="room-card-more">+138</span></span><span class="room-card-count"><b>142</b> here<span class="room-card-sep">·</span>8 rooms</span></span></span
+                ><span class="room-card-action">Walk in</span></a
+              ><a class="room-card room-tone-peach" href="common-cafe-2.html"
+                ><span class="room-card-cover"><img src="assets/project-images/covers/cafe.webp" alt="" loading="lazy" /><span class="room-card-type">Common room</span><span class="room-card-chips"><span>Text only</span></span></span
+                ><span class="room-card-body"><span class="room-card-title">Cat Café</span><span class="room-card-desc">Chill and chat over a warm drink.</span><span class="room-card-stats"><span class="room-card-people" aria-hidden="true"><span style="--avatar:#a86fd1">M</span><span style="--avatar:#2e775d">K</span><span style="--avatar:#c0587e">S</span><span style="--avatar:#7758c4">T</span><span class="room-card-more">+53</span></span><span class="room-card-count"><b>57</b> here<span class="room-card-sep">·</span>3 rooms</span></span><span class="room-card-friend"><span class="room-card-avatar" style="--avatar:#a86fd1">M</span>Mook is here</span></span
+                ><span class="room-card-action">Walk in</span></a
+              >
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <button class="chat-demo-control" aria-label="Demo controls" data-ui-toolbar="">Demo</button>
+
+    <script src="assets/prototype.js"></script>
+    <script src="assets/room-detail.js"></script>
+    <script src="assets/inbox-flyout.js"></script>
+    <script src="assets/friend-scroll.js"></script>
+  </body>
+</html>

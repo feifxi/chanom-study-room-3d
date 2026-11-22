@@ -1,0 +1,966 @@
+[
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "3.6:1 (need 4.5:1) — text #8c7782 on #f8eef0"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "3.6:1 (need 4.5:1) — text #8c7782 on #f8eef0"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "3.6:1 (need 4.5:1) — text #8c7782 on #f8eef0"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "3.6:1 (need 4.5:1) — text #8c7782 on #f8eef0"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "3.3:1 (need 4.5:1) — text #df6392 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "3.6:1 (need 4.5:1) — text #8c7782 on #f8eef0"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "3.3:1 (need 4.5:1) — text #df6392 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "3.0:1 (need 4.5:1) — text #ffffff on #6d9ac2 (gradient on span.grid)"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "3.0:1 (need 4.5:1) — text #ffffff on #a08ad6 (gradient on span.grid)"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "2.3:1 (need 4.5:1) — text #ffffff on #e992b3 (gradient on span.grid)"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "3.5:1 (need 4.5:1) — text #8c7782 on #ffe7f0"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "1.8:1 (need 4.5:1) — text #ffffff on #f0b58c (gradient on span.grid)"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "2.5:1 (need 4.5:1) — text #ffffff on #79b197 (gradient on span.grid)"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "2.7:1 (need 4.5:1) — text #ffffff on #ca906d (gradient on span.grid)"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "2.2:1 (need 4.5:1) — text #ffffff on #c8a3d7 (gradient on span.grid)"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "tiny-text",
+    "name": "Tiny body text",
+    "description": "Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "11px body text"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "<section> \"panel\": children flush against border+bg on all sides (no inset)"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "<div> \"rounded-2xl\": children flush against bg on all sides (no inset)"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "<div> \"rounded-2xl\": children flush against bg on all sides (no inset)"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "<div> \"rounded-2xl\": children flush against bg on all sides (no inset)"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "<section> \"panel\": children flush against border+bg on all sides (no inset)"
+  },
+  {
+    "antipattern": "tiny-text",
+    "name": "Tiny body text",
+    "description": "Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "11px body text"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "<section> \"panel\": children flush against border+bg on all sides (no inset)"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "<li> \"flex\": children flush against bg on all sides (no inset)"
+  },
+  {
+    "antipattern": "tiny-text",
+    "name": "Tiny body text",
+    "description": "Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "11px body text"
+  },
+  {
+    "antipattern": "cream-palette",
+    "name": "Cream / beige palette",
+    "description": "A warm cream or beige page background has become the default \"tasteful\" AI surface, reached for by reflex. Choose a background that comes from a deliberate palette, not the safe warm off-white.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "cream/beige page background rgb(251, 244, 241)"
+  },
+  {
+    "antipattern": "gradient-text",
+    "name": "Gradient text",
+    "description": "Gradient text is decorative rather than meaningful — a common AI tell, especially on headings and metrics. Use solid colors for text.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "background-clip: text + gradient"
+  },
+  {
+    "antipattern": "dark-glow",
+    "name": "Glowing shadow accents",
+    "description": "Colored glow shadows — a zero-offset chromatic halo (box- or text-shadow) on any background, or any colored blurred shadow on a dark background — are the default \"cool\" look of AI-generated UIs. Use neutral elevation shadows and subtle, purposeful lighting instead.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\focus.html",
+    "line": 0,
+    "snippet": "Zero-offset box-shadow glow (#22c55e)"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "advisory",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "4.47:1 (need 4.5:1) — text #7758c4 on #f0e9fc",
+    "advisory": true
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "3.2:1 (need 4.5:1) — text #8f75cf on #f0e9fc"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "advisory",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "4.47:1 (need 4.5:1) — text #7758c4 on #f0e9fc",
+    "advisory": true
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "3.9:1 (need 4.5:1) — text #b3612f on #ffeadc"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "2.9:1 (need 4.5:1) — text #c27c52 on #ffeadc"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "advisory",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "4.4:1 (need 4.5:1) — text #2f7d55 on #e3f5ea",
+    "advisory": true
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "3.1:1 (need 4.5:1) — text #539573 on #e3f5ea"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "3.3:1 (need 4.5:1) — text #5288b9 on #e4f1fc"
+  },
+  {
+    "antipattern": "gradient-text",
+    "name": "Gradient text",
+    "description": "Gradient text is decorative rather than meaningful — a common AI tell, especially on headings and metrics. Use solid colors for text.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "background-clip: text + gradient"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "advisory",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "4.3:1 (need 4.5:1) — text #bd4373 on #ffe7f0",
+    "advisory": true
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "3.3:1 (need 4.5:1) — text #ffffff on #df6392"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "3.3:1 (need 4.5:1) — text #ffffff on #df6392"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "3.3:1 (need 4.5:1) — text #ffffff on #df6392"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": ":hover state 3.9:1 (need 4.5:1) — text #bd4373 on #f6dee7"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": ":hover state 2.6:1 (need 4.5:1) — text #ffffff on #e582a8"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": ":hover state 2.6:1 (need 4.5:1) — text #ffffff on #e582a8"
+  },
+  {
+    "antipattern": "hero-eyebrow-chip",
+    "name": "Hero eyebrow / pill chip",
+    "description": "A tiny uppercase letter-spaced label sitting immediately above an oversized hero headline — or the same shape rendered as a pill chip — is now the default AI SaaS hero. Drop the eyebrow, integrate the kicker into the headline, or run it as a navigation breadcrumb instead.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "eyebrow chip (accent-bold) \"You’re on Plus · Monthly\" above h1 \"Bigger rooms for your people. Cuter you.\""
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "<span> \"mt-auto\": children flush against bg on all sides (no inset)"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "<div> \"relative\": children flush against border on all sides (no inset)"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "<div> \"relative\": children flush against border on all sides (no inset)"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "<section> \"flex\": children flush against border on all sides (no inset)"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "<div> \"flex\": children flush against border on all sides (no inset)"
+  },
+  {
+    "antipattern": "cream-palette",
+    "name": "Cream / beige palette",
+    "description": "A warm cream or beige page background has become the default \"tasteful\" AI surface, reached for by reflex. Choose a background that comes from a deliberate palette, not the safe warm off-white.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "cream/beige page background rgb(251, 244, 241)"
+  },
+  {
+    "antipattern": "gradient-text",
+    "name": "Gradient text",
+    "description": "Gradient text is decorative rather than meaningful — a common AI tell, especially on headings and metrics. Use solid colors for text.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "background-clip: text + gradient"
+  },
+  {
+    "antipattern": "dark-glow",
+    "name": "Glowing shadow accents",
+    "description": "Colored glow shadows — a zero-offset chromatic halo (box- or text-shadow) on any background, or any colored blurred shadow on a dark background — are the default \"cool\" look of AI-generated UIs. Use neutral elevation shadows and subtle, purposeful lighting instead.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\plus.html",
+    "line": 0,
+    "snippet": "Zero-offset box-shadow glow (#22c55e)"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "placeholder \"Search open rooms\" 4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "3.3:1 (need 4.5:1) — text #ffffff on #df6392"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "3.3:1 (need 4.5:1) — text #ffffff on #df6392"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "3.3:1 (need 4.5:1) — text #ffffff on #df6392"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "3.3:1 (need 4.5:1) — text #ffffff on #df6392"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "3.3:1 (need 4.5:1) — text #ffffff on #df6392"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "3.3:1 (need 4.5:1) — text #ffffff on #df6392"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "3.6:1 (need 4.5:1) — text #8c7782 on #f8eef0"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "4.1:1 (need 4.5:1) — text #8c7782 on #ffffff"
+  },
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "3.3:1 (need 4.5:1) — text #ffffff on #df6392"
+  },
+  {
+    "antipattern": "tiny-text",
+    "name": "Tiny body text",
+    "description": "Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "11px body text"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "<span> \"relative\": children flush against bg on all sides (no inset)"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "<span> \"relative\": children flush against bg on all sides (no inset)"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "<span> \"relative\": children flush against bg on all sides (no inset)"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "<span> \"relative\": children flush against bg on all sides (no inset)"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "<span> \"relative\": children flush against bg on all sides (no inset)"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "<span> \"relative\": children flush against bg on all sides (no inset)"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "<span> \"relative\": children flush against bg on all sides (no inset)"
+  },
+  {
+    "antipattern": "cream-palette",
+    "name": "Cream / beige palette",
+    "description": "A warm cream or beige page background has become the default \"tasteful\" AI surface, reached for by reflex. Choose a background that comes from a deliberate palette, not the safe warm off-white.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "cream/beige page background rgb(251, 244, 241)"
+  },
+  {
+    "antipattern": "gradient-text",
+    "name": "Gradient text",
+    "description": "Gradient text is decorative rather than meaningful — a common AI tell, especially on headings and metrics. Use solid colors for text.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "background-clip: text + gradient"
+  },
+  {
+    "antipattern": "pulsing-dot",
+    "name": "Pulsing status dot",
+    "description": "Small pulsing status dots simulate liveness decoratively. Reserve pulse animation for indicators tied to genuinely live, changing data; a static indicator with clear labeling is honest and calmer.",
+    "severity": "error",
+    "category": "slop",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "animate-pulse on tiny rounded-full element in header/nav"
+  },
+  {
+    "antipattern": "dark-glow",
+    "name": "Glowing shadow accents",
+    "description": "Colored glow shadows — a zero-offset chromatic halo (box- or text-shadow) on any background, or any colored blurred shadow on a dark background — are the default \"cool\" look of AI-generated UIs. Use neutral elevation shadows and subtle, purposeful lighting instead.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\A_SIT04\\SIT4-TERM1\\a_M_CapStone\\DEMO\\Demo_StudyRoom\\discover.html",
+    "line": 0,
+    "snippet": "Zero-offset box-shadow glow (#22c55e)"
+  }
+]

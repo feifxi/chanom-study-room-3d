@@ -1,0 +1,220 @@
+/* Shared typography, source-project artwork and the reference room HUD. */
+.ui-line-icon { display: inline-block; width: 20px; height: 20px; flex: none; vertical-align: middle; }
+.ui-inline-icon { display: inline-flex; align-items: center; vertical-align: middle; }
+.ui-inline-icon .ui-line-icon { width: 1em; height: 1em; }
+.project-art-holder { display: inline-flex; overflow: hidden; align-items: center; justify-content: center; }
+.project-art { display: block; width: 100%; height: 100%; object-fit: cover; }
+.project-cover-holder { position: relative; }
+.project-cover-holder > .project-art { object-position: center; }
+.shop-product-art .project-art-holder { position: absolute; inset: 0; width: 100%; height: 100%; transform: none; }
+.shop-product-art { position: relative; }
+.shop-product-art .project-art { object-fit: contain; }
+.shop-product-art { background-image: none !important; background-color: var(--muted); }
+.shop-feature-art .project-art-holder, .shop-feature-art .shop-promo-emoji { width: 100%; height: 100%; border-radius: 14px; }
+.chat-avatar.project-art-holder, .chat-avatar .project-art-holder { width: 100%; height: 100%; border-radius: inherit; }
+.chat-avatar.project-art-holder { width: var(--avatar-size,48px); }
+.chat-avatar.project-art-holder img { width: 100%; height: 100%; }
+.consistent-page { max-width: 1220px; padding: 28px 32px; gap: 24px; }
+.consistent-page, .consistent-page .font-mono { font-family: inherit; font-variant-numeric: tabular-nums; }
+.consistent-page .font-heading, .consistent-page button, .consistent-page input { font-family: inherit; }
+.consistent-title { font-family: inherit; font-size: var(--page-title-size); font-weight: var(--page-title-weight); line-height: 1.2; letter-spacing: -.02em; }
+.consistent-page h2 { font-size: 17px; font-weight: 850; letter-spacing: -.01em; }
+.consistent-page .panel { border-radius: 18px; box-shadow: none; }
+.focus-summary { min-height: 136px; grid-template-columns: minmax(0,1fr) auto; padding: 20px 24px; border-radius: 18px; gap: 20px; }
+.focus-period { font-size: 12px; font-weight: 800; text-transform: none; letter-spacing: 0; }
+.focus-total { margin-top: 4px; font-size: 2rem; line-height: 1.25; font-weight: 750; letter-spacing: -.015em; }
+.focus-summary-copy > p:nth-child(3) { font-size: 13px; margin-top: 6px; }
+.focus-summary-copy > p:last-child { font-size: 11px; }
+.focus-study-link { padding: 9px 13px; border-radius: 11px; box-shadow: none; font-size: 12px; }
+.focus-details { gap: 20px; }
+.focus-details > div { gap: 20px; }
+.focus-page [aria-label="My numbers"] > div .font-mono { font-size: 23px; line-height: 1.4; font-weight: 700; }
+.focus-page [aria-label="My numbers"] figure svg { max-height: 200px; }
+.focus-page [aria-label="Rankings"] ol > li > span:first-child { width: 24px; }
+.plus-summary { border-radius: 18px; }
+.plus-summary-layout { padding: 22px 24px; grid-template-columns: minmax(0,1fr) 150px; gap: 24px; }
+.plus-summary-copy { gap: 11px; }
+.plus-summary-copy > span:first-child { padding: 0; background: none; box-shadow: none; font-size: 12px; }
+.plus-summary-copy h1 { max-width: 560px; }
+.plus-summary-copy h1 span { color: inherit; }
+.plus-summary-copy > p { max-width: 650px; font-size: 13px; line-height: 1.6; }
+.plus-summary-copy button { height: 33px; min-height: 33px; padding: 7px 12px; font-size: 12px; border-radius: 11px; }
+.plus-summary-copy button { color: var(--foreground); }
+.plus-summary-copy button[data-variant="secondary"] { background: var(--card); }
+.plus-character { width: 150px; height: 170px; border-radius: 14px; overflow: hidden; }
+.plus-character .captured-scene { object-fit: contain !important; }
+.plus-section-heading { text-align: left; }
+.plus-benefit-grid { grid-auto-rows: minmax(125px,auto); gap: 12px; }
+.plus-benefit-grid > div { padding: 18px; border-radius: 17px; gap: 6px; }
+.plus-benefit-grid > div > p:first-child { font-size: 1rem; font-weight: 800; }
+.plus-benefit-grid > div > p { font-size: 13px; line-height: 1.6; }
+.plus-benefit-grid .project-art-holder { width: 48px; height: 48px; border-radius: 12px; padding: 0; }
+.plus-map-previews { display: flex; gap: 8px; margin-top: auto; padding-top: 8px; }
+.plus-map-previews img { width: 88px; height: 56px; object-fit: cover; border-radius: 10px; min-width: 0; }
+.plus-style-previews { display: flex; gap: 7px; margin-top: auto; }
+.plus-style-previews img { width: 56px; height: 56px; object-fit: contain; border-radius: 10px; }
+.plus-benefit-grid .text-3xl { font-size: 24px; font-weight: 850; }
+.plus-page #plans > div:last-child > div { padding: 20px; border-radius: 17px; }
+.plus-page #plans .text-4xl { font-size: 29px; }
+.discover-search-layout { grid-template-columns: minmax(0,1fr) minmax(250px,360px); align-items: center; min-height: 118px; }
+.discover-search-layout .discover-search { margin: 0; width: 100%; max-width: none; }
+.discover-search-layout .discover-search input { height: 43px; }
+.discover-search-layout input { background: var(--card); color: var(--foreground); }
+.discover-search-layout input::placeholder { color: var(--chat-secondary-text); opacity: 1; }
+.discover-page .text-\[10px\] { font-size: 11px; }
+.discover-room-card { background: color-mix(in srgb, var(--card) 94%, var(--foreground)); border: 1px solid color-mix(in srgb, var(--foreground) 35%, var(--card)); box-shadow: none; }
+.dark .discover-room-card { background: color-mix(in srgb, var(--card) 88%, var(--foreground)); }
+.discover-room-card:hover, .discover-room-card:focus-visible { border-color: var(--primary); box-shadow: none; }
+.original-home-content > div { max-width: 1220px; }
+.original-home-art { display: inline-flex; overflow: hidden; border-radius: 12px; }
+.original-home-art img { width: 100%; height: 100%; object-fit: cover; }
+.original-home-art.absolute { inset: 0; opacity: 1; border-radius: 0; }
+.original-home-content [data-ui-search-item][hidden] { display: none; }
+.chat-reaction .ui-line-icon { width: 12px; height: 12px; }
+/* Fixed room controls keep the centre of the room clear. */
+.room-hud-identity { top: 4px; left: 12px; display: flex; flex-direction: row; align-items: center; gap: 10px; padding: 12px 16px; min-height: 76px; border-radius: 24px; background: var(--card); border: 1px solid var(--border); }
+.room-hud-card { padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.room-hud-card > span { display: flex; flex-direction: column; gap: 4px; }
+.room-hud-card .text-\[15px\] { font-size: 17px; }
+.room-hud-card .text-xs { font-size: 13px; }
+.room-hud-leave { display: grid; place-items: center; width: 32px; height: 40px; color: var(--muted-foreground); cursor: pointer; border-radius: 10px; }
+.room-hud-leave:hover { background: var(--muted); color: var(--foreground); }
+.room-hud-presence { position: absolute; top: 4px; right: 12px; display: flex; flex-direction: row; gap: 7px; align-items: stretch; z-index: 35; }
+.room-hud-people { height: 72px; padding: 0 14px; border-radius: 24px; }
+.room-hud-more { display: grid; place-items: center; width: 56px; height: 72px; border-radius: 24px; cursor: pointer; }
+.room-hud-tool-column { top: 100px; left: 12px; }
+.room-hud-tool-column > nav { padding: 10px; gap: 9px; border-radius: 25px; }
+.room-hud-tool-column > nav > button { width: 48px; height: 48px; }
+.room-hud-tool-column > nav > button > svg { width: 24px; height: 24px; }
+.room-hud-chat-position { bottom: 1px; left: 12px; }
+.room-hud-chat { width: 455px; height: min(448px,53vh); padding: 10px; border-radius: 26px; }
+.room-hud-chat > div:first-child { padding: 0 1px; }
+.room-hud-chat [role="tab"] { font-size: 13px; }
+.room-hud-chat input { font-size: 13px; }
+.room-hud-dock { bottom: 4px; padding: 7px; gap: 7px; border-radius: 27px; }
+.room-hud-dock .dock-btn { min-width: 80px; height: 72px; gap: 6px; padding: 8px 10px; border-radius: 20px; font-size: 14px; }
+.room-hud-dock .dock-btn > svg { width: 23px; height: 23px; }
+.room-hud-zoom { bottom: 4px; height: 58px; min-width: 160px; padding: 7px; border-radius: 25px; justify-content: center; }
+.room-settings-popover { position: fixed; inset: 87px 12px auto auto; margin: 0; width: 374px; max-width: calc(100vw - 24px); max-height: calc(100dvh - 103px); overflow-y: auto; padding: 17px 15px 13px; border: 1px solid var(--border); border-radius: 27px; background: var(--card); color: var(--foreground); box-shadow: 0 12px 35px rgb(0 0 0 / .16); }
+.room-settings-popover:popover-open { display: flex; flex-direction: column; gap: 14px; }
+.hud-menu-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; }
+.hud-menu-heading strong { font-weight: 900; }
+.hud-menu-heading > span { color: var(--muted-foreground); font-size: 12px; }
+.hud-room-actions { display: grid; grid-template-columns: 114px minmax(0,1fr); gap: 10px; }
+.hud-room-actions button, .hud-personal-grid button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 9px; border-radius: 23px; background: var(--muted); font-size: 15px; font-weight: 850; cursor: pointer; }
+.hud-room-actions .hud-invite { background: var(--primary); color: var(--primary-foreground); }
+.hud-room-actions button:not(.hud-invite) { border: 1px solid var(--border); background: transparent; }
+.hud-personal { display: flex; flex-direction: column; gap: 9px; padding: 13px; border-radius: 24px; background: color-mix(in srgb,var(--muted) 55%,transparent); }
+.hud-personal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.hud-personal-grid button { font-size: 14px; min-height: 38px; padding: 7px; }
+.hud-personal-grid .ui-line-icon { width: 17px; height: 17px; color: var(--primary); }
+.hud-setting-toggle { display: flex; align-items: center; gap: 10px; padding: 7px 12px; min-height: 35px; border-radius: 20px; background: var(--muted); color: var(--muted-foreground); font-size: 13px; font-weight: 800; text-align: left; cursor: pointer; }
+.hud-setting-toggle span { flex: 1; }
+.hud-setting-toggle[aria-pressed="true"] { background: var(--mint); color: var(--mint-ink); }
+.hud-setting-toggle .ui-line-icon { width: 17px; height: 17px; }
+.hud-all-settings { padding: 0 5px; font-size: 12px; text-align: left; color: var(--muted-foreground); cursor: pointer; }
+.hud-report { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 11px; color: var(--muted-foreground); cursor: pointer; }
+.hud-report .ui-line-icon { width: 14px; height: 14px; }
+@media(max-width:1500px) { .room-hud-chat { width: 390px; } }
+@media(max-width:1250px) { .room-hud-chat-position { bottom: 98px; } .room-hud-chat { width: 330px; height: min(360px,45vh); } .room-hud-dock .dock-btn { min-width: 68px; height: 64px; font-size: 12px; } }
+@media(max-width:900px) { .consistent-page { padding: 24px; } .discover-search-layout { grid-template-columns: 1fr; gap: 14px; } .focus-summary { grid-template-columns: 1fr; gap: 12px; } .focus-study-link { justify-self: start; } }
+@media(max-width:767px), (max-height:500px) {
+ .consistent-page { padding: 20px 16px; gap: 20px; }
+ .focus-summary { padding: 17px; gap: 13px; }
+ .focus-total { font-size: 30px; }
+ .focus-page [aria-label="My numbers"] > div .font-mono { font-size: 17px; }
+ .plus-summary-layout { padding: 18px; grid-template-columns: 1fr; gap: 0; }
+ .plus-character { display: none; }
+ .plus-summary-copy > p { font-size: 12px; }
+ .plus-benefit-grid > div { padding: 16px; }
+ .room-hud-identity { top: 8px; left: 8px; min-height: 58px; padding: 8px 10px; gap: 3px; border-radius: 18px; max-width: calc(100vw - 78px); }
+ .room-hud-card .text-\[15px\] { font-size: 13px; }
+ .room-hud-card .text-xs { font-size: 11px; }
+ .room-hud-leave { width: 25px; height: 32px; }
+ .room-hud-presence { top: 8px; right: 8px; }
+ .room-hud-people { display: none; }
+ .room-hud-more { width: 48px; height: 58px; border-radius: 18px; }
+ .room-hud-tool-column { top: 77px; left: 8px; }
+ .room-hud-tool-column > nav { padding: 5px; gap: 4px; border-radius: 19px; }
+ .room-hud-tool-column > nav > button { width: 35px; height: 35px; }
+ .room-hud-tool-column > nav > button > svg { width: 20px; height: 20px; }
+ .room-hud-dock { bottom: 8px; max-width: calc(100vw - 16px); padding: 5px; gap: 4px; border-radius: 20px; }
+ .room-hud-dock .dock-btn { min-width: 0; width: 45px; height: 45px; padding: 8px; border-radius: 14px; font-size: 0; }
+ .room-hud-dock .dock-btn > svg { width: 21px; height: 21px; }
+ .room-settings-popover { inset: 76px 8px auto auto; max-width: calc(100vw - 16px); max-height: calc(100dvh - 145px); padding: 14px; border-radius: 22px; }
+ .room-hud-chat { width: calc(100vw - 24px); height: min(360px,50dvh); }
+}
+
+/* Focus page: clear sections, even spacing, top-3 podium (2026-11-21). */
+.focus-page { gap: 24px; }
+.focus-summary { border-radius: 22px; padding: 24px 28px; }
+.focus-study-link { min-height: 44px; padding: 10px 16px; border-radius: 12px; font-size: 14px; }
+@media (min-width: 768px) {
+  .focus-summary::before {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    inline-size: min(48%, 460px);
+    background: url('./project-images/covers/library.webp') center 46% / cover no-repeat;
+    mask-image: linear-gradient(90deg, transparent 5%, black 78%);
+    opacity: .48;
+    pointer-events: none;
+    content: '';
+  }
+
+  .dark .focus-summary::before { opacity: .68; }
+  .focus-summary-copy { position: relative; }
+}
+.focus-details { gap: 24px; align-items: stretch; }
+.focus-details > div { gap: 24px; }
+.focus-card { --tone: var(--lavender); --tone-ink: var(--lavender-ink); position: relative; gap: 18px !important; padding: 24px !important; border-radius: 22px; border: 1px solid var(--border); overflow: hidden; }
+.focus-card::before { content: ''; position: absolute; inset: 0 0 auto; height: 4px; background: var(--tone-ink); opacity: .85; }
+.focus-tone-mint { --tone: var(--mint); --tone-ink: var(--mint-ink); }
+.focus-tone-peach { --tone: var(--peach); --tone-ink: var(--peach-ink); }
+.focus-card-head { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.focus-card-head h2 { font-size: 18px; font-weight: 800; letter-spacing: -.01em; }
+.focus-card-icon { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 11px; background: var(--tone); color: var(--tone-ink); }
+.focus-card-icon svg { width: 19px; height: 19px; }
+.focus-card-note { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--muted-foreground); }
+/* Stat tiles: equal size and spacing. */
+.focus-page [aria-label="My numbers"] > .grid { gap: 12px; }
+.focus-page [aria-label="My numbers"] > .grid > div { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 16px; }
+.focus-page [aria-label="My numbers"] > .grid > div .text-xs { font-size: 13px; }
+.focus-page [aria-label="My numbers"] figure { gap: 10px; padding-top: 4px; }
+.focus-page [aria-label="My numbers"] figcaption { font-size: 13px; }
+/* Subjects: even rows. */
+.focus-page [aria-label="By subject"] ul, .focus-page [aria-label="By subject"] ol, .focus-page [aria-label="By subject"] > div { gap: 12px; }
+/* Rankings: filters, podium, full list. */
+.focus-page [aria-label="Rankings"] > .flex-wrap { gap: 8px; }
+.focus-page [aria-label="Rankings"] > .flex-wrap button { min-height: 34px; padding: 6px 14px; font-size: 13px; }
+.focus-podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; gap: 8px; padding: 18px 8px 0; border-radius: 18px; background: radial-gradient(120% 90% at 50% 100%, color-mix(in srgb, var(--primary) 22%, transparent), transparent 70%); }
+.focus-podium-spot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; text-align: center; }
+.focus-podium-spot b { max-width: 100%; margin-top: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 900; }
+.focus-podium-spot > span:not(.focus-podium-avatar) { font-size: 12px; color: var(--muted-foreground); }
+.focus-podium-avatar { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(145deg, var(--avatar), color-mix(in oklab, var(--avatar) 70%, white)); color: #fff; font-size: 20px; font-weight: 900; box-shadow: 0 0 0 3px var(--card), 0 0 0 5px color-mix(in srgb, var(--avatar) 55%, transparent); }
+.is-1 .focus-podium-avatar { width: 62px; height: 62px; font-size: 24px; box-shadow: 0 0 0 3px var(--card), 0 0 0 5px var(--primary); }
+.is-you .focus-podium-avatar { box-shadow: 0 0 0 3px var(--card), 0 0 0 5px var(--primary); }
+.focus-podium-crown { width: 24px; height: 24px; margin-bottom: 2px; color: #f2b632; }
+.focus-podium-step { display: grid; place-items: center; width: 100%; margin-top: 10px; border-radius: 14px 14px 0 0; background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 30%, var(--card)), color-mix(in srgb, var(--primary) 10%, var(--card))); border-top: 4px solid var(--primary); }
+.focus-podium-step span { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+.is-1 .focus-podium-step { height: 92px; }
+.is-1 .focus-podium-step span { font-size: 2rem; }
+.is-2 .focus-podium-step { height: 66px; border-top-color: color-mix(in srgb, var(--primary) 60%, var(--muted-foreground)); }
+.is-3 .focus-podium-step { height: 50px; border-top-color: color-mix(in srgb, var(--primary) 45%, var(--peach-ink)); }
+.focus-list-title { margin-top: 4px; font-size: 13px; font-weight: 800; color: var(--muted-foreground); }
+.focus-page [aria-label="Rankings"] ol { gap: 4px; }
+.focus-page [aria-label="Rankings"] ol > li { min-height: 44px; padding: 8px 12px; border-radius: 12px; }
+.focus-page [aria-label="Rankings"] ol > li > span:first-child { width: 24px; }
+@media (max-width: 767px) {
+  .focus-page { gap: 18px; }
+  .focus-details, .focus-details > div { gap: 18px; }
+  .focus-card { padding: 18px !important; }
+  .focus-summary { padding: 18px; }
+  .focus-card-note { display: none; }
+  .focus-page [aria-label="My numbers"] > .grid { gap: 8px; }
+  .focus-page [aria-label="My numbers"] > .grid > div { padding: 10px 12px; }
+  .focus-podium-avatar { width: 44px; height: 44px; font-size: 17px; }
+  .is-1 .focus-podium-avatar { width: 52px; height: 52px; }
+}
+.focus-podium-spot b { white-space: normal; overflow: visible; line-height: 1.25; }
+@media (max-width: 767px) { .focus-podium-spot b { font-size: 13px; } }

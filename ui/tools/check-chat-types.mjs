@@ -1,0 +1,84 @@
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const manifest = JSON.parse(await readFile(path.join(ROOT, 'manifest.json'), 'utf8'));
+const require = createRequire(path.join(manifest.source, 'package.json'));
+const { chromium } = require('playwright');
+const browser = await chromium.launch({ channel: 'msedge', args: ['--mute-audio'] });
+const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+const BASE = 'http://localhost:3200/';
+const OUT = path.join(ROOT, 'reference/chat-types');
+await mkdir(OUT, { recursive: true });
+const issues = [];
+const assert = (value, message) => { if (!value) issues.push(message); };
+page.on('pageerror', e => issues.push(e.message));
+page.on('response', r => { if (r.status() >= 400) issues.push(`${r.status()} ${r.url()}`); });
+let screenshots = 0;
+try {
+  for (const file of manifest.chatTypeRevision.files) {
+    await page.goto(BASE + file);
+    const actual = await page.locator('[data-chat-type-label]').textContent();
+    assert(actual === (file.startsWith('messages-') ? 'PrivateChat' : 'GroupChat'), `${file}: incorrect initial type`);
+    const kinds = await page.locator('[data-chat-row]:visible').evaluateAll(rows => rows.map(r => r.dataset.chatKind));
+    assert(kinds.every(k => k === (actual === 'GroupChat' ? 'group' : 'private')), `${file}: mixed chat types`);
+  }
+  for (const width of [390, 768, 1440]) for (const theme of ['light', 'dark']) {
+    await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+    await page.evaluate(t => { localStorage.removeItem('studyroom-ui:chat-type'); localStorage.setItem('studyroom-ui:theme', t); }, theme);
+    await page.goto(BASE + 'home.html');
+    await page.evaluate(() => document.fonts.ready);
+    await page.getByRole('button', { name: 'GroupChat', exact: true }).click();
+    assert(await page.getByRole('menu', { name: 'Chat type' }).isVisible(), `${width}/${theme}: menu hidden`);
+    assert(await page.getByRole('menuitemradio', { name: /GroupChat/ }).getAttribute('aria-checked') === 'true', 'Selected type missing checkmark');
+    const box = await page.locator('#chat-type-menu').boundingBox();
+    assert(box.x >= 0 && box.x + box.width <= width + 1, `${width}/${theme}: menu clipped`);
+    await page.screenshot({ path: path.join(OUT, `dropdown-${width}-${theme}.png`), animations: 'disabled' }); screenshots++;
+    await page.getByRole('menuitemradio', { name: /PrivateChat/ }).click();
+    if (width >= 768) await page.waitForURL('**/messages-*.html');
+    else assert(page.url().endsWith('/home.html'), 'Switching type forced a phone thread open');
+    assert(await page.getByRole('button', { name: 'PrivateChat', exact: true }).isVisible(), `${width}/${theme}: cannot switch type`);
+    assert(await page.locator('[data-chat-row]:visible').count() === 3, 'PrivateChat does not contain exactly the three DM previews');
+    assert(await page.getByRole('link', { name: 'New message', exact: true }).isVisible(), 'PrivateChat compose action missing');
+    const privateBefore = await page.locator('[data-chat-row]:visible').evaluateAll(rows => rows.every(r => r.dataset.chatKind === 'private'));
+    assert(privateBefore, 'PrivateChat contains room chats');
+    await page.getByRole('searchbox', { name: 'Search chats', exact: true }).fill('mai');
+    assert(await page.locator('[data-chat-row]:visible').count() === 1, 'Private search fails');
+    await page.getByRole('searchbox', { name: 'Search chats', exact: true }).fill('no-such-user');
+    assert(await page.getByRole('status').filter({ hasText: 'No private chats found' }).isVisible(), 'Private empty state missing');
+    await page.getByRole('searchbox', { name: 'Search chats', exact: true }).fill('');
+    await page.screenshot({ path: path.join(OUT, `private-${width}-${theme}.png`), animations: 'disabled' }); screenshots++;
+    await page.getByRole('button', { name: 'PrivateChat', exact: true }).click();
+    await page.keyboard.press('Escape');
+    assert(!await page.getByRole('menu', { name: 'Chat type' }).isVisible(), 'Escape cannot close dropdown');
+    assert(await page.getByRole('button', { name: 'PrivateChat', exact: true }).evaluate(e => e === document.activeElement), 'Escape did not restore focus');
+    await page.getByRole('button', { name: 'PrivateChat', exact: true }).press('ArrowUp');
+    await page.keyboard.press('Home');
+    await page.keyboard.press('Enter');
+    if (width >= 768) await page.waitForURL('**/room-*.html');
+    assert(await page.getByRole('button', { name: 'GroupChat', exact: true }).isVisible(), 'Keyboard cannot switch back to GroupChat');
+    assert(await page.locator('[data-chat-row]:visible').count() === 11, 'GroupChat room count is incorrect');
+    assert(await page.getByRole('button', { name: 'Make a room', exact: true }).isVisible(), 'GroupChat create action missing');
+    assert(!await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), `${width}/${theme}: sideways scrolling`);
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(BASE + 'home.html');
+  await page.getByRole('button', { name: 'GroupChat', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: /PrivateChat/ }).click();
+  await page.locator('[data-chat-row][href="messages-jod.html"]').click();
+  await page.waitForURL('**/messages-jod.html');
+  await page.getByRole('link', { name: 'Back to chats', exact: true }).click();
+  await page.waitForURL('**/home.html');
+  assert(await page.getByRole('button', { name: 'PrivateChat', exact: true }).isVisible(), 'Phone list does not remember the selected type');
+  await page.goto(BASE + 'home-chat.html');
+  assert(await page.getByRole('heading', { name: 'Chats', exact: true }).isVisible(), 'Chat-only comparison was modified');
+  await page.goto('file:///' + path.join(ROOT, 'home.html').replaceAll('\\', '/'));
+  await page.getByRole('button', { name: 'GroupChat', exact: true }).click();
+  assert(await page.getByRole('menu', { name: 'Chat type' }).isVisible(), 'Direct file dropdown does not open');
+} catch (error) { issues.push(error.message); }
+finally { await browser.close(); }
+const report = { checkedAt: new Date().toISOString(), pages: manifest.chatTypeRevision.files.length, screenshots, issues: [...new Set(issues)] };
+await writeFile(path.join(OUT, 'verification.json'), JSON.stringify(report, null, 2));
+console.log(JSON.stringify(report, null, 2));
+process.exitCode = report.issues.length ? 1 : 0;

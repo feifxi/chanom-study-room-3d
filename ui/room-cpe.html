@@ -1,0 +1,1107 @@
+<!doctype html>
+<html
+  lang="en"
+  class="nunito_22336911-module__FLPYxG__variable ibm_plex_sans_thai_24e7d61f-module__Gz-8DG__variable jetbrains_mono_f5d41edc-module__R56YrG__variable h-full light"
+  data-palette="strawberry"
+  data-ui-page="room-cpe"
+  data-ui-layout="chat-with-room-preview"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CPE Year 3 · Connecta UI</title>
+    <link rel="stylesheet" href="assets/source/4f2683abfb221e.css" />
+    <link rel="stylesheet" href="assets/overrides.css" />
+    <link rel="stylesheet" href="assets/chat-layout.css" />
+    <link rel="stylesheet" href="assets/room-detail.css" />
+
+    <link rel="stylesheet" href="assets/room-preview.css" />
+
+    <link rel="stylesheet" href="assets/ui-consistency.css" />
+
+    <script src="assets/theme.js"></script>
+    <link rel="stylesheet" href="assets/inbox-flyout.css" />
+  </head>
+  <body class="app-bg ui-with-rail">
+    <!-- Chat-first HTML prototype. Edit this markup and assets/chat-layout.css. -->
+    <div class="chat-layout" data-chat-layout="" data-mobile-view="thread" data-chat-type="group">
+      <nav class="app-rail" aria-label="App">
+        <a class="rail-brand" href="home.html" aria-label="Connecta"
+          ><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+            <path
+              d="M25.85 17.74A10 10 0 1 1 16 6"
+              fill="none"
+              stroke="var(--primary)"
+              stroke-width="6"
+              stroke-linecap="round"
+            ></path>
+            <circle cx="23.66" cy="9.57" r="3.6" fill="var(--tea)"></circle></svg
+        ></a>
+        <div class="rail-links">
+          <a class="rail-link" href="home-dashboard.html" aria-label="Home"
+            ><svg
+              class="chat-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-8H9v8H4a1 1 0 0 1-1-1z"></path></svg
+            ><span>Home</span></a
+          >
+          <a class="rail-link is-active" href="home.html" aria-current="page"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"
+                ></path></svg></span
+            ><span>Chat</span></a
+          ><a class="rail-link" href="friends.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+                ></path>
+                <circle cx="9" cy="7" r="4"></circle></svg
+              ><span class="rail-badge">1</span></span
+            ><span>Friends</span></a
+          ><a class="rail-link" href="focus.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 3v18h18M7 14v3m5-8v8m5-12v12"></path></svg></span
+            ><span>Focus</span></a
+          ><a class="rail-link" href="discover.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12Z"></path></svg></span
+            ><span>Discover</span></a
+          ><a class="rail-link" href="shop.html"
+            ><span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M6 3 3 7v13a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7l-3-4ZM3 7h18M8 11a4 4 0 0 0 8 0"
+                ></path></svg></span
+            ><span>Shop</span></a
+          >
+          <a class="rail-link" href="plus.html"
+            ><svg
+              class="chat-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m2 5 5 4 5-6 5 6 5-4-3 14H5L2 5Zm3 17h14"></path></svg
+            ><span>Plus</span></a
+          ><button class="rail-link" data-ui-go="inbox.html" aria-label="Inbox, 4 new">
+            <span class="rail-icon"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg
+              ><span class="rail-badge">4</span></span
+            ><span>Inbox</span></button
+          >
+        </div>
+        <div class="rail-bottom">
+          <button class="rail-profile" aria-label="You" data-ui-go="profile-menu.html">
+            <span class="chat-avatar" style="--avatar-color: #bc4678"
+              ><span>f</span><i class="presence-online" aria-label="online"></i></span
+            ><span>feifei</span>
+          </button>
+        </div>
+      </nav>
+
+      <aside class="conversation-list" aria-label="Chats">
+        <header class="chat-list-header">
+          <div class="chat-type-switcher">
+            <h1>
+              <button
+                class="chat-type-trigger"
+                type="button"
+                data-chat-type-trigger=""
+                aria-haspopup="menu"
+                aria-controls="chat-type-menu"
+                aria-expanded="false"
+              >
+                <span data-chat-type-label="">GroupChat</span
+                ><svg
+                  class="chat-type-chevron"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m6 9 6 6 6-6"></path>
+                </svg>
+              </button>
+            </h1>
+            <div class="chat-type-menu" id="chat-type-menu" role="menu" aria-label="Chat type" popover="auto">
+              <button
+                class="chat-type-option"
+                type="button"
+                role="menuitemradio"
+                aria-checked="true"
+                data-chat-type-option="group"
+                tabindex="-1"
+              >
+                <svg
+                  class="chat-type-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+                  ></path>
+                  <circle cx="9" cy="7" r="4"></circle></svg
+                ><span><strong>GroupChat</strong><small>Rooms and communities</small></span
+                ><svg
+                  class="chat-type-check"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m5 12 4 4L19 6"></path>
+                </svg></button
+              ><button
+                class="chat-type-option"
+                type="button"
+                role="menuitemradio"
+                aria-checked="false"
+                data-chat-type-option="private"
+                tabindex="-1"
+              >
+                <svg
+                  class="chat-type-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"
+                  ></path></svg
+                ><span><strong>PrivateChat</strong><small>One-to-one conversations</small></span
+                ><svg
+                  class="chat-type-check"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m5 12 4 4L19 6"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div>
+            <button
+              class="chat-icon-button"
+              aria-label="Make a room"
+              data-ui-go="create-room.html"
+              data-chat-action-kind="group"
+            >
+              <svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14M5 12h14"></path>
+              </svg></button
+            ><a
+              class="chat-icon-button"
+              href="friend-add.html"
+              aria-label="New message"
+              data-chat-action-kind="private"
+              hidden=""
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-7M15 3l6 6M10 14l1-5 8-8 5 5-8 8-6 1Z"
+                ></path></svg
+            ></a>
+          </div>
+        </header>
+        <label class="chat-list-search"
+          ><svg
+            class="chat-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="10.5" cy="10.5" r="7.5"></circle>
+            <path d="m16 16 5 5"></path></svg
+          ><input
+            type="search"
+            aria-label="Search chats"
+            placeholder="Search chats"
+            data-chat-search=""
+            autocomplete="off"
+        /></label>
+        <nav class="conversation-rows" aria-label="Conversations">
+          <a
+            href="room-chanom.html"
+            class="conversation-row has-unread"
+            data-chat-row=""
+            data-chat-name="chanom friends"
+            data-chat-kind="group"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span
+              ><i class="presence-online" aria-label="online"></i></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Chanom Friends</span
+              ><span class="conversation-preview">You: I’m coming! Save me a seat </span
+              ><span class="conversation-room-status"
+                ><svg
+                  class="chat-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5m5 5H3"></path></svg
+                ><span>3 in the room</span></span
+              ></span
+            ><span class="conversation-meta"><time>20:56</time><span class="unread-count">3</span></span></a
+          ><a
+            href="messages-mai.html"
+            class="conversation-row has-unread"
+            data-chat-row=""
+            data-chat-name="mai"
+            data-chat-kind="private"
+            hidden=""
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #7758c4"
+              ><span>M</span><i class="presence-focus" aria-label="focus"></i></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Mai</span
+              ><span class="conversation-preview">bring your calculus notes</span></span
+            ><span class="conversation-meta"><time>09:15</time><span class="unread-count">2</span></span></a
+          ><a
+            href="room-cpe.html"
+            class="conversation-row is-active has-unread"
+            data-chat-row=""
+            data-chat-name="cpe year 3"
+            aria-current="page"
+            data-chat-kind="group"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span
+              ><i class="presence-online" aria-label="online"></i></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">CPE Year 3</span
+              ><span class="conversation-preview">Computer Engineering, class of 2027. Exam season survival.</span
+              ><span class="conversation-room-status"
+                ><svg
+                  class="chat-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5m5 5H3"></path></svg
+                ><span>25 in the room</span></span
+              ></span
+            ><span class="conversation-meta"><time>Yesterday</time><span class="unread-count">12</span></span></a
+          ><a
+            href="messages-jod.html"
+            class="conversation-row"
+            data-chat-row=""
+            data-chat-name="jod"
+            data-chat-kind="private"
+            hidden=""
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #b3612f"
+              ><span>J</span><i class="presence-focus" aria-label="focus"></i></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Jod</span
+              ><span class="conversation-preview">You: Sounds good.</span></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a
+            href="room-gamenight.html"
+            class="conversation-row"
+            data-chat-row=""
+            data-chat-name="game night club"
+            data-chat-kind="group"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Game Night Club</span
+              ><span class="conversation-preview"
+                >Werewolf, cards and drawing games every weekend. Everyone welcome!</span
+              ><span class="conversation-room-status"
+                ><svg
+                  class="chat-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5m5 5H3"></path></svg
+                ><span>Room is quiet</span></span
+              ></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a
+            href="messages-ken.html"
+            class="conversation-row"
+            data-chat-row=""
+            data-chat-name="ken"
+            data-chat-kind="private"
+            hidden=""
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #2f7d55"
+              ><span>K</span><i class="presence-online" aria-label="online"></i></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Ken</span><span class="conversation-preview">gg last night </span></span
+            ><span class="conversation-meta"><time>Mon</time></span></a
+          ><a
+            href="room-study-sprint.html"
+            class="conversation-row"
+            data-chat-row=""
+            data-chat-name="study sprint squad"
+            data-chat-kind="group"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Study Sprint Squad</span
+              ><span class="conversation-preview">Study Sprint Squad. Come hang out.</span
+              ><span class="conversation-room-status"
+                ><svg
+                  class="chat-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5m5 5H3"></path></svg
+                ><span>Room is quiet</span></span
+              ></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a
+            href="room-ielts-buddies.html"
+            class="conversation-row"
+            data-chat-row=""
+            data-chat-name="ielts buddies"
+            data-chat-kind="group"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">IELTS Buddies</span
+              ><span class="conversation-preview">IELTS Buddies. Come hang out.</span
+              ><span class="conversation-room-status"
+                ><svg
+                  class="chat-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5m5 5H3"></path></svg
+                ><span>2 in the room</span></span
+              ></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a
+            href="room-band.html"
+            class="conversation-row"
+            data-chat-row=""
+            data-chat-name="band practice"
+            data-chat-kind="group"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Band Practice</span
+              ><span class="conversation-preview">Band Practice. Come hang out.</span
+              ><span class="conversation-room-status"
+                ><svg
+                  class="chat-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5m5 5H3"></path></svg
+                ><span>Room is quiet</span></span
+              ></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a
+            href="room-family.html"
+            class="conversation-row"
+            data-chat-row=""
+            data-chat-name="family room"
+            data-chat-kind="group"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Family Room</span
+              ><span class="conversation-preview">Family Room. Come hang out.</span
+              ><span class="conversation-room-status"
+                ><svg
+                  class="chat-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5m5 5H3"></path></svg
+                ><span>Room is quiet</span></span
+              ></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a
+            href="room-manga.html"
+            class="conversation-row"
+            data-chat-row=""
+            data-chat-name="manga club"
+            data-chat-kind="group"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Manga Club</span
+              ><span class="conversation-preview">Manga Club. Come hang out.</span
+              ><span class="conversation-room-status"
+                ><svg
+                  class="chat-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5m5 5H3"></path></svg
+                ><span>1 in the room</span></span
+              ></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a
+            href="room-dorm-3b.html"
+            class="conversation-row"
+            data-chat-row=""
+            data-chat-name="dorm 3b"
+            data-chat-kind="group"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Dorm 3B</span
+              ><span class="conversation-preview">Dorm 3B. Come hang out.</span
+              ><span class="conversation-room-status"
+                ><svg
+                  class="chat-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5m5 5H3"></path></svg
+                ><span>Room is quiet</span></span
+              ></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a
+            href="room-cpe-lab.html"
+            class="conversation-row"
+            data-chat-row=""
+            data-chat-name="cpe lab group 4"
+            data-chat-kind="group"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">CPE Lab Group 4</span
+              ><span class="conversation-preview">CPE Lab Group 4. Come hang out.</span
+              ><span class="conversation-room-status"
+                ><svg
+                  class="chat-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5m5 5H3"></path></svg
+                ><span>Room is quiet</span></span
+              ></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          ><a
+            href="room-werewolf.html"
+            class="conversation-row"
+            data-chat-row=""
+            data-chat-name="werewolf fridays"
+            data-chat-kind="group"
+            ><span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span></span
+            ><span class="conversation-copy"
+              ><span class="conversation-name">Werewolf Fridays</span
+              ><span class="conversation-preview">Werewolf Fridays. Come hang out.</span
+              ><span class="conversation-room-status"
+                ><svg
+                  class="chat-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5m5 5H3"></path></svg
+                ><span>3 in the room</span></span
+              ></span
+            ><span class="conversation-meta"><time>Yesterday</time></span></a
+          >
+          <p class="chat-search-empty" hidden="" role="status">No chats found. Try another name.</p>
+        </nav>
+      </aside>
+      <main class="chat-main" aria-label="CPE Year 3 conversation" data-members="auto">
+        <header class="conversation-header">
+          <a class="chat-icon-button chat-mobile-back" href="home.html" aria-label="Back to chats"
+            ><svg
+              class="chat-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m12 19-7-7 7-7m-7 7h16"></path></svg
+          ></a>
+          <div class="conversation-identity">
+            <span class="chat-avatar" style="--avatar-color: #8259a5"
+              ><span class="project-art-holder project-cover-holder"
+                ><img
+                  src="assets/project-images/covers/library.webp"
+                  alt="Cosy Library"
+                  class="project-art"
+                  loading="lazy" /></span
+              ><i class="presence-online" aria-label="online"></i
+            ></span>
+            <div>
+              <h2>CPE Year 3</h2>
+              <p>Cosy Library · 25/25 inside · full</p>
+            </div>
+          </div>
+          <div class="conversation-actions">
+            <button class="chat-icon-button" aria-label="Search in conversation" data-chat-find="">
+              <svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="10.5" cy="10.5" r="7.5"></circle>
+                <path d="m16 16 5 5"></path>
+              </svg></button
+            ><button
+              type="button"
+              class="chat-icon-button pinned-toggle"
+              data-pinned-toggle=""
+              aria-label="Pinned messages"
+              title="Pinned messages"
+              aria-haspopup="dialog"
+              aria-expanded="false"
+              aria-controls="pinned-messages"
+            >
+              <svg
+                class="chat-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M16 9V4l1-1H7l1 1v5l-3 3v2h14v-2l-3-3M12 14v8"></path>
+              </svg></button
+            ><button
+              class="chat-icon-button members-toggle"
+              aria-label="Show members"
+              aria-controls="chat-members"
+              aria-expanded="true"
+              data-chat-members=""
+            >
+              <svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+                ></path>
+                <circle cx="9" cy="7" r="4"></circle>
+              </svg></button
+            ><button class="chat-icon-button" aria-label="More for CPE Year 3" type="button" data-room-chat-menu="room-cpe.html" aria-haspopup="menu" aria-expanded="false">
+              <svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="5" cy="12" r="1"></circle>
+                <circle cx="12" cy="12" r="1"></circle>
+                <circle cx="19" cy="12" r="1"></circle>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <div class="chat-find" hidden="">
+          <label
+            ><svg
+              class="chat-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="10.5" cy="10.5" r="7.5"></circle>
+              <path d="m16 16 5 5"></path></svg
+            ><input
+              type="search"
+              placeholder="Search in conversation"
+              aria-label="Search in conversation"
+              data-chat-find-input="" /></label
+          ><button class="chat-icon-button" aria-label="Close search" data-chat-find-close="">
+            <svg
+              class="chat-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m6 6 12 12M6 18 18 6"></path>
+            </svg></button
+          ><span role="status" data-chat-find-status=""></span>
+        </div>
+        <div class="conversation-body">
+          <section class="chat-thread" aria-label="Room chat">
+            <section class="room-peek room-peek-library" aria-label="3D room preview" data-collapsed="false">
+              <img
+                class="room-peek-image"
+                src="assets/captures/library-social-cover.png"
+                alt="Screenshot from the original Cosy Library 3D room"
+                width="1440"
+                height="800"
+                id="room-preview-image"
+              />
+
+              <span class="room-peek-map">Cosy Library</span>
+              <div class="room-peek-caption">
+                <div class="room-peek-invitation">
+                  <div class="room-peek-faces" aria-hidden="true">
+                    <span style="--face-color: #2e6ea8">N</span><span style="--face-color: #7758c4">P</span
+                    ><span style="--face-color: #2f7d55">K</span>
+                  </div>
+                  <div>
+                    <span class="room-peek-compact-map">Cosy Library</span>
+                    <h3>Nam and 24 friends are inside</h3>
+                    <p>Join them when a spot opens.</p>
+                  </div>
+                </div>
+                <button class="room-peek-enter" disabled="">Room full</button>
+              </div>
+              <button
+                type="button"
+                class="room-peek-toggle"
+                data-room-preview-toggle=""
+                aria-expanded="true"
+                aria-controls="room-preview-image"
+                aria-label="Collapse room preview"
+                title="Collapse room preview"
+              >
+                <span data-room-preview-toggle-label="">Hide preview</span
+                ><svg
+                  class="chat-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m6 14 6-6 6 6"></path>
+                </svg>
+              </button>
+            </section>
+            <div class="chat-timeline" data-chat-timeline="">
+              <div class="conversation-empty">
+                <span class="chat-avatar avatar-list" style="--avatar-color: #8259a5"
+                  ><span class="project-art-holder project-cover-holder"
+                    ><img
+                      src="assets/project-images/covers/library.webp"
+                      alt="Cosy Library"
+                      class="project-art"
+                      loading="lazy" /></span
+                ></span>
+                <h2>CPE Year 3</h2>
+                <p>This is the start of your room chat.</p>
+              </div>
+            </div>
+            <form class="chat-composer" aria-label="Message composer">
+              <button type="button" class="chat-icon-button" aria-label="Add attachment" data-chat-preview="">
+                <svg
+                  class="chat-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M12 5v14M5 12h14"></path>
+                </svg></button
+              ><button type="button" class="chat-icon-button" aria-label="Attach image" data-chat-preview="">
+                <svg
+                  class="chat-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+                  <circle cx="8" cy="8" r="1.5"></circle>
+                  <path d="m21 15-5-5L5 21"></path>
+                </svg></button
+              ><label class="composer-field"
+                ><span class="sr-only">Message the room</span
+                ><input
+                  placeholder="Message the room…"
+                  autocomplete="off"
+                  aria-label="Message the room"
+                  maxlength="2000" /><button
+                  type="button"
+                  class="chat-icon-button"
+                  aria-label="Emoji"
+                  data-chat-preview=""
+                >
+                  <svg
+                    class="chat-icon"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M8 14s1.5 2 4 2 4-2 4-2M8 8h.01M16 8h.01"></path>
+                  </svg></button></label
+              ><button type="submit" class="chat-send" aria-label="Send" title="Static UI preview">
+                <svg
+                  class="chat-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m22 2-7 20-4-9-9-4 20-7ZM22 2 11 13"></path>
+                </svg>
+              </button>
+            </form>
+          </section>
+          <aside class="chat-members" id="chat-members" aria-label="Members">
+            <header>
+              <h2>Members</h2>
+              <button class="chat-icon-button members-close" aria-label="Close members" data-chat-members-close="">
+                <svg
+                  class="chat-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m6 6 12 12M6 18 18 6"></path>
+                </svg>
+              </button>
+            </header>
+            <section class="member-group">
+              <h3>In the room · 3</h3>
+              <a class="member-row" href="friends.html"
+                ><span class="chat-avatar" style="--avatar-color: #2e6ea8"
+                  ><span>N</span><i class="presence-idle" aria-label="idle"></i></span
+                ><span><strong>Nam</strong><span> On a break</span></span></a
+              ><a class="member-row is-offline" href="friends.html"
+                ><span class="chat-avatar" style="--avatar-color: #7a6a3a"
+                  ><span>P</span><i class="presence-offline" aria-label="offline"></i></span
+                ><span><strong>Pim</strong><span>Offline</span></span></a
+              ><a class="member-row" href="messages-ken.html"
+                ><span class="chat-avatar" style="--avatar-color: #2f7d55"
+                  ><span>K</span><i class="presence-online" aria-label="online"></i></span
+                ><span><strong>Ken</strong><span> Playing Slave</span></span></a
+              >
+            </section>
+            <section class="member-group"><h3>Other members · 0</h3></section>
+            <a class="members-invite" href="room-invite.html"
+              ><svg
+                class="chat-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14M5 12h14"></path></svg
+              >Invite friends</a
+            >
+          </aside>
+        </div>
+        <section
+          class="pinned-messages-popover"
+          id="pinned-messages"
+          popover="auto"
+          role="dialog"
+          aria-labelledby="pinned-messages-title"
+        >
+          <header>
+            <h2 id="pinned-messages-title">Pinned messages</h2>
+            <button class="chat-icon-button" type="button" aria-label="Close pinned messages" data-pinned-close="">
+              <svg
+                class="chat-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <path d="m6 6 12 12M6 18 18 6"></path>
+              </svg>
+            </button>
+          </header>
+          <p class="pinned-messages-empty">No pinned messages yet.</p>
+        </section>
+      </main>
+    </div>
+    <button class="chat-demo-control" aria-label="Demo controls" data-ui-toolbar="">Demo</button>
+
+    <script src="assets/prototype.js"></script>
+    <script src="assets/inbox-flyout.js"></script>
+    <script src="assets/chat-layout.js"></script>
+    <script src="assets/room-detail.js"></script>
+  </body>
+</html>

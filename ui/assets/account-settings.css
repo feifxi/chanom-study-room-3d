@@ -1,0 +1,179 @@
+/* Profile menu + split account windows (Edit profile / Settings), 2026-11-21. */
+
+/* ---------- Profile menu ---------- */
+[role="menu"][data-slot="dropdown-menu-content"]:has(.account-plus-card) { width: 264px; padding: 8px; }
+.account-menu-item { min-height: 48px; gap: 12px !important; padding: 8px 10px !important; border-radius: 12px !important; cursor: pointer !important; text-decoration: none; color: inherit; }
+.account-menu-item:hover { background: var(--accent); }
+.account-menu-item > svg { width: 20px; height: 20px; flex: none; color: var(--muted-foreground); }
+.account-menu-label { display: flex; flex-direction: column; line-height: 1.25; }
+.account-menu-label b { font-size: 14px; font-weight: 800; }
+.account-menu-label small { font-size: 12px; color: var(--muted-foreground); }
+.account-sign-out { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 6px; color: inherit; font-size: .875rem; text-decoration: none; cursor: pointer; }
+.account-sign-out > svg { width: 16px; height: 16px; flex: none; }
+.account-sign-out:is(:hover, :focus-visible) { color: var(--destructive); background: color-mix(in srgb, var(--destructive) 12%, transparent); }
+.account-sign-out:focus-visible { outline: 2px solid var(--destructive); outline-offset: 2px; }
+.account-plus-card { display: grid; grid-template-columns: 36px minmax(0, 1fr); align-items: center; gap: 4px 12px; margin: 8px 0 4px; padding: 12px; border-radius: 14px; text-decoration: none; color: var(--primary-foreground); background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 55%, #3a1638)); box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 35%, transparent); transition: transform .12s, box-shadow .12s; }
+.account-plus-card:hover { transform: translateY(-1px); box-shadow: 0 12px 26px color-mix(in srgb, var(--primary) 45%, transparent); }
+.account-plus-card:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+.account-plus-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; background: rgb(255 255 255 / .2); }
+.account-plus-icon svg { width: 20px; height: 20px; }
+.account-plus-copy { display: flex; flex-direction: column; line-height: 1.25; }
+.account-plus-copy b { font-size: 14px; font-weight: 900; }
+.account-plus-copy small { font-size: 12px; opacity: .88; }
+.account-plus-cta { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; margin-top: 6px; border-radius: 10px; background: var(--card); color: var(--primary); font-size: 13px; font-weight: 900; }
+
+/* ---------- Window frame ---------- */
+[data-account-window] { max-width: min(920px, calc(100% - 2rem)) !important; height: min(680px, 90dvh) !important; border-radius: 26px !important; }
+[data-account-window] > [data-slot="dialog-close"] { width: 40px; height: 40px; top: 14px; right: 14px; border-radius: 50%; }
+[data-account-window] > [data-slot="dialog-close"] svg { width: 20px !important; height: 20px !important; }
+
+/* ---------- Side navigation ---------- */
+.account-nav { display: none; flex: none; flex-direction: column; gap: 4px; width: 228px; padding: 20px 14px 16px; background: color-mix(in srgb, var(--muted) 60%, transparent); border-right: 1px solid var(--border); }
+@media (min-width: 640px) { .account-nav { display: flex; } }
+.account-nav-head { padding: 0 10px 14px; }
+.account-nav-head p { font-size: 18px; font-weight: 900; letter-spacing: -.01em; }
+.account-nav-head span { display: block; margin-top: 2px; font-size: 12px; color: var(--muted-foreground); }
+.account-nav-item { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 9px 12px; border-radius: 12px; text-align: left; font-size: 14px; font-weight: 800; color: var(--muted-foreground); cursor: pointer; }
+.account-nav-item svg { width: 18px !important; height: 18px !important; flex: none; }
+.account-nav-item:hover { background: color-mix(in srgb, var(--card) 70%, transparent); color: var(--foreground); }
+.account-nav-item[aria-current="page"] { background: var(--card); color: var(--primary); box-shadow: 0 1px 4px rgb(0 0 0 / .08); }
+.account-nav-switch { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding: 12px; border-top: 1px solid var(--border); border-radius: 0; font-size: 13px; font-weight: 800; color: var(--muted-foreground); text-decoration: none; }
+.account-nav-switch:hover { color: var(--primary); }
+.account-phone-tabs { display: flex; gap: 6px; margin: 0 0 16px; overflow-x: auto; scrollbar-width: none; }
+.account-phone-tabs::-webkit-scrollbar { display: none; }
+.account-phone-tabs a { flex: none; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border); font-size: 13px; font-weight: 800; color: var(--muted-foreground); text-decoration: none; white-space: nowrap; }
+.account-phone-tabs a[aria-current="page"] { background: var(--secondary); border-color: var(--primary); color: var(--primary); }
+@media (min-width: 640px) { .account-phone-tabs { display: none; } }
+.account-settings-content { padding: 28px 32px !important; }
+
+/* ---------- Edit profile pages ---------- */
+.account-content { display: flex; flex-direction: column; min-width: 0; flex: 1; overflow: hidden; }
+.account-content > .account-phone-tabs { margin: 18px 18px 0; }
+.account-page-head { padding: 26px 64px 18px 32px; border-bottom: 1px solid var(--border); }
+.account-page-head h2 { font-size: 24px; font-weight: 900; letter-spacing: -.02em; }
+.account-page-head p { margin-top: 4px; font-size: 14px; color: var(--muted-foreground); }
+.account-profile-grid { flex: 1; display: grid; grid-template-columns: 210px minmax(0, 1fr); align-items: start; gap: 24px; padding: 24px 32px; overflow-y: auto; }
+.account-preview { display: flex; flex-direction: column; gap: 12px; margin: 0; position: sticky; top: 0; }
+.account-preview img { display: block; width: 100%; height: 250px; object-fit: cover; border-radius: 22px; background: linear-gradient(180deg, var(--lavender), var(--peach)); }
+.account-preview figcaption { display: flex; flex-direction: column; gap: 2px; padding: 0 4px; }
+.account-preview figcaption b { font-size: 16px; font-weight: 900; }
+.account-preview figcaption span { font-size: 13px; color: var(--muted-foreground); line-height: 1.45; }
+.account-secondary { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px; padding: 8px 14px; border-radius: 12px; background: var(--secondary); color: var(--primary); font-size: 14px; font-weight: 800; text-decoration: none; cursor: pointer; }
+.account-secondary:hover { background: color-mix(in srgb, var(--secondary) 80%, var(--primary)); }
+.account-sections { display: flex; flex-direction: column; gap: 16px; }
+.account-section { display: flex; flex-direction: column; gap: 14px; padding: 18px 20px; border-radius: 18px; border: 1px solid var(--border); background: color-mix(in srgb, var(--card) 55%, transparent); }
+.account-section h3 { display: flex; align-items: baseline; gap: 8px; font-size: 16px; font-weight: 900; }
+.account-section h3 small { font-size: 12px; font-weight: 700; color: var(--muted-foreground); }
+.account-field { display: flex; flex-direction: column; gap: 6px; }
+.account-field > span { font-size: 13px; font-weight: 800; }
+.account-field input, .account-field textarea { width: 100%; min-height: 44px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--input, var(--border)); background: color-mix(in srgb, var(--input, var(--muted)) 30%, transparent); color: var(--foreground); font: inherit; font-size: 15px; resize: vertical; }
+.account-field input:focus, .account-field textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent); }
+.account-field small { font-size: 12px; color: var(--muted-foreground); }
+.account-row { display: flex; flex-direction: column; gap: 8px; }
+.account-label { font-size: 13px; font-weight: 800; color: var(--muted-foreground); }
+.account-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.account-swatch { width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--card); box-shadow: 0 0 0 1px var(--border); cursor: pointer; transition: transform .12s; }
+.account-swatch:hover { transform: scale(1.08); }
+.account-swatch[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--primary); }
+.account-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.account-chip { min-height: 40px; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); font-size: 14px; font-weight: 800; color: var(--foreground); cursor: pointer; }
+.account-chip:hover { border-color: color-mix(in srgb, var(--primary) 50%, var(--border)); }
+.account-chip[aria-pressed="true"] { background: var(--secondary); border-color: var(--primary); color: var(--primary); }
+.account-look-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 8px; }
+.account-look-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 88px; padding: 8px 4px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); color: var(--foreground); text-align: center; font-size: .75rem; font-weight: 800; line-height: 1.3; cursor: pointer; }
+.account-look-tile:hover { border-color: var(--primary); }
+.account-look-tile[aria-pressed="true"] { background: var(--secondary); border-color: var(--primary); color: var(--chat-accent-ink); }
+.account-look-art { display: block; width: 48px; height: 48px; border-radius: 8px; object-fit: cover; }
+[data-look-art] { background-image: url('./character-accessories.png'); background-repeat: no-repeat; background-size: 200% 200%; }
+[data-look-art="ribbon"] { background-position: left top; }
+[data-look-art="headphones"] { background-position: right top; }
+[data-look-art="ahoge"] { background-position: left bottom; }
+[data-look-art="twin-tails"] { background-position: right bottom; }
+.account-look-none { display: grid; width: 48px; height: 48px; place-items: center; }
+.account-look-none::before { width: 26px; height: 26px; border: 2px solid var(--muted-foreground); border-radius: 50%; background: linear-gradient(135deg, transparent 46%, var(--muted-foreground) 47% 53%, transparent 54%); content: ''; }
+.account-look-selection { display: flex; flex-wrap: wrap; gap: 4px; padding-inline: 4px; }
+.account-look-selection .account-look-sample { display: block; width: 24px; height: 24px; min-width: 0; border: 1px solid var(--border); border-radius: 6px; }
+.account-look-actions { align-items: center; flex-wrap: wrap; }
+.account-look-actions [role="status"] { margin-inline-end: auto; color: var(--muted-foreground); font-size: .8125rem; }
+.account-look-actions [role="status"]:empty { display: none; }
+.account-link { align-self: flex-start; font-size: 14px; font-weight: 800; color: var(--primary); text-decoration: none; }
+.account-link:hover { text-decoration: underline; }
+.account-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 32px 18px; border-top: 1px solid var(--border); background: var(--popover); }
+.account-primary, .account-ghost { min-height: 44px; padding: 10px 22px; border-radius: 12px; font-size: 15px; font-weight: 900; cursor: pointer; }
+.account-primary { background: var(--primary); color: var(--primary-foreground); }
+.account-primary:hover { background: color-mix(in srgb, var(--primary) 88%, var(--foreground)); }
+.account-ghost { background: var(--muted); color: var(--foreground); }
+[data-account-window] :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .account-plus-card, .account-swatch { transition: none; } }
+
+@media (max-width: 767px) {
+  .account-page-head { padding: 16px 56px 14px 18px; }
+  .account-page-head h2 { font-size: 21px; }
+  .account-profile-grid { grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 18px; }
+  .account-preview { position: static; display: grid; grid-template-columns: 110px minmax(0, 1fr); align-items: center; gap: 12px; }
+  .account-preview img { height: 140px; grid-row: span 2; border-radius: 16px; }
+  .account-preview:has(.account-look-selection) > img { grid-row: span 3; }
+  .account-look-actions [role="status"] { flex-basis: 100%; }
+  .account-section { padding: 16px; }
+  .account-row { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .account-actions { padding: 12px 18px 16px; }
+  .account-actions button { flex: 1; }
+  .account-settings-content { padding: 18px !important; }
+}
+
+.guest-avatar {
+  --avatar-color: var(--primary);
+  color: #23150d;
+}
+.guest-profile-trigger:has(+ :popover-open) {
+  background: var(--accent);
+}
+.guest-profile-panel {
+  position: fixed;
+  inset: auto auto 16px 76px;
+  width: min(264px, calc(100vw - 88px));
+  max-height: calc(100dvh - 32px);
+  margin: 0;
+  padding: 8px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 10px 26px rgb(0 0 0 / .19);
+}
+.guest-profile-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  padding: 5px 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.guest-profile-summary [data-guest-name] { overflow-wrap: anywhere; }
+.guest-profile-summary [data-guest-status],
+.guest-change-account .account-menu-label small { color: var(--chat-secondary-text); }
+.guest-change-account {
+  display: flex;
+  align-items: center;
+  background: var(--secondary);
+}
+.guest-change-account > svg { color: var(--primary-ink); }
+.guest-change-account:is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--secondary) 84%, var(--primary));
+}
+.guest-profile-footer {
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+.guest-profile-panel .account-sign-out {
+  min-height: 40px;
+  gap: 12px;
+  padding-inline: 10px;
+  border-radius: 12px;
+}
+.guest-profile-panel .account-sign-out > svg { width: 20px; }
+@media (max-width: 767px) {
+  .guest-profile-panel { inset: auto auto 12px 60px; }
+}
