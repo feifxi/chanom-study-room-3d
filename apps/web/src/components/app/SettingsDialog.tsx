@@ -7,7 +7,6 @@ import { useTheme } from 'next-themes';
 import { Bell, Crown, Gamepad2, KeyRound, Mic, Palette, Shield, Shirt, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { DISPLAY_NAME_MAX, type AvatarLook } from '@connecta/shared';
-import { PALETTES, usePalette } from '@/components/Providers';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -239,7 +238,6 @@ function Character() {
 
 function Appearance() {
   const { theme, setTheme } = useTheme();
-  const { palette, setPalette } = usePalette();
   return (
     <div className="flex flex-col gap-6">
       <section>
@@ -261,23 +259,6 @@ function Appearance() {
                 <span className={cn('flex-1 rounded-md', t === 'dark' ? 'bg-[#241c29]' : 'bg-white')} />
               </div>
               <p className="p-2 text-sm font-bold capitalize">{t}</p>
-            </button>
-          ))}
-        </div>
-      </section>
-      <section>
-        <p className="mb-2 text-sm font-extrabold">Colour</p>
-        <div className="flex flex-wrap gap-2">
-          {PALETTES.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => setPalette(p.id)}
-              className={cn(
-                'flex items-center gap-2 rounded-full border-2 px-3 py-1.5 text-sm font-bold',
-                palette === p.id ? 'border-primary bg-secondary' : 'border-border',
-              )}
-            >
-              <span className="size-4 rounded-full" style={{ background: p.swatch }} /> {p.label}
             </button>
           ))}
         </div>

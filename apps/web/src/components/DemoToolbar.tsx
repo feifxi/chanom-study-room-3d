@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { Monitor, Moon, Palette, Sun } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   CROWDS,
   goAwayNow,
@@ -24,7 +23,6 @@ import {
 import { nudgeQuests } from '@/lib/quests';
 import { cn } from '@/lib/utils';
 import { setPerfOverlay, usePerfOverlay } from '@/features/room3d/perf';
-import { PALETTES, usePalette } from './Providers';
 import { setViewer, useViewer, VIEWERS } from '@/lib/viewer';
 import { setPlusState, usePlus, type PlusState } from '@/lib/plus';
 
@@ -43,10 +41,9 @@ const PAGES = [
   ['Admin · Money', '/admin/money'],
 ] as const;
 
-/** Demo-only chrome: theme, palette, a crowd for the 3D room, 100 rooms on Home, and a jump to any page. Not part of the app design. */
+/** Demo-only chrome: theme, a crowd for the 3D room, 100 rooms on Home, and a jump to any page. Not part of the app design. */
 export function DemoToolbar() {
   const { theme, setTheme } = useTheme();
-  const { palette, setPalette } = usePalette();
   const crowd = useCrowd();
   const many = useManyRooms();
   return (
@@ -82,28 +79,6 @@ export function DemoToolbar() {
               <Icon className="size-4" />
               {label}
             </button>
-          ))}
-        </div>
-
-        <Title>Palette · {PALETTES.find((p) => p.id === palette)?.label}</Title>
-        <div className="mb-3 grid grid-cols-5 gap-1.5">
-          {PALETTES.map((p) => (
-            <Tooltip key={p.id}>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => setPalette(p.id)}
-                  aria-label={p.label}
-                  aria-pressed={palette === p.id}
-                  className={cn(
-                    'grid h-9 place-items-center rounded-xl border-2',
-                    palette === p.id ? 'border-foreground' : 'border-transparent hover:border-border',
-                  )}
-                >
-                  <span className="size-5 rounded-full shadow-sm" style={{ background: p.swatch }} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>{p.label}</TooltipContent>
-            </Tooltip>
           ))}
         </div>
 

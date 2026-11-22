@@ -97,7 +97,7 @@ export function PhotoMode({ roomName, onClose }: { roomName: string; onClose: ()
           <button
             onClick={() => (timer ? setCount(3) : void snap())}
             disabled={count > 0}
-            className="grid size-[68px] place-items-center rounded-full bg-white text-[#df6392] shadow-[0_0_0_5px_rgb(255_255_255/0.45),0_10px_26px_rgb(0_0_0/0.3)]"
+            className="grid size-[68px] place-items-center rounded-full bg-white text-primary shadow-[0_0_0_5px_rgb(255_255_255/0.45),0_10px_26px_rgb(0_0_0/0.3)]"
             aria-label={timer ? 'Take photo in 3 seconds' : 'Take photo'}
           >
             <Camera className="size-7" />

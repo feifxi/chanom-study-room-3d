@@ -353,5 +353,8 @@ decision is made or changed: one line, a date, and the reason.
   from a member is plain text rather than an error. Slow mode, the word filter and "new members
   wait" are stored but wait for moderation (feature 14). `pnpm dev` runs one compiler and both
   entry points (`apps/api/scripts/dev.mjs`).
+- **One theme: Thai tea orange** (2026-11-22, the owner, reverses the ten drink palettes): Thai tea
+  is Connecta's colour, so the app has it built in, in light and dark, and Settings → Appearance no
+  longer offers palettes. The demo keeps its palettes as a design record.
 - **Only the owner provisions** cloud resources. Agents suggest steps and do read-only checks.
 - **Music must be royalty-free** (Pixabay). Never rips from YouTube or Spotify.

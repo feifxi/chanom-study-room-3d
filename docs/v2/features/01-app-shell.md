@@ -125,7 +125,8 @@ Rules & safety. Members never open it: they get **About** (the room's facts and 
 
 ## Theme
 
-Light and dark, plus ten drink palettes, each with a light and dark version.
+Light and dark, in one brand colour: **Thai tea orange** (2026-11-22). There's no colour picker; the
+demo still has the ten drink palettes it was designed with, with Strawberry milk as its default.
 
 ## Backend notes
 
