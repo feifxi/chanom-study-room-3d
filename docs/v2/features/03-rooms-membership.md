@@ -3,8 +3,9 @@
 **Status:** built in the real app (2026-11-22): making rooms, Room settings, members and roles,
 Ask to join, invites and guest passes, kick, ban and time out, Discover's listed rooms; and with
 step 3, who's inside, unread counts, the 🔔 for join requests and being let in, time outs in chat,
-and inviting a friend from Friends or a DM card (feature 5). Waiting on later steps: the safety
-switches in 3D (the game server), uploading a thumbnail (it stays in your browser for now) and
+and inviting a friend from Friends or a DM card (feature 5); and with step 4, kick, ban, leaving,
+a new role or a new map take effect inside the 3D room at once. Waiting on later steps: the safety
+switches in 3D (guest voice with part 3), uploading a thumbnail (it stays in your browser for now) and
 reporting a room (feature 14). **Try it:** http://localhost:3000/home after `pnpm dev` (the demo is still at
 http://localhost:3100/home).
 

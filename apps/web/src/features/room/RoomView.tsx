@@ -22,7 +22,7 @@ import { useNow } from '@/lib/time';
 import { cn } from '@/lib/utils';
 import { useMusic } from '../music/useMusic';
 import type { LocalMotion } from '../room3d/Avatar';
-import { useRoomLook } from '@/features/place/roomLook';
+import { readLook, saveLook, useRoomLook } from '@/features/place/roomLook';
 import { MapMove } from './MapMove';
 import { useDayLight } from '../room3d/dayCycle';
 import { Joystick } from '../room3d/Joystick';
@@ -30,6 +30,8 @@ import { LabelBoard, LabelLayer, type SpotTag } from '../room3d/labels';
 import type { Hint } from '../room3d/LocalController';
 import type { LocalPlayerDriver } from '../room3d/LocalPlayerDriver';
 import { MockRoom, type MockPerson } from '../room3d/mockRoom';
+import { LiveRoom } from '../room3d/liveRoom';
+import type { GameRoom } from '@/features/game/useGame';
 import { QUALITY } from '../room3d/quality';
 import { RoomCanvas } from '../room3d/RoomCanvas';
 import { usePerfOverlay } from '../room3d/perf';
@@ -107,6 +109,7 @@ export default function RoomView({
   place,
   roomId,
   guestName,
+  game,
 }: {
   /** The room in the demo's old shape (asServer), until walking in is ported (build step 4) */
   server: Server;
@@ -114,6 +117,8 @@ export default function RoomView({
   place?: PlaceRoom;
   roomId: string;
   guestName: string | null;
+  /** The game server's room (build step 4): real people walk here. None: the demo's scripted people */
+  game?: GameRoom;
 }) {
   const router = useRouter();
   const serverId = server.id;
@@ -141,6 +146,7 @@ export default function RoomView({
   const room = useMemo(() => {
     // The map first: seats, paths and the scene all come from it (a live map change rebuilds the room)
     const map = setActiveMap(look.mapId);
+    if (game) return new LiveRoom(map, game, { name: myName, look: guest ? (loadGuest()?.look ?? GUEST_LOOK) : getMyLook() });
     const regulars = roomDef.people.length ? roomDef.people : ['ploy', 'ken'];
     const people: MockPerson[] = regulars.map((id) => ({ id, name: USERS[id]!.name, look: USERS[id]!.look, ...PRESETS[id] }));
     if (roomDef.allowGuests && !guest)
@@ -153,7 +159,20 @@ export default function RoomView({
     // A guest walks in with the character they picked on the invite page (client-only, so storage is safe here)
     const extra = crowd ? crowdPeople(Math.max(0, crowd - people.length - 1)) : [];
     return new MockRoom(map, { name: myName, look: guest ? (loadGuest()?.look ?? GUEST_LOOK) : getMyLook() }, people, extra);
-  }, [roomDef, guest, myName, crowd, look.mapId]);
+  }, [roomDef, guest, myName, crowd, look.mapId, game]);
+  useEffect(() => () => (room instanceof LiveRoom ? room.dispose() : undefined), [room]);
+  // People coming and going (a real room's are live; the mock's never change)
+  const peopleVersion = useSyncExternalStore(room.subscribe, room.getVersion, room.getVersion);
+  // The owner switched maps (Room settings): the game server moved everyone; follow it here too
+  useEffect(() => {
+    if (!game) return;
+    const follow = () => {
+      const mapId = game.state?.mapId;
+      if (mapId && mapId !== readLook(lookId, mapId).mapId) saveLook(lookId, { ...readLook(lookId, mapId), mapId });
+    };
+    game.onStateChange(follow);
+    return () => game.onStateChange.remove(follow);
+  }, [game, lookId]);
 
   // A look saved in Settings → My character swaps your character live for everyone (no rejoin)
   const myLook = useMyLook();
@@ -195,7 +214,7 @@ export default function RoomView({
     const id = setInterval(() => hub.tick(Date.now()), 250);
     // Demo: someone starts Pick a Side a little after you arrive (or from the Demo tab), unless you're
     // already at a game: it would take the friends you're gathering
-    const t = setTimeout(() => !hub.mine('me') && hub.scriptPickASide(), 25_000);
+    const t = setTimeout(() => !game && !hub.mine('me') && hub.scriptPickASide(), 25_000);
     const onDemo = () => hub.scriptPickASide();
     const onWatch = () => hub.scriptWatch();
     const onShare = () => hub.scriptShare();
@@ -222,7 +241,7 @@ export default function RoomView({
       window.removeEventListener(SLAVE_EVENT, onSlave);
       hub.dispose();
     };
-  }, [hub]);
+  }, [hub, game]);
 
   const [hint, setHint] = useState<Hint | null>(null);
   const [bubbles, setBubbles] = useState<Record<string, Bubble>>({});
@@ -333,8 +352,10 @@ export default function RoomView({
     setLines((l) => [...l, { id: `${Date.now()}-${id}`, name, text }]);
   }, []);
 
-  // A little life: someone talks on voice now and then, someone says hi
+  // A little life: someone talks on voice now and then, someone says hi. Demo people only: in a real
+  // room it would put words in real people's mouths
   useEffect(() => {
+    if (game) return;
     const ids = [...room.state.players.keys()].filter((id) => id !== 'me');
     const talker = ids.find((id) => id === 'ploy') ?? ids[0];
     const t1 = setTimeout(() => talker && say(talker, room.state.players.get(talker)!.name, 'come sit with us! 🛋️'), 2500);
@@ -343,7 +364,7 @@ export default function RoomView({
       clearTimeout(t1);
       clearInterval(t2);
     };
-  }, [room, say]);
+  }, [room, say, game]);
 
   // Which private zone you're standing in, and whether you've gone quiet long enough to be away
   useEffect(() => {
@@ -379,7 +400,8 @@ export default function RoomView({
     };
   }, []);
 
-  const ids = useMemo(() => [...room.state.players.keys()], [room]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- peopleVersion says the keys changed
+  const ids = useMemo(() => [...room.state.players.keys()], [room, peopleVersion]);
   const npcIds = useMemo(() => [...room.state.npcs.keys()], [room]);
   const me = room.state.players.get('me')!;
   // The demo crowd's list rows come from crowdPeople (statuses, mics); their avatars walk in 3D
@@ -387,7 +409,8 @@ export default function RoomView({
     .filter((id) => !id.startsWith('crowd-'))
     .map((id) => {
       const p = room.state.players.get(id)!;
-      const isGuest = id.startsWith('guest') || (id === 'me' && guest);
+      const isGuest = game ? p.role === 'guest' : id.startsWith('guest') || (id === 'me' && guest);
+      const role = game ? p.role : server.roles[id] === 'Owner' ? 'owner' : server.roles[id] === 'Mod' ? 'mod' : undefined;
       const status =
         id === 'me' && stage
           ? '📢 Talking to everyone'
@@ -415,7 +438,7 @@ export default function RoomView({
         you: id === 'me',
         friend: id !== 'me' && !!USERS[id],
         // Literals, not the value from server.roles: React Compiler would treat the list as aliasing the server
-        role: server.roles[id] === 'Owner' ? 'Owner' : server.roles[id] === 'Mod' ? 'Mod' : undefined,
+        role: role === 'owner' ? 'Owner' : role === 'mod' ? 'Mod' : undefined,
         micOn: id === 'me' ? mic && !deaf : id === 'mai' || speaking.has(id),
         deafened: id === 'me' ? deaf : id === 'jod',
         speaking: speaking.has(id),
@@ -735,7 +758,12 @@ export default function RoomView({
     </nav>
   );
   return (
-    <LeaveRoomGuard roomName={server.name} focusing={pomo.phase === 'focus'} onLeave={leave}>
+    <LeaveRoomGuard
+      roomName={server.name}
+      focusing={pomo.phase === 'focus'}
+      onLeave={leave}
+      fallback={guest ? (common ? '/discover' : '/') : '/home'}
+    >
       <div
         className="fixed inset-0 flex overflow-hidden transition-[background] duration-1000"
         style={{ background: `linear-gradient(180deg, ${light.background[0]}, ${light.background[1]})` }}

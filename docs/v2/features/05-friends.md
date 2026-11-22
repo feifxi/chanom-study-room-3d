@@ -3,7 +3,7 @@
 **Status:** built in the real app (2026-11-22): friends, requests, blocking, the friend link, "Who
 can send me friend requests", the message button, and presence: "Out in rooms", Online, Offline
 with last seen, "Ask to join", "Invite to a room", "Appear offline" and "Show what I'm doing".
-Until the game server (step 4), being "in a room" means having its 3D page open. Still to come:
+Being "in a room" means being connected to it on the game server (step 4). Still to come:
 "Add friend" in a room's people list (step 4), the activity text (with each activity's port) and
 Gift Plus (with Plus). **Try it:** http://localhost:3000/home/friends in two browsers after
 `pnpm dev`, one walking into a room (the demo: http://localhost:3100/home/friends).
@@ -75,14 +75,15 @@ and the DM header show friends' presence dots.
   asking again doesn't put it back in front of them. A request to someone who blocked you is kept
   but never shown to them, so it looks the same as being ignored.
 - **Presence** (`apps/api/src/presence/`): the gateway reports each open tab to `PresenceService`
-  (connect, disconnect, and the tab's `presence` message: the room open in 3D and how long since
-  the last input, sent on change and every minute). Redis keeps each person's tabs
+  (connect, disconnect, and the tab's `presence` message: how long since the last input, sent
+  when you come back and every minute), plus the game server's connections (the room). Redis keeps each person's tabs
   (`presence:tabs:<id>`), what friends last heard (`presence:last:<id>`) and who's inside each
   room (`presence:inside:<roomId>`); a tab silent for 2.5 minutes is dropped (a crashed gateway).
   Changes go only to friends, each seeing their own view: a private room they're not in has no
   name. "Appear offline" (`users.appear_offline`) shows you offline and out of rooms' "inside now";
-  "Show what I'm doing" is `users.show_activity`; only `users.last_seen_at` is stored. In step 4
-  the game server reports the room instead of the 3D page.
+  "Show what I'm doing" is `users.show_activity`; only `users.last_seen_at` is stored. The room
+  comes from the game server (each connection a tab, `game:<session>`, via Redis; see
+  [06-3d-room.md](06-3d-room.md#backend-notes)); browser tabs report only how active you are.
 - **Reading it:** `GET /api/friends` carries each friend's `presence` (status, last seen, activity,
   room); `GET /api/rooms` and `GET /api/rooms/:id` carry `inside` (members only). A tab sends
   `watch:inside` with your room ids to get `inside` events when the numbers change.

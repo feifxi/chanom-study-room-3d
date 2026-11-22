@@ -33,10 +33,11 @@ log. Keep them current in the same change that makes them stale.
 
 ## What's next
 
-Step 4 of the plan, **walking in a room**: the Colyseus game server (`apps/game`), with V1's
-movement prediction and reconciliation copied in; voice and screen share; maps. It also takes over
-"which room you're in" from the 3D page (presence, feature 5). Steps 1–3 (the skeleton; accounts and
-rooms; the gateway: friends, chat, pictures, DMs, presence and the 🔔 inbox) are done. The plan's
+Step 4 of the plan, **walking in a room**, in five parts. Part 1 is done: the Colyseus game server
+(`apps/game`) with a signed join ticket from the API, V1's movement, capacity, presence and live
+room changes. Next is part 2: bubbles, reactions, Away, the real people list, Talk to everyone;
+then voice, screen share and server-run cats. Steps 1–3 (the skeleton; accounts and rooms; the
+gateway: friends, chat, pictures, DMs, presence and the 🔔 inbox) are done. The plan's
 [What's left](docs/v2-plan.md#whats-left) is the source of truth.
 
 ## Working agreements
@@ -127,8 +128,10 @@ pnpm install
 docker compose up -d                 # Postgres :5433, Redis :6379, LiveKit :7880, Mailpit :8025,
                                      # AWS Emulator :9297 (the first run builds its image)
 cp apps/api/.env.example apps/api/.env
+cp apps/game/.env.example apps/game/.env   # same GAME_SECRET as the API's
 pnpm db:migrate && pnpm db:seed      # schema, then the demo people and the S3 bucket
-pnpm dev                             # web :3000, API :4000 (Swagger UI at /api/docs), gateway :4001
+pnpm dev                             # web :3000, API :4000 (Swagger UI at /api/docs), gateway :4001,
+                                     # game server :4002 (the web app proxies /api, /live and /game)
 pnpm check                           # what CI runs: prettier --check, then typecheck + lint + tests
 pnpm build
 pnpm format                          # prettier --write
@@ -146,7 +149,7 @@ people sign in as `<handle>@connecta.test` (`maimai@connecta.test`). Google and 
 their keys in `apps/api/.env` (see `.env.example`).
 
 Single tests: `cd apps/api && npx vitest run src/accounts`, `cd packages/shared && npx vitest run
-src/navigation.test.ts`.
+src/navigation.test.ts`, `cd apps/game && npx vitest run` (boots the game server on :4092).
 
 The demo has its own scripts, which turbo and CI skip:
 
@@ -166,18 +169,23 @@ apps/
   api/       NestJS 12: REST + OpenAPI, sign-in, jobs, and a second entry point, the live
              gateway (src/gateway.ts: Socket.IO at /live, chat, typing and presence). Owns the
              database: Prisma schema + migrations
-  game/      (build step 4) Colyseus rooms: movement, seats, NPCs, activities
+  game/      Colyseus 0.18: one game room per Connecta room (movement, seats, capacity); trusts
+             only the API's signed join ticket, talks to the API and gateway through Redis
 packages/
-  shared/    Built to dist/ (tsc; `pnpm dev` watches it): account rules (handles, age), avatars, map
-             world types, movement rules, collisions, A* navigation, NPC types. Used by the web
-             app, the demo, the API and (later) the game server
+  shared/    Built to dist/ (tsc; `pnpm dev` watches it): account rules (handles, age), avatars, the
+             maps' data (`@connecta/shared/maps`), the game protocol, map world types, movement
+             rules, collisions, A* navigation, NPC types. Used by the web
+             app, the demo, the API and the game server
 docker/      Images built for local services (the AWS Emulator, which AWS ships only as a package)
 demo/        The design sandbox (mock data only)
 docs/        The plan, the decision log, the specs
 ```
 
 - **Live events:** a REST write that others should see live calls `LiveService` (`toRoom`,
-  `toUser`); the gateway delivers it through Redis. The gateway itself writes nothing but presence
+  `toUser`); the gateway delivers it through Redis. A write the people inside a 3D room should feel
+  (kick, ban, leave, role, map, delete) also calls `GameService.roomEvent`, which the game server
+  hears through Redis; the game server reports who's in which room the same way, and the gateway
+  writes it into presence. The gateway itself writes nothing but presence
   (`PresenceService`: each tab's state in Redis, "last seen" in Postgres), which the API reads for
   lists. API tests boot the gateway too (`createTestGateway`), so they need Redis as well as Postgres.
 - **Background jobs:** BullMQ on Redis (`@nestjs/bullmq`), workers in the API process for now; the

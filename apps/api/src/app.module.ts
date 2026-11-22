@@ -17,6 +17,7 @@ import { NotificationsModule } from './notifications/notifications.module.js';
 import { PresenceModule } from './presence/presence.module.js';
 import { StorageModule } from './storage/storage.module.js';
 import { HealthModule } from './health/health.module.js';
+import { GameModule } from './game/game.module.js';
 import { MailModule } from './mail/mail.module.js';
 import { MailService } from './mail/mail.service.js';
 import { PrismaModule } from './prisma/prisma.module.js';
@@ -57,6 +58,7 @@ import { PrismaService } from './prisma/prisma.service.js';
     LiveModule,
     PresenceModule,
     NotificationsModule,
+    GameModule,
     StorageModule,
   ],
 })

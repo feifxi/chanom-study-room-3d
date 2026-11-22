@@ -1,12 +1,15 @@
-/**
- * One person in a 3D room, as clients see them. A placeholder carried over so the 3D scene compiles:
- * the real game protocol is designed with the game server (port step 4) and will replace it.
- */
+/** One person in a 3D room, as clients see them (the game server's state, `apps/game`). */
 
 export const PLAYER_STATUSES = ['idle', 'focus', 'break', 'away'] as const;
 export type PlayerStatus = (typeof PLAYER_STATUSES)[number];
 
+/** Your place in the room you walked into; guests came with a guest pass. */
+export type PlayerRole = 'owner' | 'mod' | 'member' | 'guest';
+
 export interface PlayerView {
+  /** Their account, for the people list (profile, add friend); '' for the demo's scripted people */
+  userId: string;
+  role: PlayerRole;
   name: string;
   /** JSON-encoded AvatarLook. */
   look: string;

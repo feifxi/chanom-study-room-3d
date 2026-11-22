@@ -8,6 +8,14 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./maps": {
+      "types": "./dist/maps/index.d.ts",
+      "default": "./dist/maps/index.js"
+    },
+    "./maps/*": {
+      "types": "./dist/maps/*.d.ts",
+      "default": "./dist/maps/*.js"
     }
   },
   "scripts": {

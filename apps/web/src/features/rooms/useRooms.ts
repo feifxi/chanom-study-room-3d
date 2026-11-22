@@ -113,6 +113,8 @@ export const roomsApi = {
     ok(await api.PUT('/api/rooms/{id}/owner', { params: { path: { id } }, body: { userId } })),
   myPlace: async ({ id, ...body }: Schemas['MyPlaceBody'] & { id: string }) =>
     ok(await api.PATCH('/api/rooms/{id}/me', { params: { path: { id } }, body })),
+  /** "Full · notify me": a 🔔 item when someone leaves */
+  notifyWhenSpace: async (id: string) => ok(await api.POST('/api/rooms/{id}/space', { params: { path: { id } } })),
   visit: async (id: string) => ok(await api.PUT('/api/rooms/{id}/visit', { params: { path: { id } } })),
   join: async (id: string) => ok(await api.POST('/api/rooms/{id}/join', { params: { path: { id } } })),
   leave: async (id: string) => ok(await api.DELETE('/api/rooms/{id}/me', { params: { path: { id } } })),
@@ -142,3 +144,11 @@ export const roomsApi = {
 /** The full link for an invite: /i/<code> for members, /g/<code> for guest passes, on this site. */
 export const inviteUrl = (invite: Pick<Invite, 'code' | 'kind'>) =>
   `${typeof window === 'undefined' ? '' : window.location.origin}/${invite.kind === 'guest' ? 'g' : 'i'}/${invite.code}`;
+
+/** "Full · notify me" on a full room's card or page. */
+export function notifyWhenSpace(id: string, name: string) {
+  roomsApi.notifyWhenSpace(id).then(
+    () => toast.success(`We’ll tell you when there’s space in ${name}`),
+    () => toast.error('Couldn’t set that up. Try again?'),
+  );
+}

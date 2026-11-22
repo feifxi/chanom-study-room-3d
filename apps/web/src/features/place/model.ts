@@ -50,7 +50,8 @@ export function placeRoom(room: Room): PlaceRoom {
     map,
     people: room.inside,
     inside,
-    full: inside >= room.capacity,
+    // The owner and mods always fit (the game server lets them in past capacity)
+    full: inside >= room.capacity && room.me.role !== 'owner' && room.me.role !== 'mod',
     myRole: room.me.role,
     canEdit: room.me.role === 'owner' || room.me.role === 'mod',
     visibility: room.visibility,

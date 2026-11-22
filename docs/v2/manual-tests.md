@@ -110,3 +110,35 @@ builder's own browser runs are the safety net.
 - [ ] Inside 3D, new bell items and DMs pop up as toasts.
 - [ ] Mute a DM (its "…"): 🔕 in the list, its unread greyed and out of the header badge, no
       toasts in 3D. Unmute brings them back.
+
+## Step 4: walking in a room
+
+### Walking in for real (part 1)
+
+Start everything with `pnpm dev` (the game server is on :4002, reached at `/game`). Two people in
+two browsers, members of the same room.
+
+- [ ] Both walk in: each sees the other's character and name; walking (keys, click to walk, the
+      phone joystick) shows smoothly on the other screen; sitting and standing too, and a seat
+      someone's on can't be taken.
+- [ ] The Room card's "N here", Home's `inside/capacity` and the room page's "Inside now" count both
+      of you; friends see you "Out in rooms".
+- [ ] Leave (the Room card, or Back → Leave room): you're out of "inside now" at once. Closing the
+      tab: out after about 20 seconds (your place is held in case the network drops).
+- [ ] Open the same room in a second tab: the first says "You're in … in another tab"; **Walk in
+      here** takes it back.
+- [ ] The owner kicks you while you're inside: "You were taken out of …". Ban: "You can't come
+      into …", and walking in again stays refused.
+- [ ] The owner makes you a mod while you're inside: the people list shows "Mod" by your name at
+      once (your own 🛡️ Room tools appear the next time you walk in). Leaving the room from Home
+      sends your open 3D tab out ("… isn't there any more"); deleting the room sends everyone out.
+- [ ] The owner switches the map in Room settings: everyone moves to the new map's door, nobody
+      reloads.
+- [ ] Room settings → people at once lower than who's inside: the next member gets "… is full"
+      (with Read the chat and Notify me); the owner and mods still walk in. **Notify me** (here, on
+      Home's "Full · notify me" or the room page) puts "There's space in … now" in the 🔔 once
+      someone leaves.
+- [ ] Back inside a room asks "Leave …?"; Stay keeps you in, Leave room goes Home.
+- [ ] A guest from a guest link (`/g/<code>`) walks in with their character and shows as a guest;
+      after the pass ends (24 h) they can't walk in again.
+- [ ] Inside 3D, 🔔 items and DMs still arrive as toasts.

@@ -783,6 +783,61 @@
         ]
       }
     },
+    "/api/rooms/{id}/ticket": {
+      "post": {
+        "operationId": "RoomsController_ticket",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ticket"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/rooms/{id}/space": {
+      "post": {
+        "operationId": "RoomsController_notifyWhenSpace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
     "/api/rooms/{id}/join": {
       "post": {
         "operationId": "RoomsController_join",
@@ -3348,6 +3403,22 @@
           }
         }
       },
+      "Ticket": {
+        "type": "object",
+        "properties": {
+          "ticket": {
+            "type": "string"
+          },
+          "place": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket",
+          "place"
+        ],
+        "additionalProperties": false
+      },
       "AskBody": {
         "type": "object",
         "properties": {
@@ -4481,7 +4552,8 @@
               "join_request",
               "joined",
               "mention",
-              "messages"
+              "messages",
+              "space"
             ]
           },
           "text": {

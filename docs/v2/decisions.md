@@ -104,6 +104,12 @@ decision is made or changed: one line, a date, and the reason.
   are close.
 - **Changing your look inside a room is live** (no rejoin). The "Bouncy animations" switch was
   removed: everyone gets the bounce.
+- **Back asks "Leave {room}?"** (2026-11-22, the owner): Stay is the default, as for links out.
+  Keeping the connection alive above the routes instead was turned down: leaving the 3D page
+  should mean leaving the room.
+- **One of you per room, the newest tab wins** (2026-11-22): opening a room you're already in takes
+  it over and the old tab says "You're in … in another tab" with **Walk in here**. Refusing the new
+  tab instead would trap someone whose old tab is on another device.
 
 ### Activities
 
@@ -385,6 +391,19 @@ decision is made or changed: one line, a date, and the reason.
   "Every message" setting is real, as one item per room that counts up while unread, not one per
   message. Muting a DM takes it out of the Messages badge and its toasts; it still shows its unread
   count in the list. Inside a room (3D open) inbox items and unmuted DMs also arrive as toasts.
+- **Step 4, walking in a room, in five parts** (2026-11-22, the owner): 1. walking in for real
+  (the game server, V1's movement, capacity, presence, live kick, ban and map changes); 2. bubbles,
+  reactions, Away, the real people list, Talk to everyone, the reset when a room empties; 3. LiveKit proximity voice (the 12 nearest, server-enforced private zones, deafen, guest voice); 4. screen share; 5. server-run cats and study buddies (they stay in step 4, not later).
+  Activities, games, focus and the study panel stay mock until step 5.
+- **The game server trusts a signed join ticket, not the database** (2026-11-22, the owner): the
+  API checks membership, guest passes and bans and signs a one-minute ticket (HS256, `GAME_SECRET`)
+  with the account, role, name, look, capacity and map; the game server only checks the signature.
+  Room changes (kick, ban, leave, role, map, delete) reach it through Redis, and it reports who's in
+  which room through Redis for the gateway to write, so the gateway stays presence's one writer.
+  Rejected: the game server reading Postgres or cookies (a second copy of the rules, and of the auth
+  setup).
+- **The owner and mods always fit** (2026-11-22, from spec 01): capacity turns away members and
+  guests only; the game server's hard cap sits well above it (250).
 - **Background jobs are BullMQ on Redis** (2026-11-22): the pictures worker is the first; it runs
   inside the API process for now, with a per-environment prefix so tests never hand jobs to a
   running dev server. Redis was already there for the gateway.

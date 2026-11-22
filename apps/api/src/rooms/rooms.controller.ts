@@ -19,6 +19,7 @@ import {
   RoleBodySchema,
   RoomSchema,
   RoomSettingsBodySchema,
+  TicketSchema,
   TimeoutBodySchema,
   TransferBodySchema,
   type Ban,
@@ -28,6 +29,7 @@ import {
   type Member,
   type Room,
 } from './rooms.schemas.js';
+import type { Ticket } from './rooms.schemas.js';
 import { RoomsService } from './rooms.service.js';
 
 const Id = { schema: z.string().max(40) };
@@ -124,6 +126,22 @@ export class RoomsController {
   @ApiNoContentResponse()
   visit(@Session() session: UserSession, @Param('id', Id) id: string): Promise<void> {
     return this.rooms.visit(id, session.user.id);
+  }
+
+  /** A one-minute pass into the room's game server (walking in, 3D). */
+  @Post(':id/ticket')
+  @HttpCode(200)
+  @ApiOkResponse({ standardSchema: TicketSchema })
+  ticket(@Session() session: UserSession, @Param('id', Id) id: string): Promise<Ticket> {
+    return this.rooms.ticket(id, session.user.id);
+  }
+
+  /** The room is full: a 🔔 item when someone leaves. */
+  @Post(':id/space')
+  @HttpCode(204)
+  @ApiNoContentResponse()
+  notifyWhenSpace(@Session() session: UserSession, @Param('id', Id) id: string): Promise<void> {
+    return this.rooms.notifyWhenSpace(id, session.user.id);
   }
 
   /** Join an Open room. */

@@ -13,26 +13,23 @@ export type Presence = Schemas['Presence'];
 /** The tab says it's still there this often (the gateway forgets a tab silent for 2.5 minutes). */
 const REPORT_MS = 60_000;
 
-// This tab's state: the room open in 3D, and the last input (Away is 10 minutes without any, in every tab)
+// This tab's state: the room open in 3D (for toasts), and the last input (Away is 10 minutes without
+// any, in every tab)
 let roomId: string | null = null;
 let lastInput = Date.now();
-let report: (() => void) | null = null;
 
 /** This tab has a room open in 3D (inbox items and DMs arrive as toasts there). */
 export const inRoomNow = () => roomId !== null;
 
 /**
- * While the 3D room is open, this tab is "in" it (presence, feature 5). In build step 4 the game
- * server takes this over.
+ * While you're inside a room in 3D, this tab shows inbox items and DMs as toasts. Which room you're
+ * in, for friends and "inside now", comes from the game server (build step 4), not from the tab.
  */
 export function useInRoom(id: string | null) {
   useEffect(() => {
     roomId = id;
-    report?.();
     return () => {
-      if (roomId !== id) return;
-      roomId = null;
-      report?.();
+      if (roomId === id) roomId = null;
     };
   }, [id]);
 }
@@ -51,9 +48,9 @@ export function PresenceReporter() {
     if (!on) return;
     const socket = liveSocket();
     const send = () => {
-      if (socket.connected) socket.emit('presence', { roomId, idleMs: Date.now() - lastInput });
+      // How active you are; the room comes from the game server's own connection
+      if (socket.connected) socket.emit('presence', { roomId: null, idleMs: Date.now() - lastInput });
     };
-    report = send;
     // Back after a quiet minute or more: tell friends now, not at the next minute
     const onInput = () => {
       const quiet = Date.now() - lastInput > REPORT_MS;
@@ -88,7 +85,6 @@ export function PresenceReporter() {
       socket.off('connect', onConnect);
       socket.off('presence', onPresence);
       socket.off('inside', onInside);
-      if (report === send) report = null;
     };
   }, [on, client]);
 

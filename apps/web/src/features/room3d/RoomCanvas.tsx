@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useSyncExternalStore } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -64,7 +64,10 @@ export function RoomCanvas({
   myLookVersion = 0,
   myLook,
 }: Props) {
-  const ids = useMemo(() => [...room.state.players.keys()], [room]);
+  // People coming and going in a real room (the mock's never change)
+  const peopleVersion = useSyncExternalStore(room.subscribe, room.getVersion, room.getVersion);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- peopleVersion says the keys changed
+  const ids = useMemo(() => [...room.state.players.keys()], [room, peopleVersion]);
   const npcIds = useMemo(() => [...room.state.npcs.keys()], [room]);
   const map = activeMap();
   const SPAWN = map.spawn;

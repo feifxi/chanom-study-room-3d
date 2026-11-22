@@ -1,8 +1,14 @@
 # 6. The 3D room
 
-**Status:** decided and built in the demo. **Try it:**
-http://localhost:3100/servers/chanom/rooms/library: click the floor to walk, step onto the Fireside
-rug, type a bubble, open 🛡️ Room → Talk to everyone, and Demo tab → "Go away now".
+**Status:** decided and built in the demo. In the real app (2026-11-22, build step 4 part 1) you
+walk in for real: the game server (`apps/game`) holds who's here, movement, seats, capacity and
+live kick, ban, role and map changes. Still the demo's: bubbles, reactions, Away, the people list's
+actions and Talk to everyone (part 2), voice (part 3), screen share (part 4), the cats and study
+buddies (part 5; each browser has its own cats until then), and activities, focus and the study
+panel (step 5). **Try it:** http://localhost:3000/home → a room → Walk in, in two browsers after
+`pnpm dev` (the demo: http://localhost:3100/servers/chanom/rooms/library: click the floor to walk,
+step onto the Fireside rug, type a bubble, open 🛡️ Room → Talk to everyone, and Demo tab → "Go away
+now").
 
 Everything V1 had, plus click to walk, stereo voice for crowds, private zones, away, and an
 announcement mode for owners and mods. The HUD around the room is in
@@ -79,8 +85,12 @@ focus timer, so it must never happen by accident.
 - When a link out is really needed (a guest's Sign up), it asks **"Leave {room}?"** with **Stay** as
   the default. Demo: `LeaveRoomLink` and `useLeaveRoom().ask(href)` in `features/room/LeaveRoom.tsx`.
 - Closing or reloading the tab shows the browser's "Leave site?" prompt.
-- **Not covered yet:** the browser Back button. In the real app the room connection should live
-  above the routes, so Back keeps you connected.
+- **Back asks too** (2026-11-22): the browser's Back or a phone's swipe shows the same "Leave
+  {room}?" with Stay as the default; Leave room then goes Home (Discover or the front page for
+  guests). A copy of the page sits on top of the history so Back lands on it and asks.
+- **Can't walk in, or sent out:** a card over the room's picture says why, mood first, with the one
+  next step: full (Notify me, Read the chat), removed by a mod, banned, in another tab (Walk in
+  here), the room is gone, or the room can't be reached (Try again).
 
 ## What resets
 
@@ -139,6 +149,30 @@ under 0.6M.
 
 ## Backend notes
 
+- **The game server** (`apps/game`, Colyseus 0.18, port 4002, reached at `/game` on the web origin):
+  one Colyseus room per Connecta room, matched by the join option `place` (Colyseus reserves
+  `roomId` and silently drops it from filters). It never reads the database:
+  - **Join ticket:** the web app asks `POST /api/rooms/:id/ticket` (members, and guests while their
+    pass lasts; not the banned) for a one-minute HS256 ticket signed with `GAME_SECRET`: account,
+    room, name, look, role, capacity and map. `onAuth` checks it.
+  - **Capacity:** members and guests are turned away at capacity ("full"); the owner and mods
+    always fit (a hard cap of 250 sits above). A leave after someone was turned away publishes
+    "space", and the API sends the 🔔 item to everyone who pressed Notify me (`POST
+/api/rooms/:id/space`, kept 6 hours).
+  - **One of you per room:** a newer connection for the same account takes over; the older one is
+    closed with "in another tab". A dropped connection keeps your place for 20 s (the SDK
+    reconnects by itself).
+  - **Room changes from the API** go through Redis (`game:rooms`): kick, ban and leaving close your
+    connection with a reason (WebSocket codes 4001–4004); a role change shows at once; a new map
+    moves everyone to its door; a deleted room sends everyone out.
+  - **Presence:** each game connection is a tab of its own (`game:<session>`) that the game server
+    reports through Redis (`game:presence`) and the gateway writes, refreshed every minute. Your
+    browser tabs still report how active you are (Away), never the room.
+  - **Movement:** V1's rules: a refilling speed budget (running speed × 1.6 slack), clamped to the
+    map's bounds; sit within reach of a free seat; stand at the seat's stand-up spot; moving stands
+    you up. The client predicts and reconciles with `moveSeq` as in V1.
+  - **The maps' data** (seats, walls, zones, the door) lives in `packages/shared/src/maps`, so the
+    web app and the game server read the same map; the web app adds each map's 3D look.
 - **Click to walk** is client-only: it sends the same `move` messages as keys, so the server's speed
   budget and collisions still apply.
 - **Zones** come from the map file. The game server knows who's in which zone and sets LiveKit

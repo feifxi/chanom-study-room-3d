@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { PersonSchema } from '../rooms/rooms.schemas.js';
 
-export const NOTIFICATION_KINDS = ['friend_request', 'friend_accepted', 'join_request', 'joined', 'mention', 'messages'] as const;
+export const NOTIFICATION_KINDS = ['friend_request', 'friend_accepted', 'join_request', 'joined', 'mention', 'messages', 'space'] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
 /** One item in the 🔔 inbox. */

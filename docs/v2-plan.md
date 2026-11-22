@@ -5,7 +5,7 @@ communities hang out, study and play together. This page is the overview: status
 what each feature is, and what's left. The details are in one spec per feature
 (`docs/v2/features/`), the reasons in [decisions.md](v2/decisions.md).
 
-## Status (2026-11-21)
+## Status (2026-11-22)
 
 - Features 1–12, 14 and 15 are decided and built in `demo/`, a frontend-only prototype with mock
   data ([demo guide](v2/demo-guide.md)). 13 was dropped.
@@ -13,7 +13,8 @@ what each feature is, and what's left. The details are in one spec per feature
   and dark mode.
 - **The real app is being built fresh** in `apps/` and `packages/` (V1 was removed from `main`;
   it's at tag `v1.0.0`). Steps 1 and 2 (the skeleton; accounts and rooms) are done; step 3, the
-  gateway, is done too; step 4, walking in a room, is next. Nothing is deployed.
+  gateway, is done too; step 4, walking in a room, is under way (part 1 of 5 done). Nothing is
+  deployed.
 
 | #   | Feature                                 | Status  | Spec                                                                   |
 | --- | --------------------------------------- | ------- | ---------------------------------------------------------------------- |
@@ -69,8 +70,18 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
      room's page, and the "Ask to join" and "Invite to a room" DM cards.
    - ~~The notification bell~~ done 2026-11-22: the 🔔 inbox (friend requests, join requests,
      mentions, a room's "Every message" as one growing item), toasts inside a room, muting a DM.
-4. **Walking in a room:** the Colyseus game server, with V1's movement prediction and
-   reconciliation copied in; voice and screen share; maps.
+4. **Walking in a room:** the Colyseus game server (`apps/game`), with V1's movement prediction and
+   reconciliation copied in; voice and screen share; maps. Five parts
+   ([why](v2/decisions.md#engineering-and-infra)):
+   - ~~Walking in for real~~ done 2026-11-22: a signed join ticket from the API, one game room per
+     room, movement and seats, capacity (the owner and mods always fit) with **Full · notify me**,
+     presence from the game server, kick, ban, roles and the live map switch, one of you per room,
+     and Back asks "Leave …?". The maps' data moved to `packages/shared`.
+   - Bubbles and typing, reactions, Away 💤, the real people list, Talk to everyone, the reset when
+     a room empties.
+   - LiveKit proximity voice: the 12 nearest, server-enforced private zones, deafen, guest voice.
+   - Screen share at a table or the TV, with its sound.
+   - Server-run cats and study buddies (V1's NpcDirector).
 5. **The rest, a feature at a time:** activities and table games, Plus, coins and quests, focus,
    Common and open rooms, moderation, the editor and admin site.
 6. **The seed:** one fill of all the data (people, rooms, members, friends, DMs…) for testing the

@@ -2,8 +2,8 @@
 
 **Status:** decided and built in the demo. In the real app (2026-11-22) the header, Home (your
 rooms with who's inside, Friends out right now), Friends, Messages and the 🔔 inbox are on the API;
-the inbox has friend requests, join requests, being let in, @mentions and a room's "Every message"
-so far (the other kinds come with their features). **Try it:** http://localhost:3000/home after
+the inbox has friend requests, join requests, being let in, @mentions, a room's "Every message"
+and space in a full room so far (the other kinds come with their features). **Try it:** http://localhost:3000/home after
 `pnpm dev` (the demo: http://localhost:3100/home)
 
 The shell follows Gather, not Discord: **the room is the app.** There's no server page and no
@@ -141,7 +141,10 @@ demo still has the ten drink palettes it was designed with, with Strawberry milk
 - **A room's page doesn't join Colyseus:** only the chat and presence gateway plus the REST API, so
   reading a room from a phone costs almost nothing.
 - **Home's live data** (who's inside, unread) comes from the presence gateway, not polling rooms.
-- **Capacity** is enforced by Colyseus at join (`maxClients` from the owner's plan and map size).
+- **Capacity** is enforced by the game server at join, from the ticket (the owner's plan, the map
+  size and the room's own limit); the owner and mods always fit. **Full · notify me** on a card,
+  the room's page or the "full" card puts a 🔔 "There's space in … now" item in once someone leaves
+  ([06-3d-room.md](06-3d-room.md#backend-notes)).
 - **Room pictures:** one static image per template to start; periodic snapshots later.
 - **Inbox** (`apps/api/src/notifications/`): `notifications(id, user_id, kind, payload jsonb,
 group_key, created_at, read_at)`, written by the API where things happen (friends, rooms, chat),

@@ -20,6 +20,7 @@ export default defineConfig({
       DATABASE_URL: TEST_DATABASE_URL,
       TEST_DATABASE_URL,
       AUTH_SECRET: 'test-secret-that-is-at-least-32-characters',
+      GAME_SECRET: 'test-game-secret-that-is-at-least-32-chars',
       WEB_ORIGIN: 'http://localhost:3000',
     },
   },

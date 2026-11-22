@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/compone
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useMe } from '@/features/account/useMe';
-import { ROOMS_KEY, roomsApi, useListedRooms, useMyRooms, useRoomAction } from '@/features/rooms/useRooms';
+import { notifyWhenSpace, ROOMS_KEY, roomsApi, useListedRooms, useMyRooms, useRoomAction } from '@/features/rooms/useRooms';
 import { api } from '@/lib/api/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
@@ -359,7 +359,7 @@ function RoomCard({ room, pinned, unread, menu }: { room: PlaceRoom; pinned: boo
           {room.full ? (
             // Full is full: the chat still works, and you can ask to be told when a spot opens
             <Button
-              onClick={() => toast.success(`We’ll tell you when there’s space in ${room.name}`)}
+              onClick={() => notifyWhenSpace(room.id, room.name)}
               className="rounded-full bg-white/90 font-extrabold text-[#45323d] hover:bg-white"
             >
               <Bell /> Full · notify me

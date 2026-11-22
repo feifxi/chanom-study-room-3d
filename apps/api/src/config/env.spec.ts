@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { validateEnv } from './env.js';
 
-const REQUIRED = { DATABASE_URL: 'postgresql://u:p@localhost:5433/db', AUTH_SECRET: 'x'.repeat(32) };
+const REQUIRED = { DATABASE_URL: 'postgresql://u:p@localhost:5433/db', AUTH_SECRET: 'x'.repeat(32), GAME_SECRET: 'g'.repeat(32) };
 
 describe('validateEnv', () => {
   it('fills in defaults around the required values', () => {

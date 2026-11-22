@@ -9,6 +9,7 @@ import { PresenceModule } from '../presence/presence.module.js';
 import { MailService } from '../mail/mail.service.js';
 import { PrismaModule } from '../prisma/prisma.module.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { GamePresenceBridge } from './game-presence.js';
 import { GATEWAY_AUTH, LiveGateway } from './live.gateway.js';
 
 /** The gateway entry point's app (src/gateway.ts): the live connection and what it needs. */
@@ -23,6 +24,7 @@ import { GATEWAY_AUTH, LiveGateway } from './live.gateway.js';
   ],
   providers: [
     LiveGateway,
+    GamePresenceBridge,
     {
       provide: GATEWAY_AUTH,
       inject: [ConfigService, PrismaService, MailService],

@@ -23,6 +23,9 @@ export const envSchema = z
     /** Carries live events from the API to the gateway, and between gateways */
     REDIS_URL: z.url().default('redis://localhost:6379'),
 
+    /** Signs join tickets for the game server (apps/game has the same value): 32+ random characters */
+    GAME_SECRET: z.string().min(32),
+
     /** Signs session cookies and encrypts OAuth tokens: 32+ random characters (openssl rand -base64 32) */
     AUTH_SECRET: z.string().min(32),
     GOOGLE_CLIENT_ID: optional,

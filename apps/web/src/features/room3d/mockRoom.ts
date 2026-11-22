@@ -21,7 +21,9 @@ export interface MockPerson {
   at?: { x: number; z: number };
 }
 
-const player = (p: Partial<PlayerView> & Pick<PlayerView, 'name' | 'look' | 'x' | 'z'>): PlayerView => ({
+export const player = (p: Partial<PlayerView> & Pick<PlayerView, 'name' | 'look' | 'x' | 'z'>): PlayerView => ({
+  userId: '',
+  role: 'member',
   yaw: 0,
   moving: false,
   seatId: '',
@@ -114,6 +116,19 @@ export class MockRoom implements StudyRoom {
     return this.map.seats.find(
       (s) => !taken.has(s.id) && (soft ? s.kind === 'sofa' : s.kind === 'chair' && this.map.deskSeats.includes(s)),
     );
+  }
+
+  /** Bumped when people come or go, so lists re-render (the mock's people never change). */
+  protected version = 0;
+  private listeners = new Set<() => void>();
+  readonly subscribe = (fn: () => void) => {
+    this.listeners.add(fn);
+    return () => void this.listeners.delete(fn);
+  };
+  readonly getVersion = () => this.version;
+  protected changed() {
+    this.version++;
+    for (const fn of this.listeners) fn();
   }
 
   send(type: string, payload: unknown) {

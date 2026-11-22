@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
  * Leaving a room by accident is costly (voice drops, your focus timer stops, you lose your seat), so
  * the rule is: nothing inside a room navigates away silently. The Leave button leaves (that's its
  * job); every other way out goes through `useLeaveRoom().ask(href)` or `<LeaveRoomLink>`, which
- * asks first. Closing or reloading the tab gets the browser's own "Leave site?" prompt.
+ * asks first, and so does Back. Closing or reloading the tab gets the browser's own "Leave site?" prompt.
  */
 const LeaveContext = createContext<((href: string) => void) | null>(null);
 
@@ -24,9 +24,12 @@ export function LeaveRoomGuard({
   roomName,
   focusing,
   onLeave,
+  fallback,
   children,
 }: {
   roomName: string;
+  /** Where Back goes once you say Leave (Home; guests have none) */
+  fallback: string;
   /** Mention the timer only when there's one to lose. */
   focusing: boolean;
   /** Leaves for real (disconnect, stop music) and goes to `href`. */
@@ -40,6 +43,18 @@ export function LeaveRoomGuard({
     window.addEventListener('beforeunload', onBeforeUnload);
     return () => window.removeEventListener('beforeunload', onBeforeUnload);
   }, []);
+
+  // Back (the browser's, a phone's swipe) asks too: a copy of this page sits on top of the history,
+  // so Back lands on the copy, puts it back and asks. Next's own state is kept on the copy.
+  useEffect(() => {
+    window.history.pushState({ ...window.history.state, leaveGuard: true }, '');
+    const onPop = () => {
+      window.history.pushState({ ...window.history.state, leaveGuard: true }, '');
+      setTarget(fallback);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [fallback]);
 
   return (
     <LeaveContext.Provider value={setTarget}>

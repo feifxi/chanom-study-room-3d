@@ -52,6 +52,10 @@ export const MyPlaceSchema = z
 export type MyPlace = z.infer<typeof MyPlaceSchema>;
 
 /** A room as its members (and, for listed rooms, anyone) see it. */
+/** A pass into the room's game server: join `place` with `ticket` (valid a minute). */
+export const TicketSchema = z.object({ ticket: z.string(), place: z.string() }).meta({ id: 'Ticket' });
+export type Ticket = z.infer<typeof TicketSchema>;
+
 export const RoomSchema = z
   .object({
     id: z.string(),

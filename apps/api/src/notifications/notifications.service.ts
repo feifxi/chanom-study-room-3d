@@ -107,6 +107,18 @@ export class NotificationsService {
     if (room) await this.push(userId, 'joined', { text: `You’re in! **${room.name}** let you in`, href: `/r/${roomId}`, person: null });
   }
 
+  /** A full room you asked about has space now ("Full · notify me"). */
+  async space(userId: string, roomId: string) {
+    const room = await this.prisma.room.findUnique({ where: { id: roomId } });
+    if (room)
+      await this.push(
+        userId,
+        'space',
+        { text: `There’s space in **${room.name}** now`, href: `/r/${roomId}/walk`, person: null },
+        `space:${roomId}`,
+      );
+  }
+
   /**
    * A new room message (once it shows): @mentions and @room for members whose setting isn't
    * Nothing, and one growing "new messages" item for those on Every message. Never for people who

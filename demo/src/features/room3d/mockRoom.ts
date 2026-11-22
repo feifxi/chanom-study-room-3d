@@ -22,6 +22,8 @@ export interface MockPerson {
 }
 
 const player = (p: Partial<PlayerView> & Pick<PlayerView, 'name' | 'look' | 'x' | 'z'>): PlayerView => ({
+  userId: '',
+  role: 'member',
   yaw: 0,
   moving: false,
   seatId: '',

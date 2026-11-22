@@ -14,11 +14,13 @@ import {
   type MapId,
   type RoomRole,
   type RoomSize,
+  type PlayerRole,
   type Timeout,
 } from '@connecta/shared';
 import { requireSignedUp } from '../accounts/signed-up.js';
 import { Prisma, type Membership } from '../generated/prisma/client.js';
 import { ChatService } from '../chat/chat.service.js';
+import { GameService } from '../game/game.service.js';
 import { LiveService } from '../live/live.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { PresenceService } from '../presence/presence.service.js';
@@ -80,6 +82,7 @@ export class RoomsService {
     private readonly live: LiveService,
     private readonly presence: PresenceService,
     private readonly inbox: NotificationsService,
+    private readonly game: GameService,
   ) {}
 
   // ── Your rooms ────────────────────────────────────────────────────────────────────────────────
@@ -143,6 +146,8 @@ export class RoomsService {
     // A smaller map or plan lowers the cap with it
     if (input.capacity === undefined && room.capacity !== null && room.capacity > max) data.capacity = max;
     await this.prisma.room.update({ where: { id: roomId }, data });
+    // Live switch (feature 7): everyone inside moves to the new map's door
+    if (input.mapId && input.mapId !== room.mapId) this.game.roomEvent({ roomId, type: 'map', mapId: input.mapId });
     return this.get(roomId, userId, now);
   }
 
@@ -153,6 +158,7 @@ export class RoomsService {
     const room = await this.prisma.room.findUniqueOrThrow({ where: { id: roomId } });
     if (typedName.trim().toLowerCase() !== room.name.toLowerCase()) throw new BadRequestException('Type the room name to confirm');
     await this.prisma.room.delete({ where: { id: roomId } });
+    this.game.roomEvent({ roomId, type: 'deleted' });
   }
 
   /** Hands the room to another member; the old owner stays on as a mod. */
@@ -166,6 +172,8 @@ export class RoomsService {
       this.prisma.membership.update({ where: { roomId_userId: { roomId, userId } }, data: { role: 'mod' } }),
       this.prisma.room.update({ where: { id: roomId }, data: { heirId: null } }),
     ]);
+    this.game.roomEvent({ roomId, type: 'role', userId: toUserId, role: 'owner' });
+    this.game.roomEvent({ roomId, type: 'role', userId, role: 'mod' });
     return this.get(roomId, userId, now);
   }
 
@@ -186,6 +194,7 @@ export class RoomsService {
     if (me.role === 'owner') throw new ConflictException({ code: 'owner_leaves', message: 'Hand the room over or delete it first' });
     await this.prisma.membership.delete({ where: { roomId_userId: { roomId, userId } } });
     this.live.leaveRoom(userId, roomId);
+    this.game.roomEvent({ roomId, type: 'left', userId });
   }
 
   // ── Getting in ────────────────────────────────────────────────────────────────────────────────
@@ -275,6 +284,7 @@ export class RoomsService {
     const them = await this.membership(roomId, whoId, 'They’re not a member');
     if (them.role === 'owner') throw new ForbiddenException('The owner stays the owner; hand the room over instead');
     await this.prisma.membership.update({ where: { roomId_userId: { roomId, userId: whoId } }, data: { role } });
+    this.game.roomEvent({ roomId, type: 'role', userId: whoId, role });
   }
 
   /** Removed from the room; a new invite brings them back. */
@@ -285,6 +295,7 @@ export class RoomsService {
       this.prisma.guestVisit.deleteMany({ where: { roomId, userId: whoId } }),
     ]);
     this.live.leaveRoom(whoId, roomId);
+    this.game.roomEvent({ roomId, type: 'kick', userId: whoId });
   }
 
   /** They stay, but can't talk or type until it runs out. */
@@ -310,6 +321,7 @@ export class RoomsService {
       }),
     ]);
     this.live.leaveRoom(whoId, roomId);
+    this.game.roomEvent({ roomId, type: 'ban', userId: whoId });
   }
 
   async bans(roomId: string, userId: string): Promise<Ban[]> {
@@ -324,6 +336,49 @@ export class RoomsService {
   async unban(roomId: string, userId: string, whoId: string): Promise<void> {
     await this.moderator(roomId, userId);
     await this.prisma.roomBan.deleteMany({ where: { roomId, userId: whoId } });
+  }
+
+  // ── Walking in (the game server) ──────────────────────────────────────────────────────────────
+
+  /**
+   * A join ticket for the game server: members, and guests while their pass lasts. It carries your
+   * name, look and role and the room's capacity, so the game server needs no database.
+   */
+  async ticket(roomId: string, userId: string, now = new Date()): Promise<{ ticket: string; place: string }> {
+    const [room, user, member, guest, ban] = await Promise.all([
+      this.prisma.room.findUnique({ where: { id: roomId } }),
+      this.prisma.user.findUnique({ where: { id: userId } }),
+      this.prisma.membership.findUnique({ where: { roomId_userId: { roomId, userId } } }),
+      this.prisma.guestVisit.findUnique({ where: { roomId_userId: { roomId, userId } } }),
+      this.prisma.roomBan.findUnique({ where: { roomId_userId: { roomId, userId } } }),
+    ]);
+    if (!room || !user) throw new NotFoundException();
+    if (ban) throw new ForbiddenException({ code: 'banned', message: 'You can’t join this room' });
+    if (!user.isAnonymous && !user.handle) throw new ForbiddenException('Finish signing up first');
+    const role: PlayerRole | null = member ? member.role : guest && guest.until > now ? 'guest' : null;
+    if (!role) throw new NotFoundException();
+    const person = toPerson(user);
+    const max = maxInside(OWNER_PLUS, room.size as RoomSize);
+    const ticket = await this.game.ticket({
+      sub: userId,
+      roomId,
+      name: person.name,
+      look: person.look,
+      role,
+      capacity: Math.min(room.capacity ?? max, max),
+      mapId: room.mapId,
+    });
+    return { ticket, place: roomId };
+  }
+
+  /** "Full · notify me": a 🔔 item once someone leaves (members and guest pass holders). */
+  async notifyWhenSpace(roomId: string, userId: string, now = new Date()): Promise<void> {
+    const [member, guest] = await Promise.all([
+      this.prisma.membership.findUnique({ where: { roomId_userId: { roomId, userId } } }),
+      this.prisma.guestVisit.findUnique({ where: { roomId_userId: { roomId, userId } } }),
+    ]);
+    if (!member && !(guest && guest.until > now)) throw new NotFoundException();
+    await this.game.waitForSpace(roomId, userId);
   }
 
   // ── Invites ───────────────────────────────────────────────────────────────────────────────────
