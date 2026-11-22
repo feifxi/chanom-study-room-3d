@@ -9,6 +9,8 @@ export type PlayerRole = 'owner' | 'mod' | 'member' | 'guest';
 export interface PlayerView {
   /** Their account, for the people list (profile, add friend); '' for the demo's scripted people */
   userId: string;
+  /** For Message and Add friend in the people list; '' for guests */
+  handle: string;
   role: PlayerRole;
   name: string;
   /** JSON-encoded AvatarLook. */
@@ -26,6 +28,8 @@ export interface PlayerView {
   focusSince: number;
   todayMin: number;
   typing: boolean;
+  /** Talk to everyone (owner and mods): heard everywhere, and bubbles reach private zones */
+  stage: boolean;
   /** seq of the last move the server applied, for reconciling the client's prediction. */
   moveSeq: number;
 }

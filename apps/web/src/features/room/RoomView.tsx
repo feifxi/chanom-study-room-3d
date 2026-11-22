@@ -29,6 +29,7 @@ import { Joystick } from '../room3d/Joystick';
 import { LabelBoard, LabelLayer, type SpotTag } from '../room3d/labels';
 import type { Hint } from '../room3d/LocalController';
 import type { LocalPlayerDriver } from '../room3d/LocalPlayerDriver';
+import { useFriendIds } from '@/features/friends/useFriends';
 import { MockRoom, type MockPerson } from '../room3d/mockRoom';
 import { LiveRoom } from '../room3d/liveRoom';
 import type { GameRoom } from '@/features/game/useGame';
@@ -128,8 +129,9 @@ export default function RoomView({
   const guest = guestAs !== null;
   // Common rooms are safe for strangers by design (feature 14): text only, for everyone
   const common = server.id === 'public';
-  // "View as" (Demo tab) changes your role; switching remounts the room, so reading it once is enough
-  const [myRole] = useState<RoomRole | undefined>(() =>
+  // "View as" (Demo tab) changes your role; switching remounts the room, so reading it once is enough.
+  // In a real room your role comes from the game server (live when the owner makes you a mod)
+  const [demoRole] = useState<RoomRole | undefined>(() =>
     guestAs !== null ? undefined : server.id === 'public' ? (isTeam() ? 'Team' : undefined) : roleIn(server),
   );
   // Your own name from your account; the people around you are still mock until walking in is ported (step 4)
@@ -174,11 +176,18 @@ export default function RoomView({
     return () => game.onStateChange.remove(follow);
   }, [game, lookId]);
 
+  const serverRole = game ? room.state.players.get('me')?.role : undefined;
+  const myRole: RoomRole | undefined = !game ? demoRole : serverRole === 'owner' ? 'Owner' : serverRole === 'mod' ? 'Mod' : undefined;
+  // Friends get their own group in the people list
+  const friendIds = useFriendIds();
+
   // A look saved in Settings → My character swaps your character live for everyone (no rejoin)
   const myLook = useMyLook();
   useEffect(() => {
     const me = room.state.players.get('me');
-    if (me && !guest && myLook.version > 0) me.look = JSON.stringify(myLook.look);
+    if (!me || guest || myLook.version === 0) return;
+    if (room instanceof LiveRoom) room.setLook(myLook.look);
+    else me.look = JSON.stringify(myLook.look);
   }, [room, guest, myLook]);
 
   const driverRef = useRef<LocalPlayerDriver | null>(null);
@@ -352,6 +361,34 @@ export default function RoomView({
     setLines((l) => [...l, { id: `${Date.now()}-${id}`, name, text }]);
   }, []);
 
+  // Bubbles in a real room come back from the game server (it decides who hears: private zones, time outs)
+  useEffect(() => {
+    if (!(room instanceof LiveRoom)) return;
+    const offSaid = room.onSaid((id, text) => {
+      const p = room.state.players.get(id);
+      if (p) say(id, id === 'me' ? myName : p.name, text);
+    });
+    const offQuiet = room.onQuiet((until) =>
+      toast(
+        `You’re timed out until ${new Date(until).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}, so nobody hears you yet`,
+      ),
+    );
+    return () => {
+      offSaid();
+      offQuiet();
+    };
+  }, [room, say, myName]);
+  // Away and Talk to everyone show for everyone (💤 and 📢 by your name); focus and breaks go with the timer
+  useEffect(() => {
+    if (room instanceof LiveRoom && (away || pomo.phase === 'idle')) room.setStatus(away ? 'away' : 'idle', subjectRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when away changes; the timer reports its own phases
+  }, [room, away]);
+  useEffect(() => {
+    if (room instanceof LiveRoom) room.setStage(stage);
+  }, [room, stage]);
+  // No longer the owner or a mod: the server already turned it off, so does your own screen
+  if (stage && game && !canStage) setStage(false);
+
   // A little life: someone talks on voice now and then, someone says hi. Demo people only: in a real
   // room it would put words in real people's mouths
   useEffect(() => {
@@ -412,9 +449,9 @@ export default function RoomView({
       const isGuest = game ? p.role === 'guest' : id.startsWith('guest') || (id === 'me' && guest);
       const role = game ? p.role : server.roles[id] === 'Owner' ? 'owner' : server.roles[id] === 'Mod' ? 'mod' : undefined;
       const status =
-        id === 'me' && stage
+        (id === 'me' && stage) || (id !== 'me' && p.stage)
           ? '📢 Talking to everyone'
-          : id === 'me' && away
+          : (id === 'me' && away) || (id !== 'me' && p.status === 'away')
             ? '💤 Away'
             : p.status === 'focus'
               ? `📖 Focusing${p.subject ? ` · ${p.subject}` : ''} · ${Math.max(1, Math.round((now - p.focusSince) / 60_000))}m`
@@ -436,7 +473,9 @@ export default function RoomView({
         status,
         guest: isGuest,
         you: id === 'me',
-        friend: id !== 'me' && !!USERS[id],
+        friend: id !== 'me' && (game ? friendIds.has(p.userId) : !!USERS[id]),
+        userId: p.userId,
+        handle: p.handle,
         // Literals, not the value from server.roles: React Compiler would treat the list as aliasing the server
         role: role === 'owner' ? 'Owner' : role === 'mod' ? 'Mod' : undefined,
         micOn: id === 'me' ? mic && !deaf : id === 'mai' || speaking.has(id),
@@ -558,8 +597,12 @@ export default function RoomView({
     findId,
     onFind: find,
     myRole,
+    roomId: game ? server.id : undefined,
+    youGuest: guest,
     onMessage: (p: RoomPerson) => {
       setSheet(false);
+      // A real person: their chat by @handle (the Messages tab opens it, made on first open if you're friends)
+      if (game) return p.handle ? setChatTarget({ kind: 'dm', id: p.handle }) : undefined;
       const dm = DMS.find((d) => d.with === p.id);
       if (dm) setChatTarget({ kind: 'dm', id: dm.id });
       else toast(`A new chat with ${p.name} is in Messages`);
@@ -574,7 +617,8 @@ export default function RoomView({
         // Common rooms: slow mode for everyone (one bubble every 3 s), since nobody's there to moderate
         if (common && Date.now() - lastSaid.current < 3000) return toast('Slow mode: one bubble every 3 seconds');
         lastSaid.current = Date.now();
-        say('me', myName, text);
+        if (room instanceof LiveRoom) room.say(text);
+        else say('me', myName, text);
       }}
       onTyping={(t) => room.setTyping(t)}
       onExpand={(t) => {
@@ -809,8 +853,8 @@ export default function RoomView({
                 micEnabled: micIds,
                 deafened: new Set(realPeople.filter((p) => p.deafened).map((p) => p.id)),
                 sharing: sharing && seated ? new Set(['me']) : new Set(),
-                away: away ? new Set(['me']) : new Set(),
-                stage: stage ? new Set(['me']) : new Set(),
+                away: new Set(ids.filter((id) => (id === 'me' ? away : room.state.players.get(id)?.status === 'away'))),
+                stage: new Set(ids.filter((id) => (id === 'me' ? stage : room.state.players.get(id)?.stage))),
               }}
               clockOffset={0}
               npcIds={npcIds}

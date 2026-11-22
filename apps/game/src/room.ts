@@ -1,17 +1,26 @@
 import { Room, ServerError, validate, type Client } from 'colyseus';
 import { z } from 'zod';
 import {
+  BUBBLE_MAX,
   DEFAULT_LOOK,
   GAME_CLOSE,
+  LOOK_EVERY_MS,
   PATCH_RATE_MS,
+  PLAYER_STATUSES,
   RECONNECT_SECONDS,
+  SAY_COOLDOWN_MS,
   SIT_REACH,
+  SUBJECT_MAX,
+  TYPING_TIMEOUT_MS,
+  sanitizeLook,
+  type Quiet,
+  type Said,
   type GameJoinOptions,
   type GameRoomEvent,
   type GameTicket,
   type PlayerRole,
 } from '@connecta/shared';
-import { mapDataFor, type MapData } from '@connecta/shared/maps';
+import { mapDataFor, zoneAtIn, type MapData } from '@connecta/shared/maps';
 import { links, liveRooms } from './links.js';
 import { log } from './log.js';
 import { Player, RoomState } from './state.js';
@@ -35,6 +44,11 @@ interface Private {
   lastMoveAt: number;
   /** Metres of movement allowed right now (see refillMoveBudget) */
   moveBudget: number;
+  lastSaidAt: number;
+  typingAt: number;
+  lookAt: number;
+  /** Timed out until then (epoch ms): no bubbles, no typing */
+  quietUntil: number;
 }
 
 type Auth = GameTicket;
@@ -96,6 +110,67 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       const p = this.state.players.get(client.sessionId);
       if (p?.seatId) this.standUp(p);
     },
+
+    /** A bubble: to the whole room, or only to the private zone you're standing in */
+    say: validate(z.object({ text: z.string() }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      const s = this.priv.get(client.sessionId);
+      const text = msg.text.trim().slice(0, BUBBLE_MAX);
+      if (!p || !s || !text) return;
+      const now = Date.now();
+      if (s.quietUntil > now) return void client.send('quiet', { until: s.quietUntil } satisfies Quiet);
+      if (now - s.lastSaidAt < SAY_COOLDOWN_MS) return;
+      s.lastSaidAt = now;
+      p.typing = false;
+      const said: Said = { id: client.sessionId, text };
+      // Talk to everyone reaches into private zones too
+      const zone = p.stage ? undefined : zoneAtIn(this.map, p.x, p.z);
+      if (!zone) return void this.broadcast('said', said);
+      for (const [sessionId, c] of this.clients_) {
+        const o = this.state.players.get(sessionId);
+        if (o && zoneAtIn(this.map, o.x, o.z)?.id === zone.id) c.send('said', said);
+      }
+    }),
+
+    typing: validate(z.object({ typing: z.boolean() }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      const s = this.priv.get(client.sessionId);
+      if (!p || !s || (msg.typing && s.quietUntil > Date.now())) return;
+      p.typing = msg.typing;
+      s.typingAt = Date.now();
+    }),
+
+    /** Focus, break, away or nothing, decided by the client (a timer, no input for 10 minutes) */
+    status: validate(
+      z.object({ status: z.enum(PLAYER_STATUSES), subject: z.string().optional(), endsAt: finite.optional() }),
+      (client, msg) => {
+        const p = this.state.players.get(client.sessionId);
+        if (!p) return;
+        if (msg.status === 'focus' && p.status !== 'focus') p.focusSince = Date.now();
+        if (msg.status !== 'focus') p.focusSince = 0;
+        p.status = msg.status;
+        p.subject = (msg.subject ?? '').trim().slice(0, SUBJECT_MAX);
+        p.statusEndsAt = msg.endsAt && msg.endsAt > Date.now() ? msg.endsAt : 0;
+        if (msg.status === 'away') p.stage = false;
+      },
+    ),
+
+    /** Talk to everyone: the owner and mods only */
+    stage: validate(z.object({ on: z.boolean() }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (!p) return;
+      p.stage = msg.on && (p.role === 'owner' || p.role === 'mod') && p.status !== 'away';
+    }),
+
+    /** A new look from Settings → My character, live for everyone (guests keep the one they picked) */
+    look: validate(z.object({ look: z.unknown() }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      const s = this.priv.get(client.sessionId);
+      const now = Date.now();
+      if (!p || !s || p.role === 'guest' || now - s.lookAt < LOOK_EVERY_MS) return;
+      s.lookAt = now;
+      p.look = JSON.stringify(sanitizeLook(msg.look));
+    }),
   };
 
   /** The ticket is the only proof of who you are; its room must be this room. */
@@ -121,6 +196,14 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     this.clock.setInterval(() => {
       for (const [sessionId, s] of this.priv) links.presence({ userId: s.userId, tabId: tabId(sessionId), roomId: this.connectaId });
     }, 60_000);
+    // Typing dots from a tab that went quiet
+    this.clock.setInterval(() => {
+      const now = Date.now();
+      for (const [sessionId, s] of this.priv) {
+        const p = this.state.players.get(sessionId);
+        if (p?.typing && now - s.typingAt > TYPING_TIMEOUT_MS) p.typing = false;
+      }
+    }, 1000);
   }
 
   onJoin(client: Client, _options: JoinOptions, ticket: Auth) {
@@ -137,6 +220,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       client.sessionId,
       new Player({
         userId: ticket.sub,
+        handle: ticket.handle ?? '',
         role: ticket.role,
         name: ticket.name,
         look: JSON.stringify(ticket.look ?? DEFAULT_LOOK),
@@ -146,7 +230,15 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
         moving: false,
       }),
     );
-    this.priv.set(client.sessionId, { userId: ticket.sub, lastMoveAt: Date.now(), moveBudget: 0 });
+    this.priv.set(client.sessionId, {
+      userId: ticket.sub,
+      lastMoveAt: Date.now(),
+      moveBudget: 0,
+      lastSaidAt: 0,
+      typingAt: 0,
+      lookAt: 0,
+      quietUntil: ticket.timedOutUntil ?? 0,
+    });
     this.clients_.set(client.sessionId, client);
     links.presence({ userId: ticket.sub, tabId: tabId(client.sessionId), roomId: this.connectaId });
     log.info({ roomId: this.connectaId, userId: ticket.sub, role: ticket.role }, 'walked in');
@@ -190,7 +282,17 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       case 'role':
         for (const sessionId of this.sessionsOf(event.userId)) {
           const p = this.state.players.get(sessionId);
-          if (p) p.role = event.role;
+          if (!p) continue;
+          p.role = event.role;
+          if (event.role !== 'owner' && event.role !== 'mod') p.stage = false;
+        }
+        break;
+      case 'timeout':
+        for (const sessionId of this.sessionsOf(event.userId)) {
+          const s = this.priv.get(sessionId);
+          const p = this.state.players.get(sessionId);
+          if (s) s.quietUntil = event.until;
+          if (p) p.typing = false;
         }
         break;
       case 'map':

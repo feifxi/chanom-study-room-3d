@@ -13,7 +13,7 @@ what each feature is, and what's left. The details are in one spec per feature
   and dark mode.
 - **The real app is being built fresh** in `apps/` and `packages/` (V1 was removed from `main`;
   it's at tag `v1.0.0`). Steps 1 and 2 (the skeleton; accounts and rooms) are done; step 3, the
-  gateway, is done too; step 4, walking in a room, is under way (part 1 of 5 done). Nothing is
+  gateway, is done too; step 4, walking in a room, is under way (parts 1–2 of 5 done). Nothing is
   deployed.
 
 | #   | Feature                                 | Status  | Spec                                                                   |
@@ -77,8 +77,9 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
      room, movement and seats, capacity (the owner and mods always fit) with **Full · notify me**,
      presence from the game server, kick, ban, roles and the live map switch, one of you per room,
      and Back asks "Leave …?". The maps' data moved to `packages/shared`.
-   - Bubbles and typing, reactions, Away 💤, the real people list, Talk to everyone, the reset when
-     a room empties.
+   - ~~Bubbles, Away and the people list~~ done 2026-11-22: bubbles and typing through the server
+     (private zones, time outs), Away 💤, Talk to everyone's 📢, live looks, the people list's real
+     actions, the reset when a room empties. Floating reactions moved to part 5 with the cats.
    - LiveKit proximity voice: the 12 nearest, server-enforced private zones, deafen, guest voice.
    - Screen share at a table or the TV, with its sound.
    - Server-run cats and study buddies (V1's NpcDirector).

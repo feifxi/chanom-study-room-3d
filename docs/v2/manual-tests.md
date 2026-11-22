@@ -142,3 +142,27 @@ two browsers, members of the same room.
 - [ ] A guest from a guest link (`/g/<code>`) walks in with their character and shows as a guest;
       after the pass ends (24 h) they can't walk in again.
 - [ ] Inside 3D, 🔔 items and DMs still arrive as toasts.
+
+### Bubbles, Away and the people list (part 2)
+
+Three people in a room: the owner and two members.
+
+- [ ] A bubble shows over your head and in everyone's Bubbles tab; the "…" typing dots show while
+      you type.
+- [ ] Inside a private zone (the Fireside rug), your bubbles reach only people on the same rug; a
+      bubble from outside still reaches you there. The owner talking to everyone reaches the rug
+      too.
+- [ ] No input for 10 minutes (or Demo tab → "Go away now"): others see 💤 over your head and
+      "💤 Away" in the people list; moving brings you back. With a focus timer running you never
+      go away.
+- [ ] The owner: 🛡️ Room → Talk to everyone: everyone sees "📢 Talking to everyone" by their name;
+      it turns off when they go away.
+- [ ] Settings → My character inside a room: everyone sees the new look (at most once every 5 s).
+- [ ] The people list's "…" on someone who isn't your friend: Find, Add friend (a real request),
+      Block, Report (still a mock); no Send a message. On a friend: Send a message opens your chat.
+- [ ] As the owner or a mod, on someone in the list: Time out (their bubbles stop and they're told
+      until when), Make mod (their 🛡️ Room button appears at once), Kick, Ban (with a reason): they
+      leave the room at once. Kick on a guest ends their pass.
+- [ ] A guest's "…" on others shows only Find and Report.
+- [ ] Everyone leaves; walking back in a few seconds later starts fresh (nobody seated, no typing
+      dots).

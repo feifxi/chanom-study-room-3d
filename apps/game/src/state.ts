@@ -4,6 +4,7 @@ import { schema, t, type SchemaType } from '@colyseus/schema';
 export const Player = schema(
   {
     userId: t.string(),
+    handle: t.string().default(''),
     role: t.string(),
     name: t.string(),
     /** JSON-encoded AvatarLook */
@@ -20,6 +21,8 @@ export const Player = schema(
     focusSince: t.number().default(0),
     todayMin: t.number().default(0),
     typing: t.boolean().default(false),
+    /** Talk to everyone (owner and mods) */
+    stage: t.boolean().default(false),
     /** The last move applied (its client sequence number), so the client can reconcile its prediction */
     moveSeq: t.number().default(0),
   },

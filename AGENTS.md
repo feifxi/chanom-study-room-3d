@@ -33,10 +33,10 @@ log. Keep them current in the same change that makes them stale.
 
 ## What's next
 
-Step 4 of the plan, **walking in a room**, in five parts. Part 1 is done: the Colyseus game server
-(`apps/game`) with a signed join ticket from the API, V1's movement, capacity, presence and live
-room changes. Next is part 2: bubbles, reactions, Away, the real people list, Talk to everyone;
-then voice, screen share and server-run cats. Steps 1–3 (the skeleton; accounts and rooms; the
+Step 4 of the plan, **walking in a room**, in five parts. Parts 1–2 are done: the Colyseus game
+server (`apps/game`) with a signed join ticket from the API, V1's movement, capacity, presence and
+live room changes; bubbles, Away, Talk to everyone and the people list's real actions. Next is
+part 3, LiveKit proximity voice; then screen share and server-run cats. Steps 1–3 (the skeleton; accounts and rooms; the
 gateway: friends, chat, pictures, DMs, presence and the 🔔 inbox) are done. The plan's
 [What's left](docs/v2-plan.md#whats-left) is the source of truth.
 

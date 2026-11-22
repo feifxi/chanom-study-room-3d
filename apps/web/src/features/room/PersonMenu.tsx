@@ -37,7 +37,9 @@ import {
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { friendsApi } from '@/features/friends/useFriends';
 import { TIMEOUTS } from '@/features/place/membership';
+import { problem, roomsApi } from '@/features/rooms/useRooms';
 import { cn } from '@/lib/utils';
 import type { RoomPerson, RoomRole } from './RoomPeople';
 
@@ -48,16 +50,25 @@ import type { RoomPerson, RoomRole } from './RoomPeople';
  * - a mod can act on members and guests; the owner on everyone but themselves
  * - mute for everyone, time out (can't talk or type for a while), kick, ban; the owner can also
  *   make someone a mod
+ *
+ * In a real room (`roomId`) the actions go to the API: friends, blocks and moderation, which the
+ * game server applies at once. Mute for me and mute for everyone come with voice (step 4, part 3).
  */
 export function PersonMenu({
   p,
   myRole,
+  roomId,
+  youGuest,
   onFind,
   onMessage,
   onRemove,
 }: {
   p: RoomPerson;
   myRole?: RoomRole;
+  /** A real room (build step 4); none in the demo and Common rooms */
+  roomId?: string;
+  /** You're a guest: no messages, friends or blocks */
+  youGuest?: boolean;
   onFind: () => void;
   onMessage: () => void;
   /** Kicked or banned: they drop out of the room. */
@@ -69,7 +80,16 @@ export function PersonMenu({
   const [requested, setRequested] = useState(false);
   const [confirm, setConfirm] = useState<'kick' | 'ban' | 'block' | null>(null);
   const [report, setReport] = useState(false);
-  const canModerate = myRole === 'Team' || (myRole === 'Owner' ? role !== 'Owner' : myRole === 'Mod' ? !role : false);
+  // A real room's roles come from the game server; the demo's are kept here
+  const theirRole = roomId ? p.role : role;
+  const canModerate = myRole === 'Team' || (myRole === 'Owner' ? theirRole !== 'Owner' : myRole === 'Mod' ? !theirRole : false);
+  const live = roomId && p.userId ? { id: roomId, userId: p.userId } : null;
+  /** A real action: the toast on success, the API's reason on failure */
+  const act = (call: Promise<unknown>, done: string) =>
+    call.then(
+      () => toast.success(done),
+      (e: unknown) => toast.error(problem(e)),
+    );
 
   return (
     <>
@@ -88,7 +108,7 @@ export function PersonMenu({
             <span className="min-w-0 flex-1">
               <span className="flex items-center gap-1.5 text-sm font-black">
                 <span className="truncate">{p.name}</span>
-                {role && <RoleChip role={role} />}
+                {theirRole && <RoleChip role={theirRole} />}
                 {p.guest && <span className="rounded-full bg-peach px-1.5 text-[10px] font-black text-peach-ink">guest</span>}
               </span>
               <span className="block truncate text-xs font-normal text-muted-foreground">{p.status}</span>
@@ -101,31 +121,35 @@ export function PersonMenu({
               <LocateFixed /> Find in the room
             </DropdownMenuItem>
             {/* Guests have no account, so no DMs or friends */}
-            {!p.guest && (
+            {/* DMs are between friends: in a real room, strangers get Add friend instead */}
+            {!p.guest && !youGuest && (!live || p.friend) && (
               <DropdownMenuItem onSelect={onMessage}>
                 <MessageCircle /> Send a message
               </DropdownMenuItem>
             )}
-            {!p.guest && !p.friend && (
+            {!p.guest && !p.friend && !youGuest && (
               <DropdownMenuItem
                 disabled={requested}
                 onSelect={() => {
                   setRequested(true);
-                  toast.success(`Friend request sent to ${p.name}`);
+                  if (live && p.handle) void act(friendsApi.add(p.handle), `Friend request sent to ${p.name}`);
+                  else toast.success(`Friend request sent to ${p.name}`);
                 }}
               >
                 <UserPlus /> {requested ? 'Friend request sent' : 'Add friend'}
               </DropdownMenuItem>
             )}
-            <DropdownMenuCheckboxItem
-              checked={mutedForMe}
-              onCheckedChange={(v) => {
-                setMutedForMe(v);
-                toast(v ? `You won't hear ${p.name}. Only you.` : `You can hear ${p.name} again`);
-              }}
-            >
-              <VolumeX /> Mute for me
-            </DropdownMenuCheckboxItem>
+            {!live && (
+              <DropdownMenuCheckboxItem
+                checked={mutedForMe}
+                onCheckedChange={(v) => {
+                  setMutedForMe(v);
+                  toast(v ? `You won't hear ${p.name}. Only you.` : `You can hear ${p.name} again`);
+                }}
+              >
+                <VolumeX /> Mute for me
+              </DropdownMenuCheckboxItem>
+            )}
           </DropdownMenuGroup>
 
           {myRole === 'Team' && (
@@ -172,36 +196,50 @@ export function PersonMenu({
                 Moderate · you’re {myRole === 'Owner' ? 'the owner' : 'a mod'}
               </DropdownMenuLabel>
               <DropdownMenuGroup>
-                <DropdownMenuCheckboxItem
-                  checked={mutedForAll}
-                  onCheckedChange={(v) => {
-                    setMutedForAll(v);
-                    toast(v ? `${p.name}'s mic is off for everyone in this room` : `${p.name} can talk again`);
-                  }}
-                >
-                  <MicOff /> Mute for everyone
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    <Clock /> Time out
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent>
-                    {TIMEOUTS.map(([id, label]) => (
-                      <DropdownMenuItem key={id} onSelect={() => toast(`${p.name} can’t talk or type for ${label}`)}>
-                        {label}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
+                {!live && (
+                  <DropdownMenuCheckboxItem
+                    checked={mutedForAll}
+                    onCheckedChange={(v) => {
+                      setMutedForAll(v);
+                      toast(v ? `${p.name}'s mic is off for everyone in this room` : `${p.name} can talk again`);
+                    }}
+                  >
+                    <MicOff /> Mute for everyone
+                  </DropdownMenuCheckboxItem>
+                )}
+                {/* Guests aren't members, so there's nothing to time out: kick or ban them */}
+                {!(live && p.guest) && (
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      <Clock /> Time out
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      {TIMEOUTS.map(([id, label]) => (
+                        <DropdownMenuItem
+                          key={id}
+                          onSelect={() =>
+                            live
+                              ? void act(roomsApi.timeOut({ ...live, duration: id }), `${p.name} can’t talk or type for ${label}`)
+                              : toast(`${p.name} can’t talk or type for ${label}`)
+                          }
+                        >
+                          {label}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                )}
                 {myRole === 'Owner' && !p.guest && (
                   <DropdownMenuItem
                     onSelect={() => {
-                      const next = role === 'Mod' ? undefined : 'Mod';
+                      const next = theirRole === 'Mod' ? undefined : 'Mod';
+                      const done = next ? `${p.name} is now a mod` : `${p.name} is no longer a mod`;
+                      if (live) return void act(roomsApi.setRole({ ...live, role: next ? 'mod' : 'member' }), done);
                       setRole(next);
-                      toast.success(next ? `${p.name} is now a mod` : `${p.name} is no longer a mod`);
+                      toast.success(done);
                     }}
                   >
-                    {role === 'Mod' ? <ShieldOff /> : <ShieldCheck />} {role === 'Mod' ? 'Remove mod' : 'Make mod'}
+                    {theirRole === 'Mod' ? <ShieldOff /> : <ShieldCheck />} {theirRole === 'Mod' ? 'Remove mod' : 'Make mod'}
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem variant="destructive" onSelect={() => setConfirm('kick')}>
@@ -216,7 +254,7 @@ export function PersonMenu({
 
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            {!p.guest && (
+            {!p.guest && !youGuest && (
               <DropdownMenuItem variant="destructive" onSelect={() => setConfirm('block')}>
                 <UserX /> Block
               </DropdownMenuItem>
@@ -232,8 +270,20 @@ export function PersonMenu({
         p={p}
         kind={confirm}
         onClose={() => setConfirm(null)}
-        onDone={(kind) => {
-          if (kind !== 'block') onRemove();
+        onDone={(kind, reason) => {
+          if (!live) {
+            toast.success(CONFIRM[kind].done(p.name));
+            if (kind !== 'block') onRemove();
+            return;
+          }
+          // The game server takes them out of the room; the list follows
+          const call =
+            kind === 'kick'
+              ? roomsApi.kick(live)
+              : kind === 'ban'
+                ? roomsApi.ban({ ...live, reason: reason.trim() || undefined })
+                : friendsApi.block(live.userId);
+          void act(call, CONFIRM[kind].done(p.name));
         }}
       />
       <ReportDialog p={p} open={report} onOpenChange={setReport} />
@@ -284,7 +334,7 @@ function ConfirmDialog({
   p: RoomPerson;
   kind: keyof typeof CONFIRM | null;
   onClose: () => void;
-  onDone: (kind: keyof typeof CONFIRM) => void;
+  onDone: (kind: keyof typeof CONFIRM, reason: string) => void;
 }) {
   const [reason, setReason] = useState('');
   const c = kind && CONFIRM[kind];
@@ -312,8 +362,7 @@ function ConfirmDialog({
               variant="destructive"
               className="rounded-full bg-destructive font-extrabold text-white hover:bg-destructive/90"
               onClick={() => {
-                toast.success(c.done(p.name));
-                onDone(kind);
+                onDone(kind, reason);
                 setReason('');
                 onClose();
               }}

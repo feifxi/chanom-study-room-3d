@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api, type Schemas } from '@/lib/api/client';
@@ -25,6 +26,12 @@ function useHasFriends() {
 
 export function useFriends() {
   return useQuery({ queryKey: [...FRIENDS_KEY, 'list'], queryFn: async () => ok(await api.GET('/api/friends')), enabled: useHasFriends() });
+}
+
+/** Your friends' account ids (empty for guests), for marking friends in a room's people list. */
+export function useFriendIds() {
+  const { data } = useFriends();
+  return useMemo(() => new Set(data?.map((f) => f.person.id) ?? []), [data]);
 }
 
 export function useFriendRequests() {

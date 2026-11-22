@@ -59,11 +59,13 @@ describe('join tickets', () => {
     expect(payload).toMatchObject({
       sub: mai.id,
       roomId: id,
+      handle: 'maimai',
       name: 'maimai',
       look: LOOK,
       role: 'owner',
       capacity: 25,
       mapId: 'library',
+      timedOutUntil: 0,
     } satisfies Partial<GameTicket>);
     expect(payload.exp! - payload.iat!).toBe(60);
   });
@@ -79,7 +81,24 @@ describe('join tickets', () => {
     await guest.put('/api/me/guest', { name: 'Mint', look: LOOK }).expect(200);
     await guest.post(`/api/invites/${code}/accept`).expect(200);
     const { ticket } = (await guest.post(`/api/rooms/${id}/ticket`).expect(200)).body;
-    expect(decodeJwt(ticket)).toMatchObject({ role: 'guest', name: 'Mint' });
+    expect(decodeJwt(ticket)).toMatchObject({ role: 'guest', name: 'Mint', handle: null });
+
+    // Kicking a guest ends their pass, inside 3D at once
+    const guestId = (await guest.get('/api/me').expect(200)).body.id;
+    await mai.delete(`/api/rooms/${id}/members/${guestId}`).expect(204);
+    await eventually(() => events.some((e) => e.type === 'kick' && e.userId === guestId));
+    await guest.post(`/api/rooms/${id}/ticket`).expect(404);
+  });
+
+  it('carries a time out, and a time out given while inside reaches the room at once', async () => {
+    const { mai, id } = await maisRoom();
+    const ken = await joinByInvite(mai, id, 'kenken');
+    await mai.put(`/api/rooms/${id}/members/${ken.id}/timeout`, { duration: '10m' }).expect(204);
+    await eventually(() => events.some((e) => e.type === 'timeout' && e.userId === ken.id));
+    const until = (events.find((e) => e.type === 'timeout') as { until: number }).until;
+    expect(until - Date.now()).toBeGreaterThan(9 * 60_000);
+    const { ticket } = (await ken.post(`/api/rooms/${id}/ticket`).expect(200)).body;
+    expect(decodeJwt(ticket).timedOutUntil).toBe(until);
   });
 
   it('refuses the banned', async () => {

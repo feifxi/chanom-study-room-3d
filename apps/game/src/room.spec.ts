@@ -1,8 +1,8 @@
 import { Client, type Room } from '@colyseus/sdk';
 import { listen } from 'colyseus';
 import { SignJWT } from 'jose';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { GAME_CLOSE, GAME_ROOM, TICKET_AUDIENCE, type GamePresence, type GameTicket, type PlayerView } from '@connecta/shared';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { GAME_CLOSE, GAME_ROOM, TICKET_AUDIENCE, type GamePresence, type GameTicket, type PlayerView, type Said } from '@connecta/shared';
 import { mapDataFor } from '@connecta/shared/maps';
 import { dispatch, links } from './links.js';
 import { gameServer } from './server.js';
@@ -14,12 +14,15 @@ const client = new Client(`http://localhost:${PORT}`);
 type GameRoom = Room<unknown, { mapId: string; players: Map<string, PlayerView> }>;
 
 const presence: GamePresence[] = [];
+/** Each test walks into a room of its own (an empty room closes only a second after the last leave) */
+let ROOM = '';
+let rooms = 0;
 const spaces: string[] = [];
 
 function ticket(over: Partial<GameTicket> = {}, opts: { secret?: string; expires?: string } = {}) {
-  const t: GameTicket = {
+  const t = {
     sub: 'u-mai',
-    roomId: 'room-a',
+    roomId: ROOM,
     name: 'Mai',
     look: null,
     role: 'member',
@@ -35,7 +38,7 @@ function ticket(over: Partial<GameTicket> = {}, opts: { secret?: string; expires
 }
 
 async function walkIn(over: Partial<GameTicket> = {}) {
-  const roomId = over.roomId ?? 'room-a';
+  const roomId = over.roomId ?? ROOM;
   const room = (await client.joinOrCreate(GAME_ROOM, { place: roomId, ticket: await ticket({ roomId, ...over }) })) as GameRoom;
   await until(() => room.state?.players?.has(room.sessionId));
   return room;
@@ -62,6 +65,9 @@ beforeAll(async () => {
   server = gameServer(SECRET);
   await listen(server, PORT);
 });
+beforeEach(() => {
+  ROOM = `room-${++rooms}`;
+});
 afterEach(async () => {
   await Promise.allSettled(open.splice(0).map((r) => r.leave()));
   presence.length = 0;
@@ -80,22 +86,22 @@ describe('walking in', () => {
     expect(p).toMatchObject({ userId: 'u-mai', name: 'Mai', role: 'mod', seatId: '' });
     expect(Math.hypot(p.x - spawn.x, p.z - spawn.z)).toBeLessThan(1);
     expect(room.state.mapId).toBe('library');
-    await until(() => presence.some((u) => u.userId === 'u-mai' && u.roomId === 'room-a'));
+    await until(() => presence.some((u) => u.userId === 'u-mai' && u.roomId === ROOM));
   });
 
   it('refuses a missing, forged, expired or other-room ticket', async () => {
-    await expect(client.joinOrCreate(GAME_ROOM, { place: 'room-a' })).rejects.toThrow(/unauthorized/);
+    await expect(client.joinOrCreate(GAME_ROOM, { place: ROOM })).rejects.toThrow(/unauthorized/);
     const forged = await ticket({}, { secret: 'x'.repeat(40) });
-    await expect(client.joinOrCreate(GAME_ROOM, { place: 'room-a', ticket: forged })).rejects.toThrow(/unauthorized/);
+    await expect(client.joinOrCreate(GAME_ROOM, { place: ROOM, ticket: forged })).rejects.toThrow(/unauthorized/);
     const old = await ticket({}, { expires: '-1s' });
-    await expect(client.joinOrCreate(GAME_ROOM, { place: 'room-a', ticket: old })).rejects.toThrow(/unauthorized/);
-    const other = await ticket({ roomId: 'room-b' });
-    await expect(client.joinOrCreate(GAME_ROOM, { place: 'room-a', ticket: other })).rejects.toThrow(/unauthorized/);
+    await expect(client.joinOrCreate(GAME_ROOM, { place: ROOM, ticket: old })).rejects.toThrow(/unauthorized/);
+    const other = await ticket({ roomId: `${ROOM}-b` });
+    await expect(client.joinOrCreate(GAME_ROOM, { place: ROOM, ticket: other })).rejects.toThrow(/unauthorized/);
   });
 
   it('keeps rooms apart: people in another room never show up', async () => {
     const a = track(await walkIn());
-    const b = track(await walkIn({ roomId: 'room-b', sub: 'u-jod', name: 'Jod' }));
+    const b = track(await walkIn({ roomId: `${ROOM}-b`, sub: 'u-jod', name: 'Jod' }));
     expect(a.roomId).not.toBe(b.roomId);
     expect(a.state.players.size).toBe(1);
   });
@@ -107,7 +113,7 @@ describe('walking in', () => {
     expect(owner.state.players.size).toBe(2);
     await one.leave();
     await owner.leave();
-    await until(() => spaces.includes('room-a'));
+    await until(() => spaces.includes(ROOM));
   });
 
   it('one of you per room: a second tab takes over and the first is told why', async () => {
@@ -167,16 +173,16 @@ describe('room events from the API', () => {
   it('kick and ban remove the person with a reason code', async () => {
     const a = await walkIn();
     const code = closed(a);
-    dispatch({ roomId: 'room-a', type: 'ban', userId: 'u-mai' });
+    dispatch({ roomId: ROOM, type: 'ban', userId: 'u-mai' });
     expect(await code).toBe(GAME_CLOSE.banned);
     await until(() => presence.some((u) => u.userId === 'u-mai' && u.roomId === null));
   });
 
   it('a role change shows at once; a map change moves everyone to the new door', async () => {
     const room = track(await walkIn());
-    dispatch({ roomId: 'room-a', type: 'role', userId: 'u-mai', role: 'mod' });
+    dispatch({ roomId: ROOM, type: 'role', userId: 'u-mai', role: 'mod' });
     await until(() => me(room).role === 'mod');
-    dispatch({ roomId: 'room-a', type: 'map', mapId: 'cafe' });
+    dispatch({ roomId: ROOM, type: 'map', mapId: 'cafe' });
     await until(() => room.state.mapId === 'cafe');
     const { spawn } = mapDataFor('cafe');
     await until(() => Math.hypot(me(room).x - spawn.x, me(room).z - spawn.z) < 1);
@@ -185,7 +191,125 @@ describe('room events from the API', () => {
   it('a deleted room sends everyone out', async () => {
     const room = await walkIn();
     const code = closed(room);
-    dispatch({ roomId: 'room-a', type: 'deleted' });
+    dispatch({ roomId: ROOM, type: 'deleted' });
     expect(await code).toBe(GAME_CLOSE.gone);
+  });
+});
+
+/** Everything a client hears said, in order. */
+function hear(room: GameRoom) {
+  const heard: Said[] = [];
+  room.onMessage('said', (m: Said) => heard.push(m));
+  return heard;
+}
+const quietly = (ms = 200) => new Promise((r) => setTimeout(r, ms));
+
+/** Walks a client somewhere in small steps (the speed cap), from wherever it is. */
+async function walkTo(r: GameRoom, to: { x: number; z: number }) {
+  for (let seq = 1; Math.hypot(me(r).x - to.x, me(r).z - to.z) > 0.3; seq++) {
+    r.send('move', { x: to.x, z: to.z, yaw: 0, moving: true, seq: 1000 + seq });
+    await new Promise((res) => setTimeout(res, 120));
+  }
+}
+
+describe('bubbles and status', () => {
+  it('a bubble reaches everyone, trimmed to 120 characters, and clears your typing dots', async () => {
+    const a = track(await walkIn());
+    const b = track(await walkIn({ sub: 'u-jod', name: 'Jod', handle: 'jod' }));
+    const heard = hear(b);
+    a.send('typing', { typing: true });
+    await until(() => b.state.players.get(a.sessionId)?.typing === true);
+    a.send('say', { text: `  ${'x'.repeat(200)}  ` });
+    await until(() => heard.length === 1);
+    expect(heard[0]).toEqual({ id: a.sessionId, text: 'x'.repeat(120) });
+    await until(() => b.state.players.get(a.sessionId)?.typing === false);
+  });
+
+  it('a bubble said in a private zone stays in it, unless you talk to everyone', async () => {
+    const zone = mapDataFor('library').zones[0]!;
+    const inside = track(await walkIn({ role: 'mod' }));
+    const outside = track(await walkIn({ sub: 'u-jod', name: 'Jod', handle: 'jod' }));
+    const heardOutside = hear(outside);
+    const heardInside = hear(inside);
+    await walkTo(inside, zone.area);
+    inside.send('say', { text: 'just us' });
+    await until(() => heardInside.length === 1);
+    await quietly();
+    expect(heardOutside).toHaveLength(0);
+    // Lines from outside still reach the zone
+    outside.send('say', { text: 'hello room' });
+    await until(() => heardInside.length === 2);
+    inside.send('stage', { on: true });
+    await until(() => me(inside).stage);
+    await quietly(500);
+    inside.send('say', { text: 'everyone!' });
+    await until(() => heardOutside.some((m) => m.text === 'everyone!'));
+  }, 20_000);
+
+  it('a timed-out person can’t say or type, and is told until when', async () => {
+    const until1 = Date.now() + 60_000;
+    const a = track(await walkIn({ timedOutUntil: until1 }));
+    const b = track(await walkIn({ sub: 'u-jod', name: 'Jod', handle: 'jod' }));
+    const heard = hear(b);
+    let quiet = 0;
+    a.onMessage('quiet', (m: { until: number }) => (quiet = m.until));
+    a.send('say', { text: 'hi' });
+    await until(() => quiet === until1);
+    a.send('typing', { typing: true });
+    await quietly();
+    expect(heard).toHaveLength(0);
+    expect(b.state.players.get(a.sessionId)?.typing).toBe(false);
+    // A time out given while inside works at once too
+    dispatch({ roomId: ROOM, type: 'timeout', userId: 'u-jod', until: until1 });
+    let jodQuiet = 0;
+    b.onMessage('quiet', (m: { until: number }) => (jodQuiet = m.until));
+    await quietly(100);
+    b.send('say', { text: 'hey' });
+    await until(() => jodQuiet === until1);
+  });
+
+  it('status: focus with a subject, then away; only the owner and mods talk to everyone', async () => {
+    const a = track(await walkIn());
+    a.send('status', { status: 'focus', subject: 'Calculus but a very long subject name' });
+    await until(() => me(a).status === 'focus');
+    expect(me(a).subject).toBe('Calculus but a very long'.slice(0, 24));
+    expect(me(a).focusSince).toBeGreaterThan(0);
+    a.send('stage', { on: true });
+    await quietly();
+    expect(me(a).stage).toBe(false);
+    dispatch({ roomId: ROOM, type: 'role', userId: 'u-mai', role: 'mod' });
+    await until(() => me(a).role === 'mod');
+    a.send('stage', { on: true });
+    await until(() => me(a).stage);
+    a.send('status', { status: 'away' });
+    await until(() => me(a).status === 'away');
+    expect(me(a).stage).toBe(false);
+    expect(me(a).focusSince).toBe(0);
+  });
+
+  it('a new look shows for everyone, at most once every 5 seconds; guests keep theirs', async () => {
+    const a = track(await walkIn());
+    const pink = { hair: '#f59ac0', outfit: '#ff6fa8', accessory: 'catEars' };
+    a.send('look', { look: pink });
+    await until(() => JSON.parse(me(a).look).accessory === 'catEars');
+    a.send('look', { look: { ...pink, accessory: 'glasses' } });
+    await quietly();
+    expect(JSON.parse(me(a).look).accessory).toBe('catEars');
+    const g = track(await walkIn({ sub: 'u-guest', role: 'guest', name: 'Mint', handle: null }));
+    g.send('look', { look: pink });
+    await quietly();
+    expect(JSON.parse(me(g).look).accessory).not.toBe('catEars');
+  });
+
+  it('resets when the last person leaves: the next visit starts a fresh room', async () => {
+    const a = await walkIn();
+    a.send('typing', { typing: true });
+    const first = a.roomId;
+    await a.leave();
+    // Colyseus closes an empty room a second after the last leave
+    await quietly(1300);
+    const b = track(await walkIn());
+    expect(b.roomId).not.toBe(first);
+    expect(b.state.players.size).toBe(1);
   });
 });

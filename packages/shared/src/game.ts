@@ -16,15 +16,30 @@ export interface GameTicket {
   /** The account */
   sub: string;
   roomId: string;
+  /** null for guests */
+  handle: string | null;
   name: string;
   look: AvatarLook | null;
   role: PlayerRole;
   /** How many may be inside at once (the owner's plan and the map size) */
   capacity: number;
   mapId: string;
+  /** Timed out until then (epoch ms; 0 = not): no bubbles or typing */
+  timedOutUntil: number;
 }
 export const TICKET_AUDIENCE = 'connecta-game';
 export const TICKET_SECONDS = 60;
+
+/** Bubbles: said out loud, over your head (feature 6). */
+export const BUBBLE_MAX = 120;
+/** Fastest you can say bubbles one after another */
+export const SAY_COOLDOWN_MS = 400;
+/** Typing dots clear themselves if the client goes quiet (a closed tab) */
+export const TYPING_TIMEOUT_MS = 6000;
+/** What you're focusing on, shown by your name */
+export const SUBJECT_MAX = 24;
+/** A new look inside a room, at most this often */
+export const LOOK_EVERY_MS = 5000;
 
 /** How long the game server waits for a dropped connection to come back before you leave. */
 export const RECONNECT_SECONDS = 20;
@@ -53,6 +68,7 @@ export const GAME_CHANNELS = {
 export type GameRoomEvent =
   | { roomId: string; type: 'kick' | 'ban' | 'left'; userId: string }
   | { roomId: string; type: 'role'; userId: string; role: PlayerRole }
+  | { roomId: string; type: 'timeout'; userId: string; until: number }
   | { roomId: string; type: 'map'; mapId: string }
   | { roomId: string; type: 'deleted' };
 
@@ -62,4 +78,19 @@ export interface GamePresence {
   tabId: string;
   /** null: gone */
   roomId: string | null;
+}
+
+/**
+ * What a client sends: `move`, `sit`, `stand` (movement), `say` { text }, `typing` { typing },
+ * `status` { status, subject?, endsAt? } (focus, break, away), `stage` { on }, `look` { look }.
+ * What the server sends besides state: `said` and `quiet`.
+ */
+export interface Said {
+  /** The speaker's session id */
+  id: string;
+  text: string;
+}
+/** You're timed out: nothing you say or type goes out until then (epoch ms). */
+export interface Quiet {
+  until: number;
 }

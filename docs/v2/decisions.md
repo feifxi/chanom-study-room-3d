@@ -402,6 +402,12 @@ decision is made or changed: one line, a date, and the reason.
   which room through Redis for the gateway to write, so the gateway stays presence's one writer.
   Rejected: the game server reading Postgres or cookies (a second copy of the rules, and of the auth
   setup).
+- **Step 4 part 2 choices** (2026-11-22, the owner): floating reactions (hearts over a petted cat)
+  move to part 5 with the cats, since people have no emotes; Report stays a mock dialog until
+  feature 14; a bubble reaches the whole room at any distance, except from inside a private zone
+  (a "Nearby" chat was turned down before). In a real room the people list offers Send a message
+  only for friends (DMs are friends-only), and kick works on guests too (their pass ends), as spec
+  01 says mods act on members and guests.
 - **The owner and mods always fit** (2026-11-22, from spec 01): capacity turns away members and
   guests only; the game server's hard cap sits well above it (250).
 - **Background jobs are BullMQ on Redis** (2026-11-22): the pictures worker is the first; it runs

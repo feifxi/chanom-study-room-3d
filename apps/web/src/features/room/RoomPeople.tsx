@@ -24,6 +24,10 @@ export interface RoomPerson {
   speaking?: boolean;
   /** Can't hear the room (headphones off). */
   deafened?: boolean;
+  /** Their account in a real room (for messages, friends and moderation); '' for the demo's people */
+  userId?: string;
+  /** '' for guests */
+  handle?: string;
 }
 
 type Filter = 'all' | 'talking' | 'focusing' | 'friends' | 'guests';
@@ -51,6 +55,10 @@ type PeopleProps = {
   onFind: (id: string | null) => void;
   /** Your role in this room; owners and mods can moderate from the list. */
   myRole?: RoomRole;
+  /** A real room: the people list's actions go to the API */
+  roomId?: string;
+  /** You're a guest: no messages, friends or blocks (those need an account) */
+  youGuest?: boolean;
   onMessage: (p: RoomPerson) => void;
 };
 
@@ -98,6 +106,8 @@ export function RoomPeople({
   findId,
   onFind,
   myRole,
+  roomId,
+  youGuest,
   onMessage,
   onClose,
   className,
@@ -188,6 +198,8 @@ export function RoomPeople({
                         <PersonMenu
                           p={p}
                           myRole={myRole}
+                          roomId={roomId}
+                          youGuest={youGuest}
                           onFind={() => onFind(p.id)}
                           onMessage={() => onMessage(p)}
                           onRemove={() => setRemoved((r) => new Set(r).add(p.id))}

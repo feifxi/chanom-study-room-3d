@@ -58,7 +58,8 @@ links (kind, made by, times used, expiry, **Cancel**).
 The same actions in Members & roles and in the in-room people list:
 
 - **Time out** 10 minutes / 1 hour / 1 day: they stay but can't talk or type.
-- **Kick:** removed from the room and its membership; a new invite brings them back.
+- **Kick:** removed from the room and its membership (a guest: their pass ends); a new invite brings
+  them back.
 - **Ban:** removed, and can't rejoin or use guest passes. Tied to the account, so a new guest name
   doesn't get around it. Members & roles → Banned lists who, why, by whom, with **Unban**.
 - **Make or remove mod:** owner only. In 3D there's also **Mute for everyone**.

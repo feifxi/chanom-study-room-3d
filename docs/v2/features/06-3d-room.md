@@ -1,11 +1,12 @@
 # 6. The 3D room
 
-**Status:** decided and built in the demo. In the real app (2026-11-22, build step 4 part 1) you
-walk in for real: the game server (`apps/game`) holds who's here, movement, seats, capacity and
-live kick, ban, role and map changes. Still the demo's: bubbles, reactions, Away, the people list's
-actions and Talk to everyone (part 2), voice (part 3), screen share (part 4), the cats and study
-buddies (part 5; each browser has its own cats until then), and activities, focus and the study
-panel (step 5). **Try it:** http://localhost:3000/home → a room → Walk in, in two browsers after
+**Status:** decided and built in the demo. In the real app (2026-11-22, build step 4 parts 1–2)
+you walk in for real: the game server (`apps/game`) holds who's here, movement, seats, capacity,
+live kick, ban, role and map changes, bubbles and typing, Away, Talk to everyone (the 📢 mark;
+being heard comes with voice), live looks, and the people list's actions. Still to come: voice,
+with Mute for me and Mute for everyone (part 3), screen share (part 4), the cats and study buddies
+with their hearts when petted (part 5; each browser has its own cats until then), and activities,
+focus and the study panel (step 5); Report stays a mock dialog until feature 14. **Try it:** http://localhost:3000/home → a room → Walk in, in two browsers after
 `pnpm dev` (the demo: http://localhost:3100/servers/chanom/rooms/library: click the floor to walk,
 step onto the Fireside rug, type a bubble, open 🛡️ Room → Talk to everyone, and Demo tab → "Go away
 now").
@@ -178,6 +179,19 @@ under 0.6M.
 - **Zones** come from the map file. The game server knows who's in which zone and sets LiveKit
   subscription permissions, so privacy is enforced, not just hidden; zone bubbles go only to people
   inside.
-- **Away** is decided on the client and sent as a status; the server mutes the LiveKit track too.
-- **Talk to everyone** is a server-checked flag (owner or mod) that overrides distance and zones.
+- **Bubbles** go through the game server (`say`; it sends `said` back): to the whole room, or only
+  to the private zone the speaker stands in (unless they're talking to everyone). It trims to 120
+  characters, allows one every 0.4 s, and holds back bubbles and typing from someone timed out
+  (they get `quiet` with the end time; the ticket carries a time out, and one given while inside
+  arrives through Redis). Typing dots clear themselves after 6 s of silence.
+- **Away** is decided on the client and sent as a status (with focus and breaks: `status`); the
+  server mutes the LiveKit track too (part 3).
+- **Talk to everyone** is a server-checked flag (owner or mod; `stage`) that overrides distance and
+  zones; going away or losing the role turns it off.
+- **Your look** changes live through the server (`look`, at most once every 5 s; guests keep the one
+  they picked).
+- **The people list** in a real room calls the API (Add friend, Block, time out, make mod, kick,
+  ban); the game server applies the result. Send a message shows only for friends (DMs are
+  friends-only). A room's game state is gone a second after the last person leaves: seats, bubbles
+  and typing start fresh.
 - **Voice cap:** each client subscribes to the ~12 nearest speaking tracks, re-picked as people move.

@@ -287,11 +287,16 @@ export class RoomsService {
     this.game.roomEvent({ roomId, type: 'role', userId: whoId, role });
   }
 
-  /** Removed from the room; a new invite brings them back. */
-  async kick(roomId: string, userId: string, whoId: string): Promise<void> {
-    await this.actOn(roomId, userId, whoId, true);
+  /** Removed from the room (a member, or a guest whose pass ends); a new invite brings them back. */
+  async kick(roomId: string, userId: string, whoId: string, now = new Date()): Promise<void> {
+    await this.actOn(roomId, userId, whoId, false);
+    const [member, guest] = await Promise.all([
+      this.prisma.membership.findUnique({ where: { roomId_userId: { roomId, userId: whoId } } }),
+      this.prisma.guestVisit.findUnique({ where: { roomId_userId: { roomId, userId: whoId } } }),
+    ]);
+    if (!member && !(guest && guest.until > now)) throw new NotFoundException('They’re not in this room');
     await this.prisma.$transaction([
-      this.prisma.membership.delete({ where: { roomId_userId: { roomId, userId: whoId } } }),
+      this.prisma.membership.deleteMany({ where: { roomId, userId: whoId } }),
       this.prisma.guestVisit.deleteMany({ where: { roomId, userId: whoId } }),
     ]);
     this.live.leaveRoom(whoId, roomId);
@@ -303,6 +308,8 @@ export class RoomsService {
     await this.actOn(roomId, userId, whoId, true);
     const until = new Date(now.getTime() + TIMEOUT_MINUTES[duration] * 60_000);
     await this.prisma.membership.update({ where: { roomId_userId: { roomId, userId: whoId } }, data: { timedOutUntil: until } });
+    // Inside 3D too: no bubbles or typing until then
+    this.game.roomEvent({ roomId, type: 'timeout', userId: whoId, until: until.getTime() });
   }
 
   /** Removed, and can't rejoin, ask or use guest passes. Works on members and on people who aren't (a guest, someone asking). */
@@ -362,11 +369,13 @@ export class RoomsService {
     const ticket = await this.game.ticket({
       sub: userId,
       roomId,
+      handle: person.handle,
       name: person.name,
       look: person.look,
       role,
       capacity: Math.min(room.capacity ?? max, max),
       mapId: room.mapId,
+      timedOutUntil: member?.timedOutUntil && member.timedOutUntil > now ? member.timedOutUntil.getTime() : 0,
     });
     return { ticket, place: roomId };
   }
