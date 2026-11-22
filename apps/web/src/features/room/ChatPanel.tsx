@@ -7,6 +7,7 @@ import { BUBBLE_MAX } from '../room3d/roomSession';
 import { cn } from '@/lib/utils';
 import type { Server } from '@/lib/mock';
 import { PersonFace } from '@/components/PersonFace';
+import { FriendFace } from '@/features/presence/FriendFace';
 import { DmChat } from '@/features/dms/DmChat';
 import { dmUnread as dmUnreadOf, lastLine, useDms } from '@/features/dms/useDms';
 import { useFriends } from '@/features/friends/useFriends';
@@ -177,7 +178,7 @@ export function ChatPanel({
                 onClick={() => setDmWith(d.with.handle)}
                 className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 text-left hover:bg-muted"
               >
-                <PersonFace who={d.with} size={30} />
+                <FriendFace who={d.with} size={30} />
                 <span className="min-w-0 flex-1">
                   <span className={cn('block truncate text-sm', d.unread ? 'font-black' : 'font-bold')}>{d.with.name}</span>
                   <span className="block truncate text-xs text-muted-foreground">{lastLine(d)}</span>

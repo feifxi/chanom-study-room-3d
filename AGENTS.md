@@ -32,9 +32,9 @@ log. Keep them current in the same change that makes them stale.
 
 ## What's next
 
-Step 3 of the plan, **the gateway**: room chat, DMs, friends and presence over the API's WebSocket
-entry point. Steps 1 and 2 (the skeleton; accounts and rooms with members, roles and invites) are
-done. The plan's
+Step 3 of the plan, **the gateway**: friends, room chat, pictures, DMs and presence are done; the
+in-app notification bell (with muting a DM) is left. Steps 1 and 2 (the skeleton; accounts and
+rooms with members, roles and invites) are done. The plan's
 [What's left](docs/v2-plan.md#whats-left) is the source of truth.
 
 ## Working agreements
@@ -159,7 +159,7 @@ pnpm --filter @connecta/demo demo:screens 390 dark guest
 apps/
   web/       Next.js 16, React Three Fiber, Tailwind v4. Started as a copy of demo/
   api/       NestJS 12: REST + OpenAPI, sign-in, jobs, and a second entry point, the live
-             gateway (src/gateway.ts: Socket.IO at /live, chat and typing; presence next). Owns the
+             gateway (src/gateway.ts: Socket.IO at /live, chat, typing and presence). Owns the
              database: Prisma schema + migrations
   game/      (build step 4) Colyseus rooms: movement, seats, NPCs, activities
 packages/
@@ -172,8 +172,9 @@ docs/        The plan, the decision log, the specs
 ```
 
 - **Live events:** a REST write that others should see live calls `LiveService` (`toRoom`,
-  `toUser`); the gateway delivers it through Redis. The gateway itself only reads. API tests boot
-  the gateway too (`createTestGateway`), so they need Redis as well as Postgres.
+  `toUser`); the gateway delivers it through Redis. The gateway itself writes nothing but presence
+  (`PresenceService`: each tab's state in Redis, "last seen" in Postgres), which the API reads for
+  lists. API tests boot the gateway too (`createTestGateway`), so they need Redis as well as Postgres.
 - **Background jobs:** BullMQ on Redis (`@nestjs/bullmq`), workers in the API process for now; the
   pictures worker is the first (`src/chat/pictures.processor.ts`). Timed jobs stay `@Cron`.
 - **Files:** browsers move the bytes through presigned links from `StorageService`; locally those

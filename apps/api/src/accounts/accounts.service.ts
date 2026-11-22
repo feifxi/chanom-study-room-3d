@@ -4,6 +4,7 @@ import { Prisma, type User } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { AccountDetails, Me } from './accounts.schemas.js';
 import { FriendsService } from '../friends/friends.service.js';
+import { PresenceService } from '../presence/presence.service.js';
 import { RoomsService } from '../rooms/rooms.service.js';
 import { HandlesService } from './handles.service.js';
 import { requireSignedUp } from './signed-up.js';
@@ -25,6 +26,8 @@ export function toMe(user: User): Me {
     signedUp: user.handle !== null,
     deleteAt: user.deleteAt?.toISOString() ?? null,
     requestsFrom: user.requestsFrom as RequestsFrom,
+    appearOffline: user.appearOffline,
+    showActivity: user.showActivity,
   };
 }
 
@@ -45,6 +48,7 @@ export class AccountsService {
     private readonly handles: HandlesService,
     private readonly rooms: RoomsService,
     private readonly friends: FriendsService,
+    private readonly presence: PresenceService,
     @Inject(SIGN_IN_PROVIDERS) private readonly providers: SignInProviders,
   ) {}
 
@@ -78,9 +82,15 @@ export class AccountsService {
   }
 
   /** Settings → Privacy & safety. */
-  async updatePrivacy(userId: string, input: { requestsFrom?: RequestsFrom }): Promise<Me> {
+  async updatePrivacy(
+    userId: string,
+    input: { requestsFrom?: RequestsFrom; appearOffline?: boolean; showActivity?: boolean },
+  ): Promise<Me> {
     await this.signedUp(userId);
-    return toMe(await this.prisma.user.update({ where: { id: userId }, data: input }));
+    const me = toMe(await this.prisma.user.update({ where: { id: userId }, data: input }));
+    // Friends see the change at once (appearing offline, or back)
+    if (input.appearOffline !== undefined || input.showActivity !== undefined) await this.presence.settle(userId, Date.now(), true);
+    return me;
   }
 
   /** The last step: character, display name and @handle. Then the app opens Home. */

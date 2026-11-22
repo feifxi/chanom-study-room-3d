@@ -34,6 +34,11 @@ export class LiveService implements OnModuleDestroy {
     this.io.to(liveRoom.user(userId)).emit(event, payload);
   }
 
+  /** A named channel tabs subscribe to through the gateway (a room's "inside now" numbers). */
+  toChannel(channel: string, event: string, payload: unknown) {
+    this.io.to(channel).emit(event, payload);
+  }
+
   /** Each person once, however many tabs they have open (a DM's two people). */
   toUsers(userIds: string[], event: string, payload: unknown) {
     this.io.to(userIds.map(liveRoom.user)).emit(event, payload);

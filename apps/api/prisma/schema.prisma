@@ -37,6 +37,12 @@ model User {
   look            Json?
   /// Who can send a friend request: anyone, rooms (people who share a room) or nobody
   requestsFrom    String    @default("anyone") @map("requests_from")
+  /// Friends see you as offline (and not in any room)
+  appearOffline   Boolean   @default(false) @map("appear_offline")
+  /// Friends see what you're doing ("Focusing · Calculus"), not only where
+  showActivity    Boolean   @default(true) @map("show_activity")
+  /// When you last went offline; the live state itself is in Redis (PresenceService)
+  lastSeenAt      DateTime? @map("last_seen_at")
   /// Asked to be deleted: goes at this time unless they sign in and keep it (7 days)
   deleteAt        DateTime? @map("delete_at")
   /// Deleted: the row stays as "Deleted user" so their messages still read; everything personal is gone
@@ -348,6 +354,10 @@ model Message {
   authorId     String     @map("author_id")
   author       User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
   text         String
+  /// text, or a card in a DM: ask (asking to join the other person's room) or invite (a link to one)
+  kind         String     @default("text")
+  /// The card's details (room, invite code, answer); null for text
+  card         Json?
   replyToId    String?    @map("reply_to_id")
   replyTo      Message?   @relation("replies", fields: [replyToId], references: [id], onDelete: SetNull)
   replies      Message[]  @relation("replies")

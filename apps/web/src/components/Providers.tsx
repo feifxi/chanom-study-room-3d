@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { PresenceReporter } from '@/features/presence/usePresence';
 import { loadViewer, useViewer } from '@/lib/viewer';
 
 /** Server data (TanStack Query) and theme (light/dark via next-themes). One brand colour, Thai tea, set in globals.css. */
@@ -20,6 +21,7 @@ export function Providers({ children }: { children: ReactNode }) {
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
         <TooltipProvider delayDuration={200}>
           <Fragment key={viewer}>{children}</Fragment>
+          <PresenceReporter />
           <Toaster position="top-center" />
         </TooltipProvider>
       </ThemeProvider>

@@ -85,6 +85,8 @@ export const RoomSchema = z
     maxMembers: z.number().int(),
     /** Waiting to be let in; only counted for the owner and mods */
     requestCount: z.number().int(),
+    /** Who's inside (3D open) right now; members only (empty for everyone else) */
+    inside: z.array(PersonSchema),
     me: MyPlaceSchema,
   })
   .meta({ id: 'Room' });

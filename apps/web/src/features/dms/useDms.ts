@@ -54,6 +54,24 @@ export function useDmWith(handle: string) {
 /** A DM's last message, for lists: "You: see you there", "a picture", "deleted". */
 export function lastLine(d: DmSummary) {
   if (!d.last) return '';
-  const text = d.last.deleted ? 'Message deleted' : d.last.text || (d.last.pictures ? '📷 a picture' : '');
+  const text = d.last.deleted
+    ? 'Message deleted'
+    : d.last.kind === 'ask'
+      ? '🚪 Asked to join'
+      : d.last.kind === 'invite'
+        ? '💌 An invite to a room'
+        : d.last.text || (d.last.pictures ? '📷 a picture' : '');
   return d.last.mine ? `You: ${text}` : text;
 }
+
+/**
+ * The DM cards (feature 5): asking a friend to let you into their room, answering, and sending a
+ * friend a link to one of yours. Each lands in your DM with them.
+ */
+export const dmCards = {
+  ask: async (handle: string) => ok(await api.POST('/api/dms/with/{handle}/ask', { params: { path: { handle } } })),
+  answer: async ({ messageId, send }: { messageId: string; send: boolean }) =>
+    ok(await api.POST('/api/dms/asks/{messageId}', { params: { path: { messageId } }, body: { send } })),
+  invite: async ({ handle, roomId }: { handle: string; roomId: string }) =>
+    ok(await api.POST('/api/dms/with/{handle}/invite', { params: { path: { handle } }, body: { roomId } })),
+};

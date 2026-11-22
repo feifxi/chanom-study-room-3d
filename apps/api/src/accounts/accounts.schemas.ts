@@ -34,6 +34,10 @@ export const MeSchema = z
     deleteAt: z.iso.datetime().nullable(),
     /** Privacy & safety: who can send you a friend request */
     requestsFrom: z.enum(REQUESTS_FROM),
+    /** Friends see you as offline */
+    appearOffline: z.boolean(),
+    /** Friends see what you're doing, not only where */
+    showActivity: z.boolean(),
   })
   .meta({ id: 'Me' });
 export type Me = z.infer<typeof MeSchema>;
@@ -61,7 +65,7 @@ export const TooYoungSchema = z.object({ code: z.literal('too_young'), until: z.
 export const ProfileBodySchema = z.object({ name: DisplayName.optional(), look: LookSchema.optional() }).meta({ id: 'ProfileBody' });
 
 export const PrivacyBodySchema = z
-  .object({ requestsFrom: z.enum(REQUESTS_FROM) })
+  .object({ requestsFrom: z.enum(REQUESTS_FROM), appearOffline: z.boolean(), showActivity: z.boolean() })
   .partial()
   .meta({ id: 'PrivacyBody' });
 

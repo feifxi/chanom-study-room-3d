@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { DmLocked } from '@/components/chat/Chat';
-import { PersonFace } from '@/components/PersonFace';
+import { FriendFace } from '@/features/presence/FriendFace';
 import { colorOf, ThreadChat } from '@/features/chat/RoomChat';
 import { MiniChat } from '@/features/chat/MiniRoomChat';
 import { friendsApi, useFriendAction } from '@/features/friends/useFriends';
@@ -40,7 +40,7 @@ export function DmChat({ handle, mini, onOpen, className }: { handle: string; mi
 function DmIntro({ dm }: { dm: DmOpen }): ReactNode {
   return (
     <div className="flex flex-col items-start gap-2 px-6 pt-8">
-      <PersonFace who={dm.with} size={72} />
+      <FriendFace who={dm.with} size={72} />
       <p className="text-2xl font-black">{dm.with.name}</p>
       <p className="text-sm text-muted-foreground">This is the start of your messages with {dm.with.name}.</p>
     </div>

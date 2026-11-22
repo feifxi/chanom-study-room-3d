@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Bell, MessageCircle, Play, Crown, UserPlus } from 'lucide-react';
 import { RoomChat } from '@/features/chat/RoomChat';
+import { useWatchInside } from '@/features/presence/usePresence';
 import { InviteDialog } from '@/features/rooms/InviteDialog';
 import { UserAvatar } from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
@@ -25,8 +26,8 @@ export function PlaceChat({ initial }: { initial: Room }) {
   const [invite, setInvite] = useState(false);
   const pin = useRoomAction(roomsApi.myPlace);
   const members = useMembers(room.id);
-  // Who's inside comes with presence (build step 3)
-  const inside: never[] = [];
+  const inside = room.people;
+  useWatchInside([room.id]);
 
   // Home lists rooms you've opened lately first
   useEffect(() => {
@@ -128,6 +129,9 @@ export function PlaceChat({ initial }: { initial: Room }) {
             {inside.length === 0 && (
               <p className="px-1 text-sm text-muted-foreground">Lights off. Walk in first and friends will see you there.</p>
             )}
+            {inside.map((p) => (
+              <Person key={p.id} name={p.name} color={p.look?.outfit} note={p.handle && `@${p.handle}`} />
+            ))}
           </Group>
           <Group title={`Members · ${room.room.memberCount}`}>
             {members.data?.map((m) => (

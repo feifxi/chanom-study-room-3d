@@ -56,7 +56,15 @@ export function UserAvatar({
 }
 
 /** Overlapping avatars, "+n" when there are more. */
-export function AvatarStack({ users, max = 4, size = 24 }: { users: User[]; max?: number; size?: number }) {
+export function AvatarStack({
+  users,
+  max = 4,
+  size = 24,
+}: {
+  users: Pick<User, 'id' | 'name' | 'color' | 'presence'>[];
+  max?: number;
+  size?: number;
+}) {
   const shown = users.slice(0, max);
   return (
     <span className="flex items-center">

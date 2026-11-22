@@ -4,2771 +4,2941 @@
  */
 
 export interface paths {
-    "/api/health": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["HealthController_check"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  '/api/health': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["MeController_me"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['HealthController_check'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/me': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/me/birthday": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["MeController_birthday"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['MeController_me'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/me/birthday': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/me/sign-up": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["MeController_signUp"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['MeController_birthday'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/me/sign-up': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/me/guest": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["MeController_guest"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['MeController_signUp'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/me/guest': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/me/profile": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch: operations["MeController_profile"];
-        trace?: never;
+    get?: never;
+    put: operations['MeController_guest'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/me/profile': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/me/privacy": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch: operations["MeController_privacy"];
-        trace?: never;
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch: operations['MeController_profile'];
+    trace?: never;
+  };
+  '/api/me/privacy': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/me/handle": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["MeController_handle"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch: operations['MeController_privacy'];
+    trace?: never;
+  };
+  '/api/me/handle': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/me/account": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["MeController_account"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put: operations['MeController_handle'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/me/account': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/me/deletion": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["MeController_requestDeletion"];
-        delete: operations["MeController_keep"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['MeController_account'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/me/deletion': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/handles/{handle}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["HandlesController_check"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['MeController_requestDeletion'];
+    delete: operations['MeController_keep'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/handles/{handle}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["RoomsController_mine"];
-        put?: never;
-        post: operations["RoomsController_make"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['HandlesController_check'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/listed": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["RoomsController_listed"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['RoomsController_mine'];
+    put?: never;
+    post: operations['RoomsController_make'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/listed': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["RoomsController_get"];
-        put?: never;
-        post?: never;
-        delete: operations["RoomsController_remove"];
-        options?: never;
-        head?: never;
-        patch: operations["RoomsController_update"];
-        trace?: never;
+    get: operations['RoomsController_listed'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/{id}/owner": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["RoomsController_transfer"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['RoomsController_get'];
+    put?: never;
+    post?: never;
+    delete: operations['RoomsController_remove'];
+    options?: never;
+    head?: never;
+    patch: operations['RoomsController_update'];
+    trace?: never;
+  };
+  '/api/rooms/{id}/owner': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/{id}/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete: operations["RoomsController_leave"];
-        options?: never;
-        head?: never;
-        patch: operations["RoomsController_myPlace"];
-        trace?: never;
+    get?: never;
+    put: operations['RoomsController_transfer'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}/me': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/{id}/visit": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["RoomsController_visit"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post?: never;
+    delete: operations['RoomsController_leave'];
+    options?: never;
+    head?: never;
+    patch: operations['RoomsController_myPlace'];
+    trace?: never;
+  };
+  '/api/rooms/{id}/visit': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/{id}/join": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["RoomsController_join"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put: operations['RoomsController_visit'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}/join': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/{id}/requests": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["RoomsController_requests"];
-        put?: never;
-        post: operations["RoomsController_ask"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['RoomsController_join'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}/requests': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/{id}/requests/{userId}/accept": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["RoomsController_letIn"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['RoomsController_requests'];
+    put?: never;
+    post: operations['RoomsController_ask'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}/requests/{userId}/accept': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/{id}/requests/{userId}/decline": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["RoomsController_decline"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['RoomsController_letIn'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}/requests/{userId}/decline': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/{id}/members": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["RoomsController_members"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['RoomsController_decline'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}/members': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/{id}/members/{userId}/role": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["RoomsController_role"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['RoomsController_members'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}/members/{userId}/role': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/{id}/members/{userId}/timeout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["RoomsController_timeOut"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put: operations['RoomsController_role'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}/members/{userId}/timeout': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/{id}/members/{userId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete: operations["RoomsController_kick"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put: operations['RoomsController_timeOut'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}/members/{userId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/{id}/bans": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["RoomsController_bans"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post?: never;
+    delete: operations['RoomsController_kick'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}/bans': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/{id}/bans/{userId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["RoomsController_ban"];
-        post?: never;
-        delete: operations["RoomsController_unban"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['RoomsController_bans'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}/bans/{userId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/{id}/invites": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["RoomsController_invites"];
-        put?: never;
-        post: operations["RoomsController_makeInvite"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put: operations['RoomsController_ban'];
+    post?: never;
+    delete: operations['RoomsController_unban'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}/invites': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/invites/{code}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["InvitesController_preview"];
-        put?: never;
-        post?: never;
-        delete: operations["InvitesController_cancel"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['RoomsController_invites'];
+    put?: never;
+    post: operations['RoomsController_makeInvite'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/invites/{code}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/invites/{code}/accept": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["InvitesController_accept"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['InvitesController_preview'];
+    put?: never;
+    post?: never;
+    delete: operations['InvitesController_cancel'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/invites/{code}/accept': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/{id}/messages": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["ChatController_page"];
-        put?: never;
-        post: operations["ChatController_send"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['InvitesController_accept'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}/messages': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/rooms/{id}/read": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["ChatController_read"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['ChatController_page'];
+    put?: never;
+    post: operations['ChatController_send'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}/read': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/messages/{messageId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete: operations["ChatController_remove"];
-        options?: never;
-        head?: never;
-        patch: operations["ChatController_edit"];
-        trace?: never;
+    get?: never;
+    put: operations['ChatController_read'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/messages/{messageId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/messages/{messageId}/reactions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["ChatController_react"];
-        post?: never;
-        delete: operations["ChatController_unreact"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post?: never;
+    delete: operations['ChatController_remove'];
+    options?: never;
+    head?: never;
+    patch: operations['ChatController_edit'];
+    trace?: never;
+  };
+  '/api/messages/{messageId}/reactions': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/pictures": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["PicturesController_start"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put: operations['ChatController_react'];
+    post?: never;
+    delete: operations['ChatController_unreact'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/pictures': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/pictures/{pictureId}/uploaded": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["PicturesController_uploaded"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['PicturesController_start'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/pictures/{pictureId}/uploaded': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/pictures/{pictureId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["PicturesController_open"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['PicturesController_uploaded'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/pictures/{pictureId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/friends": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["FriendsController_list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['PicturesController_open'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/friends': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/friends/{userId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete: operations["FriendsController_remove"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['FriendsController_list'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/friends/{userId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/friends/requests": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["FriendsController_requests"];
-        put?: never;
-        post: operations["FriendsController_add"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post?: never;
+    delete: operations['FriendsController_remove'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/friends/requests': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/friends/requests/{userId}/accept": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["FriendsController_accept"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['FriendsController_requests'];
+    put?: never;
+    post: operations['FriendsController_add'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/friends/requests/{userId}/accept': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/friends/requests/{userId}/ignore": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["FriendsController_ignore"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['FriendsController_accept'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/friends/requests/{userId}/ignore': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/friends/requests/{userId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete: operations["FriendsController_cancel"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['FriendsController_ignore'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/friends/requests/{userId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/blocks": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["FriendsController_blocks"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post?: never;
+    delete: operations['FriendsController_cancel'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/blocks': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/blocks/{userId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["FriendsController_block"];
-        post?: never;
-        delete: operations["FriendsController_unblock"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['FriendsController_blocks'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/blocks/{userId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/dms": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["DmsController_list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put: operations['FriendsController_block'];
+    post?: never;
+    delete: operations['FriendsController_unblock'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/dms': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/dms/with/{handle}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["DmsController_open"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['DmsController_list'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/dms/with/{handle}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/dms/{id}/messages": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["DmsController_page"];
-        put?: never;
-        post: operations["DmsController_send"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put: operations['DmsController_open'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/dms/with/{handle}/ask': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/dms/{id}/read": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["DmsController_read"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['DmsController_ask'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/dms/with/{handle}/invite': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    get?: never;
+    put?: never;
+    post: operations['DmsController_invite'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/dms/asks/{messageId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['DmsController_answer'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/dms/{id}/messages': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['DmsController_page'];
+    put?: never;
+    post: operations['DmsController_send'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/dms/{id}/read': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put: operations['DmsController_read'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        TerminusHealthIndicatorResult: {
-            /**
-             * @description The status of this health indicator
-             * @enum {string}
-             */
-            status: "up" | "degraded" | "down";
-            /** @description Time the health indicator took to respond, in ms */
-            responseTime?: number;
-            /** @description Whether this result was served from the cache */
-            cachedResponse?: boolean;
-        };
-        TerminusHealthCheckResult: {
-            /**
-             * @example ok
-             * @enum {string}
-             */
-            status: "error" | "ok" | "degraded" | "shutting_down";
-            /**
-             * @example {
-             *       "database": {
-             *         "status": "up",
-             *         "responseTime": 12
-             *       }
-             *     }
-             */
-            info?: {
-                [key: string]: components["schemas"]["TerminusHealthIndicatorResult"] & {
-                    [key: string]: unknown;
-                };
-            } | null;
-            /** @example {} */
-            error?: {
-                [key: string]: components["schemas"]["TerminusHealthIndicatorResult"] & {
-                    [key: string]: unknown;
-                };
-            } | null;
-            /**
-             * @example {
-             *       "database": {
-             *         "status": "up",
-             *         "responseTime": 12
-             *       }
-             *     }
-             */
-            details: {
-                [key: string]: components["schemas"]["TerminusHealthIndicatorResult"] & {
-                    [key: string]: unknown;
-                };
-            };
-        };
-        Me: {
-            id: string;
-            name: string;
-            handle: string | null;
-            look: components["schemas"]["Look"] | null;
-            email: string | null;
-            isGuest: boolean;
-            ageChecked: boolean;
-            signedUp: boolean;
-            /** Format: date-time */
-            deleteAt: string | null;
-            /** @enum {string} */
-            requestsFrom: "anyone" | "rooms" | "nobody";
-        };
-        Look: {
-            hair: string;
-            outfit: string;
-            /** @enum {string} */
-            accessory: "none" | "ribbon" | "catEars" | "glasses" | "headphones" | "ahoge" | "twintails";
-        };
-        BirthdayBody: {
-            /**
-             * Format: date
-             * @description YYYY-MM-DD
-             */
-            birthday: string;
-        };
-        TooYoung: {
-            /** @enum {string} */
-            code: "too_young";
-            /** Format: date-time */
-            until: string;
-        };
-        SignUpBody: {
-            name: string;
-            handle: string;
-            look: components["schemas"]["Look"];
-        };
-        HandleCheck: {
-            handle: string;
-            available: boolean;
-            reason: string | null;
-            suggestions: string[];
-        };
-        GuestBody: {
-            name: string;
-            look: components["schemas"]["Look"];
-        };
-        ProfileBody: {
-            name?: string;
-            look?: components["schemas"]["Look"];
-        };
-        PrivacyBody: {
-            /** @enum {string} */
-            requestsFrom?: "anyone" | "rooms" | "nobody";
-        };
-        HandleBody: {
-            handle: string;
-        };
-        TooSoon: {
-            /** @enum {string} */
-            code: "too_soon";
-            /** Format: date-time */
-            nextChangeAt: string;
-        };
-        AccountDetails: {
-            email: string;
-            /** Format: date */
-            birthday: string | null;
-            linked: {
-                google: string | null;
-                discord: string | null;
-            };
-            available: {
-                google: boolean;
-                discord: boolean;
-            };
-            /** Format: date-time */
-            nextHandleChangeAt: string | null;
-        };
-        DeletionBody: {
-            /** @description The @handle, typed to confirm */
-            handle: string;
-            /** @default {} */
-            heirs: {
-                [key: string]: string;
-            };
-        };
-        Room: {
-            id: string;
-            name: string;
-            emoji: string;
-            description: string;
-            /** @enum {string} */
-            mapId: "library" | "cafe" | "rooftop";
-            /** @enum {string} */
-            size: "cosy" | "big";
-            /** @enum {string} */
-            time: "clock" | "day" | "night";
-            /** @enum {string} */
-            visibility: "private" | "request" | "open";
-            capacity: number;
-            maxCapacity: number;
-            tags: string[];
-            language: string | null;
-            rules: string;
-            showRules: boolean;
-            filterWords: boolean;
-            slowMode: boolean;
-            newMemberWait: boolean;
-            roomWideGames: boolean;
-            membersCanInvite: boolean;
-            allowGuests: boolean;
-            guestVoice: boolean;
-            ownerPlus: boolean;
-            owner: components["schemas"]["Person"];
-            mods: components["schemas"]["Person"][];
-            memberCount: number;
-            maxMembers: number;
-            requestCount: number;
-            me: components["schemas"]["MyPlace"];
-        };
-        Person: {
-            id: string;
-            name: string;
-            handle: string | null;
-            look: components["schemas"]["Look"] | null;
-        };
-        MyPlace: {
-            /** @enum {string|null} */
-            role: "owner" | "mod" | "member" | null;
-            pinned: boolean;
-            /** @enum {string} */
-            notify: "all" | "mentions" | "none";
-            requested: boolean;
-            /** Format: date-time */
-            askAgainAt: string | null;
-            /** Format: date-time */
-            guestUntil: string | null;
-            /** Format: date-time */
-            visitedAt: string | null;
-            /** Format: date-time */
-            timedOutUntil: string | null;
-            unread: number;
-            mentioned: boolean;
-        };
-        CreateRoomBody: {
-            name: string;
-            /** @enum {string} */
-            mapId: "library" | "cafe" | "rooftop";
-        };
-        DiscoverQuery: {
-            q?: string;
-            /** @enum {string} */
-            tag?: "Study" | "Chill" | "Games" | "Language exchange" | "Music" | "Art" | "Anime" | "Late night";
-            /** @enum {string} */
-            language?: "Thai" | "English" | "Japanese" | "Korean" | "Chinese" | "Mixed";
-        };
-        ListedRoom: {
-            id: string;
-            name: string;
-            emoji: string;
-            description: string;
-            /** @enum {string} */
-            mapId: "library" | "cafe" | "rooftop";
-            /** @enum {string} */
-            visibility: "request" | "open";
-            tags: string[];
-            language: string | null;
-            owner: components["schemas"]["Person"];
-            memberCount: number;
-            capacity: number;
-            rules: string | null;
-            me: components["schemas"]["MyPlace"];
-        };
-        RoomSettingsBody: {
-            name?: string;
-            emoji?: string;
-            description?: string;
-            /** @enum {string} */
-            mapId?: "library" | "cafe" | "rooftop";
-            /** @enum {string} */
-            size?: "cosy" | "big";
-            /** @enum {string} */
-            time?: "clock" | "day" | "night";
-            /** @enum {string} */
-            visibility?: "private" | "request" | "open";
-            capacity?: number;
-            tags?: ("Study" | "Chill" | "Games" | "Language exchange" | "Music" | "Art" | "Anime" | "Late night")[];
-            /** @enum {string|null} */
-            language?: "Thai" | "English" | "Japanese" | "Korean" | "Chinese" | "Mixed" | null;
-            rules?: string;
-            showRules?: boolean;
-            filterWords?: boolean;
-            slowMode?: boolean;
-            newMemberWait?: boolean;
-            roomWideGames?: boolean;
-            membersCanInvite?: boolean;
-            allowGuests?: boolean;
-            guestVoice?: boolean;
-        };
-        DeleteRoomBody: {
-            /** @description The room name, typed to confirm */
-            name: string;
-        };
-        TransferBody: {
-            userId: string;
-        };
-        MyPlaceBody: {
-            pinned?: boolean;
-            /** @enum {string} */
-            notify?: "all" | "mentions" | "none";
-        };
-        AskBody: {
-            note?: string;
-        };
-        JoinRequest: {
-            person: components["schemas"]["Person"];
-            note: string | null;
-            /** Format: date-time */
-            at: string;
-        };
-        Member: {
-            person: components["schemas"]["Person"];
-            /** @enum {string} */
-            role: "owner" | "mod" | "member";
-            /** Format: date-time */
-            joinedAt: string;
-            /** Format: date-time */
-            timedOutUntil: string | null;
-        };
-        RoleBody: {
-            /** @enum {string} */
-            role: "mod" | "member";
-        };
-        TimeoutBody: {
-            /** @enum {string} */
-            duration: "10m" | "1h" | "1d";
-        };
-        Ban: {
-            person: components["schemas"]["Person"];
-            by: components["schemas"]["Person"] | null;
-            reason: string | null;
-            /** Format: date-time */
-            at: string;
-        };
-        BanBody: {
-            reason?: string;
-        };
-        MakeInviteBody: {
-            /** @enum {string} */
-            kind: "member" | "guest";
-            /**
-             * @default 7d
-             * @enum {string}
-             */
-            expiry: "1d" | "7d" | "never";
-            /** @default false */
-            fresh: boolean;
-        };
-        Invite: {
-            code: string;
-            /** @enum {string} */
-            kind: "member" | "guest";
-            by: components["schemas"]["Person"] | null;
-            /** @enum {string} */
-            expiry: "1d" | "7d" | "never" | "24h";
-            uses: number;
-            /** Format: date-time */
-            expiresAt: string | null;
-        };
-        InvitePreview: {
-            code: string;
-            /** @enum {string} */
-            kind: "member" | "guest";
-            /** Format: date-time */
-            expiresAt: string | null;
-            by: components["schemas"]["Person"] | null;
-            room: {
-                id: string;
-                name: string;
-                emoji: string;
-                description: string;
-                /** @enum {string} */
-                mapId: "library" | "cafe" | "rooftop";
-                memberCount: number;
-                allowGuests: boolean;
-            };
-            member: boolean;
-        };
-        Accepted: {
-            roomId: string;
-            /** Format: date-time */
-            guestUntil: string | null;
-        };
-        MessagePageQuery: {
-            before?: string;
-            /** @default 50 */
-            limit: number;
-        };
-        MessagePage: {
-            messages: components["schemas"]["ChatMessage"][];
-            hasMore: boolean;
-            lastReadId: string | null;
-        };
-        ChatMessage: {
-            id: string;
-            roomId: string | null;
-            dmId: string | null;
-            author: components["schemas"]["Person"];
-            text: string;
-            replyTo: {
-                id: string;
-                author: components["schemas"]["Person"];
-                text: string;
-                deleted: boolean;
-                hasPictures: boolean;
-            } | null;
-            mentions: string[];
-            mentionsRoom: boolean;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            editedAt: string | null;
-            ready: boolean;
-            pictures: components["schemas"]["Picture"][];
-            reactions: components["schemas"]["Reaction"][];
-        };
-        Picture: {
-            id: string;
-            url: string;
-            width: number;
-            height: number;
-            ready: boolean;
-        };
-        Reaction: {
-            emoji: string;
-            userIds: string[];
-        };
-        SendMessageBody: {
-            text: string;
-            replyToId?: string;
-            /** @default [] */
-            pictureIds: string[];
-        };
-        ReadBody: {
-            messageId: string;
-        };
-        EditMessageBody: {
-            text: string;
-        };
-        ReactionBody: {
-            emoji: string;
-        };
-        PictureUploadBody: {
-            contentType: string;
-            bytes: number;
-        };
-        PictureUpload: {
-            id: string;
-            uploadUrl: string;
-            headers: {
-                [key: string]: string;
-            };
-        };
-        Friend: {
-            person: components["schemas"]["Person"];
-            /** Format: date-time */
-            since: string;
-        };
-        FriendRequests: {
-            incoming: components["schemas"]["IncomingRequest"][];
-            sent: components["schemas"]["SentRequest"][];
-            leftToday: number;
-        };
-        IncomingRequest: {
-            person: components["schemas"]["Person"];
-            /** Format: date-time */
-            at: string;
-            shared: string[];
-        };
-        SentRequest: {
-            person: components["schemas"]["Person"];
-            /** Format: date-time */
-            at: string;
-        };
-        AddFriendBody: {
-            /** @description Exact @handle, with or without the @ */
-            handle: string;
-        };
-        AddFriendResult: {
-            /** @enum {string} */
-            status: "sent" | "friends";
-            person: components["schemas"]["Person"];
-        };
-        Blocked: {
-            person: components["schemas"]["Person"];
-            /** Format: date-time */
-            at: string;
-        };
-        DmSummary: {
-            id: string;
-            with: components["schemas"]["Person"];
-            friend: boolean;
-            blocked: boolean;
-            last: {
-                text: string;
-                mine: boolean;
-                pictures: boolean;
-                deleted: boolean;
-                /** Format: date-time */
-                createdAt: string;
-            } | null;
-            unread: number;
-        };
-        DmOpen: {
-            id: string | null;
-            with: components["schemas"]["Person"];
-            friend: boolean;
-            blocked: boolean;
-            sharedRooms: {
-                id: string;
-                name: string;
-                emoji: string;
-                mapId: string;
-            }[];
-        };
+  schemas: {
+    TerminusHealthIndicatorResult: {
+      /**
+       * @description The status of this health indicator
+       * @enum {string}
+       */
+      status: 'up' | 'degraded' | 'down';
+      /** @description Time the health indicator took to respond, in ms */
+      responseTime?: number;
+      /** @description Whether this result was served from the cache */
+      cachedResponse?: boolean;
     };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+    TerminusHealthCheckResult: {
+      /**
+       * @example ok
+       * @enum {string}
+       */
+      status: 'error' | 'ok' | 'degraded' | 'shutting_down';
+      /**
+       * @example {
+       *       "database": {
+       *         "status": "up",
+       *         "responseTime": 12
+       *       }
+       *     }
+       */
+      info?: {
+        [key: string]: components['schemas']['TerminusHealthIndicatorResult'] & {
+          [key: string]: unknown;
+        };
+      } | null;
+      /** @example {} */
+      error?: {
+        [key: string]: components['schemas']['TerminusHealthIndicatorResult'] & {
+          [key: string]: unknown;
+        };
+      } | null;
+      /**
+       * @example {
+       *       "database": {
+       *         "status": "up",
+       *         "responseTime": 12
+       *       }
+       *     }
+       */
+      details: {
+        [key: string]: components['schemas']['TerminusHealthIndicatorResult'] & {
+          [key: string]: unknown;
+        };
+      };
+    };
+    Me: {
+      id: string;
+      name: string;
+      handle: string | null;
+      look: components['schemas']['Look'] | null;
+      email: string | null;
+      isGuest: boolean;
+      ageChecked: boolean;
+      signedUp: boolean;
+      /** Format: date-time */
+      deleteAt: string | null;
+      /** @enum {string} */
+      requestsFrom: 'anyone' | 'rooms' | 'nobody';
+      appearOffline: boolean;
+      showActivity: boolean;
+    };
+    Look: {
+      hair: string;
+      outfit: string;
+      /** @enum {string} */
+      accessory: 'none' | 'ribbon' | 'catEars' | 'glasses' | 'headphones' | 'ahoge' | 'twintails';
+    };
+    BirthdayBody: {
+      /**
+       * Format: date
+       * @description YYYY-MM-DD
+       */
+      birthday: string;
+    };
+    TooYoung: {
+      /** @enum {string} */
+      code: 'too_young';
+      /** Format: date-time */
+      until: string;
+    };
+    SignUpBody: {
+      name: string;
+      handle: string;
+      look: components['schemas']['Look'];
+    };
+    HandleCheck: {
+      handle: string;
+      available: boolean;
+      reason: string | null;
+      suggestions: string[];
+    };
+    GuestBody: {
+      name: string;
+      look: components['schemas']['Look'];
+    };
+    ProfileBody: {
+      name?: string;
+      look?: components['schemas']['Look'];
+    };
+    PrivacyBody: {
+      /** @enum {string} */
+      requestsFrom?: 'anyone' | 'rooms' | 'nobody';
+      appearOffline?: boolean;
+      showActivity?: boolean;
+    };
+    HandleBody: {
+      handle: string;
+    };
+    TooSoon: {
+      /** @enum {string} */
+      code: 'too_soon';
+      /** Format: date-time */
+      nextChangeAt: string;
+    };
+    AccountDetails: {
+      email: string;
+      /** Format: date */
+      birthday: string | null;
+      linked: {
+        google: string | null;
+        discord: string | null;
+      };
+      available: {
+        google: boolean;
+        discord: boolean;
+      };
+      /** Format: date-time */
+      nextHandleChangeAt: string | null;
+    };
+    DeletionBody: {
+      /** @description The @handle, typed to confirm */
+      handle: string;
+      /** @default {} */
+      heirs: {
+        [key: string]: string;
+      };
+    };
+    Room: {
+      id: string;
+      name: string;
+      emoji: string;
+      description: string;
+      /** @enum {string} */
+      mapId: 'library' | 'cafe' | 'rooftop';
+      /** @enum {string} */
+      size: 'cosy' | 'big';
+      /** @enum {string} */
+      time: 'clock' | 'day' | 'night';
+      /** @enum {string} */
+      visibility: 'private' | 'request' | 'open';
+      capacity: number;
+      maxCapacity: number;
+      tags: string[];
+      language: string | null;
+      rules: string;
+      showRules: boolean;
+      filterWords: boolean;
+      slowMode: boolean;
+      newMemberWait: boolean;
+      roomWideGames: boolean;
+      membersCanInvite: boolean;
+      allowGuests: boolean;
+      guestVoice: boolean;
+      ownerPlus: boolean;
+      owner: components['schemas']['Person'];
+      mods: components['schemas']['Person'][];
+      memberCount: number;
+      maxMembers: number;
+      requestCount: number;
+      inside: components['schemas']['Person'][];
+      me: components['schemas']['MyPlace'];
+    };
+    Person: {
+      id: string;
+      name: string;
+      handle: string | null;
+      look: components['schemas']['Look'] | null;
+    };
+    MyPlace: {
+      /** @enum {string|null} */
+      role: 'owner' | 'mod' | 'member' | null;
+      pinned: boolean;
+      /** @enum {string} */
+      notify: 'all' | 'mentions' | 'none';
+      requested: boolean;
+      /** Format: date-time */
+      askAgainAt: string | null;
+      /** Format: date-time */
+      guestUntil: string | null;
+      /** Format: date-time */
+      visitedAt: string | null;
+      /** Format: date-time */
+      timedOutUntil: string | null;
+      unread: number;
+      mentioned: boolean;
+    };
+    CreateRoomBody: {
+      name: string;
+      /** @enum {string} */
+      mapId: 'library' | 'cafe' | 'rooftop';
+    };
+    DiscoverQuery: {
+      q?: string;
+      /** @enum {string} */
+      tag?: 'Study' | 'Chill' | 'Games' | 'Language exchange' | 'Music' | 'Art' | 'Anime' | 'Late night';
+      /** @enum {string} */
+      language?: 'Thai' | 'English' | 'Japanese' | 'Korean' | 'Chinese' | 'Mixed';
+    };
+    ListedRoom: {
+      id: string;
+      name: string;
+      emoji: string;
+      description: string;
+      /** @enum {string} */
+      mapId: 'library' | 'cafe' | 'rooftop';
+      /** @enum {string} */
+      visibility: 'request' | 'open';
+      tags: string[];
+      language: string | null;
+      owner: components['schemas']['Person'];
+      memberCount: number;
+      capacity: number;
+      rules: string | null;
+      me: components['schemas']['MyPlace'];
+    };
+    RoomSettingsBody: {
+      name?: string;
+      emoji?: string;
+      description?: string;
+      /** @enum {string} */
+      mapId?: 'library' | 'cafe' | 'rooftop';
+      /** @enum {string} */
+      size?: 'cosy' | 'big';
+      /** @enum {string} */
+      time?: 'clock' | 'day' | 'night';
+      /** @enum {string} */
+      visibility?: 'private' | 'request' | 'open';
+      capacity?: number;
+      tags?: ('Study' | 'Chill' | 'Games' | 'Language exchange' | 'Music' | 'Art' | 'Anime' | 'Late night')[];
+      /** @enum {string|null} */
+      language?: 'Thai' | 'English' | 'Japanese' | 'Korean' | 'Chinese' | 'Mixed' | null;
+      rules?: string;
+      showRules?: boolean;
+      filterWords?: boolean;
+      slowMode?: boolean;
+      newMemberWait?: boolean;
+      roomWideGames?: boolean;
+      membersCanInvite?: boolean;
+      allowGuests?: boolean;
+      guestVoice?: boolean;
+    };
+    DeleteRoomBody: {
+      /** @description The room name, typed to confirm */
+      name: string;
+    };
+    TransferBody: {
+      userId: string;
+    };
+    MyPlaceBody: {
+      pinned?: boolean;
+      /** @enum {string} */
+      notify?: 'all' | 'mentions' | 'none';
+    };
+    AskBody: {
+      note?: string;
+    };
+    JoinRequest: {
+      person: components['schemas']['Person'];
+      note: string | null;
+      /** Format: date-time */
+      at: string;
+    };
+    Member: {
+      person: components['schemas']['Person'];
+      /** @enum {string} */
+      role: 'owner' | 'mod' | 'member';
+      /** Format: date-time */
+      joinedAt: string;
+      /** Format: date-time */
+      timedOutUntil: string | null;
+    };
+    RoleBody: {
+      /** @enum {string} */
+      role: 'mod' | 'member';
+    };
+    TimeoutBody: {
+      /** @enum {string} */
+      duration: '10m' | '1h' | '1d';
+    };
+    Ban: {
+      person: components['schemas']['Person'];
+      by: components['schemas']['Person'] | null;
+      reason: string | null;
+      /** Format: date-time */
+      at: string;
+    };
+    BanBody: {
+      reason?: string;
+    };
+    MakeInviteBody: {
+      /** @enum {string} */
+      kind: 'member' | 'guest';
+      /**
+       * @default 7d
+       * @enum {string}
+       */
+      expiry: '1d' | '7d' | 'never';
+      /** @default false */
+      fresh: boolean;
+    };
+    Invite: {
+      code: string;
+      /** @enum {string} */
+      kind: 'member' | 'guest';
+      by: components['schemas']['Person'] | null;
+      /** @enum {string} */
+      expiry: '1d' | '7d' | 'never' | '24h';
+      uses: number;
+      /** Format: date-time */
+      expiresAt: string | null;
+    };
+    InvitePreview: {
+      code: string;
+      /** @enum {string} */
+      kind: 'member' | 'guest';
+      /** Format: date-time */
+      expiresAt: string | null;
+      by: components['schemas']['Person'] | null;
+      room: {
+        id: string;
+        name: string;
+        emoji: string;
+        description: string;
+        /** @enum {string} */
+        mapId: 'library' | 'cafe' | 'rooftop';
+        memberCount: number;
+        allowGuests: boolean;
+      };
+      member: boolean;
+    };
+    Accepted: {
+      roomId: string;
+      /** Format: date-time */
+      guestUntil: string | null;
+    };
+    MessagePageQuery: {
+      before?: string;
+      /** @default 50 */
+      limit: number;
+    };
+    MessagePage: {
+      messages: components['schemas']['ChatMessage'][];
+      hasMore: boolean;
+      lastReadId: string | null;
+    };
+    ChatMessage: {
+      id: string;
+      roomId: string | null;
+      dmId: string | null;
+      author: components['schemas']['Person'];
+      text: string;
+      /** @enum {string} */
+      kind: 'text' | 'ask' | 'invite';
+      card: components['schemas']['Card'] | null;
+      replyTo: {
+        id: string;
+        author: components['schemas']['Person'];
+        text: string;
+        deleted: boolean;
+        hasPictures: boolean;
+      } | null;
+      mentions: string[];
+      mentionsRoom: boolean;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      editedAt: string | null;
+      ready: boolean;
+      pictures: components['schemas']['Picture'][];
+      reactions: components['schemas']['Reaction'][];
+    };
+    Card: {
+      roomId: string;
+      /** @enum {string|null} */
+      state: 'open' | 'sent' | 'declined' | null;
+      invite: {
+        code: string;
+        /** @enum {string} */
+        kind: 'member' | 'guest';
+        /** Format: date-time */
+        expiresAt: string | null;
+      } | null;
+      room: {
+        name: string;
+        emoji: string;
+        mapId: string;
+      } | null;
+    };
+    Picture: {
+      id: string;
+      url: string;
+      width: number;
+      height: number;
+      ready: boolean;
+    };
+    Reaction: {
+      emoji: string;
+      userIds: string[];
+    };
+    SendMessageBody: {
+      text: string;
+      replyToId?: string;
+      /** @default [] */
+      pictureIds: string[];
+    };
+    ReadBody: {
+      messageId: string;
+    };
+    EditMessageBody: {
+      text: string;
+    };
+    ReactionBody: {
+      emoji: string;
+    };
+    PictureUploadBody: {
+      contentType: string;
+      bytes: number;
+    };
+    PictureUpload: {
+      id: string;
+      uploadUrl: string;
+      headers: {
+        [key: string]: string;
+      };
+    };
+    Friend: {
+      person: components['schemas']['Person'];
+      /** Format: date-time */
+      since: string;
+      presence: components['schemas']['Presence'];
+    };
+    Presence: {
+      /** @enum {string} */
+      status: 'online' | 'idle' | 'offline';
+      /** Format: date-time */
+      lastSeenAt: string | null;
+      activity: string | null;
+      room: components['schemas']['PresenceRoom'] | null;
+    };
+    PresenceRoom: {
+      hidden: boolean;
+      id: string | null;
+      name: string | null;
+      emoji: string | null;
+      mapId: string | null;
+      member: boolean;
+      open: boolean;
+    };
+    FriendRequests: {
+      incoming: components['schemas']['IncomingRequest'][];
+      sent: components['schemas']['SentRequest'][];
+      leftToday: number;
+    };
+    IncomingRequest: {
+      person: components['schemas']['Person'];
+      /** Format: date-time */
+      at: string;
+      shared: string[];
+    };
+    SentRequest: {
+      person: components['schemas']['Person'];
+      /** Format: date-time */
+      at: string;
+    };
+    AddFriendBody: {
+      /** @description Exact @handle, with or without the @ */
+      handle: string;
+    };
+    AddFriendResult: {
+      /** @enum {string} */
+      status: 'sent' | 'friends';
+      person: components['schemas']['Person'];
+    };
+    Blocked: {
+      person: components['schemas']['Person'];
+      /** Format: date-time */
+      at: string;
+    };
+    DmSummary: {
+      id: string;
+      with: components['schemas']['Person'];
+      friend: boolean;
+      blocked: boolean;
+      last: {
+        /** @enum {string} */
+        kind: 'text' | 'ask' | 'invite';
+        text: string;
+        mine: boolean;
+        pictures: boolean;
+        deleted: boolean;
+        /** Format: date-time */
+        createdAt: string;
+      } | null;
+      unread: number;
+    };
+    DmOpen: {
+      id: string | null;
+      with: components['schemas']['Person'];
+      friend: boolean;
+      blocked: boolean;
+      sharedRooms: {
+        id: string;
+        name: string;
+        emoji: string;
+        mapId: string;
+      }[];
+    };
+    InviteToRoomBody: {
+      roomId: string;
+    };
+    AnswerAskBody: {
+      send: boolean;
+    };
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    HealthController_check: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The Health Check is successful */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /**
-                         * @example ok
-                         * @enum {unknown}
-                         */
-                        status?: "ok" | "degraded";
-                        /** @example {} */
-                        error?: unknown;
-                        /**
-                         * @example {
-                         *       "database": {
-                         *         "status": "up",
-                         *         "responseTime": 12
-                         *       }
-                         *     }
-                         */
-                        details?: unknown;
-                    } & components["schemas"]["TerminusHealthCheckResult"];
-                };
-            };
-            /** @description The Health Check is not successful */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /**
-                         * @example error
-                         * @enum {unknown}
-                         */
-                        status?: "error" | "shutting_down";
-                        /**
-                         * @example {
-                         *       "redis": {
-                         *         "status": "down",
-                         *         "message": "Could not connect",
-                         *         "responseTime": 3005
-                         *       }
-                         *     }
-                         */
-                        error?: unknown;
-                        /**
-                         * @example {
-                         *       "database": {
-                         *         "status": "up",
-                         *         "responseTime": 12
-                         *       },
-                         *       "redis": {
-                         *         "status": "down",
-                         *         "message": "Could not connect",
-                         *         "responseTime": 3005
-                         *       }
-                         *     }
-                         */
-                        details?: unknown;
-                    } & components["schemas"]["TerminusHealthCheckResult"];
-                };
-            };
-        };
-    };
-    MeController_me: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Me"];
-                };
-            };
-        };
-    };
-    MeController_birthday: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BirthdayBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Me"];
-                };
-            };
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TooYoung"];
-                };
-            };
-        };
-    };
-    MeController_signUp: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SignUpBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Me"];
-                };
-            };
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HandleCheck"];
-                };
-            };
-        };
-    };
-    MeController_guest: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["GuestBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Me"];
-                };
-            };
-        };
-    };
-    MeController_profile: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ProfileBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Me"];
-                };
-            };
-        };
-    };
-    MeController_privacy: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PrivacyBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Me"];
-                };
-            };
-        };
-    };
-    MeController_handle: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["HandleBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Me"];
-                };
-            };
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TooSoon"];
-                };
-            };
-        };
-    };
-    MeController_account: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AccountDetails"];
-                };
-            };
-        };
-    };
-    MeController_requestDeletion: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DeletionBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Me"];
-                };
-            };
-        };
-    };
-    MeController_keep: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Me"];
-                };
-            };
-        };
-    };
-    HandlesController_check: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                handle: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HandleCheck"];
-                };
-            };
-        };
-    };
-    RoomsController_mine: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Room"][];
-                };
-            };
-        };
-    };
-    RoomsController_make: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateRoomBody"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Room"];
-                };
-            };
-            /** @description too_many_rooms */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    RoomsController_listed: {
-        parameters: {
-            query?: {
-                language?: "Thai" | "English" | "Japanese" | "Korean" | "Chinese" | "Mixed";
-                tag?: "Study" | "Chill" | "Games" | "Language exchange" | "Music" | "Art" | "Anime" | "Late night";
-                q?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ListedRoom"][];
-                };
-            };
-        };
-    };
-    RoomsController_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Room"];
-                };
-            };
-        };
-    };
-    RoomsController_remove: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DeleteRoomBody"];
-            };
-        };
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    RoomsController_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RoomSettingsBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Room"];
-                };
-            };
-        };
-    };
-    RoomsController_transfer: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TransferBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Room"];
-                };
-            };
-        };
-    };
-    RoomsController_leave: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    RoomsController_myPlace: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MyPlaceBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Room"];
-                };
-            };
-        };
-    };
-    RoomsController_visit: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    RoomsController_join: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Room"];
-                };
-            };
-        };
-    };
-    RoomsController_requests: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["JoinRequest"][];
-                };
-            };
-        };
-    };
-    RoomsController_ask: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AskBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Room"];
-                };
-            };
-        };
-    };
-    RoomsController_letIn: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-                userId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    RoomsController_decline: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-                userId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    RoomsController_members: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Member"][];
-                };
-            };
-        };
-    };
-    RoomsController_role: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-                userId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RoleBody"];
-            };
-        };
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    RoomsController_timeOut: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-                userId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TimeoutBody"];
-            };
-        };
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    RoomsController_kick: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-                userId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    RoomsController_bans: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Ban"][];
-                };
-            };
-        };
-    };
-    RoomsController_ban: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-                userId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BanBody"];
-            };
-        };
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    RoomsController_unban: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-                userId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    RoomsController_invites: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Invite"][];
-                };
-            };
-        };
-    };
-    RoomsController_makeInvite: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MakeInviteBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Invite"];
-                };
-            };
-        };
-    };
-    InvitesController_preview: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                code: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InvitePreview"];
-                };
-            };
-        };
-    };
-    InvitesController_cancel: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                code: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    InvitesController_accept: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                code: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Accepted"];
-                };
-            };
-        };
-    };
-    ChatController_page: {
-        parameters: {
-            query?: {
-                limit?: number;
-                before?: string;
-            };
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MessagePage"];
-                };
-            };
-        };
-    };
-    ChatController_send: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SendMessageBody"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatMessage"];
-                };
-            };
-            /** @description timed_out */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    ChatController_read: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReadBody"];
-            };
-        };
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    ChatController_remove: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                messageId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    ChatController_edit: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                messageId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["EditMessageBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatMessage"];
-                };
-            };
-        };
-    };
-    ChatController_react: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                messageId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReactionBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatMessage"];
-                };
-            };
-        };
-    };
-    ChatController_unreact: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                messageId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReactionBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatMessage"];
-                };
-            };
-        };
-    };
-    PicturesController_start: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PictureUploadBody"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PictureUpload"];
-                };
-            };
-        };
-    };
-    PicturesController_uploaded: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                pictureId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    PicturesController_open: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                pictureId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Redirects to a short-lived link to the WebP */
-            302: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    FriendsController_list: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Friend"][];
-                };
-            };
-        };
-    };
-    FriendsController_remove: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                userId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    FriendsController_requests: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FriendRequests"];
-                };
-            };
-        };
-    };
-    FriendsController_add: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AddFriendBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AddFriendResult"];
-                };
-            };
-            /** @description already_friends */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    FriendsController_accept: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                userId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Friend"];
-                };
-            };
-        };
-    };
-    FriendsController_ignore: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                userId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    FriendsController_cancel: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                userId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    FriendsController_blocks: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Blocked"][];
-                };
-            };
-        };
-    };
-    FriendsController_block: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                userId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    FriendsController_unblock: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                userId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    DmsController_list: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DmSummary"][];
-                };
-            };
-        };
-    };
-    DmsController_open: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                handle: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DmOpen"];
-                };
-            };
-        };
-    };
-    DmsController_page: {
-        parameters: {
-            query?: {
-                limit?: number;
-                before?: string;
-            };
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MessagePage"];
-                };
-            };
-        };
-    };
-    DmsController_send: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SendMessageBody"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatMessage"];
-                };
-            };
-            /** @description not_friends */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    DmsController_read: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReadBody"];
-            };
-        };
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
+  HealthController_check: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The Health Check is successful */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            /**
+             * @example ok
+             * @enum {unknown}
+             */
+            status?: 'ok' | 'degraded';
+            /** @example {} */
+            error?: unknown;
+            /**
+             * @example {
+             *       "database": {
+             *         "status": "up",
+             *         "responseTime": 12
+             *       }
+             *     }
+             */
+            details?: unknown;
+          } & components['schemas']['TerminusHealthCheckResult'];
+        };
+      };
+      /** @description The Health Check is not successful */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            /**
+             * @example error
+             * @enum {unknown}
+             */
+            status?: 'error' | 'shutting_down';
+            /**
+             * @example {
+             *       "redis": {
+             *         "status": "down",
+             *         "message": "Could not connect",
+             *         "responseTime": 3005
+             *       }
+             *     }
+             */
+            error?: unknown;
+            /**
+             * @example {
+             *       "database": {
+             *         "status": "up",
+             *         "responseTime": 12
+             *       },
+             *       "redis": {
+             *         "status": "down",
+             *         "message": "Could not connect",
+             *         "responseTime": 3005
+             *       }
+             *     }
+             */
+            details?: unknown;
+          } & components['schemas']['TerminusHealthCheckResult'];
+        };
+      };
+    };
+  };
+  MeController_me: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Me'];
+        };
+      };
+    };
+  };
+  MeController_birthday: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BirthdayBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Me'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['TooYoung'];
+        };
+      };
+    };
+  };
+  MeController_signUp: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SignUpBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Me'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HandleCheck'];
+        };
+      };
+    };
+  };
+  MeController_guest: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['GuestBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Me'];
+        };
+      };
+    };
+  };
+  MeController_profile: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ProfileBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Me'];
+        };
+      };
+    };
+  };
+  MeController_privacy: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PrivacyBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Me'];
+        };
+      };
+    };
+  };
+  MeController_handle: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['HandleBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Me'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['TooSoon'];
+        };
+      };
+    };
+  };
+  MeController_account: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AccountDetails'];
+        };
+      };
+    };
+  };
+  MeController_requestDeletion: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DeletionBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Me'];
+        };
+      };
+    };
+  };
+  MeController_keep: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Me'];
+        };
+      };
+    };
+  };
+  HandlesController_check: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        handle: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HandleCheck'];
+        };
+      };
+    };
+  };
+  RoomsController_mine: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Room'][];
+        };
+      };
+    };
+  };
+  RoomsController_make: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateRoomBody'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Room'];
+        };
+      };
+      /** @description too_many_rooms */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  RoomsController_listed: {
+    parameters: {
+      query?: {
+        language?: 'Thai' | 'English' | 'Japanese' | 'Korean' | 'Chinese' | 'Mixed';
+        tag?: 'Study' | 'Chill' | 'Games' | 'Language exchange' | 'Music' | 'Art' | 'Anime' | 'Late night';
+        q?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListedRoom'][];
+        };
+      };
+    };
+  };
+  RoomsController_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Room'];
+        };
+      };
+    };
+  };
+  RoomsController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DeleteRoomBody'];
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  RoomsController_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RoomSettingsBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Room'];
+        };
+      };
+    };
+  };
+  RoomsController_transfer: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TransferBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Room'];
+        };
+      };
+    };
+  };
+  RoomsController_leave: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  RoomsController_myPlace: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MyPlaceBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Room'];
+        };
+      };
+    };
+  };
+  RoomsController_visit: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  RoomsController_join: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Room'];
+        };
+      };
+    };
+  };
+  RoomsController_requests: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['JoinRequest'][];
+        };
+      };
+    };
+  };
+  RoomsController_ask: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AskBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Room'];
+        };
+      };
+    };
+  };
+  RoomsController_letIn: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  RoomsController_decline: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  RoomsController_members: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Member'][];
+        };
+      };
+    };
+  };
+  RoomsController_role: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RoleBody'];
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  RoomsController_timeOut: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TimeoutBody'];
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  RoomsController_kick: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  RoomsController_bans: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Ban'][];
+        };
+      };
+    };
+  };
+  RoomsController_ban: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BanBody'];
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  RoomsController_unban: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  RoomsController_invites: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Invite'][];
+        };
+      };
+    };
+  };
+  RoomsController_makeInvite: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MakeInviteBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Invite'];
+        };
+      };
+    };
+  };
+  InvitesController_preview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        code: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['InvitePreview'];
+        };
+      };
+    };
+  };
+  InvitesController_cancel: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        code: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  InvitesController_accept: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        code: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Accepted'];
+        };
+      };
+    };
+  };
+  ChatController_page: {
+    parameters: {
+      query?: {
+        limit?: number;
+        before?: string;
+      };
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['MessagePage'];
+        };
+      };
+    };
+  };
+  ChatController_send: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SendMessageBody'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatMessage'];
+        };
+      };
+      /** @description timed_out */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  ChatController_read: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ReadBody'];
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  ChatController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        messageId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  ChatController_edit: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        messageId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['EditMessageBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatMessage'];
+        };
+      };
+    };
+  };
+  ChatController_react: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        messageId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ReactionBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatMessage'];
+        };
+      };
+    };
+  };
+  ChatController_unreact: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        messageId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ReactionBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatMessage'];
+        };
+      };
+    };
+  };
+  PicturesController_start: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PictureUploadBody'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PictureUpload'];
+        };
+      };
+    };
+  };
+  PicturesController_uploaded: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pictureId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PicturesController_open: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pictureId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Redirects to a short-lived link to the WebP */
+      302: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  FriendsController_list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Friend'][];
+        };
+      };
+    };
+  };
+  FriendsController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  FriendsController_requests: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FriendRequests'];
+        };
+      };
+    };
+  };
+  FriendsController_add: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AddFriendBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AddFriendResult'];
+        };
+      };
+      /** @description already_friends */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  FriendsController_accept: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Friend'];
+        };
+      };
+    };
+  };
+  FriendsController_ignore: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  FriendsController_cancel: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  FriendsController_blocks: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Blocked'][];
+        };
+      };
+    };
+  };
+  FriendsController_block: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  FriendsController_unblock: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  DmsController_list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['DmSummary'][];
+        };
+      };
+    };
+  };
+  DmsController_open: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        handle: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['DmOpen'];
+        };
+      };
+    };
+  };
+  DmsController_ask: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        handle: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatMessage'];
+        };
+      };
+    };
+  };
+  DmsController_invite: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        handle: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['InviteToRoomBody'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatMessage'];
+        };
+      };
+    };
+  };
+  DmsController_answer: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        messageId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AnswerAskBody'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatMessage'];
+        };
+      };
+    };
+  };
+  DmsController_page: {
+    parameters: {
+      query?: {
+        limit?: number;
+        before?: string;
+      };
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['MessagePage'];
+        };
+      };
+    };
+  };
+  DmsController_send: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SendMessageBody'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatMessage'];
+        };
+      };
+      /** @description not_friends */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  DmsController_read: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ReadBody'];
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
 }

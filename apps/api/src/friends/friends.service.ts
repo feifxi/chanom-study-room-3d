@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { FRIEND_REQUEST_DAYS, FRIEND_REQUESTS_PER_DAY, FRIENDS_MAX, type RequestsFrom } from '@connecta/shared';
 import { requireSignedUp } from '../accounts/signed-up.js';
+import { PresenceService } from '../presence/presence.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { toPerson } from '../rooms/person.js';
 import type { AddFriendResult, Blocked, Friend, FriendRequests } from './friends.schemas.js';
@@ -21,7 +22,10 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  */
 @Injectable()
 export class FriendsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly presence: PresenceService,
+  ) {}
 
   async list(userId: string): Promise<Friend[]> {
     await requireSignedUp(this.prisma, userId);
@@ -30,7 +34,11 @@ export class FriendsService {
       include: { friend: true },
       orderBy: { friend: { name: 'asc' } },
     });
-    return rows.map((r) => ({ person: toPerson(r.friend), since: r.since.toISOString() }));
+    const presence = await this.presence.views(
+      userId,
+      rows.map((r) => r.friendId),
+    );
+    return rows.map((r) => ({ person: toPerson(r.friend), since: r.since.toISOString(), presence: presence.get(r.friendId)! }));
   }
 
   async requests(userId: string, now = new Date()): Promise<FriendRequests> {
@@ -117,7 +125,8 @@ export class FriendsService {
     });
     if (!request || request.expiresAt <= now || (await this.blocked(userId, fromId))) throw new NotFoundException();
     const since = await this.befriend(userId, fromId);
-    return { person: toPerson(request.from), since: since.toISOString() };
+    const presence = await this.presence.views(userId, [fromId]);
+    return { person: toPerson(request.from), since: since.toISOString(), presence: presence.get(fromId)! };
   }
 
   /** Ignore a request to you: it leaves your list; they still see "Pending" until it expires. */

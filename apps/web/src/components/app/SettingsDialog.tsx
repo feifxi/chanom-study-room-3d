@@ -329,14 +329,26 @@ function Toggles({ tab }: { tab: Tab }) {
     );
   return (
     <div className="flex flex-col gap-5">
-      <Row label="Appear offline" hint="Friends won’t see you’re online or which room you’re in" />
+      <PrivacySwitch field="appearOffline" label="Appear offline" hint="Friends won’t see you’re online or which room you’re in" />
       <FriendRequestsRow />
-      <Row label="Show what I’m doing to friends" hint="“Focusing · Calculus”, “Playing Slave”" defaultChecked />
+      <PrivacySwitch field="showActivity" label="Show what I’m doing to friends" hint="“Focusing · Calculus”, “Playing Slave”" />
       <GlobalRankRow />
       <Row label="Filter rude words in chats" defaultChecked />
       <BlockedPeople />
     </div>
   );
+}
+
+/** Presence settings (feature 5): saved at once, and friends see the change live. */
+function PrivacySwitch({ field, label, hint }: { field: 'appearOffline' | 'showActivity'; label: string; hint: string }) {
+  const { data: me } = useMe();
+  const setMe = useSetMe();
+  const save = async (on: boolean) => {
+    const { data } = await api.PATCH('/api/me/privacy', { body: { [field]: on } });
+    if (!data) return toast.error('Couldn’t save that. Try again?');
+    setMe(data);
+  };
+  return <Row label={label} hint={hint} checked={me?.[field] ?? field === 'showActivity'} onCheckedChange={(on) => void save(on)} />;
 }
 
 /**
@@ -445,14 +457,27 @@ function GlobalRankRow() {
   );
 }
 
-function Row({ label, hint, defaultChecked }: { label: string; hint?: string; defaultChecked?: boolean }) {
+function Row({
+  label,
+  hint,
+  defaultChecked,
+  checked,
+  onCheckedChange,
+}: {
+  label: string;
+  hint?: string;
+  defaultChecked?: boolean;
+  /** Saved settings; the rest are still the demo's local switches */
+  checked?: boolean;
+  onCheckedChange?: (on: boolean) => void;
+}) {
   return (
     <label className="flex items-center justify-between gap-4">
       <span>
         <span className="block text-sm font-bold">{label}</span>
         {hint && <span className="block text-xs text-muted-foreground">{hint}</span>}
       </span>
-      <Switch defaultChecked={defaultChecked} />
+      {checked === undefined ? <Switch defaultChecked={defaultChecked} /> : <Switch checked={checked} onCheckedChange={onCheckedChange} />}
     </label>
   );
 }

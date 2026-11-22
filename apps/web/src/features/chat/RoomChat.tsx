@@ -4,6 +4,7 @@ import { useMemo, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { ChatView, pickedFile, type ChatMessageView, type Mentionable } from '@/components/chat/Chat';
 import { useMe } from '@/features/account/useMe';
+import { DmCard } from '@/features/dms/DmCard';
 import { useBlocks } from '@/features/friends/useFriends';
 import { useMembers } from '@/features/rooms/useRooms';
 import { useChat, type ChatMessage, type Thread } from './useRoomChat';
@@ -96,6 +97,7 @@ export function ThreadChat({
       edited: !!m.editedAt,
       mentionsMe: m.author.id !== me?.id && (m.mentionsRoom || (!!me && m.mentions.includes(me.id))),
       blocked: blocked.has(m.author.id),
+      card: m.kind !== 'text' ? <DmCard m={m} mine={m.author.id === me?.id} /> : undefined,
     };
   };
 

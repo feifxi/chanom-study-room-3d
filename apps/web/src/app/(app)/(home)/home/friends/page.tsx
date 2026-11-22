@@ -12,18 +12,26 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { useMe } from '@/features/account/useMe';
 import { friendLink, friendsApi, useFriendAction, useFriendRequests, useFriends, type Friend } from '@/features/friends/useFriends';
-import { problem } from '@/features/rooms/useRooms';
+import { dmCards } from '@/features/dms/useDms';
+import { lastSeen } from '@/features/presence/usePresence';
+import { problem, useMyRooms } from '@/features/rooms/useRooms';
 import { cn } from '@/lib/utils';
 
 /**
- * Friends (feature 5). Add friend (exact @handle or your friend link) and Requests (incoming / sent)
- * are dialogs; declining, ignoring and removing are silent. "Out in rooms", Online and Offline, and
- * the message and invite buttons come with presence and DMs (later in step 3), so for now it's one list.
+ * Friends (feature 5), sorted by "who can I go hang out with":
+ * - **Out in rooms**: friends inside a room right now, one card per room with Join. A private room
+ *   you're not in is never named: "A private room", one card per friend, "Ask to join"
+ * - **Online** (not in a room), then **Offline** ("Last seen")
+ * Add friend (exact @handle or your friend link) and Requests (incoming / sent) are dialogs.
+ * Declining, ignoring and removing are silent.
  */
 export default function FriendsPage() {
   const friends = useFriends();
@@ -65,21 +73,126 @@ export default function FriendsPage() {
         </button>
       )}
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-xs font-black tracking-wider text-muted-foreground uppercase">Your friends · {friends.data?.length ?? '…'}</h2>
-        {friends.data?.length === 0 ? (
-          <EmptyFriends onAdd={() => setAdding(true)} />
-        ) : (
-          <div className="flex flex-col divide-y rounded-3xl border bg-card">
-            {friends.data?.map((f) => (
-              <FriendRow key={f.person.id} friend={f} />
-            ))}
-          </div>
-        )}
-      </section>
+      {friends.data?.length === 0 ? <EmptyFriends onAdd={() => setAdding(true)} /> : friends.data && <Sections friends={friends.data} />}
 
       <AddFriendDialog open={adding} onOpenChange={setAdding} />
       <RequestsDialog open={showRequests} onOpenChange={setShowRequests} />
+    </div>
+  );
+}
+
+/** Live order of how friends are doing: online first, then away. */
+const STATUS_ORDER = { online: 0, idle: 1, offline: 2 } as const;
+
+function Sections({ friends }: { friends: Friend[] }) {
+  const ask = useFriendAction(dmCards.ask, (_, handle) => {
+    const name = friends.find((f) => f.person.handle === handle)?.person.name ?? 'them';
+    toast.success(`Asked ${name}. If they say yes, the invite lands in your Messages.`);
+  });
+
+  // One card per room you could walk into; one card per friend otherwise, so nobody learns who's together
+  const cards = new Map<string, { key: string; title: string; sub: string; friends: Friend[]; href?: string; join: string }>();
+  for (const f of friends) {
+    const room = f.presence.room;
+    if (!room) continue;
+    const together = room.member || room.open;
+    const key = together ? room.id! : `ask:${f.person.id}`;
+    const card = cards.get(key) ?? {
+      key,
+      title: room.hidden ? '🔒 A private room' : `${room.emoji} ${room.name}`,
+      sub: room.hidden
+        ? 'You’re not a member, so it stays private'
+        : room.member
+          ? 'One of your rooms'
+          : room.open
+            ? 'Open room · anyone can join'
+            : 'Members only · ask for an invite',
+      friends: [],
+      href: room.member ? `/r/${room.id}/walk` : room.open ? `/r/${room.id}` : undefined,
+      join: room.member ? 'Walk in' : 'Join',
+    };
+    card.friends.push(f);
+    cards.set(key, card);
+  }
+  const out = friends.filter((f) => f.presence.room);
+  const byStatus = (a: Friend, b: Friend) => STATUS_ORDER[a.presence.status] - STATUS_ORDER[b.presence.status];
+  const online = friends.filter((f) => !f.presence.room && f.presence.status !== 'offline').sort(byStatus);
+  const offline = friends.filter((f) => f.presence.status === 'offline');
+
+  return (
+    <>
+      <Section title="Out in rooms" count={out.length}>
+        {cards.size === 0 && (
+          <p className="text-sm text-muted-foreground">Nobody’s out right now. Walk in somewhere and they’ll see you 🌙</p>
+        )}
+        <div className="grid gap-3 sm:grid-cols-2">
+          {[...cards.values()].map((c) => (
+            <div key={c.key} className="flex flex-col gap-2 rounded-3xl border bg-card p-4">
+              <div className="flex items-start gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-black">{c.title}</p>
+                  <p className="text-xs text-muted-foreground">{c.sub}</p>
+                </div>
+                {c.href ? (
+                  <Button asChild size="sm" className="rounded-full font-extrabold">
+                    <Link href={c.href}>{c.join}</Link>
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="rounded-full font-extrabold"
+                    disabled={ask.isPending}
+                    onClick={() => ask.mutate(c.friends[0]!.person.handle!)}
+                  >
+                    Ask to join {c.friends[0]!.person.name}
+                  </Button>
+                )}
+              </div>
+              {c.friends.map(({ person, presence }) => (
+                <div key={person.id} className="flex items-center gap-2">
+                  <PersonFace who={person} size={30} status={presence.status} />
+                  <span className="text-sm font-bold">{person.name}</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {presence.activity ?? (presence.status === 'idle' ? 'Away' : '')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </Section>
+      {online.length > 0 && (
+        <Section title="Online" count={online.length}>
+          <People friends={online} />
+        </Section>
+      )}
+      {offline.length > 0 && (
+        <Section title="Offline" count={offline.length}>
+          <People friends={offline} />
+        </Section>
+      )}
+    </>
+  );
+}
+
+function Section({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
+  return (
+    <section className="flex flex-col gap-3">
+      <h2 className="text-xs font-black tracking-wider text-muted-foreground uppercase">
+        {title} · {count}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+function People({ friends }: { friends: Friend[] }) {
+  return (
+    <div className="flex flex-col divide-y rounded-3xl border bg-card">
+      {friends.map((f) => (
+        <FriendRow key={f.person.id} friend={f} />
+      ))}
     </div>
   );
 }
@@ -102,18 +215,27 @@ function EmptyFriends({ onAdd }: { onAdd: () => void }) {
 }
 
 function FriendRow({ friend }: { friend: Friend }) {
-  const { person } = friend;
+  const { person, presence } = friend;
   const remove = useFriendAction(friendsApi.remove, () => toast(`Removed ${person.name}. They won’t be told.`));
   const block = useFriendAction(friendsApi.block, () => toast(`${person.name} is blocked`));
-  const since = new Date(friend.since).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const invite = useFriendAction(dmCards.invite, (m) =>
+    toast.success(`Invite to ${m.card?.room?.name ?? 'your room'} sent to ${person.name}`),
+  );
+  const rooms = useMyRooms();
+  // Rooms you can bring someone into: a member invite, or else a guest pass (feature 5)
+  const invitable = (rooms.data ?? []).filter((r) => r.me.role !== 'member' || r.membersCanInvite || r.allowGuests);
+  const status =
+    presence.status === 'offline'
+      ? `Last seen ${lastSeen(presence.lastSeenAt)}`
+      : (presence.activity ?? (presence.status === 'idle' ? 'Away' : 'Online'));
   return (
     <div className="flex items-center gap-3 p-3">
-      <PersonFace who={person} size={40} />
+      <PersonFace who={person} size={40} status={presence.status} />
       <div className="min-w-0 flex-1">
         <p className="font-extrabold">
           {person.name} <span className="text-sm font-semibold text-muted-foreground">@{person.handle}</span>
         </p>
-        <p className="truncate text-sm text-muted-foreground">Friends since {since}</p>
+        <p className="truncate text-sm text-muted-foreground">{status}</p>
       </div>
       <Button asChild size="icon" variant="ghost" className="rounded-full" aria-label={`Message ${person.name}`}>
         <Link href={`/home/messages/${person.handle}`}>
@@ -127,6 +249,17 @@ function FriendRow({ friend }: { friend: Friend }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52">
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger disabled={!invitable.length}>Invite to a room</DropdownMenuSubTrigger>
+            <DropdownMenuSubContent className="max-h-72 overflow-y-auto">
+              {invitable.map((r) => (
+                <DropdownMenuItem key={r.id} onSelect={() => invite.mutate({ handle: person.handle!, roomId: r.id })}>
+                  {r.emoji} {r.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+          <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => remove.mutate(person.id)}>Remove friend</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onSelect={() => block.mutate(person.id)}>

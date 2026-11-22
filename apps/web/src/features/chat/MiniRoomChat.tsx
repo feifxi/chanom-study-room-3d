@@ -5,6 +5,7 @@ import { Composer, pickedFile } from '@/components/chat/Chat';
 import { cn } from '@/lib/utils';
 import { UserAvatar } from '@/components/UserAvatar';
 import { useMe } from '@/features/account/useMe';
+import { DmCard } from '@/features/dms/DmCard';
 import { useChat, type Thread } from './useRoomChat';
 
 /** The room chat in the small Chat panel in 3D. */
@@ -92,6 +93,7 @@ export function MiniChat({
                       )}
                     </div>
                   )}
+                  {m.kind !== 'text' && <DmCard m={m} mine={m.author.id === me?.id} />}
                   <p>
                     {m.text}
                     {m.editedAt && <span className="ml-1 text-[10px] text-muted-foreground">(edited)</span>}

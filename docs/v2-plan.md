@@ -13,7 +13,7 @@ what each feature is, and what's left. The details are in one spec per feature
   and dark mode.
 - **The real app is being built fresh** in `apps/` and `packages/` (V1 was removed from `main`;
   it's at tag `v1.0.0`). Steps 1 and 2 (the skeleton; accounts and rooms) are done; step 3, the
-  gateway, is next. Nothing is deployed.
+  gateway, is nearly done (the notification bell is left). Nothing is deployed.
 
 | #   | Feature                                 | Status  | Spec                                                                   |
 | --- | --------------------------------------- | ------- | ---------------------------------------------------------------------- |
@@ -64,7 +64,10 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
      3D.
    - ~~Pictures in chat~~ done 2026-11-22: presigned upload to S3, a worker makes the WebP, members only.
    - ~~DMs~~ done 2026-11-22: friends only, same chat as rooms (pictures, typing), read-only once unfriended.
-   - Next: presence, then the notification bell (with muting a DM).
+   - ~~Presence~~ done 2026-11-22: Online, Away, Offline with last seen, which room friends are in
+     (from the open 3D page until step 4), "Appear offline", live "inside now" on Home and the
+     room's page, and the "Ask to join" and "Invite to a room" DM cards.
+   - Next: the notification bell (with muting a DM).
 4. **Walking in a room:** the Colyseus game server, with V1's movement prediction and
    reconciliation copied in; voice and screen share; maps.
 5. **The rest, a feature at a time:** activities and table games, Plus, coins and quests, focus,

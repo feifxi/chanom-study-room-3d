@@ -367,6 +367,18 @@ decision is made or changed: one line, a date, and the reason.
   "Invite to a room" cards coming with presence and the gift card with the shop; a DM appears in
   the lists only once a message is sent. DM messages share the `messages` table with room chat, so
   reactions, replies, edits, pictures and live updates are the same code.
+- **Presence as built** (2026-11-22, the owner): until the game server exists (step 4), a tab with
+  the 3D room open tells the gateway "I'm in this room"; Colyseus takes over the same signal later.
+  Online, Away (no input in any tab for 10 minutes) and Offline with "last seen"; "Focusing" comes
+  with the Focus port and is never Away. "Appear offline" and "Show what I'm doing" are real
+  settings now; the activity text fills in as features are ported, so until then friends see only
+  the room. "Ask to join" and "Invite to a room" are DM cards: Send invite (and Invite to a room)
+  gives a member invite if the room lets that person make one, otherwise a 24-hour guest pass if the
+  room takes guests, even with "Members can invite" off (a friend asked, and a pass expires in a
+  day). Home's room cards and a room's page show who's inside, live. The live state lives only in
+  Redis (each tab says it's there every minute; one silent for 2.5 minutes is dropped); only "last
+  seen" is stored. A room someone's in that's listed (Open or Ask to join) is named on Friends; a
+  non-member gets one card per friend for rooms they can't walk into, so nobody learns who's together.
 - **Background jobs are BullMQ on Redis** (2026-11-22): the pictures worker is the first; it runs
   inside the API process for now, with a per-environment prefix so tests never hand jobs to a
   running dev server. Redis was already there for the gateway.

@@ -13,6 +13,7 @@ import { validateEnv, type Env } from './config/env.js';
 import { loggerModule } from './config/logger.js';
 import { redisOptions } from './config/redis.js';
 import { LiveModule } from './live/live.module.js';
+import { PresenceModule } from './presence/presence.module.js';
 import { StorageModule } from './storage/storage.module.js';
 import { HealthModule } from './health/health.module.js';
 import { MailModule } from './mail/mail.module.js';
@@ -53,6 +54,7 @@ import { PrismaService } from './prisma/prisma.service.js';
     FriendsModule,
     DmsModule,
     LiveModule,
+    PresenceModule,
     StorageModule,
   ],
 })

@@ -35,6 +35,8 @@ export interface ChatMessageView {
   edited?: boolean;
   system?: boolean;
   gift?: { months: number; note?: string };
+  /** A DM card (Ask to join, an invite to a room), drawn by whoever owns the messages; can't be edited */
+  card?: ReactNode;
   /** It @mentions you or @room: tinted */
   mentionsMe?: boolean;
   /** From someone you blocked: folded until you tap "show" */
@@ -410,6 +412,7 @@ function Row({
           )
         )}
         {m.gift && <GiftCard from={m.mine ? 'You' : u.name} gift={m.gift} />}
+        {m.card}
         {m.image && (
           <div
             className="mt-2 aspect-[4/3] w-64 max-w-full overflow-hidden rounded-2xl border bg-[url('/screenshot.png')] bg-[length:240%] bg-[position:35%_35%]"
@@ -475,7 +478,7 @@ function Row({
           <ToolButton label="Reply" onClick={onReply}>
             <CornerUpLeft className="size-4" />
           </ToolButton>
-          {m.mine && (
+          {m.mine && !m.card && (
             <ToolButton label="Edit" onClick={onEdit}>
               <Pencil className="size-4" />
             </ToolButton>

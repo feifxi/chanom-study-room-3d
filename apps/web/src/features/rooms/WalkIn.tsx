@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { asServer, placeRoom } from '@/features/place/model';
 import { readLook, saveLook } from '@/features/place/roomLook';
 import { RoomLoader } from '@/features/room/RoomLoader';
+import { useInRoom } from '@/features/presence/usePresence';
 import { PUBLIC_SERVER } from '@/lib/mock';
 import { roomsApi, useRoom, type Room } from './useRooms';
 
@@ -25,6 +26,8 @@ export function WalkIn({ room: initial, guestName }: { room: Room; guestName: st
   useEffect(() => {
     if (room.me.role) roomsApi.visit(room.id).catch(() => {});
   }, [room.id, room.me.role]);
+  // Friends see you here, and the room's "inside now" counts you (the game server takes this over in step 4)
+  useInRoom(room.id);
 
   return (
     <RoomLoader

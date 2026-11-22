@@ -39,6 +39,22 @@ export const PictureUploadSchema = z
   })
   .meta({ id: 'PictureUpload' });
 
+/**
+ * A card in a DM instead of plain text (feature 5): "ask" (the author wants to join the other
+ * person's room; they answer Send invite or Not now) or "invite" (a link to a room).
+ */
+export const CardSchema = z
+  .object({
+    roomId: z.string(),
+    /** Ask only: open until answered */
+    state: z.enum(['open', 'sent', 'declined']).nullable(),
+    /** Invite only: the link and the room it opens */
+    invite: z.object({ code: z.string(), kind: z.enum(['member', 'guest']), expiresAt: z.iso.datetime().nullable() }).nullable(),
+    room: z.object({ name: z.string(), emoji: z.string(), mapId: z.string() }).nullable(),
+  })
+  .meta({ id: 'Card' });
+export type Card = z.infer<typeof CardSchema>;
+
 export const ChatMessageSchema = z
   .object({
     id: z.string(),
@@ -47,6 +63,8 @@ export const ChatMessageSchema = z
     dmId: z.string().nullable(),
     author: PersonSchema,
     text: z.string(),
+    kind: z.enum(['text', 'ask', 'invite']),
+    card: CardSchema.nullable(),
     /** The message this one answers, quoted above it */
     replyTo: z
       .object({

@@ -11,10 +11,11 @@ import {
   type ChatMessage,
   type MessagePage,
 } from '../chat/chat.schemas.js';
-import { DmOpenSchema, DmSummarySchema, type DmOpen, type DmSummary } from './dms.schemas.js';
+import { AnswerAskBodySchema, DmOpenSchema, DmSummarySchema, InviteToRoomBodySchema, type DmOpen, type DmSummary } from './dms.schemas.js';
 import { DmsService } from './dms.service.js';
 
 const Id = { schema: z.string().max(40) };
+const Handle = { schema: z.string().max(40) };
 
 /**
  * DMs. Editing, deleting and reacting use the same /api/messages/:id routes as room chat; new and
@@ -34,8 +35,37 @@ export class DmsController {
   /** Your chat with someone: made on first open if you're friends (it stays out of lists until a message). */
   @Put('with/:handle')
   @ApiOkResponse({ standardSchema: DmOpenSchema })
-  open(@Session() session: UserSession, @Param('handle', { schema: z.string().max(40) }) handle: string): Promise<DmOpen> {
+  open(@Session() session: UserSession, @Param('handle', Handle) handle: string): Promise<DmOpen> {
     return this.dms.open(session.user.id, handle);
+  }
+
+  /** Ask a friend to let you into the room they're in (a card in your DM). */
+  @Post('with/:handle/ask')
+  @ApiCreatedResponse({ standardSchema: ChatMessageSchema })
+  ask(@Session() session: UserSession, @Param('handle', Handle) handle: string): Promise<ChatMessage> {
+    return this.dms.askToJoin(session.user.id, handle);
+  }
+
+  /** Send a friend a link to one of your rooms (a card in your DM). */
+  @Post('with/:handle/invite')
+  @ApiCreatedResponse({ standardSchema: ChatMessageSchema })
+  invite(
+    @Session() session: UserSession,
+    @Param('handle', Handle) handle: string,
+    @Body({ schema: InviteToRoomBodySchema }) body: z.infer<typeof InviteToRoomBodySchema>,
+  ): Promise<ChatMessage> {
+    return this.dms.invite(session.user.id, handle, body.roomId);
+  }
+
+  /** Answer an ask sent to you: Send invite or Not now. Returns the updated ask. */
+  @Post('asks/:messageId')
+  @ApiCreatedResponse({ standardSchema: ChatMessageSchema })
+  answer(
+    @Session() session: UserSession,
+    @Param('messageId', Id) messageId: string,
+    @Body({ schema: AnswerAskBodySchema }) body: z.infer<typeof AnswerAskBodySchema>,
+  ): Promise<ChatMessage> {
+    return this.dms.answer(session.user.id, messageId, body.send);
   }
 
   @Get(':id/messages')

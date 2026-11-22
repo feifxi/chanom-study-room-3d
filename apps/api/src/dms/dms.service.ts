@@ -1,8 +1,10 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { MESSAGES_PAGE } from '@connecta/shared';
 import { requireSignedUp } from '../accounts/signed-up.js';
 import { ChatService, dmPeople, messageInclude, toMessage, type SendInput } from '../chat/chat.service.js';
-import type { ChatMessage, MessagePage } from '../chat/chat.schemas.js';
+import type { Card, ChatMessage, MessagePage } from '../chat/chat.schemas.js';
+import { PresenceService } from '../presence/presence.service.js';
+import { RoomsService } from '../rooms/rooms.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { toPerson } from '../rooms/person.js';
 import type { DmOpen, DmSummary } from './dms.schemas.js';
@@ -21,6 +23,8 @@ export class DmsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly chat: ChatService,
+    private readonly presence: PresenceService,
+    private readonly rooms: RoomsService,
   ) {}
 
   /** Your conversations with at least one message, newest first. */
@@ -49,6 +53,7 @@ export class DmsService {
           ...standings(other.id),
           last: last
             ? {
+                kind: last.kind as 'text' | 'ask' | 'invite',
                 text: last.deletedAt ? '' : last.text,
                 mine: last.authorId === userId,
                 pictures: !last.deletedAt && last.pictures.length > 0,
@@ -104,22 +109,107 @@ export class DmsService {
   /** Friends only, and never to someone who blocked you or whom you blocked. */
   async send(userId: string, dmId: string, input: SendInput): Promise<ChatMessage> {
     const member = await this.member(userId, dmId);
-    const other = dmPeople(member.dm.pair).find((id) => id !== userId)!;
-    if (!(await this.standings(userId, [other]))(other).friend) {
-      throw new ForbiddenException({ message: 'You’re not friends any more, so this chat is read-only.', code: 'not_friends' });
-    }
+    await this.mustBeFriends(userId, member.dm.pair);
     if (input.replyToId) {
       const original = await this.prisma.message.findFirst({ where: { id: input.replyToId, dmId, ready: true } });
       if (!original) throw new NotFoundException('That message is gone');
     }
     const { mentions } = await this.chat.dmMentions(member.dm.pair, input.text);
-    const message = await this.chat.create(userId, { dmId }, input, mentions, false);
+    return this.post(userId, dmId, () => this.chat.create(userId, { dmId }, input, mentions, false));
+  }
+
+  /**
+   * "Ask to join": your friend is in a room you can't just walk into, so you ask them in your DM.
+   * They answer with Send invite (you get a link back) or Not now.
+   */
+  async askToJoin(userId: string, handle: string): Promise<ChatMessage> {
+    const { dmId, other } = await this.friendDm(userId, handle);
+    const roomId = await this.presence.roomOf(other.id);
+    const visible = roomId && !other.appearOffline;
+    if (!visible) throw new BadRequestException({ message: `${other.name} isn’t in a room right now`, code: 'not_in_room' });
+    if (await this.prisma.membership.findUnique({ where: { roomId_userId: { roomId, userId } } })) {
+      throw new BadRequestException({ message: 'You’re a member: walk right in', code: 'member' });
+    }
+    return this.post(userId, dmId, () =>
+      this.chat.create(userId, { dmId }, { text: '' }, [], false, {
+        kind: 'ask',
+        card: { roomId, state: 'open', invite: null, room: null },
+      }),
+    );
+  }
+
+  /** Answering an ask sent to you: Send invite posts a link back; Not now just closes it. */
+  async answer(userId: string, messageId: string, send: boolean): Promise<ChatMessage> {
+    const ask = await this.prisma.message.findUnique({ where: { id: messageId }, include: { dm: true } });
+    if (!ask?.dm || ask.kind !== 'ask' || ask.deletedAt || !dmPeople(ask.dm.pair).includes(userId)) throw new NotFoundException();
+    if (ask.authorId === userId) throw new ForbiddenException('That’s your own ask');
+    const card = ask.card as Card;
+    if (card.state !== 'open') throw new ConflictException('Already answered');
+    await this.mustBeFriends(userId, ask.dm.pair);
+    if (send) await this.postInvite(userId, ask.dm.id, card.roomId);
+    return this.chat.updateCard(messageId, { ...card, state: send ? 'sent' : 'declined' });
+  }
+
+  /** "Invite to a room": a link to one of your rooms, as a card in your DM with a friend. */
+  async invite(userId: string, handle: string, roomId: string): Promise<ChatMessage> {
+    const { dmId } = await this.friendDm(userId, handle);
+    return this.postInvite(userId, dmId, roomId);
+  }
+
+  /**
+   * A member invite if you may make one there (the owner and mods, or members when "Members can
+   * invite" is on), otherwise a 24-hour guest pass if the room takes guests (feature 5).
+   */
+  private async postInvite(userId: string, dmId: string, roomId: string): Promise<ChatMessage> {
+    const [room, me] = await Promise.all([
+      this.prisma.room.findUnique({ where: { id: roomId } }),
+      this.prisma.membership.findUnique({ where: { roomId_userId: { roomId, userId } } }),
+    ]);
+    if (!room || !me) throw new NotFoundException();
+    const asMember = me.role !== 'member' || room.membersCanInvite;
+    if (!asMember && !room.allowGuests) {
+      throw new ForbiddenException({
+        message: 'Only the owner and mods invite people to this room, and it takes no guests',
+        code: 'cant_invite',
+      });
+    }
+    const kind = asMember ? 'member' : 'guest';
+    const invite = await this.rooms.makeInvite(roomId, userId, { kind, expiry: '7d', fresh: true }, new Date(), true);
+    const card: Card = {
+      roomId,
+      state: null,
+      invite: { code: invite.code, kind: invite.kind, expiresAt: invite.expiresAt },
+      room: { name: room.name, emoji: room.emoji, mapId: room.mapId },
+    };
+    return this.post(userId, dmId, () => this.chat.create(userId, { dmId }, { text: '' }, [], false, { kind: 'invite', card }));
+  }
+
+  /** Writes a message in the DM, then moves the list's order and your read marker to it. */
+  private async post(userId: string, dmId: string, write: () => Promise<ChatMessage>): Promise<ChatMessage> {
+    const message = await write();
     await this.prisma.$transaction([
       this.prisma.dm.update({ where: { id: dmId }, data: { lastId: message.id } }),
       // Sending means you've read up to here
       this.prisma.dmMember.update({ where: { dmId_userId: { dmId, userId } }, data: { lastReadId: message.id } }),
     ]);
     return message;
+  }
+
+  /** Your DM with a friend (by @handle), made if it isn't yet. */
+  private async friendDm(userId: string, handle: string) {
+    const opened = await this.open(userId, handle);
+    if (!opened.friend || !opened.id) {
+      throw new ForbiddenException({ message: 'You’re not friends any more, so this chat is read-only.', code: 'not_friends' });
+    }
+    const other = await this.prisma.user.findUniqueOrThrow({ where: { id: opened.with.id } });
+    return { dmId: opened.id, other };
+  }
+
+  private async mustBeFriends(userId: string, pair: string) {
+    const other = dmPeople(pair).find((id) => id !== userId)!;
+    if (!(await this.standings(userId, [other]))(other).friend) {
+      throw new ForbiddenException({ message: 'You’re not friends any more, so this chat is read-only.', code: 'not_friends' });
+    }
   }
 
   /** You've seen up to this message. Never moves back. */

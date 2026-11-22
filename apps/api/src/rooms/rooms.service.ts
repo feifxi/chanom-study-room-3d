@@ -20,6 +20,7 @@ import { requireSignedUp } from '../accounts/signed-up.js';
 import { Prisma, type Membership } from '../generated/prisma/client.js';
 import { ChatService } from '../chat/chat.service.js';
 import { LiveService } from '../live/live.service.js';
+import { PresenceService } from '../presence/presence.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { toPerson } from './person.js';
 import {
@@ -76,6 +77,7 @@ export class RoomsService {
     private readonly prisma: PrismaService,
     private readonly chat: ChatService,
     private readonly live: LiveService,
+    private readonly presence: PresenceService,
   ) {}
 
   // ── Your rooms ────────────────────────────────────────────────────────────────────────────────
@@ -330,10 +332,13 @@ export class RoomsService {
     userId: string,
     input: { kind: 'member' | 'guest'; expiry: InviteExpiry; fresh: boolean },
     now = new Date(),
+    /** A guest pass for a friend from DMs (feature 5): any member may make one if the room takes guests */
+    forFriend = false,
   ): Promise<InviteView> {
     const me = await this.membership(roomId, userId);
     const room = await this.prisma.room.findUniqueOrThrow({ where: { id: roomId } });
-    if (me.role === 'member' && !room.membersCanInvite) throw new ForbiddenException('Only the owner and mods invite here');
+    const friendPass = forFriend && input.kind === 'guest';
+    if (me.role === 'member' && !room.membersCanInvite && !friendPass) throw new ForbiddenException('Only the owner and mods invite here');
     if (input.kind === 'guest' && !room.allowGuests)
       throw new ForbiddenException({ code: 'no_guests', message: 'This room has no guests' });
 
@@ -540,7 +545,9 @@ export class RoomsService {
   private async withUnread(view: Room, room: RoomRow, userId: string): Promise<Room> {
     const mine = room.members.find((m) => m.userId === userId);
     if (!mine) return view;
-    return { ...view, me: { ...view.me, ...(await this.chat.unread(userId, mine)) } };
+    const [unread, insideIds] = await Promise.all([this.chat.unread(userId, mine), this.presence.inside(room.id)]);
+    const inside = insideIds.length ? await this.prisma.user.findMany({ where: { id: { in: insideIds } } }) : [];
+    return { ...view, inside: inside.map(toPerson), me: { ...view.me, ...unread } };
   }
 
   private toRoom(room: RoomRow, userId: string, now: Date): Room {
@@ -592,6 +599,7 @@ export class RoomsService {
       memberCount: room._count.members,
       maxMembers: planOf(plus).members,
       requestCount: mine && mine.role !== 'member' ? room._count.requests : 0,
+      inside: [],
       me,
     };
   }

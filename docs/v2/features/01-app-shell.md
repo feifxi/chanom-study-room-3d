@@ -28,7 +28,8 @@ room the same things arrive as toasts.
 
 ### Home (`/home`)
 
-- **Friends out right now:** one chip per friend in a room; tapping it walks you in.
+- **Friends out right now:** one chip per friend in a room you can walk into (yours, or an Open
+  one); tapping it walks you in. Friends in other rooms are on the Friends page.
 - **Your rooms:** rooms you own and rooms you're a member of, in one list.
   - Order: pinned, then active (people inside or unread), then the rest. Filters All / You run /
     Active, and search.

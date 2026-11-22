@@ -1,5 +1,5 @@
 import type { RoomRole, Visibility } from '@connecta/shared';
-import type { Room } from '@/features/rooms/useRooms';
+import type { Person, Room } from '@/features/rooms/useRooms';
 import { MAPS, type MapTemplate, type Server } from '@/lib/mock';
 
 /**
@@ -7,8 +7,8 @@ import { MAPS, type MapTemplate, type Server } from '@/lib/mock';
  * template), one permanent chat, its own members, roles, invites and visibility. When full it's
  * full; the owner's Plus raises its capacity.
  *
- * `PlaceRoom` is a room from the API plus what the screens show about it. Who's inside comes with
- * presence (build step 3); until then every room reads as empty.
+ * `PlaceRoom` is a room from the API plus what the screens show about it. Who's inside is the API's
+ * live presence (members see it; feature 5).
  */
 export interface PlaceRoom {
   id: string;
@@ -19,8 +19,8 @@ export interface PlaceRoom {
   /** The room as the API sent it: settings, owner, mods, your place in it. */
   room: Room;
   map: MapTemplate;
-  /** People you know inside right now (faces on the card). */
-  people: string[];
+  /** Who's inside right now (faces on the card). */
+  people: Person[];
   /** How many are inside in total, strangers included. */
   inside: number;
   /** When it's full, it's full: Walk in waits for a spot (the chat still works). */
@@ -39,7 +39,7 @@ export const mapFor = (mapId: string): MapTemplate => MAPS.find((m) => m.id === 
 
 export function placeRoom(room: Room): PlaceRoom {
   const map = mapFor(room.mapId);
-  const inside = 0;
+  const inside = room.inside.length;
   return {
     id: room.id,
     name: room.name,
@@ -48,7 +48,7 @@ export function placeRoom(room: Room): PlaceRoom {
     description: room.description,
     room,
     map,
-    people: [],
+    people: room.inside,
     inside,
     full: inside >= room.capacity,
     myRole: room.me.role,

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Search } from 'lucide-react';
-import { PersonFace } from '@/components/PersonFace';
+import { FriendFace } from '@/features/presence/FriendFace';
 import { lastLine, useDms } from '@/features/dms/useDms';
 import { useFriends } from '@/features/friends/useFriends';
 import { chatTime } from '@/features/chat/RoomChat';
@@ -49,7 +49,7 @@ export function MessagesSidebar({ className }: { className?: string }) {
               handle === d.with.handle ? 'bg-card shadow-sm' : 'hover:bg-card/60',
             )}
           >
-            <PersonFace who={d.with} size={40} />
+            <FriendFace who={d.with} size={40} />
             <span className="min-w-0 flex-1">
               <span className="flex items-baseline gap-2">
                 <span className={cn('truncate text-sm', d.unread ? 'font-black' : 'font-bold')}>{d.with.name}</span>
@@ -78,7 +78,7 @@ export function MessagesSidebar({ className }: { className?: string }) {
                   handle === person.handle ? 'bg-card shadow-sm' : 'hover:bg-card/60',
                 )}
               >
-                <PersonFace who={person} size={32} />
+                <FriendFace who={person} size={32} />
                 <span className="min-w-0 flex-1 truncate text-sm font-bold">{person.name}</span>
               </Link>
             ))}

@@ -1,7 +1,8 @@
 import { z } from 'zod';
+import { PresenceSchema } from '../presence/presence.schemas.js';
 import { PersonSchema } from '../rooms/rooms.schemas.js';
 
-export const FriendSchema = z.object({ person: PersonSchema, since: z.iso.datetime() }).meta({ id: 'Friend' });
+export const FriendSchema = z.object({ person: PersonSchema, since: z.iso.datetime(), presence: PresenceSchema }).meta({ id: 'Friend' });
 export type Friend = z.infer<typeof FriendSchema>;
 
 export const IncomingRequestSchema = z

@@ -19,7 +19,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { useMeAsUser, useSignOut } from '@/features/account/useMe';
-import { PersonFace } from '@/components/PersonFace';
+import { FriendFace } from '@/features/presence/FriendFace';
 import { dmUnread, lastLine, useDms } from '@/features/dms/useDms';
 import { useFriendRequests } from '@/features/friends/useFriends';
 import { useQuests } from '@/lib/quests';
@@ -171,7 +171,7 @@ function Messages() {
             onClick={() => setOpen(false)}
             className="flex items-center gap-2.5 rounded-2xl px-2 py-1.5 hover:bg-muted"
           >
-            <PersonFace who={d.with} size={34} />
+            <FriendFace who={d.with} size={34} />
             <span className="min-w-0 flex-1">
               <span className={cn('block truncate text-sm', d.unread ? 'font-black' : 'font-semibold')}>{d.with.name}</span>
               <span className="block truncate text-xs text-muted-foreground">{lastLine(d)}</span>

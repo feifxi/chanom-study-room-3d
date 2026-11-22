@@ -2021,6 +2021,119 @@
         ]
       }
     },
+    "/api/dms/with/{handle}/ask": {
+      "post": {
+        "operationId": "DmsController_ask",
+        "parameters": [
+          {
+            "name": "handle",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessage"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "dms"
+        ]
+      }
+    },
+    "/api/dms/with/{handle}/invite": {
+      "post": {
+        "operationId": "DmsController_invite",
+        "parameters": [
+          {
+            "name": "handle",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteToRoomBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessage"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "dms"
+        ]
+      }
+    },
+    "/api/dms/asks/{messageId}": {
+      "post": {
+        "operationId": "DmsController_answer",
+        "parameters": [
+          {
+            "name": "messageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerAskBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessage"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "dms"
+        ]
+      }
+    },
     "/api/dms/{id}/messages": {
       "get": {
         "operationId": "DmsController_page",
@@ -2303,6 +2416,12 @@
               "rooms",
               "nobody"
             ]
+          },
+          "appearOffline": {
+            "type": "boolean"
+          },
+          "showActivity": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -2315,7 +2434,9 @@
           "ageChecked",
           "signedUp",
           "deleteAt",
-          "requestsFrom"
+          "requestsFrom",
+          "appearOffline",
+          "showActivity"
         ],
         "additionalProperties": false
       },
@@ -2476,6 +2597,12 @@
               "rooms",
               "nobody"
             ]
+          },
+          "appearOffline": {
+            "type": "boolean"
+          },
+          "showActivity": {
+            "type": "boolean"
           }
         }
       },
@@ -2712,6 +2839,12 @@
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
           },
+          "inside": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Person"
+            }
+          },
           "me": {
             "$ref": "#/components/schemas/MyPlace"
           }
@@ -2744,6 +2877,7 @@
           "memberCount",
           "maxMembers",
           "requestCount",
+          "inside",
           "me"
         ],
         "additionalProperties": false
@@ -3515,6 +3649,22 @@
           "text": {
             "type": "string"
           },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "text",
+              "ask",
+              "invite"
+            ]
+          },
+          "card": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Card"
+              }
+            ]
+          },
           "replyTo": {
             "nullable": true,
             "type": "object",
@@ -3586,6 +3736,8 @@
           "dmId",
           "author",
           "text",
+          "kind",
+          "card",
           "replyTo",
           "mentions",
           "mentionsRoom",
@@ -3594,6 +3746,79 @@
           "ready",
           "pictures",
           "reactions"
+        ],
+        "additionalProperties": false
+      },
+      "Card": {
+        "type": "object",
+        "properties": {
+          "roomId": {
+            "type": "string"
+          },
+          "state": {
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "open",
+              "sent",
+              "declined"
+            ]
+          },
+          "invite": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "member",
+                  "guest"
+                ]
+              },
+              "expiresAt": {
+                "nullable": true,
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              }
+            },
+            "required": [
+              "code",
+              "kind",
+              "expiresAt"
+            ],
+            "additionalProperties": false
+          },
+          "room": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "emoji": {
+                "type": "string"
+              },
+              "mapId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "emoji",
+              "mapId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "roomId",
+          "state",
+          "invite",
+          "room"
         ],
         "additionalProperties": false
       },
@@ -3763,11 +3988,93 @@
             "type": "string",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "presence": {
+            "$ref": "#/components/schemas/Presence"
           }
         },
         "required": [
           "person",
-          "since"
+          "since",
+          "presence"
+        ],
+        "additionalProperties": false
+      },
+      "Presence": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "online",
+              "idle",
+              "offline"
+            ]
+          },
+          "lastSeenAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "activity": {
+            "nullable": true,
+            "type": "string"
+          },
+          "room": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PresenceRoom"
+              }
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "lastSeenAt",
+          "activity",
+          "room"
+        ],
+        "additionalProperties": false
+      },
+      "PresenceRoom": {
+        "type": "object",
+        "properties": {
+          "hidden": {
+            "type": "boolean"
+          },
+          "id": {
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "nullable": true,
+            "type": "string"
+          },
+          "emoji": {
+            "nullable": true,
+            "type": "string"
+          },
+          "mapId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "member": {
+            "type": "boolean"
+          },
+          "open": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "hidden",
+          "id",
+          "name",
+          "emoji",
+          "mapId",
+          "member",
+          "open"
         ],
         "additionalProperties": false
       },
@@ -3913,6 +4220,14 @@
             "nullable": true,
             "type": "object",
             "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "text",
+                  "ask",
+                  "invite"
+                ]
+              },
               "text": {
                 "type": "string"
               },
@@ -3932,6 +4247,7 @@
               }
             },
             "required": [
+              "kind",
               "text",
               "mine",
               "pictures",
@@ -4008,6 +4324,29 @@
           "sharedRooms"
         ],
         "additionalProperties": false
+      },
+      "InviteToRoomBody": {
+        "type": "object",
+        "properties": {
+          "roomId": {
+            "type": "string",
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "roomId"
+        ]
+      },
+      "AnswerAskBody": {
+        "type": "object",
+        "properties": {
+          "send": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "send"
+        ]
       }
     }
   }

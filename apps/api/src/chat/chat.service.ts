@@ -6,7 +6,7 @@ import { LiveService } from '../live/live.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PicturesService, pictureUrl } from './pictures.service.js';
 import { toPerson } from '../rooms/person.js';
-import type { ChatMessage, MessagePage } from './chat.schemas.js';
+import type { Card, ChatMessage, MessagePage } from './chat.schemas.js';
 
 export type SendInput = { text: string; replyToId?: string; pictureIds?: string[] };
 
@@ -41,6 +41,8 @@ export function toMessage(m: MessageRow): ChatMessage {
     dmId: m.dmId,
     author: toPerson(m.author),
     text: m.text,
+    kind: m.kind as ChatMessage['kind'],
+    card: m.deletedAt ? null : ((m.card as Card | null) ?? null),
     replyTo: m.replyTo && {
       id: m.replyTo.id,
       author: toPerson(m.replyTo.author),
@@ -110,6 +112,7 @@ export class ChatService {
     input: SendInput,
     mentions: string[],
     mentionsRoom: boolean,
+    card?: { kind: 'ask' | 'invite'; card: Card },
   ): Promise<ChatMessage> {
     const pictureIds = input.pictureIds ?? [];
     const created = await this.prisma.message.create({
@@ -121,6 +124,7 @@ export class ChatService {
         mentions,
         mentionsRoom,
         ready: !pictureIds.length,
+        ...(card && { kind: card.kind, card: card.card }),
       },
     });
     try {
@@ -163,6 +167,7 @@ export class ChatService {
     const message = await this.message(messageId);
     const { moderator } = await this.access(userId, message);
     if (message.authorId !== userId) throw new ForbiddenException('You can only edit your own messages');
+    if (message.kind !== 'text') throw new ForbiddenException('Cards can’t be edited');
     const { mentions, mentionsRoom } = message.roomId
       ? await this.mentions(message.roomId, text, moderator)
       : await this.dmMentions(message.dm!.pair, text);
@@ -288,6 +293,11 @@ export class ChatService {
       ? await this.prisma.membership.findMany({ where: { roomId, user: { handle: { in: handles } } }, select: { userId: true } })
       : [];
     return { mentions: people.map((p) => p.userId), mentionsRoom: moderator && handles.includes('room') };
+  }
+
+  /** A card changed (an ask was answered): everyone in the chat gets the new version. */
+  async updateCard(messageId: string, card: Card): Promise<ChatMessage> {
+    return this.publish(await this.prisma.message.update({ where: { id: messageId }, data: { card }, include: messageInclude }));
   }
 
   /** To the room (or the DM), or only to its author while its pictures are still on their way. */

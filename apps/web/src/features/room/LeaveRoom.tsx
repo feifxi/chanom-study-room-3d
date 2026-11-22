@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -82,6 +83,30 @@ export function LeaveRoomLink({ href, className, children }: { href: string; cla
     <a
       href={href}
       className={cn(className)}
+      onClick={(e) => {
+        e.preventDefault();
+        ask(href);
+      }}
+    >
+      {children}
+    </a>
+  );
+}
+
+/** A link for something shown both inside a room and outside (a DM card): asks first only inside one. */
+export function OutLink({ href, className, children }: { href: string; className?: string; children: ReactNode }) {
+  const ask = useContext(LeaveContext);
+  if (!ask) {
+    return (
+      <Link href={href} className={className}>
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <a
+      href={href}
+      className={className}
       onClick={(e) => {
         e.preventDefault();
         ask(href);

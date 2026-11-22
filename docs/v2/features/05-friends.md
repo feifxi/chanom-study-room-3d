@@ -1,10 +1,12 @@
 # 5. Friends
 
-**Status:** friends, requests, blocking, the friend link and "Who can send me friend requests" are
-built in the real app (2026-11-22), and so is the message button (DMs). Waiting on the rest of
-step 3: presence ("Out in rooms", Online, Offline, "Ask to join"), "Invite to a room", and "Add friend"
-in a room's people list (the 3D room, step 4). Gift Plus waits for Plus. **Try it:**
-http://localhost:3000/home/friends after `pnpm dev` (the demo: http://localhost:3100/home/friends).
+**Status:** built in the real app (2026-11-22): friends, requests, blocking, the friend link, "Who
+can send me friend requests", the message button, and presence: "Out in rooms", Online, Offline
+with last seen, "Ask to join", "Invite to a room", "Appear offline" and "Show what I'm doing".
+Until the game server (step 4), being "in a room" means having its 3D page open. Still to come:
+"Add friend" in a room's people list (step 4), the activity text (with each activity's port) and
+Gift Plus (with Plus). **Try it:** http://localhost:3000/home/friends in two browsers after
+`pnpm dev`, one walking into a room (the demo: http://localhost:3100/home/friends).
 
 Friends are how you find each other: only friends can DM, and only friends see where you are. You
 add people by exact @handle, from a room, or by a friend link; nothing is ever pushed at you.
@@ -12,7 +14,8 @@ add people by exact @handle, from a room, or by a friend link; nothing is ever p
 ## What friends get
 
 - **DMs** (only friends can DM; feature 4).
-- **Presence:** friends see you're online, what you're doing ("📖 Focusing · Calculus", unless
+- **Presence:** friends see you're online, away (no input in any tab for 10 minutes; never while
+  focusing) or offline ("Last seen 3h ago"), what you're doing ("📖 Focusing · Calculus", unless
   "Show what I'm doing" is off) and which room you're in. Everyone else sees nothing unless you share
   a room. "Appear offline" hides you from friends too.
 - **No notifications when a friend walks into a room.** Like Discord's "Active Now": you see where
@@ -46,13 +49,18 @@ Sorted by "who can I go hang out with", not A–Z:
    room = one card) with each friend's activity and a button:
    - **Join** when you can walk in anyway: you're a member, it's Open, or it's a Common room (you land in your friend's copy).
    - **Ask to join Earth** when you can't. Earth gets a DM card "feifei wants to join you · Send
-     invite / Not now"; Send invite gives you a 24-hour guest pass, or a member invite if Earth may
-     make one.
+     invite / Not now"; Send invite gives you a member invite if Earth may make one, otherwise a
+     24-hour guest pass if the room takes guests (even with "Members can invite" off).
    - **A private room you're not in is never named:** the card says "🔒 A private room" with no
      name, map or others, one card per friend so it doesn't reveal who's together. Listed rooms (Ask
      to join, Open) are named, since anyone can find them in Discover.
-2. **Online** (not in a room) and 3. **Offline** ("Last seen 3h ago"), each with 💬 and "…" (Invite
-   to a room, Remove friend, Block).
+2. **Online** (not in a room; Away shown as such) and 3. **Offline** ("Last seen 3h ago"), each
+   with 💬 and "…" (Invite to a room, Remove friend, Block). **Invite to a room** lists your rooms
+   and sends the same invite card as Send invite.
+
+Home has the same presence: "Friends out right now" (a chip per friend in a room you can walk into)
+and each room card's live `inside/capacity` and faces; a room's page lists who's inside. Messages
+and the DM header show friends' presence dots.
 
 ## Backend notes
 
@@ -66,9 +74,20 @@ Sorted by "who can I go hang out with", not A–Z:
 - **Silent by design:** an ignored request stays "Pending" for the sender until it expires, and
   asking again doesn't put it back in front of them. A request to someone who blocked you is kept
   but never shown to them, so it looks the same as being ignored.
-- **Presence:** the gateway keeps who's online and in which room in Redis and pushes changes only to
-  that person's friends (and to rooms they're in), respecting "Appear offline" and "Show what I'm
-  doing". Nothing is stored long-term except "last seen".
-- **Ask to join:** a DM message of a special kind with two buttons; "Send invite" makes a guest pass
-  or member invite (feature 3) and posts it back.
+- **Presence** (`apps/api/src/presence/`): the gateway reports each open tab to `PresenceService`
+  (connect, disconnect, and the tab's `presence` message: the room open in 3D and how long since
+  the last input, sent on change and every minute). Redis keeps each person's tabs
+  (`presence:tabs:<id>`), what friends last heard (`presence:last:<id>`) and who's inside each
+  room (`presence:inside:<roomId>`); a tab silent for 2.5 minutes is dropped (a crashed gateway).
+  Changes go only to friends, each seeing their own view: a private room they're not in has no
+  name. "Appear offline" (`users.appear_offline`) shows you offline and out of rooms' "inside now";
+  "Show what I'm doing" is `users.show_activity`; only `users.last_seen_at` is stored. In step 4
+  the game server reports the room instead of the 3D page.
+- **Reading it:** `GET /api/friends` carries each friend's `presence` (status, last seen, activity,
+  room); `GET /api/rooms` and `GET /api/rooms/:id` carry `inside` (members only). A tab sends
+  `watch:inside` with your room ids to get `inside` events when the numbers change.
+- **Ask to join and invites:** DM messages with `kind` `ask` or `invite` and a `card` (room, state,
+  invite code). `POST /api/dms/with/:handle/ask` (your friend must be in a room you're not a member
+  of), `POST /api/dms/asks/:messageId` with `{ send }` (only the one asked; once), `POST
+/api/dms/with/:handle/invite` with `{ roomId }`. Cards can't be edited.
 - **Limits** (20 requests a day, 1,000 friends) are checked on the server.

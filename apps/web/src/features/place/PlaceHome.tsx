@@ -7,7 +7,10 @@ import { ArrowRight, Bell, ChevronDown, Compass, Crown, MessageCircle, Pin, Play
 import { MAP_IDS, ROOM_NAME_MAX, type MapId } from '@connecta/shared';
 import { toast } from 'sonner';
 import { OpenRoomCard } from '@/components/app/OpenRoomCard';
+import { PersonFace, personAvatar } from '@/components/PersonFace';
+import { useFriends } from '@/features/friends/useFriends';
 import { AvatarStack } from '@/components/UserAvatar';
+import { useWatchInside } from '@/features/presence/usePresence';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -17,7 +20,7 @@ import { ROOMS_KEY, roomsApi, useListedRooms, useMyRooms, useRoomAction } from '
 import { api } from '@/lib/api/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
-import { ago, COMMON_ROOMS, MAPS, userById } from '@/lib/mock';
+import { ago, COMMON_ROOMS, MAPS } from '@/lib/mock';
 import { chatHref, placeRoom, walkInHref, type PlaceRoom } from './model';
 import { SizePicker, TemplateCard } from './MapPickers';
 import { PlusEndingBanner } from './PlusEndingBanner';
@@ -40,7 +43,7 @@ type Filter = 'all' | 'mine' | 'active';
  * "Walk in" enters 3D. The "…" has everything else, including Settings for owners and mods.
  * Below them, a few listed rooms worth dropping into; Discover has the full list.
  *
- * "Friends out right now" comes back with presence (build step 3).
+ * "Friends out right now" is friends in rooms you can walk into (feature 5's presence).
  */
 export function PlaceHome() {
   const [creating, setCreating] = useState(false);
@@ -56,6 +59,7 @@ export function PlaceHome() {
   const client = useQueryClient();
 
   const rooms = (mine.data ?? []).map(placeRoom);
+  useWatchInside(rooms.map((r) => r.id));
   const unread = (r: PlaceRoom) => r.room.me.unread;
   const busy = (r: PlaceRoom) => r.inside > 0;
   const pinned = (r: PlaceRoom) => r.room.me.pinned;
@@ -97,6 +101,7 @@ export function PlaceHome() {
         <h1 className="text-3xl font-black tracking-[-0.03em]">Where to tonight{me ? `, ${me.name}` : ''}?</h1>
       </header>
       <PlusEndingBanner />
+      <FriendsOut />
 
       <section>
         <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -254,8 +259,41 @@ export function PlaceHome() {
   );
 }
 
+/** One chip per friend in a room you can walk into (yours, or an Open one); the rest are on Friends. */
+function FriendsOut() {
+  const friends = useFriends();
+  const out = (friends.data ?? []).filter((f) => f.presence.room && (f.presence.room.member || f.presence.room.open));
+  if (!out.length) return null;
+  return (
+    <section>
+      <h2 className="mb-3 text-lg font-black">Friends out right now</h2>
+      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+        {out.map(({ person, presence }) => {
+          const room = presence.room!;
+          return (
+            <Link
+              key={person.id}
+              // Your room: straight in. An Open one: its page, to join first
+              href={room.member ? `/r/${room.id}/walk` : `/r/${room.id}`}
+              className="group flex flex-none items-center gap-2.5 rounded-full border bg-card py-1.5 pr-4 pl-1.5 shadow-sm hover:border-primary/50"
+            >
+              <PersonFace who={person} size={34} status={presence.status} />
+              <span className="text-sm">
+                <span className="block font-black">{person.name}</span>
+                <span className="block text-xs text-muted-foreground">
+                  {room.emoji} {room.name} · <span className="font-bold text-primary group-hover:underline">Join</span>
+                </span>
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function RoomCard({ room, pinned, unread, menu }: { room: PlaceRoom; pinned: boolean; unread: number; menu: React.ReactNode }) {
-  const inside = room.people.map(userById);
+  const inside = room.people.map(personAvatar);
 
   return (
     <article className="group relative isolate flex min-h-64 flex-col overflow-hidden rounded-[2rem] text-white shadow-soft">

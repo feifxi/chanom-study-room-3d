@@ -5,8 +5,8 @@ Undo, reactions, @mentions and @room, "is typing", "New messages", unread counts
 live in every open tab, on the room's page and in 3D (the Chat panel and ⤢). Pictures
 too (up to 4 a message). DMs too (2026-11-22): the Messages page, the header's popover and the
 Messages tab in 3D, with the same messages, pictures and typing, and read-only history once
-unfriended. Still to come in step 3: muting a DM and the notification bell; "Ask to join" and
-"Invite to a room" cards come with presence. **Try it:** open a room, or Friends → 💬 on a friend,
+unfriended, plus the "Ask to join" and "Invite to a room" cards (feature 5). Still to come in step
+3: muting a DM and the notification bell. **Try it:** open a room, or Friends → 💬 on a friend,
 at http://localhost:3000/home in two browsers after `pnpm dev`. The demo: http://localhost:3100/home/messages/mai (Mai types back),
 /home/messages/ken (unfriended).
 

@@ -1,9 +1,18 @@
 import { Inject, Logger } from '@nestjs/common';
-import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayInit, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
+import {
+  ConnectedSocket,
+  MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
+  SubscribeMessage,
+  WebSocketGateway,
+} from '@nestjs/websockets';
 import { fromNodeHeaders } from 'better-auth/node';
 import type { Server, Socket } from 'socket.io';
 import type { createAuth } from '../auth/auth.js';
 import { liveRoom } from '../live/live.service.js';
+import { PresenceService } from '../presence/presence.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { toPerson } from '../rooms/person.js';
 import type { Person } from '../rooms/rooms.schemas.js';
@@ -22,11 +31,12 @@ type Ack = { ok: true } | { ok: false; error: string };
  * thing that comes in is "typing", which is never stored.
  */
 @WebSocketGateway({ path: LIVE_PATH, addTrailingSlash: false, serveClient: false })
-export class LiveGateway implements OnGatewayInit, OnGatewayConnection {
+export class LiveGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private readonly log = new Logger(LiveGateway.name);
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly presence: PresenceService,
     @Inject(GATEWAY_AUTH) private readonly auth: ReturnType<typeof createAuth>,
   ) {}
 
@@ -49,6 +59,55 @@ export class LiveGateway implements OnGatewayInit, OnGatewayConnection {
 
   async handleConnection(socket: LiveSocket) {
     await socket.join(liveRoom.user(socket.data.userId));
+    // An open tab is being online (presence, feature 5)
+    await this.presence.openTab(socket.data.userId, socket.id).catch((e: unknown) => this.warn(e));
+  }
+
+  async handleDisconnect(socket: LiveSocket) {
+    if (socket.data?.userId) await this.presence.closeTab(socket.data.userId, socket.id).catch((e: unknown) => this.warn(e));
+  }
+
+  /**
+   * A tab's state, sent when it changes and every minute: the room it has open in 3D (or null),
+   * and how long since the last input in it. A room needs membership or a guest pass.
+   */
+  @SubscribeMessage('presence')
+  async here(@ConnectedSocket() socket: LiveSocket, @MessageBody() body: unknown): Promise<Ack> {
+    const { roomId, idleMs } = (body ?? {}) as { roomId?: unknown; idleMs?: unknown };
+    if (!socket.data?.userId || (roomId != null && typeof roomId !== 'string') || (idleMs != null && typeof idleMs !== 'number')) {
+      return { ok: false, error: 'bad_request' };
+    }
+    if (roomId && !(await this.mayBeIn(socket.data.userId, roomId))) return { ok: false, error: 'not_found' };
+    await this.presence.tab(socket.data.userId, socket.id, {
+      roomId: (roomId as string | undefined) ?? null,
+      idleMs: idleMs as number | undefined,
+    });
+    return { ok: true };
+  }
+
+  /** Live "inside now" numbers for your rooms (Home, a room's page): members only. */
+  @SubscribeMessage('watch:inside')
+  async watchInside(@ConnectedSocket() socket: LiveSocket, @MessageBody() roomIds: unknown): Promise<Ack> {
+    if (!Array.isArray(roomIds) || !socket.data?.userId) return { ok: false, error: 'bad_request' };
+    const ids = roomIds.filter((id): id is string => typeof id === 'string').slice(0, 200);
+    const mine = await this.prisma.membership.findMany({
+      where: { userId: socket.data.userId, roomId: { in: ids } },
+      select: { roomId: true },
+    });
+    await socket.join(mine.map((m) => `inside:${m.roomId}`));
+    return { ok: true };
+  }
+
+  private async mayBeIn(userId: string, roomId: string) {
+    const [member, guest] = await Promise.all([
+      this.prisma.membership.findUnique({ where: { roomId_userId: { roomId, userId } } }),
+      this.prisma.guestVisit.findUnique({ where: { roomId_userId: { roomId, userId } } }),
+    ]);
+    return !!member || (!!guest && guest.until > new Date());
+  }
+
+  private warn(error: unknown) {
+    this.log.warn(`Presence: ${String(error)}`);
   }
 
   private async authenticate(socket: LiveSocket): Promise<boolean> {

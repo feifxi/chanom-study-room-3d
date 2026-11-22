@@ -17,6 +17,7 @@ export const DmSummarySchema = z
     /** The newest message, for the list */
     last: z
       .object({
+        kind: z.enum(['text', 'ask', 'invite']),
         text: z.string(),
         mine: z.boolean(),
         pictures: z.boolean(),
@@ -29,6 +30,9 @@ export const DmSummarySchema = z
   })
   .meta({ id: 'DmSummary' });
 export type DmSummary = z.infer<typeof DmSummarySchema>;
+
+export const InviteToRoomBodySchema = z.object({ roomId: z.string().max(40) }).meta({ id: 'InviteToRoomBody' });
+export const AnswerAskBodySchema = z.object({ send: z.boolean() }).meta({ id: 'AnswerAskBody' });
 
 export const DmOpenSchema = z
   .object({
