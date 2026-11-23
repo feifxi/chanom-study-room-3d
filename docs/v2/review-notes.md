@@ -504,7 +504,7 @@ on. The prices moved to `@connecta/shared/plus`.
 A headless run paid for yearly Plus with PromptPay on the stand-in (Plus until next year, a ฿890
 receipt), was refused a second plan, and cancelled from Settings ("Ends on 23 Nov 2027").
 
-### Plus, part 3: Gift Plus
+### Plus, part 3: Gift Plus (`4a147b4`)
 
 **Changed:** `POST /api/billing/gift` starts a gift checkout (friends only); once paid, the months
 go on the friend's Plus (on top of any left), you get the receipt and "Gifts you sent", the friend
