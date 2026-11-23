@@ -7,6 +7,7 @@ import { AuthModule } from '@thallesp/nestjs-better-auth';
 import { AccountsModule } from './accounts/accounts.module.js';
 import { DmsModule } from './dms/dms.module.js';
 import { DecksModule } from './decks/decks.module.js';
+import { QuestsModule } from './quests/quests.module.js';
 import { FocusModule } from './focus/focus.module.js';
 import { FriendsModule } from './friends/friends.module.js';
 import { RoomsModule } from './rooms/rooms.module.js';
@@ -59,6 +60,7 @@ import { PrismaService } from './prisma/prisma.service.js';
     DmsModule,
     FocusModule,
     DecksModule,
+    QuestsModule,
     LiveModule,
     PresenceModule,
     NotificationsModule,

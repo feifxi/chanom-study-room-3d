@@ -14,3 +14,4 @@ export * from './world.js';
 export * from './watch.js';
 export * from './activities.js';
 export * from './board.js';
+export * from './quests.js';

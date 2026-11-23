@@ -2,7 +2,7 @@
 
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useQuests } from '@/lib/quests';
+import { useQuests } from '@/features/quests/useQuests';
 
 /** Today's three quests with progress; the same list in the Shop and in 3D (My tools → 🎯). */
 export function QuestList({ className }: { className?: string }) {

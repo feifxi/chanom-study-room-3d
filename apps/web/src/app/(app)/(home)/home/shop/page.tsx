@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { ME, SHOP, type ShopCategory, type ShopItem } from '@/lib/mock';
-import { spendCoins, useQuests } from '@/lib/quests';
+import { useQuests } from '@/features/quests/useQuests';
 
 const AvatarPreview = dynamic(() => import('@/features/avatar/AvatarPreview').then((m) => m.AvatarPreview), { ssr: false });
 
@@ -39,15 +39,16 @@ const CATEGORIES: [ShopCategory | 'all', string][] = [
 export default function ShopPage() {
   const [cat, setCat] = useState<ShopCategory | 'all'>('all');
   const [trying, setTrying] = useState<ShopItem | null>(null);
-  const [owned, setOwned] = useState(() => new Set(SHOP.filter((i) => i.owned).map((i) => i.id)));
+  const [owned] = useState(() => new Set(SHOP.filter((i) => i.owned).map((i) => i.id)));
   const { coins } = useQuests();
   const look = { ...ME.look, ...(trying ? TRY_ON[trying.id] : {}) };
   const items = SHOP.filter((i) => cat === 'all' || i.category === cat);
   const duck = SHOP.find((i) => i.id === 'pet-duck')!;
 
   const buy = (item: ShopItem) => {
-    if (!spendCoins(item.price)) return toast.error('Not enough coins yet. Today’s quests earn more.');
-    setOwned(new Set(owned).add(item.id));
+    // Buying comes with the Shop's first real set (coins and quests, part 2)
+    if (coins < item.price) return toast.error('Not enough coins yet. Today’s quests earn more.');
+    toast('🛍️ The Shop opens soon. Keep your coins!');
     toast.success(`${item.emoji} ${item.name} is yours!`);
   };
 

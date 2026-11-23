@@ -26,6 +26,7 @@ import {
   type GameTicket,
   type GameWalkedIn,
   type PlayerRole,
+  type QuestCount,
   type WatchRefused,
   parseYouTube,
   BOARD_ADD_MAX,
@@ -330,6 +331,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       if (now - s.lastSaidAt < SAY_COOLDOWN_MS) return;
       s.lastSaidAt = now;
       p.typing = false;
+      this.quest(client.sessionId, 'said');
       const said: Said = { id: client.sessionId, text };
       // Talk to everyone reaches into private zones too
       const zone = p.stage ? undefined : zoneAtIn(this.map, p.x, p.z);
@@ -433,6 +435,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       if (!p) return;
       const refused = this.npc.summon(client.sessionId, p, msg.kind);
       if (refused) client.send('npc:refused', { reason: refused } satisfies NpcRefused);
+      else this.quest(client.sessionId, 'buddy');
     }),
 
     /** Send one home: nobody owns them, so anyone can */
@@ -444,7 +447,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     /** Head pats for a cat within reach */
     'npc:pet': validate(z.object({ id: z.string().max(40) }), (client, msg) => {
       const p = this.state.players.get(client.sessionId);
-      if (p) this.npc.pet(client.sessionId, p, msg.id);
+      if (p && this.npc.pet(client.sessionId, p, msg.id)) this.quest(client.sessionId, 'pets');
     }),
 
     /** A new look from Settings → My character, live for everyone (guests keep the one they picked) */
@@ -482,6 +485,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     // Presence expires unless refreshed (the gateway's STALE_MS), so say who's still here every minute
     this.clock.setInterval(() => {
       for (const sessionId of this.priv.keys()) this.tellPresence(sessionId);
+      // A minute in a room with others (a daily quest): you're here and not away, with someone else
+      if (this.priv.size > 1) for (const [sessionId, s] of this.priv) if (!s.away) this.quest(sessionId, 'roomMinutes');
     }, 60_000);
     // Typing dots from a tab that went quiet, and voice back when a time out ends
     this.clock.setInterval(() => {
@@ -674,8 +679,16 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     const done = (this.focusDone.get(s.userId) ?? 0) + round.minutes;
     this.focusDone.set(s.userId, done);
     p.todayMin = done;
+    this.quest(sessionId, 'focusMinutes', round.minutes);
+    if (round.complete) this.quest(sessionId, 'focusRounds');
     // Guests get the timer, but nothing is saved for them (spec 08)
     if (p.role !== 'guest') links.focusRound({ ...round, userId: s.userId, roomId: this.connectaId, subject: p.subject });
+  }
+
+  /** One step towards a daily quest (the API counts it, for accounts; spec 15) */
+  private quest(sessionId: string, counts: QuestCount, amount = 1) {
+    const s = this.priv.get(sessionId);
+    if (s) links.quest({ userId: s.userId, counts, amount, at: Date.now() });
   }
 
   /** What shows by your name: a running focus round wins (focusing is never away), then away, then a break. */
@@ -792,6 +805,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
         return room.roomWideGames;
       },
       send: (sessionId, type, message) => this.clients_.get(sessionId)?.send(type, message),
+      finished: (sessionIds) => sessionIds.forEach((id) => this.quest(id, 'played')),
     });
     activities.add(ChessTable.spot, this.chess);
     activities.add(SlaveTable.spot, this.slave);

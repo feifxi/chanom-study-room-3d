@@ -1,4 +1,4 @@
-import type { FocusRound, GamePresence, GameRoomEvent, GameWalkedIn } from '@connecta/shared';
+import type { FocusRound, GamePresence, GameRoomEvent, GameWalkedIn, QuestEvent } from '@connecta/shared';
 
 /**
  * What the room reports outward and listens to, wired by the entry point (Redis in the real server,
@@ -13,9 +13,11 @@ export interface Links {
   focusRound(round: FocusRound): void;
   /** Someone walked into a room: any other room they're in, on any game server, lets them go */
   walkedIn(event: GameWalkedIn): void;
+  /** Something a daily quest counts (a bubble, a pet, a finished game…): the API counts it (a job) */
+  quest(event: QuestEvent): void;
 }
 
-export const links: Links = { presence: () => {}, space: () => {}, focusRound: () => {}, walkedIn: () => {} };
+export const links: Links = { presence: () => {}, space: () => {}, focusRound: () => {}, walkedIn: () => {}, quest: () => {} };
 
 interface LiveRoom {
   apply(event: GameRoomEvent): void;

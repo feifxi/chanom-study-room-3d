@@ -45,6 +45,8 @@ model User {
   lastSeenAt               DateTime? @map("last_seen_at")
   /// Your browser's time zone (IANA), kept up to date by the web app: your focus days start at your midnight
   timeZone                 String    @default("UTC") @map("time_zone")
+  /// Earned from daily quests, spent in the Shop; every change is a coin_entries row in the same transaction
+  coins                    Int       @default(0)
   /// Listed on the Everyone focus ranking; null = the default for your age (on 18+, off under 18)
   showOnEveryone           Boolean?  @map("show_on_everyone")
   /// Settings → Notifications: no game invite cards while your focus timer runs
@@ -77,6 +79,8 @@ model User {
   notifications    Notification[]
   focusSessions    FocusSession[]
   todos            Todo[]
+  questProgress    QuestProgress[]
+  coinEntries      CoinEntry[]
 
   @@index([deleteAt])
   @@map("users")
@@ -540,4 +544,38 @@ model RoomDeck {
 
   @@index([roomId])
   @@map("room_decks")
+}
+
+/// A person's progress on one of their quests for a day (spec 15): the day's three come from
+/// questsFor in @connecta/shared, so only progress is stored
+model QuestProgress {
+  userId   String    @map("user_id")
+  /// The day, in their own time zone
+  day      DateTime  @db.Date
+  questId  String    @map("quest_id")
+  progress Int       @default(0)
+  /// When it paid out: once
+  paidAt   DateTime? @map("paid_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, day, questId])
+  @@index([day])
+  @@map("quest_progress")
+}
+
+/// Every coin earned or spent; users.coins is the balance, changed in the same transaction
+model CoinEntry {
+  id        String   @id @default(uuid(7))
+  userId    String   @map("user_id")
+  /// + earned, - spent
+  amount    Int
+  /// quest:<id> when earned (the Shop adds its own)
+  reason    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("coin_entries")
 }

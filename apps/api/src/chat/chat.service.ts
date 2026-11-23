@@ -6,6 +6,7 @@ import { Prisma } from '../generated/prisma/client.js';
 import { LiveService } from '../live/live.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PicturesService, pictureUrl } from './pictures.service.js';
+import { QuestsService } from '../quests/quests.service.js';
 import { toPerson } from '../rooms/person.js';
 import type { Card, ChatMessage, MessagePage } from './chat.schemas.js';
 
@@ -73,6 +74,7 @@ export class ChatService {
     private readonly live: LiveService,
     private readonly pictures: PicturesService,
     private readonly inbox: NotificationsService,
+    private readonly quests: QuestsService,
   ) {}
 
   private readonly log = new Logger(ChatService.name);
@@ -106,6 +108,8 @@ export class ChatService {
     const message = await this.create(userId, { roomId }, input, mentions, mentionsRoom);
     // Sending means you've read up to here
     await this.prisma.membership.update({ where: { roomId_userId: { roomId, userId } }, data: { lastReadId: message.id } });
+    // Room chat counts towards "say things"; a quest never stops a message
+    await this.quests.said(userId).catch((err: unknown) => this.log.warn(`Quest not counted: ${String(err)}`));
     return message;
   }
 

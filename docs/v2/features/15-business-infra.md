@@ -31,6 +31,10 @@ server with only what V2 needs added, and monitoring on its own server for SRE p
 
 ## Coins and daily quests
 
+**Status:** quests and coins are real (2026-11-23, part 1). The Shop's first set (accessories and
+outfits that really show on your character, designed in the demo first) is part 2; pets follow as
+their own part. Until part 2 the Shop's items are the demo's and Buy says "opens soon".
+
 - **Coins are earned, never bought.** Money only buys Plus. Coins buy cosmetics in the Shop
   (accessories ~200–400, outfits ~500–800, pets ~1,000–1,500: something new about once a week).
   Premium skins and pets come with Plus, never for coins; Plus earns no extra coins.
@@ -44,6 +48,25 @@ server with only what V2 needs added, and monitoring on its own server for SRE p
   friend" or "3 different people". Each pays once a day, so faking one gains almost nothing.
 - Shown in the Shop and in 3D under My tools → 🎯 ("1/3"), with a toast when one's done. No weekly
   bonus and no streaks.
+- **Your day:** quests start fresh at midnight in your own time zone (like the focus rankings).
+  Each day's three are picked for you at random, one per group, from the seven above plus 🎲 "Play
+  any activity once", and don't change during the day. New accounts start at 0 coins.
+- **Who earns:** every account, in any room, a visitor on a guest pass too; anonymous guests don't.
+
+### Coins and quests: backend notes
+
+- The rules and the daily pick are `@connecta/shared/quests` (`questsFor(userId, day)`: a stable
+  hash, so only progress is stored). The API's `src/quests` counts and pays; `GET
+/api/quests/today` gives your three, their progress and your coins.
+- **What counts:** the game server queues a `QuestEvent { userId, counts, amount, at }` on the
+  `quest-events` queue for a bubble (`said`), a cat petted (`pets`), a summon that worked
+  (`buddy`), a game played to its end, for everyone in its results (`played`), each minute you're
+  in a room with someone else and not away (`roomMinutes`), and a focus round of 1+ minute
+  (`focusMinutes`, plus `focusRounds` when it ran to its end). The API counts Room chat messages
+  (`said`) itself; DMs don't count.
+- **Paying once:** `quest_progress` (user, day, quest) holds progress; the update that first finds
+  it done and unpaid sets `paid_at`, adds the coins to `users.coins` and writes a `coin_entries` row,
+  all in one transaction. Your tabs hear `quest:done` (the toast) or `quests` (refresh) live.
 
 ## Prices
 

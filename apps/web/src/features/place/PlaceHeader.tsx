@@ -22,7 +22,7 @@ import { useMeAsUser, useSignOut } from '@/features/account/useMe';
 import { FriendFace } from '@/features/presence/FriendFace';
 import { dmUnread, lastLine, useDms } from '@/features/dms/useDms';
 import { useFriendRequests } from '@/features/friends/useFriends';
-import { useQuests } from '@/lib/quests';
+import { useQuests } from '@/features/quests/useQuests';
 import { useViewer } from '@/lib/viewer';
 
 const NAV = [

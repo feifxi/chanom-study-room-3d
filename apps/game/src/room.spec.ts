@@ -4,6 +4,7 @@ import { SignJWT } from 'jose';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
   type FocusRound,
+  type QuestEvent,
   GAME_CLOSE,
   GAME_ROOM,
   TICKET_AUDIENCE,
@@ -64,6 +65,8 @@ let ROOM = '';
 let rooms = 0;
 const spaces: string[] = [];
 const rounds: FocusRound[] = [];
+/** What daily quests heard: `userId:counts:amount` */
+const quests: string[] = [];
 /** A timer minute lasts this long here, so a 25-minute round takes a second */
 const MINUTE = 40;
 
@@ -121,6 +124,7 @@ beforeAll(async () => {
   links.presence = (p) => presence.push(p);
   links.space = (id) => spaces.push(id);
   links.focusRound = (r) => rounds.push(r);
+  links.quest = (e: QuestEvent) => quests.push(`${e.userId}:${e.counts}:${e.amount}`);
   links.walkedIn = dispatchWalkedIn;
   timing.minuteMs = MINUTE;
   server = gameServer(SECRET);
@@ -134,6 +138,7 @@ afterEach(async () => {
   presence.length = 0;
   spaces.length = 0;
   rounds.length = 0;
+  quests.length = 0;
   lk.length = 0;
   await new Promise((r) => setTimeout(r, 50));
 });
@@ -296,6 +301,7 @@ describe('bubbles and status', () => {
     a.send('say', { text: `  ${'x'.repeat(200)}  ` });
     await until(() => heard.length === 1);
     expect(heard[0]).toEqual({ id: a.sessionId, text: 'x'.repeat(120) });
+    expect(quests).toContain('u-mai:said:1');
     await until(() => b.state.players.get(a.sessionId)?.typing === false);
   });
 
@@ -625,6 +631,7 @@ describe('activities: chess', () => {
     await until(() => spot(a).phase === 'results');
     expect(a.state.chess).toMatchObject({ endWhy: 'resigned', endWinner: white.sessionId });
     expect([...spot(a).results]).toEqual([white.sessionId, black.sessionId]);
+    expect(quests.filter((q) => q.endsWith(':played:1'))).toHaveLength(2);
     a.send('activity:begin');
     await until(() => spot(a).phase === 'playing', 5000);
     expect(a.state.chess.white).toBe(black.sessionId);
@@ -1044,6 +1051,8 @@ describe('the focus timer', () => {
     expect(me(a).focusSince).toBe(0);
     expect(me(a).todayMin).toBe(25);
     expect(rounds).toEqual([expect.objectContaining({ userId: 'u-mai', roomId: ROOM, subject: 'Calculus but a very long', minutes: 25 })]);
+    // Daily quests: the minutes, and a session that ran to its end
+    expect(quests).toEqual(expect.arrayContaining(['u-mai:focusMinutes:25', 'u-mai:focusRounds:1']));
     expect(focusOf('u-mai')).toBeNull();
     await until(() => me(a).status === 'idle', 1000);
     expect(me(a).statusEndsAt).toBe(0);
@@ -1065,6 +1074,8 @@ describe('the focus timer', () => {
     a.send('focus:stop');
     await until(() => rounds.length === 1);
     expect(rounds[0]!.minutes).toBeGreaterThanOrEqual(3);
+    // Stopped early: the minutes count, but not as a finished session
+    expect(quests.filter((q) => q.includes(':focus'))).toEqual([`u-mai:focusMinutes:${rounds[0]!.minutes}`]);
     await until(() => me(a).todayMin === rounds[0]!.minutes);
   });
 
@@ -1166,6 +1177,8 @@ describe('cats and study buddies', () => {
     a.send('npc:summon', { kind: 'cat' });
     await until(() => heardB.summoned.length === 1);
     expect(heardB.summoned[0]).toMatchObject({ kind: 'cat', bySessionId: a.sessionId, byName: 'Mai' });
+    // Only the summon that worked counts
+    expect(quests.filter((q) => q.includes(':buddy'))).toEqual(['u-mai:buddy:1']);
     expect(a.state.npcs.size).toBe(2); // still rolling out
     a.send('npc:summon', { kind: 'buddy' });
     await until(() => heardA.refused.length === 2);

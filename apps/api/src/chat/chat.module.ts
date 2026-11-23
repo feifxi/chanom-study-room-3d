@@ -4,9 +4,10 @@ import { ChatController, PicturesController } from './chat.controller.js';
 import { ChatService } from './chat.service.js';
 import { PicturesProcessor } from './pictures.processor.js';
 import { PICTURES_QUEUE, PicturesService } from './pictures.service.js';
+import { QuestsModule } from '../quests/quests.module.js';
 
 @Module({
-  imports: [BullModule.registerQueue({ name: PICTURES_QUEUE })],
+  imports: [BullModule.registerQueue({ name: PICTURES_QUEUE }), QuestsModule],
   controllers: [ChatController, PicturesController],
   providers: [ChatService, PicturesService, PicturesProcessor],
   // Rooms show unread counts on Home

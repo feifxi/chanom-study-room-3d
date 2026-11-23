@@ -13,7 +13,6 @@ import {
   type NpcView,
   type PlayerView,
 } from '@connecta/shared';
-import { questProgress } from '@/lib/quests';
 import type { MapDef } from '../map/types';
 import type { StudyRoom } from './roomSession';
 
@@ -166,9 +165,6 @@ export class MockRoom implements StudyRoom {
       if (seat && !taken) Object.assign(me, { seatId: seat.id, x: seat.x, z: seat.z, yaw: seat.yaw, moving: false });
     } else if (type === 'stand') {
       this.stand(me);
-    } else if (type === 'npc:pet') {
-      // The real server counts this for today's quests (feature 7's coin model)
-      questProgress('pet-3');
     }
   }
 
@@ -212,7 +208,6 @@ export class MockRoom implements StudyRoom {
         subject: pickRandom(BUDDY_SUBJECTS),
       });
     }, SUMMON_REVEAL_MS);
-    questProgress('buddy-1');
     return { name, label };
   }
   private pending = 0;

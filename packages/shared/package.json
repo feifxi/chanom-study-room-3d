@@ -32,6 +32,10 @@
     "./draw-guess": {
       "types": "./dist/drawGuess.d.ts",
       "default": "./dist/drawGuess.js"
+    },
+    "./quests": {
+      "types": "./dist/quests.d.ts",
+      "default": "./dist/quests.js"
     }
   },
   "scripts": {

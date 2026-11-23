@@ -644,6 +644,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/quests/today": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["QuestsController_today"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/friends": {
         parameters: {
             query?: never;
@@ -1546,6 +1562,20 @@ export interface components {
             headers: {
                 [key: string]: string;
             };
+        };
+        QuestsToday: {
+            day: string;
+            coins: number;
+            quests: components["schemas"]["QuestView"][];
+        };
+        QuestView: {
+            id: string;
+            emoji: string;
+            title: string;
+            goal: number;
+            unit?: string;
+            coins: number;
+            progress: number;
         };
         Friend: {
             person: components["schemas"]["Person"];
@@ -2970,6 +3000,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    QuestsController_today: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestsToday"];
+                };
             };
         };
     };

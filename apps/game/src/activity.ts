@@ -28,6 +28,8 @@ export interface ActivityHost {
   send(sessionId: string, type: string, message: unknown): void;
   /** Room settings → Room-wide games (Pick a Side takes the whole floor and calls everyone) */
   readonly roomWideGames: boolean;
+  /** A game played to its end (not stopped by End): everyone in the results played (a daily quest) */
+  finished?(sessionIds: string[]): void;
 }
 
 /** A game at a spot: started with the round's players, told who's out, asked whether it's over. */
@@ -309,6 +311,7 @@ export class Activities {
   private finish(st: Spot, standing: string[]) {
     const places = [...standing, ...[...st.out].reverse().filter((x) => !standing.includes(x))];
     set(st.results, places);
+    this.host.finished?.(places);
     Object.assign(st, { phase: 'results', resultsUntil: Date.now() + RESULTS_MS, startsAt: 0 });
     st.awaySince.clear();
   }

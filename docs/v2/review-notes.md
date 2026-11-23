@@ -67,6 +67,14 @@ Tick or strike these as they're dealt with.
       link, though the server's title is the one used: one extra request per link.
 - [ ] **Common rooms keep the demo's local TV** until moderation and open rooms; photo mode
       there has no Share (they're text only until feature 14).
+- [ ] **The Shop still shows the demo's items** (emoji, "Owned" marks from the mock) until coins and
+      quests part 2; Buy only says it opens soon.
+- [ ] **Old quest progress is never cleaned up** (three small rows per person per day). A nightly
+      job could drop rows older than a month; the coin entries stay as the record.
+- [ ] **Focus minutes count towards the quest when a round ends**, not minute by minute, so a long
+      round's progress jumps at the end.
+- [ ] **The API test for Room chat** checks "say things" only on days when it's the test person's
+      quest (the pick depends on the account's random id).
 - [ ] **Draw & Guess's timers and Copycat's 8 s look use the browser's clock** against the
       server's deadlines, like Slave's turn bar; the server's timer is what counts.
 - [ ] **Draw & Guess text isn't moderated yet** (prompts and descriptions; waits for the
@@ -360,3 +368,20 @@ out (`dropouts`, why `idle`: two empty turns). Share to Room chat posts the chai
 A headless run with three people (one on a phone) played a whole game: prompts, drawings (one
 collected by the timer without Done), descriptions, then the album in step with the host's Pause
 and Finish.
+
+### Coins and quests, part 1: quests and coins
+
+**Changed:** daily quests and coins are real. The rules and the day's pick moved to
+`@connecta/shared/quests`; the API's new `src/quests` module counts and pays (`quest_progress`,
+`coin_entries` and `users.coins`; `GET /api/quests/today`). The game server queues what it sees
+(bubbles, pets, working summons, finished games, minutes with others, focus rounds) on the
+`quest-events` queue; the API counts Room chat itself. The web app reads the API (`useQuests`,
+`QuestsListener` with live `quest:done` toasts) and no longer counts anything in the browser; the
+demo-only "one step on every quest" button is gone from apps/web. "Play any activity once" joined
+the pool.
+
+**Bugs found and fixed while building:** none beyond the design points in the decision log (a
+stopped focus round no longer counts as a finished session, as the browser version did when it
+reached a break; a refused Buddy Machine summon no longer counts). A headless run checked minutes
+with others counted through the queue, and the Buddy Machine paying 15 coins with the toast,
+shown live in My tools and the Shop.

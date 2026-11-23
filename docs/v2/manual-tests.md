@@ -444,3 +444,18 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
 - [ ] Save a chain (one tall picture). A member's 💬 posts it to Room chat; a guest has no 💬.
 - [ ] "That's a wrap!" then **Again** starts a new game with whoever's there; no old album flashes.
 - [ ] Phone width: writing, the drawing pad and the album fit.
+
+### Coins and quests, part 1: quests and coins
+
+- [ ] A new account has 0 coins; Shop and My tools → 🎯 show the same three quests (one 📖 focus,
+      one together, one play) with 0 progress.
+- [ ] Do each kind (whichever you have today): focus a full round (and Stop one early: its minutes
+      count, the session doesn't); stay a few minutes in a room with someone else; say things in
+      bubbles or Room chat (DMs don't count); pet a cat; use the Buddy Machine; finish any game.
+      The progress moves without reloading.
+- [ ] When one's done: a toast "🎯 … · +N 🪙", it turns green with ✓, and the coins go up in the
+      Shop, the header menu and My tools. Doing more pays nothing more.
+- [ ] After your midnight (your computer's time zone) there are three new quests; the coins stay.
+- [ ] A guest without an account earns nothing; a member visiting another room on a guest pass
+      does.
+- [ ] The Shop's Buy says the Shop opens soon (part 2).

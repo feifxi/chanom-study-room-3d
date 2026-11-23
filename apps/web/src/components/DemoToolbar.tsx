@@ -20,7 +20,6 @@ import {
   startChess,
   startSlave,
 } from '@/lib/demoCrowd';
-import { nudgeQuests } from '@/lib/quests';
 import { cn } from '@/lib/utils';
 import { setPerfOverlay, usePerfOverlay } from '@/features/room3d/perf';
 import { setViewer, useViewer, VIEWERS } from '@/lib/viewer';
@@ -102,9 +101,6 @@ export function DemoToolbar() {
         <PerfToggle />
         <button onClick={goAwayNow} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
           💤 Go away now (in a 3D room; skips the 10 minutes)
-        </button>
-        <button onClick={nudgeQuests} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
-          🎯 One step on every quest (skip the waiting)
         </button>
         <button onClick={putOnVideo} className="mb-3 w-full rounded-xl border p-2 text-xs font-bold hover:bg-muted">
           📺 Someone puts a video on the big screen (in a 3D room)

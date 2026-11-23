@@ -22,6 +22,8 @@ export interface FocusTimer {
 /** A focus round that ended (ran out or was stopped) */
 export interface EndedRound {
   id: string;
+  /** Ran to its end (a daily quest counts finished sessions); Stop or leaving ends it early */
+  complete: boolean;
   startedAt: number;
   endedAt: number;
   minutes: number;
@@ -42,7 +44,7 @@ export function focusedMinutes(t: FocusTimer, now: number) {
 export function tickTimer(t: FocusTimer, now: number): { timer: FocusTimer; ended?: EndedRound } {
   if (t.phase === 'idle' || now < t.endsAt) return { timer: t };
   if (t.phase === 'break') return { timer: idleTimer(t.preset) };
-  const ended = { id: t.roundId, startedAt: t.startedAt, endedAt: t.endsAt, minutes: focusedMinutes(t, now) };
+  const ended = { id: t.roundId, complete: true, startedAt: t.startedAt, endedAt: t.endsAt, minutes: focusedMinutes(t, now) };
   return { timer: { ...t, phase: 'break', endsAt: t.endsAt + FOCUS_PRESETS[t.preset].break * timing.minuteMs }, ended };
 }
 
@@ -50,5 +52,14 @@ export function tickTimer(t: FocusTimer, now: number): { timer: FocusTimer; ende
 export function stopTimer(t: FocusTimer, now: number): { timer: FocusTimer; ended?: EndedRound } {
   const timer = idleTimer(t.preset);
   if (t.phase !== 'focus') return { timer };
-  return { timer, ended: { id: t.roundId, startedAt: t.startedAt, endedAt: Math.min(now, t.endsAt), minutes: focusedMinutes(t, now) } };
+  return {
+    timer,
+    ended: {
+      id: t.roundId,
+      complete: now >= t.endsAt,
+      startedAt: t.startedAt,
+      endedAt: Math.min(now, t.endsAt),
+      minutes: focusedMinutes(t, now),
+    },
+  };
 }

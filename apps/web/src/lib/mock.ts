@@ -618,8 +618,6 @@ export const SHOP: ShopItem[] = [
   { id: 'frame-polaroid', name: 'Polaroid Frame', category: 'frames', emoji: '📸', price: 80, tint: 'bg-sky', owned: true },
 ];
 
-export const COINS = 1240;
-
 /**
  * Common rooms (were "drop-in rooms", renamed 2026-11-09): run by Connecta from its templates, open
  * to everyone, guests included, with no members and no saved chat. When a copy fills, a new one

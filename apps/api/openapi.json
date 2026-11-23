@@ -1802,6 +1802,27 @@
         ]
       }
     },
+    "/api/quests/today": {
+      "get": {
+        "operationId": "QuestsController_today",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestsToday"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "quests"
+        ]
+      }
+    },
     "/api/friends": {
       "get": {
         "operationId": "FriendsController_list",
@@ -4656,6 +4677,72 @@
           "id",
           "uploadUrl",
           "headers"
+        ],
+        "additionalProperties": false
+      },
+      "QuestsToday": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string"
+          },
+          "coins": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "quests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuestView"
+            }
+          }
+        },
+        "required": [
+          "day",
+          "coins",
+          "quests"
+        ],
+        "additionalProperties": false
+      },
+      "QuestView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "emoji": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "goal": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "unit": {
+            "type": "string"
+          },
+          "coins": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "progress": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "emoji",
+          "title",
+          "goal",
+          "coins",
+          "progress"
         ],
         "additionalProperties": false
       },

@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import { BookOpenText, CircleHelp, Music2, Target, X, type LucideIcon } from 'lucide-react';
 import { QuestList } from '@/components/app/QuestList';
-import { useQuests } from '@/lib/quests';
+import { useQuests } from '@/features/quests/useQuests';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { KEYS } from '@/lib/controls';

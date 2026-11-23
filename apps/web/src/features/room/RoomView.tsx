@@ -14,7 +14,6 @@ import { DMS, ME, USERS, type Server } from '@/lib/mock';
 import type { PlaceRoom } from '@/features/place/model';
 import { useMeAsUser } from '@/features/account/useMe';
 import { AWAY_EVENT, crowdPeople, useCrowd } from '@/lib/demoCrowd';
-import { questProgress } from '@/lib/quests';
 import { GUEST_LOOK, loadGuest } from '@/lib/guest';
 import { getMyLook, useMyLook } from '@/lib/myLook';
 import { useCompactScreen, useTouchScreen, useWideScreen, isTouchScreen } from '@/lib/screen';
@@ -304,8 +303,6 @@ export default function RoomView({
     (phase: Phase) => {
       // The mock rooms keep your status here; a real room's game server runs the timer itself
       room.setStatus(phase === 'idle' ? 'idle' : phase, subjectRef.current);
-      // A focus block ran to its end (focus → break): one finished session
-      if (phase === 'break') questProgress('pomo-2');
     },
     [room],
   );
@@ -319,19 +316,11 @@ export default function RoomView({
     subjectRef.current = serverSubject;
     setSubject(serverSubject);
   }, [serverSubject]);
-  // While a focus timer runs you're studying, maybe in another tab: never away, and quest minutes count
+  // While a focus timer runs you're studying, maybe in another tab: never away
   const focusing = useRef(false);
   useEffect(() => {
     focusing.current = pomo.phase === 'focus';
-    if (pomo.phase !== 'focus') return;
-    const id = setInterval(() => questProgress('focus-60'), 60_000);
-    return () => clearInterval(id);
   }, [pomo.phase]);
-  // Connected to a room with someone else in it (counted by the server; tabs don't matter)
-  useEffect(() => {
-    const id = setInterval(() => room.state.players.size > 1 && questProgress('room-30'), 60_000);
-    return () => clearInterval(id);
-  }, [room]);
   // Your lo-fi fades while people talk, and while you're watching the big screen
   const watchingTv = hub.mine('me')?.id === 'tv';
   // Each activity spot's floating name (not the whiteboard, a quiet side spot)
@@ -534,7 +523,6 @@ export default function RoomView({
 
   const say = useCallback((id: string, name: string, text: string) => {
     setBubbles((b) => ({ ...b, [id]: { text, until: Date.now() + bubbleMs(text) } }));
-    if (id === 'me') questProgress('say-5');
     setLines((l) => [...l, { id: `${Date.now()}-${id}`, name, text }]);
   }, []);
 
@@ -565,7 +553,6 @@ export default function RoomView({
         if (m.bySessionId !== room.voiceId) return;
         setMachineError(null);
         setMySummon({ kind: m.kind, name: m.name, label: m.label, at });
-        questProgress('buddy-1');
       },
       said: (id, text) => {
         const npc = room.state.npcs.get(id);

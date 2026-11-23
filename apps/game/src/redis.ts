@@ -1,6 +1,14 @@
 import { Queue } from 'bullmq';
 import { Redis } from 'ioredis';
-import { FOCUS_QUEUE, GAME_CHANNELS, type FocusRound, type GameRoomEvent, type GameWalkedIn } from '@connecta/shared';
+import {
+  FOCUS_QUEUE,
+  GAME_CHANNELS,
+  QUESTS_QUEUE,
+  type FocusRound,
+  type GameRoomEvent,
+  type GameWalkedIn,
+  type QuestEvent,
+} from '@connecta/shared';
 import { dispatch, dispatchWalkedIn, links } from './links.js';
 import { log } from './log.js';
 
@@ -22,10 +30,18 @@ export async function connectRedis(url: string, env: string) {
     defaultJobOptions: { attempts: 5, backoff: { type: 'exponential', delay: 2000 }, removeOnComplete: true, removeOnFail: 1000 },
   });
   rounds.on('error', (err) => log.warn({ err: err.message }, 'focus queue'));
+  // Daily quests: each thing counted is a small job (a lost one costs a step of a quest, nothing more)
+  const quests = new Queue<QuestEvent>(QUESTS_QUEUE, {
+    connection: queueRedis,
+    prefix: `connecta:${env}`,
+    defaultJobOptions: { attempts: 3, backoff: { type: 'exponential', delay: 2000 }, removeOnComplete: true, removeOnFail: 1000 },
+  });
+  quests.on('error', (err) => log.warn({ err: err.message }, 'quest queue'));
 
   links.presence = (update) => void pub.publish(GAME_CHANNELS.presence, JSON.stringify(update)).catch(() => {});
   links.space = (roomId) => void pub.publish(GAME_CHANNELS.space, JSON.stringify({ roomId })).catch(() => {});
   links.walkedIn = (event) => void pub.publish(GAME_CHANNELS.walkedIn, JSON.stringify(event)).catch(() => {});
+  links.quest = (event) => void quests.add('event', event).catch((err: unknown) => log.warn({ err, event }, 'quest event not queued'));
   links.focusRound = (round) =>
     void rounds.add('round', round, { jobId: round.id }).catch((err: unknown) => log.warn({ err, round }, 'focus round not queued'));
 
@@ -39,6 +55,6 @@ export async function connectRedis(url: string, env: string) {
     }
   });
   return async () => {
-    await Promise.allSettled([pub.quit(), sub.quit(), rounds.close().then(() => queueRedis.quit())]);
+    await Promise.allSettled([pub.quit(), sub.quit(), Promise.all([rounds.close(), quests.close()]).then(() => queueRedis.quit())]);
   };
 }

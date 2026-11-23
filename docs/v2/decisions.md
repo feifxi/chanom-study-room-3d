@@ -431,6 +431,16 @@ decision is made or changed: one line, a date, and the reason.
   with a friend's deck, and the room's owner and mods look after them. Members write decks and
   change their own; guests play with them. We lose using one deck in several rooms; "copy to
   another room" can come later. This replaces "My decks, private to you".
+- **Coins and quests, in parts** (2026-11-23, the owner): 1. quests and coins, counted by the
+  servers; 2. the Shop's first set, **only things that really show on your character in every
+  room** (about 6 accessories and 3–4 outfits, built in code, designed in the demo first; today's
+  free colours and accessories stay the free base set); 3. pets, which follow you and need the game
+  server and animation. Photo frames are dropped for now (photo mode has none); Plus-only items stay
+  hidden until Plus. Turned down: selling the demo's emoji items (they'd show nowhere) and quests
+  with nothing to buy. Also agreed: the day starts at your own midnight; three picked at random per
+  person per day, fixed for the day; everyone signed in earns (a guest pass too); new accounts start
+  at 0. While building: a focus session counts as finished only when it ran to its end (Stop counts
+  its minutes but not the session), and only working summons count for the Buddy Machine.
 - **Draw & Guess on the game server** (2026-11-23, the owner): the album plays in step for
   everyone (the host's Pause and Next chain work for the room; reactions live); each player gets
   only what they work from, and the chains go out at the album, so nobody can peek; a prompt or
