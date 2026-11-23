@@ -419,7 +419,7 @@ bought accessories; the Shop page uses the real wardrobe; on a phone the quests 
 A headless run checked the API refusing an unowned witch hat, buying it in the Shop (1,000 → 620
 coins), wearing it, and Jod seeing it on Mai in the room at once.
 
-### Coins and quests, part 3: pets
+### Coins and quests, part 3: pets (`798854b`)
 
 **Changed:** four pets in the Shop (Midnight, Tux, Siamese, Snowball): cat coats with an extra (a
 star tag, a bow tie, a bell collar, a pink bow; Siamese points, a fluffy ruff, coloured eyes) drawn
