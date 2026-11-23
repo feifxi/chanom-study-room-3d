@@ -283,3 +283,22 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
 - [ ] As a guest: "Sign up to keep a to-do list…" with the sign-up button (it asks "Leave …?").
 - [ ] With the API stopped, ticking or adding shows a toast and puts the list back as it was.
 - [ ] Phone width, light and dark: long tasks wrap, the panel fits.
+
+### Focus, part 3: the Focus page
+
+- [ ] Run a couple of rounds with different subjects (one typed "Calculus", one " calculus "), then
+      open Focus: Today, Last 7 days and the chart's today bar match; "By subject" has one
+      Calculus line with both rounds, under the spelling you used most.
+- [ ] Nothing yet this week: the subjects card says so, and the hero's numbers are 0.
+- [ ] The hero's button says "Back to <the room you were last in>" and walks you in; in a fresh
+      browser (or after leaving that room for good) it says "Find a room to study in" → Discover.
+- [ ] Rankings → Friends: you and only the friends who focused, most first; "1 friend hasn't
+      focused this week yet" counts the rest. Today and This week switch (weeks start Monday).
+- [ ] The hero says "#2 among friends. 25m behind …" when someone's ahead.
+- [ ] Rankings → Everyone: the top 10; if you're below it, "⋯" and your row. Someone you blocked
+      (or who blocked you) never appears, even with more minutes.
+- [ ] "Show me on Everyone" off: you vanish from the list at once (for other people too, reload
+      theirs) and your row has no rank; on again brings you back. The same switch in Settings →
+      Privacy & safety follows it, both ways.
+- [ ] A new account aged under 18 starts with it off; 18+ starts with it on.
+- [ ] Phone and desktop, light and dark: the hero button doesn't overflow with a long room name.

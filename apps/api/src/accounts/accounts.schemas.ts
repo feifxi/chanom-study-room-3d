@@ -40,6 +40,8 @@ export const MeSchema = z
     showActivity: z.boolean(),
     /** The time zone your focus days follow (the web app keeps it in step with your browser) */
     timeZone: z.string(),
+    /** Listed on the Everyone focus ranking (your choice, or the default: on 18+, off under 18) */
+    showOnEveryone: z.boolean(),
   })
   .meta({ id: 'Me' });
 export type Me = z.infer<typeof MeSchema>;
@@ -67,7 +69,7 @@ export const TooYoungSchema = z.object({ code: z.literal('too_young'), until: z.
 export const ProfileBodySchema = z.object({ name: DisplayName.optional(), look: LookSchema.optional() }).meta({ id: 'ProfileBody' });
 
 export const PrivacyBodySchema = z
-  .object({ requestsFrom: z.enum(REQUESTS_FROM), appearOffline: z.boolean(), showActivity: z.boolean() })
+  .object({ requestsFrom: z.enum(REQUESTS_FROM), appearOffline: z.boolean(), showActivity: z.boolean(), showOnEveryone: z.boolean() })
   .partial()
   .meta({ id: 'PrivacyBody' });
 

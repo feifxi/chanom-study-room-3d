@@ -72,7 +72,6 @@ import { RoomTools } from './RoomTools';
 import { StudyPanel } from './StudyPanel';
 import { useClickToWalk, useHideInvitesWhileFocusing } from '@/lib/controls';
 import { LeaveRoomGuard, LeaveRoomLink } from './LeaveRoom';
-import { logFocus } from '@/lib/focus';
 import { type Phase } from './usePomodoro';
 import { useFocusTimer } from '../focus/useFocusTimer';
 import { useRoomToday } from '../focus/useRoomToday';
@@ -289,11 +288,9 @@ export default function RoomView({
   const canStage = myRole === 'Owner' || myRole === 'Mod';
 
   const onPhase = useCallback(
-    (phase: Phase, focusedMin: number) => {
+    (phase: Phase) => {
       // The mock rooms keep your status here; a real room's game server runs the timer itself
       room.setStatus(phase === 'idle' ? 'idle' : phase, subjectRef.current);
-      // The Focus page's numbers are still the demo's until part 3 of Focus (the server saves the real ones)
-      logFocus(focusedMin, subjectRef.current);
       // A focus block ran to its end (focus → break): one finished session
       if (phase === 'break') questProgress('pomo-2');
     },

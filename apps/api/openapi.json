@@ -2021,6 +2021,316 @@
         ]
       }
     },
+    "/api/rooms/{id}/focus/today": {
+      "get": {
+        "operationId": "FocusController_today",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          },
+          {
+            "name": "tz",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "UTC",
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomToday"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "focus"
+        ]
+      }
+    },
+    "/api/focus/me": {
+      "get": {
+        "operationId": "FocusController_mine",
+        "parameters": [
+          {
+            "name": "tz",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "UTC",
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyFocus"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "focus"
+        ]
+      }
+    },
+    "/api/focus/rankings": {
+      "get": {
+        "operationId": "FocusController_ranking",
+        "parameters": [
+          {
+            "name": "scope",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "friends",
+                "everyone"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "today",
+                "week"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "tz",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "UTC",
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ranking"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "focus"
+        ]
+      }
+    },
+    "/api/me/time-zone": {
+      "put": {
+        "operationId": "FocusController_timeZone",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "timeZone": {
+                    "type": "string",
+                    "maxLength": 64
+                  }
+                },
+                "required": [
+                  "timeZone"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "focus"
+        ]
+      }
+    },
+    "/api/todos": {
+      "get": {
+        "operationId": "TodosController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodoList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "todos"
+        ]
+      },
+      "post": {
+        "operationId": "TodosController_add",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                },
+                "required": [
+                  "text"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "full"
+          }
+        },
+        "tags": [
+          "todos"
+        ]
+      }
+    },
+    "/api/todos/done": {
+      "delete": {
+        "operationId": "TodosController_clearDone",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "todos"
+        ]
+      }
+    },
+    "/api/todos/{id}": {
+      "patch": {
+        "operationId": "TodosController_tick",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "done": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "done"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "todos"
+        ]
+      },
+      "delete": {
+        "operationId": "TodosController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "todos"
+        ]
+      }
+    },
     "/api/dms": {
       "get": {
         "operationId": "DmsController_list",
@@ -2346,228 +2656,6 @@
         ]
       }
     },
-    "/api/rooms/{id}/focus/today": {
-      "get": {
-        "operationId": "FocusController_today",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string",
-              "maxLength": 40
-            }
-          },
-          {
-            "name": "tz",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": "UTC",
-              "type": "string",
-              "maxLength": 64
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RoomToday"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "focus"
-        ]
-      }
-    },
-    "/api/me/time-zone": {
-      "put": {
-        "operationId": "FocusController_timeZone",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "timeZone": {
-                    "type": "string",
-                    "maxLength": 64
-                  }
-                },
-                "required": [
-                  "timeZone"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "focus"
-        ]
-      }
-    },
-    "/api/todos": {
-      "get": {
-        "operationId": "TodosController_list",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TodoList"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "todos"
-        ]
-      },
-      "post": {
-        "operationId": "TodosController_add",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "text": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 120
-                  }
-                },
-                "required": [
-                  "text"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Todo"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "full"
-          }
-        },
-        "tags": [
-          "todos"
-        ]
-      }
-    },
-    "/api/todos/done": {
-      "delete": {
-        "operationId": "TodosController_clearDone",
-        "parameters": [],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "todos"
-        ]
-      }
-    },
-    "/api/todos/{id}": {
-      "patch": {
-        "operationId": "TodosController_tick",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string",
-              "maxLength": 40
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "done": {
-                    "type": "boolean"
-                  }
-                },
-                "required": [
-                  "done"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Todo"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "todos"
-        ]
-      },
-      "delete": {
-        "operationId": "TodosController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string",
-              "maxLength": 40
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "todos"
-        ]
-      }
-    },
     "/api/notifications": {
       "get": {
         "operationId": "NotificationsController_list",
@@ -2781,6 +2869,9 @@
           },
           "timeZone": {
             "type": "string"
+          },
+          "showOnEveryone": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -2796,7 +2887,8 @@
           "requestsFrom",
           "appearOffline",
           "showActivity",
-          "timeZone"
+          "timeZone",
+          "showOnEveryone"
         ],
         "additionalProperties": false
       },
@@ -2962,6 +3054,9 @@
             "type": "boolean"
           },
           "showActivity": {
+            "type": "boolean"
+          },
+          "showOnEveryone": {
             "type": "boolean"
           }
         }
@@ -4577,6 +4672,209 @@
         ],
         "additionalProperties": false
       },
+      "RoomToday": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FocusRow"
+            }
+          }
+        },
+        "required": [
+          "rows"
+        ],
+        "additionalProperties": false
+      },
+      "FocusRow": {
+        "type": "object",
+        "properties": {
+          "person": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "minutes": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "person",
+          "minutes"
+        ],
+        "additionalProperties": false
+      },
+      "MyFocus": {
+        "type": "object",
+        "properties": {
+          "today": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "week": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "dailyAverage": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string"
+                },
+                "minutes": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "date",
+                "minutes"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "minutes": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "name",
+                "minutes"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "today",
+          "week",
+          "dailyAverage",
+          "days",
+          "subjects"
+        ],
+        "additionalProperties": false
+      },
+      "Ranking": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "rank": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "person": {
+                  "$ref": "#/components/schemas/Person"
+                },
+                "minutes": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "rank",
+                "person",
+                "minutes"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "me": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "rank": {
+                "nullable": true,
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "minutes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "rank",
+              "minutes"
+            ],
+            "additionalProperties": false
+          },
+          "idleFriends": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "rows",
+          "me",
+          "idleFriends"
+        ],
+        "additionalProperties": false
+      },
+      "TodoList": {
+        "type": "object",
+        "properties": {
+          "todos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Todo"
+            }
+          }
+        },
+        "required": [
+          "todos"
+        ],
+        "additionalProperties": false
+      },
+      "Todo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "done": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "done"
+        ],
+        "additionalProperties": false
+      },
       "DmSummary": {
         "type": "object",
         "properties": {
@@ -4742,74 +5040,6 @@
         "required": [
           "muted"
         ]
-      },
-      "RoomToday": {
-        "type": "object",
-        "properties": {
-          "rows": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FocusRow"
-            }
-          }
-        },
-        "required": [
-          "rows"
-        ],
-        "additionalProperties": false
-      },
-      "FocusRow": {
-        "type": "object",
-        "properties": {
-          "person": {
-            "$ref": "#/components/schemas/Person"
-          },
-          "minutes": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991
-          }
-        },
-        "required": [
-          "person",
-          "minutes"
-        ],
-        "additionalProperties": false
-      },
-      "TodoList": {
-        "type": "object",
-        "properties": {
-          "todos": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Todo"
-            }
-          }
-        },
-        "required": [
-          "todos"
-        ],
-        "additionalProperties": false
-      },
-      "Todo": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "text": {
-            "type": "string"
-          },
-          "done": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "text",
-          "done"
-        ],
-        "additionalProperties": false
       },
       "Inbox": {
         "type": "object",

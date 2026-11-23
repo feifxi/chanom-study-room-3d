@@ -8,6 +8,8 @@ import { PresenceService } from '../presence/presence.service.js';
 import { RoomsService } from '../rooms/rooms.service.js';
 import { HandlesService } from './handles.service.js';
 import { requireSignedUp } from './signed-up.js';
+import { listedOnEveryone } from '../focus/everyone.js';
+import { FocusService } from '../focus/focus.service.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -29,6 +31,7 @@ export function toMe(user: User): Me {
     appearOffline: user.appearOffline,
     showActivity: user.showActivity,
     timeZone: user.timeZone,
+    showOnEveryone: listedOnEveryone(user),
   };
 }
 
@@ -50,6 +53,7 @@ export class AccountsService {
     private readonly rooms: RoomsService,
     private readonly friends: FriendsService,
     private readonly presence: PresenceService,
+    private readonly focus: FocusService,
     @Inject(SIGN_IN_PROVIDERS) private readonly providers: SignInProviders,
   ) {}
 
@@ -85,12 +89,14 @@ export class AccountsService {
   /** Settings → Privacy & safety. */
   async updatePrivacy(
     userId: string,
-    input: { requestsFrom?: RequestsFrom; appearOffline?: boolean; showActivity?: boolean },
+    input: { requestsFrom?: RequestsFrom; appearOffline?: boolean; showActivity?: boolean; showOnEveryone?: boolean },
   ): Promise<Me> {
     await this.signedUp(userId);
     const me = toMe(await this.prisma.user.update({ where: { id: userId }, data: input }));
     // Friends see the change at once (appearing offline, or back)
     if (input.appearOffline !== undefined || input.showActivity !== undefined) await this.presence.settle(userId, Date.now(), true);
+    // Off the Everyone ranking means off it now, not when its cache runs out
+    if (input.showOnEveryone !== undefined) this.focus.forgetEveryone();
     return me;
   }
 

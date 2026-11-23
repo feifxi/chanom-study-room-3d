@@ -756,6 +756,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/rooms/{id}/focus/today": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FocusController_today"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/focus/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FocusController_mine"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/focus/rankings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FocusController_ranking"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/time-zone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["FocusController_timeZone"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/todos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TodosController_list"];
+        put?: never;
+        post: operations["TodosController_add"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/todos/done": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["TodosController_clearDone"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/todos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["TodosController_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["TodosController_tick"];
+        trace?: never;
+    };
     "/api/dms": {
         parameters: {
             query?: never;
@@ -884,86 +996,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/rooms/{id}/focus/today": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["FocusController_today"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/me/time-zone": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["FocusController_timeZone"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/todos": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["TodosController_list"];
-        put?: never;
-        post: operations["TodosController_add"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/todos/done": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete: operations["TodosController_clearDone"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/todos/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete: operations["TodosController_remove"];
-        options?: never;
-        head?: never;
-        patch: operations["TodosController_tick"];
-        trace?: never;
-    };
     "/api/notifications": {
         parameters: {
             query?: never;
@@ -1066,6 +1098,7 @@ export interface components {
             appearOffline: boolean;
             showActivity: boolean;
             timeZone: string;
+            showOnEveryone: boolean;
         };
         Look: {
             hair: string;
@@ -1110,6 +1143,7 @@ export interface components {
             requestsFrom?: "anyone" | "rooms" | "nobody";
             appearOffline?: boolean;
             showActivity?: boolean;
+            showOnEveryone?: boolean;
         };
         HandleBody: {
             handle: string;
@@ -1498,6 +1532,46 @@ export interface components {
             /** Format: date-time */
             at: string;
         };
+        RoomToday: {
+            rows: components["schemas"]["FocusRow"][];
+        };
+        FocusRow: {
+            person: components["schemas"]["Person"];
+            minutes: number;
+        };
+        MyFocus: {
+            today: number;
+            week: number;
+            dailyAverage: number;
+            days: {
+                date: string;
+                minutes: number;
+            }[];
+            subjects: {
+                name: string;
+                minutes: number;
+            }[];
+        };
+        Ranking: {
+            rows: {
+                rank: number;
+                person: components["schemas"]["Person"];
+                minutes: number;
+            }[];
+            me: {
+                rank: number | null;
+                minutes: number;
+            } | null;
+            idleFriends: number;
+        };
+        TodoList: {
+            todos: components["schemas"]["Todo"][];
+        };
+        Todo: {
+            id: string;
+            text: string;
+            done: boolean;
+        };
         DmSummary: {
             id: string;
             with: components["schemas"]["Person"];
@@ -1537,21 +1611,6 @@ export interface components {
         };
         MuteBody: {
             muted: boolean;
-        };
-        RoomToday: {
-            rows: components["schemas"]["FocusRow"][];
-        };
-        FocusRow: {
-            person: components["schemas"]["Person"];
-            minutes: number;
-        };
-        TodoList: {
-            todos: components["schemas"]["Todo"][];
-        };
-        Todo: {
-            id: string;
-            text: string;
-            done: boolean;
         };
         Inbox: {
             items: components["schemas"]["Notification"][];
@@ -2994,6 +3053,210 @@ export interface operations {
             };
         };
     };
+    FocusController_today: {
+        parameters: {
+            query?: {
+                tz?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoomToday"];
+                };
+            };
+        };
+    };
+    FocusController_mine: {
+        parameters: {
+            query?: {
+                tz?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyFocus"];
+                };
+            };
+        };
+    };
+    FocusController_ranking: {
+        parameters: {
+            query: {
+                scope: "friends" | "everyone";
+                period: "today" | "week";
+                tz?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ranking"];
+                };
+            };
+        };
+    };
+    FocusController_timeZone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    timeZone: string;
+                };
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoList"];
+                };
+            };
+        };
+    };
+    TodosController_add: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    text: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Todo"];
+                };
+            };
+            /** @description full */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_clearDone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_tick: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    done: boolean;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Todo"];
+                };
+            };
+        };
+    };
     DmsController_list: {
         parameters: {
             query?: never;
@@ -3204,166 +3467,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-        };
-    };
-    FocusController_today: {
-        parameters: {
-            query?: {
-                tz?: string;
-            };
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RoomToday"];
-                };
-            };
-        };
-    };
-    FocusController_timeZone: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    timeZone: string;
-                };
-            };
-        };
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    TodosController_list: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TodoList"];
-                };
-            };
-        };
-    };
-    TodosController_add: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    text: string;
-                };
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Todo"];
-                };
-            };
-            /** @description full */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    TodosController_clearDone: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    TodosController_remove: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    TodosController_tick: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    done: boolean;
-                };
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Todo"];
-                };
             };
         };
     };

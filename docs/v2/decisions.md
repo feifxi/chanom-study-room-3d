@@ -426,6 +426,19 @@ decision is made or changed: one line, a date, and the reason.
   for, for the 12-hour cap, while rankings use the viewer's time zone. **Guests** show in "This room
   today" from the game server's memory and are never saved. A running round shows 📖 even if you've
   gone quiet: focusing is never Away, for friends too.
+- **Focus part 3: the Focus page** (2026-11-23, the owner): four points, agreed. The hero's button
+  goes **back to the room you were last in** (remembered in the browser, still a member), else
+  "Find a room to study in" → Discover; the demo's fixed "Study in the Library" assumed a Common
+  room that isn't there yet. The **Friends ranking lists only friends who focused** in the period,
+  plus you always, with "N friends haven't focused this week" under it (a list of 0s reads like a
+  roll call). **Subjects typed alike count together** (case and spaces ignored) under the spelling
+  you used most. On **Everyone, people you blocked or who blocked you are never listed**, though your
+  rank still counts them (hiding them from the count would make ranks differ per viewer). Also:
+  "Show me on Everyone" is a real account setting (`users.show_on_everyone`, null = the age default:
+  on 18+, off under 18), shared by Settings and the page, and turning it off takes effect at once
+  (the 5-minute Everyone cache is cleared); a round counts for the day **it started** (as the timer
+  saves it), in "This room today" too; "My numbers" counts everything, rankings cap each day at 12
+  hours.
 - **Step 4 part 5: cats and study buddies** (2026-11-23, the owner): the game server runs them (V1's
   NpcDirector, made map-aware). The Buddy Machine had no V2 design, so its panel was designed in
   the demo first and approved (rather than porting V1's panel straight, or making the machine

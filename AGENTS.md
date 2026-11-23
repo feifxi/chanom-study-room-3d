@@ -38,9 +38,9 @@ log. Keep them current in the same change that makes them stale.
 Step 5 of the plan, **the rest, a feature at a time**, in the agreed order: focus, the activity
 framework with Watch together and photo mode, party and table games, coins and quests, Plus,
 moderation with Common and open rooms, the admin site and map editor. Agree each feature's details
-with the owner before building. **Focus** is in progress: part 1 (the timer on the game server,
-"This room today", "Focusing" for friends) and part 2 (the to-do list) are done; next is part 3,
-the Focus page and rankings. Steps 1–4 are done: the skeleton; accounts and rooms; the gateway
+with the owner before building. **Focus** is done (the timer on the game server, the to-do list,
+the Focus page and rankings); next is the activity framework with Watch together and photo mode.
+Steps 1–4 are done: the skeleton; accounts and rooms; the gateway
 (friends, chat, pictures, DMs, presence and the 🔔 inbox); walking in a room (the Colyseus game
 server `apps/game` with movement, capacity and live room changes, bubbles, Away, the people list,
 LiveKit proximity voice, screen share, and server-run cats, study buddies and the Buddy Machine).

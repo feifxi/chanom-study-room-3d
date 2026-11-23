@@ -57,8 +57,14 @@ Tick or strike these as they're dealt with.
       that's off by a minute shows the countdown off by a minute (the minutes saved are the
       server's, so rankings are right). The labels' `clockOffset` is 0 everywhere; a server time
       sync would fix both.
-- [ ] **The Focus page is still the demo's numbers** until focus part 3; the room still feeds it
-      from this browser (`logFocus`), and the focus quests stay local until coins and quests.
+- [ ] **The focus quests still count in this browser only** until coins and quests.
+- [ ] **The Everyone cache lives in each API process:** with several API processes, turning "Show
+      me on Everyone" off clears only one of them, so another could list you for up to 5 minutes.
+      Fine for one process; Redis would fix it when there are more.
+- [ ] **"Back to <room>" is remembered per browser** (last room walked into here), not per
+      account: on a new device it says "Find a room" until you walk in once.
+- [ ] **Everyone ranks from the period's totals of everyone listed** in one query; fine now, but at
+      many thousands of people a day it wants a rollup table.
 - [ ] **A label says "0m" for the first minute** of a round ("📖 Mai · 0m · Calculus"), as it did
       before; "<1m" or hiding it might read better.
 - [ ] **To-dos don't update live in other tabs or devices**: another open tab sees a change when
@@ -193,3 +199,19 @@ covers it. Decision: [decision log](decisions.md), 2026-11-23.
 
 **Bugs found and fixed while building:** none. A headless run with two tabs in two rooms saw the
 first tab let go, Walk back in work, and the second tab let go in turn.
+
+### Focus, part 3: the Focus page and rankings
+
+**Changed:** `GET /api/focus/me` (my numbers) and `GET /api/focus/rankings` (Friends or Everyone,
+today or this week, in the viewer's time zone, 12 hours a day at most) replace the page's mock
+data. "Show me on Everyone" is an account setting (`users.show_on_everyone`, null = the age
+default), shared by Settings and the page. The hero goes back to your last room or to Discover.
+Rounds now count for the day they started (indexes moved from `ended_at` to `started_at`), "This
+room today" included. The room no longer feeds the mock page (`logFocus` and the rest of the mock
+focus numbers are gone from `lib/focus.ts`; only mock rooms' "today" stays). Decisions: [decision
+log](decisions.md), 2026-11-23.
+
+**Bugs found and fixed while building:** an old "This room today" test placed a round "two days
+ago" by its end time only; with days counted by start it showed up as today, so the test now sets
+both. Screenshots at 390 dark and 1280 light with a week of sample rounds (removed afterwards)
+looked right.

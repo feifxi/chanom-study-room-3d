@@ -12,6 +12,7 @@ import { useInRoom } from '@/features/presence/usePresence';
 import { RoomLoader } from '@/features/room/RoomLoader';
 import { PUBLIC_SERVER } from '@/lib/mock';
 import { notifyWhenSpace, roomsApi, useRoom, type Room } from './useRooms';
+import { rememberRoom } from '@/features/focus/useFocusStats';
 
 /**
  * A room from the API, in 3D: you walk in through the game server (build step 4), which also tells
@@ -36,6 +37,10 @@ export function WalkIn({ room: initial, guestName }: { room: Room; guestName: st
   }, [room.id, room.me.role]);
   // Inside: inbox items and DMs arrive as toasts
   useInRoom(game.status === 'in' ? room.id : null);
+  // The Focus page's "Back to …" takes you to the room you were last in
+  useEffect(() => {
+    if (game.status === 'in') rememberRoom(room.id);
+  }, [game.status, room.id]);
 
   if (game.status === 'connecting') {
     return (

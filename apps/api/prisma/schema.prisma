@@ -45,6 +45,8 @@ model User {
   lastSeenAt      DateTime? @map("last_seen_at")
   /// Your browser's time zone (IANA), kept up to date by the web app: your focus days start at your midnight
   timeZone        String    @default("UTC") @map("time_zone")
+  /// Listed on the Everyone focus ranking; null = the default for your age (on 18+, off under 18)
+  showOnEveryone  Boolean?  @map("show_on_everyone")
   /// Asked to be deleted: goes at this time unless they sign in and keep it (7 days)
   deleteAt        DateTime? @map("delete_at")
   /// Deleted: the row stays as "Deleted user" so their messages still read; everything personal is gone
@@ -490,9 +492,10 @@ model FocusSession {
   user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   room Room? @relation(fields: [roomId], references: [id], onDelete: SetNull)
 
-  @@index([userId, endedAt])
-  @@index([roomId, endedAt])
-  @@index([endedAt])
+  /// A round counts for the day (and week) it started in
+  @@index([userId, startedAt])
+  @@index([roomId, startedAt])
+  @@index([startedAt])
   @@map("focus_sessions")
 }
 

@@ -56,7 +56,23 @@ export function dayIn(tz: string, at: number | Date): string {
 
 /** When the day containing `at` began in a time zone, as an instant */
 export function startOfDayIn(tz: string, at: number | Date): Date {
+  return midnightIn(tz, dayIn(tz, at));
+}
+
+/** When the week containing `at` began (Monday) in a time zone, as an instant */
+export function startOfWeekIn(tz: string, at: number | Date): Date {
   const day = dayIn(tz, at);
+  const weekday = (new Date(`${day}T00:00:00Z`).getUTCDay() + 6) % 7; // Monday 0 … Sunday 6
+  return midnightIn(tz, addDays(day, -weekday));
+}
+
+/** A calendar day (yyyy-mm-dd) moved by whole days */
+export function addDays(day: string, days: number): string {
+  return new Date(Date.parse(`${day}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
+}
+
+/** Midnight at the start of a calendar day (yyyy-mm-dd) in a time zone, as an instant */
+export function midnightIn(tz: string, day: string): Date {
   // The zone's offset at that midnight: guess UTC midnight, then correct by the offset seen there (twice, for DST edges)
   let guess = Date.parse(`${day}T00:00:00Z`);
   for (let i = 0; i < 2; i++) guess = Date.parse(`${day}T00:00:00Z`) - offsetMs(tz, guess);

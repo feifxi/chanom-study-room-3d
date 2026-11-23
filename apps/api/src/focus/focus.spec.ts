@@ -92,7 +92,9 @@ describe('this room today', () => {
     for (let i = 0; i < 16; i++) await focus.save(round({ userId: jod.id, roomId: id, minutes: 50, endedAt: now - i * 1000 }));
     await focus.save(round({ userId: mai.id, roomId: id, minutes: 25 }));
     // Two days ago: not today anywhere
-    await focus.save(round({ userId: mai.id, roomId: id, minutes: 50, endedAt: now - 2 * 86_400_000 }));
+    await focus.save(
+      round({ userId: mai.id, roomId: id, minutes: 50, startedAt: now - 2 * 86_400_000, endedAt: now - 2 * 86_400_000 + 3_000_000 }),
+    );
 
     const { rows } = (await mai.get(`/api/rooms/${id}/focus/today?tz=UTC`).expect(200)).body;
     expect(rows.map((r: { person: { handle: string }; minutes: number }) => [r.person.handle, r.minutes])).toEqual([
@@ -131,5 +133,107 @@ describe('focusing in presence', () => {
 
     await presence.tab(mai.id, 'game:s1', { focus: null });
     expect((await view()).status).toBe('idle');
+  });
+});
+
+describe('my numbers', () => {
+  it('the last 7 days in my time zone, the daily average over days I focused, subjects grouped', async () => {
+    const { mai, id } = await maisRoom();
+    const now = Date.now();
+    const at = (daysAgo: number, minutes: number, subject: string) =>
+      focus.save(round({ userId: mai.id, roomId: id, subject, minutes, startedAt: now - daysAgo * 86_400_000 - 60_000, endedAt: now }));
+    await at(0, 25, 'Calculus');
+    await at(0, 50, ' calculus ');
+    await at(2, 25, 'calculus');
+    await at(2, 25, '');
+    await at(9, 50, 'Long ago');
+
+    const res = (await mai.get('/api/focus/me?tz=UTC').expect(200)).body;
+    expect(res.days).toHaveLength(7);
+    expect(res).toMatchObject({ today: 75, week: 125, dailyAverage: 63 });
+    expect(res.subjects).toEqual([
+      { name: 'calculus', minutes: 100 },
+      { name: 'No subject', minutes: 25 },
+    ]);
+  });
+});
+
+describe('rankings', () => {
+  const rank = async (b: Browser, scope: string, period = 'today') =>
+    (await b.get(`/api/focus/rankings?scope=${scope}&period=${period}&tz=UTC`).expect(200)).body;
+  const befriend = async (a: Person, b: Person, bHandle: string) => {
+    await a.post('/api/friends/requests', { handle: bHandle }).expect(200);
+    await b.post(`/api/friends/requests/${a.id}/accept`).expect(200);
+  };
+  const minutesOf = (userId: string, minutes: number, roomId: string) =>
+    focus.save(round({ userId, roomId, minutes, startedAt: Date.now() - 60_000 }));
+
+  it('friends: you and the friends who focused, 12 hours a day at most; the rest are counted', async () => {
+    const { mai, id } = await maisRoom();
+    const jod = await person('jod');
+    const ken = await person('ken');
+    const stranger = await person('stranger');
+    await befriend(mai, jod, 'jod');
+    await befriend(mai, ken, 'ken');
+    for (let i = 0; i < 16; i++) await minutesOf(jod.id, 50, id); // 800 → 720
+    await minutesOf(mai.id, 25, id);
+    await minutesOf(stranger.id, 50, id);
+
+    const res = await rank(mai, 'friends');
+    expect(
+      res.rows.map((r: { person: { handle: string }; minutes: number; rank: number }) => [r.rank, r.person.handle, r.minutes]),
+    ).toEqual([
+      [1, 'jod', 720],
+      [2, 'maimai', 25],
+    ]);
+    expect(res).toMatchObject({ me: { rank: 2, minutes: 25 }, idleFriends: 1 });
+    // Ken hasn't focused: he's left out, but sees himself
+    expect((await rank(ken, 'friends')).rows.map((r: { person: { handle: string } }) => r.person.handle)).toEqual(['maimai', 'ken']);
+  });
+
+  it('everyone: 18+ listed by default, under 18 only by choice; blocked people never show; turning it off is at once', async () => {
+    const { mai, id } = await maisRoom();
+    const jod = await person('jod');
+    const young = await person('young');
+    await prisma.user.update({ where: { id: young.id }, data: { birthday: new Date('2012-01-01') } });
+    await minutesOf(mai.id, 25, id);
+    await minutesOf(jod.id, 50, id);
+    await minutesOf(young.id, 40, id);
+    focus.forgetEveryone();
+
+    expect((await young.get('/api/me').expect(200)).body.showOnEveryone).toBe(false);
+    let res = await rank(mai, 'everyone');
+    expect(res.rows.map((r: { person: { handle: string } }) => r.person.handle)).toEqual(['jod', 'maimai']);
+    expect(res.me).toEqual({ rank: 2, minutes: 25 });
+    // Not listed: no rank, but the list is there
+    expect(await rank(young, 'everyone')).toMatchObject({
+      me: null,
+      rows: [{ person: { handle: 'jod' } }, { person: { handle: 'maimai' } }],
+    });
+
+    await young.patch('/api/me/privacy', { showOnEveryone: true }).expect(200);
+    expect((await rank(mai, 'everyone')).rows.map((r: { person: { handle: string } }) => r.person.handle)).toEqual([
+      'jod',
+      'young',
+      'maimai',
+    ]);
+
+    // Mai blocks Jod: neither sees the other, and Mai's rank still counts Jod
+    await mai.put(`/api/blocks/${jod.id}`).expect((r) => expect(r.status).toBeLessThan(300));
+    res = await rank(mai, 'everyone');
+    expect(res.rows.map((r: { person: { handle: string } }) => r.person.handle)).toEqual(['young', 'maimai']);
+    expect(res.rows[0].rank).toBe(2);
+    expect(res.me.rank).toBe(3);
+    expect((await rank(jod, 'everyone')).rows.map((r: { person: { handle: string } }) => r.person.handle)).toEqual(['jod', 'young']);
+
+    await mai.patch('/api/me/privacy', { showOnEveryone: false }).expect(200);
+    expect((await rank(young, 'everyone')).rows.map((r: { person: { handle: string } }) => r.person.handle)).toEqual(['jod', 'young']);
+    expect((await rank(mai, 'everyone')).me).toBeNull();
+  });
+
+  it('this week starts Monday; checks its query', async () => {
+    const { mai } = await maisRoom();
+    await mai.get('/api/focus/rankings?scope=friends&period=month').expect(400);
+    expect((await rank(mai, 'friends', 'week')).me).toEqual({ rank: null, minutes: 0 });
   });
 });

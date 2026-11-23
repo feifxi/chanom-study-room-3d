@@ -1,8 +1,8 @@
 # 8. Study tools
 
 **Status:** decided and built in the demo. On the real backend: part 1 of 3 (the server-run
-timer, "This room today", "Focusing" for friends) and part 2 (the to-do list) done 2026-11-23; the
-Focus page is next ([why three parts](../decisions.md#engineering-and-infra)). **Try it:** http://localhost:3100/servers/chanom/rooms/library
+timer, "This room today", "Focusing" for friends), part 2 (the to-do list) and part 3 (the Focus
+page and rankings) done 2026-11-23 ([why three parts](../decisions.md#engineering-and-infra)). **Try it:** http://localhost:3100/servers/chanom/rooms/library
 → My tools → 📖 Study session, and http://localhost:3100/home/focus
 
 A personal focus timer, a private to-do list, and rankings that count real focus minutes. Kept
@@ -56,19 +56,28 @@ minimal on purpose: two presets, no streaks, no shared sessions.
 
 ## The Focus page (`/home/focus`)
 
+- **Hero:** this week's minutes, your place among friends ("25m behind Jod"), and a button **back
+  to the room you were last in** (if you're still a member), else "Find a room to study in" →
+  Discover.
 - **My numbers (only you):** Today, Last 7 days, Daily average (over days you focused), a 7-day bar
-  chart (hover a day for its minutes), and minutes per subject over the last 7 days.
+  chart (hover a day for its minutes), and minutes per subject over the last 7 days. Subjects typed
+  alike (case, extra spaces) count together under the spelling you used most; no subject is "No
+  subject". Everything counts here (no daily cap).
 - **Rankings:** Friends / Everyone × Today / This week.
-  - Friends: all your friends plus you, in order.
-  - Everyone: the top 10, then "⋯" and your own rank pinned under it.
-  - Days and weeks are in the viewer's time zone; weeks start Monday.
+  - Friends: you, and the friends who focused in the period, in order; under it "N friends haven't
+    focused this week".
+  - Everyone: the top 10, then "⋯" and your own rank pinned under it. People you blocked or who
+    blocked you are never listed (your rank still counts them).
+  - Ties share a rank. Days and weeks are in the viewer's time zone; weeks start Monday. A round
+    counts for the day it started.
 - The room's own ranking ("Focus in this room today") stays in the Study panel, with no link to the
   Focus page: nothing in a room navigates away ([06-3d-room.md](06-3d-room.md#leaving-a-room)).
 
 ## Everyone ranking and privacy
 
 - Listed only with **"Show me on the Everyone focus ranking"** on (Settings → Privacy & safety, and
-  a switch on the Focus page). Default **on for 18+, off under 18** (`can(user, 'listOnGlobalRank')`).
+  a switch on the Focus page; one account setting). Default **on for 18+, off under 18** until you
+  choose; turning it off takes you off at once.
 - Shows name, character and minutes; never the room you're in.
 - Hidden people still see the list and their own minutes, just without a rank.
 - Friends always see you in the Friends ranking (friends already see your presence).
@@ -87,9 +96,14 @@ subject }`, `focus:stop`, `focus:subject`; it shows the status on your player an
 /api/todos/:id`, `DELETE /api/todos/done` (Clear done); full accounts only, 409 `full` at 50. The
   list hides done items older than 7 days at once, and a job at 3 am removes them. Deleting an
   account deletes its list.
-- Rankings are `SUM(minutes)` per user over the window, capped per day. Today and This week depend on
-  the viewer's time zone, so compute per request for Friends (small) and cache Everyone per time zone
-  offset for ~5 minutes (top 10 + the viewer's rank via a window function).
+- `GET /api/focus/me?tz=`: my numbers. `GET /api/focus/rankings?scope=friends|everyone&period=today|week&tz=`:
+  `rows` (rank, person, minutes), `me` (rank, minutes; null on Everyone while you're not listed)
+  and `idleFriends`. Minutes per person are summed per their own `day` and capped at 12 hours, over
+  rounds started since the viewer's midnight or Monday. Friends is computed per request; Everyone's
+  totals are cached in the API process for 5 minutes per window start (so viewers in the same zone
+  share it), then filtered by the viewer's blocks.
+- `users.show_on_everyone` (null = the age default), set through `PATCH /api/me/privacy`
+  (`showOnEveryone`); `Me.showOnEveryone` is the effective value.
 - Room "today": `GET /api/rooms/:id/focus/today?tz=` gives members' saved minutes since the
   viewer's midnight (for members and guests with a pass); each person in the room also carries
   `todayMin` (rounds finished there since the room opened, guests too) and their running round. The

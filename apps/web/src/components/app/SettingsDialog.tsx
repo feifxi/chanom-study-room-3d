@@ -22,7 +22,6 @@ import { api } from '@/lib/api/client';
 import { AccountTab } from './AccountTab';
 import { PlusBillingTab } from './PlusBillingTab';
 import { cn } from '@/lib/utils';
-import { useGlobalOptIn } from '@/lib/focus';
 import { getMyLook, saveMyLook, useMyLook } from '@/lib/myLook';
 import { KEYS, useClickToWalk, useHideInvitesWhileFocusing } from '@/lib/controls';
 
@@ -332,15 +331,27 @@ function Toggles({ tab }: { tab: Tab }) {
       <PrivacySwitch field="appearOffline" label="Appear offline" hint="Friends won’t see you’re online or which room you’re in" />
       <FriendRequestsRow />
       <PrivacySwitch field="showActivity" label="Show what I’m doing to friends" hint="“Focusing · Calculus”, “Playing Slave”" />
-      <GlobalRankRow />
+      <PrivacySwitch
+        field="showOnEveryone"
+        label="Show me on the Everyone focus ranking"
+        hint="Name, character and focus minutes. Friends always see you. Off by default under 18."
+      />
       <Row label="Filter rude words in chats" defaultChecked />
       <BlockedPeople />
     </div>
   );
 }
 
-/** Presence settings (feature 5): saved at once, and friends see the change live. */
-function PrivacySwitch({ field, label, hint }: { field: 'appearOffline' | 'showActivity'; label: string; hint: string }) {
+/** Privacy settings (features 5 and 8): saved at once; friends see presence changes live. */
+function PrivacySwitch({
+  field,
+  label,
+  hint,
+}: {
+  field: 'appearOffline' | 'showActivity' | 'showOnEveryone';
+  label: string;
+  hint: string;
+}) {
   const { data: me } = useMe();
   const setMe = useSetMe();
   const save = async (on: boolean) => {
@@ -437,20 +448,6 @@ function HideInvitesRow() {
       <span>
         <span className="block text-sm font-bold">Hide game invites while I’m focusing</span>
         <span className="block text-xs text-muted-foreground">You can still see what’s on under Activities.</span>
-      </span>
-      <Switch checked={on} onCheckedChange={setOn} />
-    </label>
-  );
-}
-
-/** The Everyone focus ranking lists you only while this is on (off by default under 18). */
-function GlobalRankRow() {
-  const [on, setOn] = useGlobalOptIn();
-  return (
-    <label className="flex items-center justify-between gap-4">
-      <span>
-        <span className="block text-sm font-bold">Show me on the Everyone focus ranking</span>
-        <span className="block text-xs text-muted-foreground">Name, character and focus minutes. Friends always see you.</span>
       </span>
       <Switch checked={on} onCheckedChange={setOn} />
     </label>

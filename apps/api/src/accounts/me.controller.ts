@@ -77,7 +77,7 @@ export class MeController {
     return this.accounts.updateProfile(session.user.id, body);
   }
 
-  /** Settings → Privacy & safety: who can send you a friend request. */
+  /** Settings → Privacy & safety: friend requests, appearing offline, what friends see, the Everyone focus ranking. */
   @Patch('privacy')
   @ApiOkResponse({ standardSchema: MeSchema })
   privacy(@Session() session: UserSession, @Body({ schema: PrivacyBodySchema }) body: z.infer<typeof PrivacyBodySchema>): Promise<Me> {

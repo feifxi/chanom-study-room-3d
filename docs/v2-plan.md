@@ -92,8 +92,9 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
    and quests; Plus; moderation with Common and open rooms; the admin site and map editor.
    - **Focus**, three parts: ~~the timer on the game server~~ done 2026-11-23 (rounds timed and
      saved by the server, "This room today", "Focusing" for friends, one timer per account, your
-     own time zone); ~~the to-do list~~ done 2026-11-23 (on the API, changes show at once); the
-     Focus page and rankings.
+     own time zone); ~~the to-do list~~ done 2026-11-23 (on the API, changes show at once);
+     ~~the Focus page and rankings~~ done 2026-11-23 (my numbers, Friends and Everyone, the
+     Everyone opt-in as an account setting, "Back to" your last room).
 6. **The seed:** one fill of all the data (people, rooms, members, friends, DMs…) for testing the
    whole app ([why at the end](v2/decisions.md#engineering-and-infra)).
 7. **Infra** on AWS ([spec 15](v2/features/15-business-infra.md#architecture)), then a playtest, then launch.
