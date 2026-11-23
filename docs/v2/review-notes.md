@@ -693,3 +693,30 @@ suspension, its end and the reason; the email arrived. Undone afterwards.
 - [ ] **The gateway doesn't close a suspended person's live socket itself**: the tab closes it when
       it goes to sign-in. A tab that ignores the event keeps its socket until it reconnects (the
       handshake then fails, as the session is gone). Not tested.
+
+### Admin site, part 2: Reports
+
+**Changed:** the API's reports queue (`ReportsAdminService`: cases, decisions), `rooms.delisted_at` and
+`closed_at` (Discover skips both; a closed room refuses tickets and chat with `code: 'closed'` and
+sends everyone inside out), `reports.decided_at`, and `ChatService.erase` (a message gone for
+everyone, used by owners, mods and now the team). The web Reports page is real, its nav badge counts
+open cases, and walking into a closed room says so.
+
+**Bugs found and fixed while building:**
+
+- A done case's History listed the decision it had just made (the time came from the audit entry,
+  written after the action); `reports.decided_at` now holds it.
+- At phone width the queue ran off the right edge (a long line widened the grid column); the Users
+  page had the same grid and got the same fix.
+
+A headless run: three reports put in the local database (two against Jod in a Common room, one
+against Pim); Mai, on the team, saw two cases with the reporters, notes and bubbles, warned Pim with a
+reason, and the case moved to Done with the badge at 1. Checked at phone width. Removed afterwards.
+
+**Open:**
+
+- [ ] **No way to undo a delist or a close yet**: the Rooms page (part 3) adds it.
+- [ ] **New reports appear within a minute** (the page looks again every 60 s); there's no live event.
+- [ ] **The Done tab shows the latest 300 reports' decisions**, no paging.
+- [ ] **People inside when a room is closed see "isn't there any more"** (the game server's room-gone
+      close), not why; the closed message shows when they try to walk in again.

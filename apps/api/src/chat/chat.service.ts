@@ -98,6 +98,9 @@ export class ChatService {
 
   async send(userId: string, roomId: string, input: SendInput): Promise<ChatMessage> {
     const member = await this.member(userId, roomId);
+    if ((await this.prisma.room.findUnique({ where: { id: roomId }, select: { closedAt: true } }))?.closedAt) {
+      throw new ForbiddenException({ message: 'The Connecta team closed this room', code: 'closed' });
+    }
     if (member.timedOutUntil && member.timedOutUntil > new Date()) {
       throw new ForbiddenException({ message: 'You’re timed out in this room for now.', code: 'timed_out', until: member.timedOutUntil });
     }
@@ -220,6 +223,12 @@ export class ChatService {
     // Your own words are always yours to take back, friends or not
     const { moderator } = await this.access(userId, message, false);
     if (message.authorId !== userId && !moderator) throw new ForbiddenException('Only the owner and mods can delete others’ messages');
+    await this.erase(message);
+  }
+
+  /** Gone for everyone, live: its text, reactions and pictures (also the Connecta team's delete, admin site) */
+  async erase(message: { id: string; roomId: string | null; dmId: string | null; dm: { pair: string } | null }): Promise<void> {
+    const messageId = message.id;
     await this.prisma.$transaction([
       this.prisma.message.update({
         where: { id: messageId },

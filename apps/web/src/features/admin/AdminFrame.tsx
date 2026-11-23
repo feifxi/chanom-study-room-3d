@@ -4,11 +4,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Banknote, Flag, Gauge, Home, LayoutTemplate, Lock, Map as MapIcon, ScrollText, ShieldAlert, Users, Warehouse } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { REPORTS } from './adminData';
+import { useReportCases } from './useAdmin';
 
 const NAV = [
   { href: '/admin', label: 'Overview', icon: Gauge },
-  { href: '/admin/reports', label: 'Reports', icon: Flag, badge: REPORTS.filter((r) => r.status === 'open').length },
+  { href: '/admin/reports', label: 'Reports', icon: Flag, badge: true },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/rooms', label: 'Rooms', icon: Warehouse },
   { href: '/admin/common', label: 'Common rooms', icon: LayoutTemplate },
@@ -24,6 +24,7 @@ const NAV = [
  */
 export function AdminFrame({ children }: { children: React.ReactNode }) {
   const path = usePathname();
+  const open = useReportCases('open').data?.open ?? 0;
   return (
     <div className="flex h-dvh bg-background max-md:flex-col">
       <aside className="flex flex-none flex-col gap-1 border-r bg-card p-3 max-md:flex-row max-md:overflow-x-auto max-md:border-r-0 max-md:border-b md:w-56">
@@ -42,9 +43,9 @@ export function AdminFrame({ children }: { children: React.ReactNode }) {
               )}
             >
               <n.icon className="size-4" /> {n.label}
-              {!!n.badge && (
+              {n.badge && open > 0 && (
                 <span className="ml-auto grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-black text-primary-foreground">
-                  {n.badge}
+                  {open}
                 </span>
               )}
             </Link>

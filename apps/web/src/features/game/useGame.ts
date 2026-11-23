@@ -34,7 +34,7 @@ export interface GameState {
 export type GameRoom = Room<unknown, GameState>;
 
 /** Why you're not (or no longer) in the room. */
-export type GameEnd = 'full' | 'kicked' | 'banned' | 'elsewhere' | 'otherRoom' | 'gone' | 'unreachable';
+export type GameEnd = 'full' | 'kicked' | 'banned' | 'closed' | 'elsewhere' | 'otherRoom' | 'gone' | 'unreachable';
 
 export type GameSession = { status: 'connecting' } | { status: 'in'; room: GameRoom } | { status: 'out'; why: GameEnd };
 
@@ -104,5 +104,5 @@ async function roomTicket(roomId: string): Promise<{ place: string; ticket: stri
   const res = await api.POST('/api/rooms/{id}/ticket', { params: { path: { id: roomId } } });
   if (res.data) return res.data;
   const code = (res.error as { code?: string } | undefined)?.code;
-  return { why: code === 'banned' ? 'banned' : 'gone' };
+  return { why: code === 'banned' ? 'banned' : code === 'closed' ? 'closed' : 'gone' };
 }

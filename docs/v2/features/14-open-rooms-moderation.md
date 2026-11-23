@@ -193,6 +193,17 @@ them out of any room. Better Auth's `session.create.before` hook refuses a restr
 code on the sign-in page. Team accounts can't be acted on. The audit log also gets the Common
 room team actions and the report steps.
 
+**Built so far (admin site, part 2):** the Reports page reads `GET /api/admin/reports?status=open|done`:
+one case per person, message or room (key `person:<id>`, `message:<id>`, `room:<id>`) with its
+reasons, notes, how many different accounts reported, where, what the automatic steps did, what was
+said around it (or what they said lately and the bubbles reporters saw), a room's description and
+rules, and earlier actions. `POST /api/admin/reports/:key/decide { action, reason? }`: person (warn,
+suspend 1 or 7 days, ban), message (delete, delete + warn, delete + suspend 1 day), room (delist,
+close, close + suspend the owner 7 days), or dismiss. Account actions go through the same path as
+the Users page (emailed, logged). Every report in the case becomes done with the outcome, who and
+when. `rooms.delisted_at` takes a room off Discover; `rooms.closed_at` also refuses tickets and
+chat (`code: 'closed'`) and sends everyone inside out. The nav badge counts open cases.
+
 - Common rooms: a `common_room_types` table (template, name, vibe) and copies as ordinary Colyseus
   rooms with `kind = 'common'`; the room sets the rules (no LiveKit publish grant for anyone, no
   picture uploads, slow mode, the big screen off). Matchmaking: friends' copy, else the

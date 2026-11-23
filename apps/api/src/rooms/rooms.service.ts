@@ -377,6 +377,7 @@ export class RoomsService {
       this.prisma.roomBan.findUnique({ where: { roomId_userId: { roomId, userId } } }),
     ]);
     if (!room || !user) throw new NotFoundException();
+    if (room.closedAt) throw new ForbiddenException({ code: 'closed', message: 'The Connecta team closed this room' });
     if (ban) throw new ForbiddenException({ code: 'banned', message: 'You can’t join this room' });
     if (!user.isAnonymous && !user.handle) throw new ForbiddenException('Finish signing up first');
     const role: PlayerRole | null = member ? member.role : guest && guest.until > now ? 'guest' : null;
@@ -552,6 +553,9 @@ export class RoomsService {
     const rooms = await this.prisma.room.findMany({
       where: {
         visibility: { in: ['request', 'open'] },
+        // Taken off Discover or closed by the Connecta team
+        delistedAt: null,
+        closedAt: null,
         ...(filter.q ? { name: { contains: filter.q, mode: 'insensitive' } } : {}),
         ...(filter.tag ? { tags: { has: filter.tag } } : {}),
         ...(filter.language ? { language: filter.language } : {}),

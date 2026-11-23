@@ -3417,6 +3417,74 @@
         ]
       }
     },
+    "/api/admin/reports": {
+      "get": {
+        "operationId": "AdminController_reportCases",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "done"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportCaseList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/reports/{key}/decide": {
+      "post": {
+        "operationId": "AdminController_decide",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportDecideBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/notifications": {
       "get": {
         "operationId": "NotificationsController_list",
@@ -6778,6 +6846,209 @@
         "required": [
           "kind",
           "reason"
+        ]
+      },
+      "ReportCaseList": {
+        "type": "object",
+        "properties": {
+          "cases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportCase"
+            }
+          },
+          "open": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "cases",
+          "open"
+        ],
+        "additionalProperties": false
+      },
+      "ReportCase": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "person",
+              "message",
+              "room"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "handle": {
+            "nullable": true,
+            "type": "string"
+          },
+          "userId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "roomId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reporters": {
+            "type": "number"
+          },
+          "where": {
+            "nullable": true,
+            "type": "string"
+          },
+          "firstAt": {
+            "type": "string"
+          },
+          "lastAt": {
+            "type": "string"
+          },
+          "urgent": {
+            "type": "boolean"
+          },
+          "auto": {
+            "nullable": true,
+            "type": "string"
+          },
+          "context": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "by": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "flagged": {
+                  "type": "boolean"
+                },
+                "bubble": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "by",
+                "text",
+                "flagged",
+                "bubble"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "room": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "rules": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "description",
+              "rules"
+            ],
+            "additionalProperties": false
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "done"
+            ]
+          },
+          "outcome": {
+            "nullable": true,
+            "type": "string"
+          },
+          "decidedBy": {
+            "nullable": true,
+            "type": "string"
+          },
+          "decidedAt": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "kind",
+          "name",
+          "handle",
+          "userId",
+          "roomId",
+          "reasons",
+          "details",
+          "reporters",
+          "where",
+          "firstAt",
+          "lastAt",
+          "urgent",
+          "auto",
+          "context",
+          "room",
+          "history",
+          "status",
+          "outcome",
+          "decidedBy",
+          "decidedAt"
+        ],
+        "additionalProperties": false
+      },
+      "ReportDecideBody": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "warn",
+              "suspend_1d",
+              "suspend_7d",
+              "ban",
+              "dismiss",
+              "delete",
+              "delete_warn",
+              "delete_suspend_1d",
+              "delist",
+              "close",
+              "close_suspend_owner"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "action"
         ]
       },
       "Inbox": {

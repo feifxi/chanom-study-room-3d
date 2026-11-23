@@ -91,7 +91,7 @@ export default function UsersPage() {
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <div className="overflow-x-auto rounded-3xl border bg-card">
           <table className="w-full text-sm">
             <thead className="text-left text-[11px] tracking-wider text-muted-foreground uppercase">

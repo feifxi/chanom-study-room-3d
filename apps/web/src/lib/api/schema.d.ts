@@ -1364,6 +1364,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/admin/reports': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AdminController_reportCases'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/reports/{key}/decide': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AdminController_decide'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/notifications': {
     parameters: {
       query?: never;
@@ -2214,6 +2246,59 @@ export interface components {
       /** @enum {string} */
       kind: 'warn' | 'suspend_1d' | 'suspend_7d' | 'ban' | 'lift' | 'reset_name';
       reason: string;
+    };
+    ReportCaseList: {
+      cases: components['schemas']['ReportCase'][];
+      open: number;
+    };
+    ReportCase: {
+      key: string;
+      /** @enum {string} */
+      kind: 'person' | 'message' | 'room';
+      name: string;
+      handle: string | null;
+      userId: string | null;
+      roomId: string | null;
+      reasons: string[];
+      details: string[];
+      reporters: number;
+      where: string | null;
+      firstAt: string;
+      lastAt: string;
+      urgent: boolean;
+      auto: string | null;
+      context: {
+        by: string;
+        text: string;
+        flagged: boolean;
+        bubble: boolean;
+      }[];
+      room: {
+        description: string;
+        rules: string;
+      } | null;
+      history: string[];
+      /** @enum {string} */
+      status: 'open' | 'done';
+      outcome: string | null;
+      decidedBy: string | null;
+      decidedAt: string | null;
+    };
+    ReportDecideBody: {
+      /** @enum {string} */
+      action:
+        | 'warn'
+        | 'suspend_1d'
+        | 'suspend_7d'
+        | 'ban'
+        | 'dismiss'
+        | 'delete'
+        | 'delete_warn'
+        | 'delete_suspend_1d'
+        | 'delist'
+        | 'close'
+        | 'close_suspend_owner';
+      reason?: string;
     };
     Inbox: {
       items: components['schemas']['Notification'][];
@@ -4616,6 +4701,50 @@ export interface operations {
         content: {
           'application/json': components['schemas']['AdminAccountDetail'];
         };
+      };
+    };
+  };
+  AdminController_reportCases: {
+    parameters: {
+      query?: {
+        status?: 'open' | 'done';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ReportCaseList'];
+        };
+      };
+    };
+  };
+  AdminController_decide: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        key: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ReportDecideBody'];
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };

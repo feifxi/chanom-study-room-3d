@@ -90,6 +90,11 @@ function CantWalkIn({ room, why, guest, onRetry }: { room: Room; why: GameEnd; g
       body: 'The owner or a mod removed you. A new invite brings you back.',
     },
     banned: { emoji: '🙅', title: `You can’t come into ${room.name}`, body: 'The owner or a mod has banned you from this room.' },
+    closed: {
+      emoji: '🔒',
+      title: `${room.name} is closed`,
+      body: 'The Connecta team closed this room for breaking the community rules.',
+    },
     elsewhere: {
       emoji: '🪞',
       title: `You’re in ${room.name} in another tab`,

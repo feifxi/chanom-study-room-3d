@@ -624,3 +624,20 @@ Use the Demo tab → Your Plus (it runs the reminders at once); check the 🔔 i
 - [ ] **Lift suspension**: Jod can sign in again (and gets a "back" email). **Ban** reads "Your account
       is banned…". **Warn** shows "warned" for 30 days. **Reset name** sets the name to their @handle.
 - [ ] A team account shows "On the Connecta team" with no actions.
+
+### Admin site, part 2: Reports
+
+- [ ] Put Mai on the team. As two other people, report the same person (or message) from a room or
+      a Common room: Reports shows **one** case with "2 different accounts reported", both reasons,
+      the notes, where, and what was said around it (or the bubbles reporters saw). The nav badge
+      counts open cases.
+- [ ] A Sexual content report, or a case where the automatic step already muted or put them out,
+      shows **urgent** and goes to the top (with "Already done automatically").
+- [ ] Decide a person case with **Warn** and a reason: the case moves to Done ("Warned by Mai"), the
+      person gets the email with that reason, and Users shows the warning. With the reason left
+      empty, the email uses the report reasons.
+- [ ] A message case: **Delete + warn** removes the message for everyone in the chat at once.
+- [ ] A room case: **Delist from Discover** takes it off Discover (members still walk in). **Close
+      room** sends everyone inside out; walking in says "… is closed" and chat refuses new messages.
+- [ ] **Dismiss** closes the case and does nothing to them. The Done tab lists decisions, newest
+      first.

@@ -127,7 +127,7 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
      ~~team accounts in Common rooms~~ done 2026-11-24 (set by a script; the chip, Time out and
      Remove for an hour). **Moderation is done.** Suspensions and bans come with the admin site.
    - **The admin site**, in parts (agreed 2026-11-24): ~~the gate, Users, account actions (warn,
-     suspend, ban, lift, reset name) and the audit log~~ done 2026-11-24; Reports; Rooms, Common rooms and Moderation
+     suspend, ban, lift, reset name) and the audit log~~ done 2026-11-24; ~~Reports~~ done 2026-11-24; Rooms, Common rooms and Moderation
      (the word list moves into the database); Overview, Money and the Audit log page. **The map editor
      waits for the Blender work** ([why](v2/decisions.md#in-the-3d-room)).
 6. **The seed:** one fill of all the data (people, rooms, members, friends, DMs…) for testing the

@@ -46,7 +46,7 @@ server). **Coins and quests** are done (quests, coins, the Shop's first set and 
 keys, Gift Plus, and when Plus ends). **Moderation with Common and open rooms** is done (Common
 rooms, the word filter, reports, team accounts in Common rooms). Next is **the admin site**, the last
 feature of step 5, in four parts (agreed 2026-11-24): part 1 (the gate, Users, account actions and the
-audit log) is done; next are Reports, then Rooms, Common rooms and Moderation, then Overview, Money
+audit log) and part 2 (the reports queue) are done; next are Rooms, Common rooms and Moderation, then Overview, Money
 and the Audit log page. The map editor waits for the Blender work, which starts with the Library, the one
 main map (the Café and Rooftop are temporary demo maps).
 Steps 1–4 are done: the skeleton; accounts and rooms; the gateway

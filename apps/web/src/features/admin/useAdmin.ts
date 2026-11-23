@@ -7,6 +7,8 @@ export type AdminAccount = Schemas['AdminAccount'];
 export type AdminAccountDetail = Schemas['AdminAccountDetail'];
 export type AccountFilter = 'all' | 'reported' | 'restricted' | 'under18' | 'plus';
 export type AccountActionKind = Schemas['AccountActionBody']['kind'];
+export type ReportCase = Schemas['ReportCase'];
+export type ReportAction = Schemas['ReportDecideBody']['action'];
 
 const KEY = ['admin', 'users'] as const;
 
@@ -41,6 +43,36 @@ export function useAccountAction() {
       ok(await api.POST('/api/admin/users/{id}/actions', { params: { path: { id: v.id } }, body: { kind: v.kind, reason: v.reason } })),
     onSuccess: (detail) => {
       client.setQueryData([...KEY, 'one', detail.id], detail);
+      void client.invalidateQueries({ queryKey: KEY });
+    },
+  });
+}
+
+const REPORTS_KEY = ['admin', 'reports'] as const;
+
+/** The reports queue: open cases (urgent first) or done ones; `open` is the badge's count */
+export function useReportCases(status: 'open' | 'done' = 'open') {
+  return useQuery({
+    queryKey: [...REPORTS_KEY, status],
+    queryFn: async () => ok(await api.GET('/api/admin/reports', { params: { query: { status } } })),
+    // New reports arrive without a live event: look again now and then
+    refetchInterval: 60_000,
+  });
+}
+
+/** Decide a case: acts (emailing the person if it's an account action) and closes every report in it */
+export function useDecideReport() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (v: { key: string; action: ReportAction; reason?: string }) => {
+      const res = await api.POST('/api/admin/reports/{key}/decide', {
+        params: { path: { key: v.key } },
+        body: { action: v.action, reason: v.reason || undefined },
+      });
+      if (res.error !== undefined || !res.response.ok) throw res.error ?? new Error(`${res.response.status}`);
+    },
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: REPORTS_KEY });
       void client.invalidateQueries({ queryKey: KEY });
     },
   });

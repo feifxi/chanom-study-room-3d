@@ -450,6 +450,14 @@ decision is made or changed: one line, a date, and the reason.
   stops sign-in and signs the person out everywhere at once; signing in shows until when, the reason,
   and "reply to our email to appeal" (a ban has no end). The word list moves into the database, with
   the API and the game server each keeping a copy refreshed when the team edits it.
+- **Reports become cases, decided once** (2026-11-24): the queue groups every open report about the
+  same person, message or room into one case (how many different accounts reported is the signal,
+  as there's no voice recording). Urgent first: sexual content, danger, anything an automatic step
+  already acted on, or 3+ reporters; then oldest. One decision closes every report in the case. An
+  account action uses the reason the team types, or the report reasons if left empty, since the
+  email must say why. A room can be delisted (off Discover, still works for members) or closed
+  (nobody walks in or chats; members and messages stay, so a mistake can be undone); undoing
+  either comes with the Rooms page.
 - **The team flag is set by a script, never by the app** (2026-11-24, the owner): no screen can make
   someone staff, so a bug or a stolen session can't either. The team acts only in Common rooms until
   the admin site; their actions aren't in an audit log yet (the admin site adds it).
