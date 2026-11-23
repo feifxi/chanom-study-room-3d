@@ -65,17 +65,17 @@ model User {
   handleHolds      HandleHold[]
   memberships      Membership[]
   requests         JoinRequest[]
-  bans             RoomBan[]       @relation("banned")
+  bans             RoomBan[]         @relation("banned")
   guestPasses      GuestVisit[]
   decks            RoomDeck[]
-  friends          Friendship[]    @relation("friendOf")
-  friendOf         Friendship[]    @relation("friend")
-  sentRequests     FriendRequest[] @relation("sent")
-  receivedRequests FriendRequest[] @relation("received")
+  friends          Friendship[]      @relation("friendOf")
+  friendOf         Friendship[]      @relation("friend")
+  sentRequests     FriendRequest[]   @relation("sent")
+  receivedRequests FriendRequest[]   @relation("received")
   messages         Message[]
   reactions        Reaction[]
-  blocks           Block[]         @relation("blocker")
-  blockedBy        Block[]         @relation("blocked")
+  blocks           Block[]           @relation("blocker")
+  blockedBy        Block[]           @relation("blocked")
   pictures         Picture[]
   dmMembers        DmMember[]
   notifications    Notification[]
@@ -86,6 +86,7 @@ model User {
   ownedItems       OwnedItem[]
   plusSubscription PlusSubscription?
   checkouts        Checkout[]
+  giftsReceived    Checkout[]        @relation("GiftTo")
   payments         Payment[]
 
   @@index([deleteAt])
@@ -632,9 +633,15 @@ model Checkout {
   stripeSessionId String?   @unique @map("stripe_session_id")
   createdAt       DateTime  @default(now()) @map("created_at")
   paidAt          DateTime? @map("paid_at")
+  /// Gift Plus: the friend it's for (plan is "gift"), how long, and the note on the card
+  giftToId        String?   @map("gift_to_id")
+  giftMonths      Int?      @map("gift_months")
+  giftNote        String?   @map("gift_note")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  giftTo User? @relation("GiftTo", fields: [giftToId], references: [id], onDelete: Cascade)
 
+  @@index([userId, giftToId])
   @@map("checkouts")
 }
 

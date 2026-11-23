@@ -43,7 +43,9 @@ Tick or strike these as they're dealt with.
 - [ ] Guests who never come back aren't cleaned up (needs a background job).
 - [ ] Signed out, the browser console logs a 401 from `/api/me`: expected, just noisy.
 
-- [ ] **Plus: gifts and grace are still the demo's** until Plus parts 3 and 4.
+- [ ] **Plus: grace is still the demo's** until Plus part 4.
+- [ ] **Gift Plus's hint can't say whether the friend has Plus** (people's Plus isn't in the
+      friends list), so it says "on top of any they have" for everyone.
 - [ ] **Real Stripe hasn't run end to end:** no keys yet. It's tested against a fake Stripe (every
       webhook event) and Stripe's own signature helper; try it with test keys (manual tests).
 - [ ] **No plan change:** while a plan renews, a new checkout is refused ("Change plan" on
@@ -501,3 +503,20 @@ on. The prices moved to `@connecta/shared/plus`.
 
 A headless run paid for yearly Plus with PromptPay on the stand-in (Plus until next year, a ฿890
 receipt), was refused a second plan, and cancelled from Settings ("Ends on 23 Nov 2027").
+
+### Plus, part 3: Gift Plus
+
+**Changed:** `POST /api/billing/gift` starts a gift checkout (friends only); once paid, the months
+go on the friend's Plus (on top of any left), you get the receipt and "Gifts you sent", the friend
+gets a 🎁 gift card in your DM (`kind: "gift"`) and a `gift` 🔔 notice, and a friend paying by card
+has their Stripe charge moved to the new date. The web app's Gift Plus dialog uses your real
+friends and is in the friend's "…" on Friends, the DM's "…" and the Plus page; the payment page
+pays gifts through the API; the DM card, the DM list's last line, the toast and the inbox icon know
+gifts.
+
+**Bugs found and fixed while building:** none; the tests and the headless run passed the first
+time.
+
+A headless run: Mai gifted Jod 3 months with a note from Friends; Mai landed in the DM with the
+card and "Gift sent to Jod"; Jod had Plus until 23 Feb 2027, the card with the note, the 🔔 notice,
+and no receipt; Mai had the ฿249 receipt and "Gifts you sent".

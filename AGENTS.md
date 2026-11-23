@@ -42,8 +42,9 @@ with the owner before building. **Focus** is done (the timer on the game server,
 the Focus page and rankings). **Watch together and photo mode** are done. **Party and table games**
 are done (the round flow, chess, Slave, the whiteboard, Pick a Side and Draw & Guess on the game
 server). **Coins and quests** are done (quests, coins, the Shop's first set and pets). **Plus** is in
-progress in four parts: parts 1 (Plus on the account, limits follow the plan) and 2 (paying: Stripe,
-or a local stand-in until the owner adds test keys) are done; next is Gift Plus.
+progress in four parts: parts 1 (Plus on the account, limits follow the plan), 2 (paying: Stripe,
+or a local stand-in until the owner adds test keys) and 3 (Gift Plus) are done; next is when Plus
+ends (the 7-day grace, rooms back to Free, PromptPay reminders).
 Steps 1–4 are done: the skeleton; accounts and rooms; the gateway
 (friends, chat, pictures, DMs, presence and the 🔔 inbox); walking in a room (the Colyseus game
 server `apps/game` with movement, capacity and live room changes, bubbles, Away, the people list,

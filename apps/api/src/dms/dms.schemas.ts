@@ -1,3 +1,4 @@
+import { CARD_KINDS } from '../chat/chat.schemas.js';
 import { z } from 'zod';
 import { PersonSchema } from '../rooms/rooms.schemas.js';
 
@@ -19,7 +20,7 @@ export const DmSummarySchema = z
     /** The newest message, for the list */
     last: z
       .object({
-        kind: z.enum(['text', 'ask', 'invite']),
+        kind: z.enum(CARD_KINDS),
         text: z.string(),
         mine: z.boolean(),
         pictures: z.boolean(),

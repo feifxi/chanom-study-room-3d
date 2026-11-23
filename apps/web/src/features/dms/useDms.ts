@@ -43,11 +43,12 @@ export function useDms() {
 export const dmUnread = (dms?: DmSummary[]) => dms?.reduce((n, d) => n + (d.muted ? 0 : d.unread), 0) ?? 0;
 
 /** Your chat with someone (by @handle): its id, whether you're friends, the rooms you share. */
-export function useDmWith(handle: string) {
+export function useDmWith(handle: string | null) {
   return useQuery({
     queryKey: [...DMS_KEY, 'with', handle],
-    queryFn: async () => ok(await api.PUT('/api/dms/with/{handle}', { params: { path: { handle } } })),
+    queryFn: async () => ok(await api.PUT('/api/dms/with/{handle}', { params: { path: { handle: handle! } } })),
     retry: false,
+    enabled: !!handle,
   });
 }
 
@@ -60,7 +61,9 @@ export function lastLine(d: DmSummary) {
       ? '🚪 Asked to join'
       : d.last.kind === 'invite'
         ? '💌 An invite to a room'
-        : d.last.text || (d.last.pictures ? '📷 a picture' : '');
+        : d.last.kind === 'gift'
+          ? '🎁 A Plus gift'
+          : d.last.text || (d.last.pictures ? '📷 a picture' : '');
   return d.last.mine ? `You: ${text}` : text;
 }
 

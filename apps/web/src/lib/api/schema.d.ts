@@ -1172,6 +1172,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/billing/gift": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["BillingController_gift"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/billing/checkout/{id}/dev-pay": {
         parameters: {
             query?: never;
@@ -1638,7 +1654,7 @@ export interface components {
             author: components["schemas"]["Person"];
             text: string;
             /** @enum {string} */
-            kind: "text" | "ask" | "invite";
+            kind: "text" | "ask" | "invite" | "gift";
             card: components["schemas"]["Card"] | null;
             replyTo: {
                 id: string;
@@ -1658,7 +1674,7 @@ export interface components {
             reactions: components["schemas"]["Reaction"][];
         };
         Card: {
-            roomId: string;
+            roomId: string | null;
             /** @enum {string|null} */
             state: "open" | "sent" | "declined" | null;
             invite: {
@@ -1672,6 +1688,10 @@ export interface components {
                 name: string;
                 emoji: string;
                 mapId: string;
+            } | null;
+            gift?: {
+                months: number;
+                note: string | null;
             } | null;
         };
         Picture: {
@@ -1838,7 +1858,7 @@ export interface components {
             muted: boolean;
             last: {
                 /** @enum {string} */
-                kind: "text" | "ask" | "invite";
+                kind: "text" | "ask" | "invite" | "gift";
                 text: string;
                 mine: boolean;
                 pictures: boolean;
@@ -1925,6 +1945,11 @@ export interface components {
                 /** @enum {string} */
                 method: "card" | "promptpay";
             }[];
+            giftsSent: {
+                to: components["schemas"]["Person"];
+                months: number;
+                at: string;
+            }[];
             stripe: boolean;
         };
         CheckoutBody: {
@@ -1937,6 +1962,13 @@ export interface components {
             checkoutId: string;
             url: string | null;
         };
+        GiftBody: {
+            handle: string;
+            months: number;
+            note?: string;
+            /** @enum {string} */
+            method: "card" | "promptpay";
+        };
         Inbox: {
             items: components["schemas"]["Notification"][];
             unread: number;
@@ -1944,7 +1976,7 @@ export interface components {
         Notification: {
             id: string;
             /** @enum {string} */
-            kind: "friend_request" | "friend_accepted" | "join_request" | "joined" | "mention" | "messages" | "space";
+            kind: "friend_request" | "friend_accepted" | "join_request" | "joined" | "mention" | "messages" | "space" | "gift";
             text: string;
             href: string;
             person: components["schemas"]["Person"] | null;
@@ -4069,6 +4101,29 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["CheckoutBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckoutStart"];
+                };
+            };
+        };
+    };
+    BillingController_gift: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GiftBody"];
             };
         };
         responses: {

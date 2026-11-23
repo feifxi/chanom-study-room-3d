@@ -3,32 +3,36 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Gift } from 'lucide-react';
+import { GIFT_NOTE_MAX, GIFTS } from '@connecta/shared';
+import { PersonFace } from '@/components/PersonFace';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { UserAvatar } from '@/components/UserAvatar';
+import { useFriends } from '@/features/friends/useFriends';
+import type { Schemas } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
-import { FRIENDS, userById } from '@/lib/mock';
-import { GIFTS } from '@/lib/plus';
 
 /**
  * Gift Plus (feature 15): pick a friend (or come in with one), how long, a note, then pay. Gifts are
- * one-off, so card or PromptPay both work. The friend gets a gift card in DMs and the Inbox, and the
- * months add on top of any Plus they already have.
+ * one-off, so card or PromptPay both work. The friend gets a gift card in your DM and a 🔔 notice,
+ * and the months add on top of any Plus they already have.
  */
-export function GiftPlusDialog({ open, onOpenChange, to }: { open: boolean; onOpenChange: (o: boolean) => void; to?: string }) {
+export function GiftPlusDialog({ open, onOpenChange, to }: { open: boolean; onOpenChange: (o: boolean) => void; to?: Schemas['Person'] }) {
   const router = useRouter();
-  const [friend, setFriend] = useState(to ?? FRIENDS[0]!.id);
+  const friends = useFriends();
+  const people = (friends.data ?? []).map((f) => f.person).filter((p) => p.handle);
+  const [picked, setPicked] = useState<string>();
   const [months, setMonths] = useState<number>(3);
   const [note, setNote] = useState('');
-  const who = userById(to ?? friend);
+  const who = to ?? people.find((p) => p.id === picked) ?? people[0];
+  const price = GIFTS.find((g) => g.months === months)!.price;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="rounded-3xl sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl font-black">
-            <Gift className="size-5 text-primary" /> Gift Plus
+            <Gift className="size-5 text-primary" /> Gift Plus{to && ` for ${to.name}`}
           </DialogTitle>
           <DialogDescription>Adds on top of any Plus they already have. Their rooms grow too.</DialogDescription>
         </DialogHeader>
@@ -36,21 +40,25 @@ export function GiftPlusDialog({ open, onOpenChange, to }: { open: boolean; onOp
         {!to && (
           <section className="flex flex-col gap-1.5">
             <p className="text-sm font-bold">For</p>
-            <div className="flex flex-wrap gap-1.5">
-              {FRIENDS.map((u) => (
-                <button
-                  key={u.id}
-                  onClick={() => setFriend(u.id)}
-                  aria-pressed={friend === u.id}
-                  className={cn(
-                    'flex items-center gap-1.5 rounded-full border py-1 pr-3 pl-1 text-sm font-bold',
-                    friend === u.id ? 'border-primary bg-secondary text-secondary-foreground' : 'hover:bg-muted',
-                  )}
-                >
-                  <UserAvatar user={u} size={24} /> {u.name}
-                </button>
-              ))}
-            </div>
+            {people.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Gifts go to friends. Add a friend first.</p>
+            ) : (
+              <div className="flex max-h-32 flex-wrap gap-1.5 overflow-y-auto">
+                {people.map((u) => (
+                  <button
+                    key={u.id}
+                    onClick={() => setPicked(u.id)}
+                    aria-pressed={who?.id === u.id}
+                    className={cn(
+                      'flex items-center gap-1.5 rounded-full border py-1 pr-3 pl-1 text-sm font-bold',
+                      who?.id === u.id ? 'border-primary bg-secondary text-secondary-foreground' : 'hover:bg-muted',
+                    )}
+                  >
+                    <PersonFace who={u} size={24} /> {u.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </section>
         )}
 
@@ -83,7 +91,7 @@ export function GiftPlusDialog({ open, onOpenChange, to }: { open: boolean; onOp
           <Input
             id="gift-note"
             value={note}
-            maxLength={120}
+            maxLength={GIFT_NOTE_MAX}
             onChange={(e) => setNote(e.target.value)}
             placeholder="for the Big map, thanks for hosting 🫶"
             className="rounded-xl"
@@ -91,19 +99,19 @@ export function GiftPlusDialog({ open, onOpenChange, to }: { open: boolean; onOp
         </section>
 
         <p className="-mb-1 rounded-2xl bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
-          {who.plus
-            ? `${who.name} already has Plus, so this adds ${months} month${months > 1 ? 's' : ''} on top: their next payment moves back by that much.`
-            : `${who.name} gets Plus right away, for ${months} month${months > 1 ? 's' : ''}. It doesn’t renew by itself.`}
+          {who ? `${who.name} gets` : 'They get'} Plus right away for {months} month{months > 1 ? 's' : ''}, on top of any they have. A gift
+          doesn’t renew, and if they pay by card, their next charge moves back.
         </p>
         <Button
           className="rounded-full font-extrabold"
+          disabled={!who?.handle}
           onClick={() => {
-            const q = new URLSearchParams({ gift: who.id, months: String(months) });
+            const q = new URLSearchParams({ gift: who!.handle!, months: String(months) });
             if (note.trim()) q.set('note', note.trim());
             router.push(`/checkout?${q}`);
           }}
         >
-          Continue to payment · ฿{GIFTS.find((g) => g.months === months)!.price}
+          Continue to payment · ฿{price}
         </Button>
         <p className="-mt-2 text-center text-[11px] text-muted-foreground">Card or PromptPay. Gifts can’t be refunded once received.</p>
       </DialogContent>

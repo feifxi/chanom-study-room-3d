@@ -11,12 +11,28 @@ import { dmCards } from './useDms';
 /**
  * The DM cards (feature 5). **Ask to join:** someone wants into the room you're in; you answer Send
  * invite (they get a link back) or Not now. **Invite:** a link to a room, a member invite or a
- * 24-hour guest pass.
+ * 24-hour guest pass. **Gift:** Plus from a friend, already added (feature 15).
  */
 export function DmCard({ m, mine }: { m: ChatMessage; mine: boolean }) {
   const card = m.card;
   const answer = useFriendAction(dmCards.answer, undefined, true);
   if (!card) return null;
+
+  if (m.kind === 'gift' && card.gift) {
+    const { months, note } = card.gift;
+    return (
+      <div className="mt-1 flex w-72 max-w-full flex-col gap-1 rounded-2xl bg-gradient-to-br from-secondary via-peach to-lavender p-4">
+        <p className="text-2xl">🎁</p>
+        <p className="font-black">
+          {mine ? 'You gifted' : `${m.author.name} gifted you`} {months} month{months > 1 && 's'} of Plus ✨
+        </p>
+        {note && <p className="text-sm break-words italic">“{note}”</p>}
+        <p className="text-xs text-muted-foreground">
+          {mine ? 'It’s on their Plus already.' : 'Added to your Plus. Your rooms grow while it lasts.'}
+        </p>
+      </div>
+    );
+  }
 
   if (m.kind === 'ask') {
     const open = card.state === 'open';

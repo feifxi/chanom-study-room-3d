@@ -41,16 +41,23 @@ export const PictureUploadSchema = z
 
 /**
  * A card in a DM instead of plain text (feature 5): "ask" (the author wants to join the other
- * person's room; they answer Send invite or Not now) or "invite" (a link to a room).
+ * person's room; they answer Send invite or Not now), "invite" (a link to a room) or "gift" (the
+ * author gave the other person Plus, already added; spec 15).
  */
+export const CARD_KINDS = ['text', 'ask', 'invite', 'gift'] as const;
+export type CardKind = Exclude<(typeof CARD_KINDS)[number], 'text'>;
+
 export const CardSchema = z
   .object({
-    roomId: z.string(),
+    /** Ask and invite: the room (null on a gift) */
+    roomId: z.string().nullable(),
     /** Ask only: open until answered */
     state: z.enum(['open', 'sent', 'declined']).nullable(),
     /** Invite only: the link and the room it opens */
     invite: z.object({ code: z.string(), kind: z.enum(['member', 'guest']), expiresAt: z.iso.datetime().nullable() }).nullable(),
     room: z.object({ name: z.string(), emoji: z.string(), mapId: z.string() }).nullable(),
+    /** Gift only: how long, and the note */
+    gift: z.object({ months: z.number().int(), note: z.string().nullable() }).nullable().optional(),
   })
   .meta({ id: 'Card' });
 export type Card = z.infer<typeof CardSchema>;
@@ -63,7 +70,7 @@ export const ChatMessageSchema = z
     dmId: z.string().nullable(),
     author: PersonSchema,
     text: z.string(),
-    kind: z.enum(['text', 'ask', 'invite']),
+    kind: z.enum(CARD_KINDS),
     card: CardSchema.nullable(),
     /** The message this one answers, quoted above it */
     replyTo: z

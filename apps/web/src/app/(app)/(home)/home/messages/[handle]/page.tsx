@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Ban, Bell, BellOff, Flag, MoreHorizontal, UserMinus } from 'lucide-react';
+import { ArrowLeft, Ban, Bell, BellOff, Flag, Gift, MoreHorizontal, UserMinus } from 'lucide-react';
+import { GiftPlusDialog } from '@/components/app/GiftPlusDialog';
 import { toast } from 'sonner';
 import { PersonFace } from '@/components/PersonFace';
 import { Button } from '@/components/ui/button';
@@ -34,6 +36,7 @@ export default function DmPage() {
     toast(muted ? `Muted. ${u?.name}’s messages won’t count in your badge.` : 'Unmuted'),
   );
   const block = useFriendAction(friendsApi.block, () => toast(`${u?.name} is blocked. Their messages are hidden in rooms you share.`));
+  const [gifting, setGifting] = useState(false);
 
   return (
     <div className="flex h-full">
@@ -51,6 +54,7 @@ export default function DmPage() {
             <p className="font-black">{u?.name ?? `@${handle}`}</p>
             <p className="truncate text-xs text-muted-foreground">@{handle}</p>
           </div>
+          {u && dm.data?.friend && <GiftPlusDialog to={u} open={gifting} onOpenChange={setGifting} />}
           {u && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -70,6 +74,11 @@ export default function DmPage() {
                         <BellOff /> Mute
                       </>
                     )}
+                  </DropdownMenuItem>
+                )}
+                {dm.data?.friend && (
+                  <DropdownMenuItem onSelect={() => setGifting(true)}>
+                    <Gift /> Gift Plus
                   </DropdownMenuItem>
                 )}
                 {dm.data?.friend && (

@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Check, Copy, MessageCircle, MoreHorizontal, UserPlus, X } from 'lucide-react';
+import { Check, Copy, Gift, MessageCircle, MoreHorizontal, UserPlus, X } from 'lucide-react';
+import { GiftPlusDialog } from '@/components/app/GiftPlusDialog';
 import { toast } from 'sonner';
 import { PersonFace } from '@/components/PersonFace';
 import { Button } from '@/components/ui/button';
@@ -222,6 +223,7 @@ function FriendRow({ friend }: { friend: Friend }) {
     toast.success(`Invite to ${m.card?.room?.name ?? 'your room'} sent to ${person.name}`),
   );
   const rooms = useMyRooms();
+  const [gifting, setGifting] = useState(false);
   // Rooms you can bring someone into: a member invite, or else a guest pass (feature 5)
   const invitable = (rooms.data ?? []).filter((r) => r.me.role !== 'member' || r.membersCanInvite || r.allowGuests);
   const status =
@@ -230,6 +232,7 @@ function FriendRow({ friend }: { friend: Friend }) {
       : (presence.activity ?? (presence.status === 'idle' ? 'Away' : 'Online'));
   return (
     <div className="flex items-center gap-3 p-3">
+      <GiftPlusDialog to={person} open={gifting} onOpenChange={setGifting} />
       <PersonFace who={person} size={40} status={presence.status} />
       <div className="min-w-0 flex-1">
         <p className="font-extrabold">
@@ -259,6 +262,9 @@ function FriendRow({ friend }: { friend: Friend }) {
               ))}
             </DropdownMenuSubContent>
           </DropdownMenuSub>
+          <DropdownMenuItem onSelect={() => setGifting(true)}>
+            <Gift /> Gift Plus
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => remove.mutate(person.id)}>Remove friend</DropdownMenuItem>
           <DropdownMenuSeparator />

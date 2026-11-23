@@ -2,6 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 import { PLUS_PLANS, type PayMethod, type PlanId } from '@connecta/shared';
+
+/** A gift is paid once, whatever the method */
+export interface GiftCheckout {
+  checkoutId: string;
+  months: number;
+  price: number;
+  method: PayMethod;
+  email: string | null;
+  /** Where Stripe sends you back: your DM with the friend */
+  back: string;
+}
 import type { Env } from '../config/env.js';
 
 /** What the API needs from Stripe; tests swap in a fake (nothing leaves the machine) */
@@ -70,6 +81,39 @@ export class StripeGateway {
     });
     if (!session.url) throw new Error('Stripe gave no checkout link');
     return { id: session.id, url: session.url };
+  }
+
+  /** Stripe's payment page for Gift Plus: one payment, card or PromptPay */
+  async giftCheckout(input: GiftCheckout): Promise<{ id: string; url: string }> {
+    const session = await this.need().checkout.sessions.create({
+      client_reference_id: input.checkoutId,
+      metadata: { checkoutId: input.checkoutId },
+      customer_email: input.email ?? undefined,
+      allowed_payment_method_types: [input.method],
+      mode: 'payment',
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: 'thb',
+            unit_amount: input.price * 100,
+            product_data: { name: `Connecta Plus gift · ${input.months} month${input.months > 1 ? 's' : ''}` },
+          },
+        },
+      ],
+      success_url: `${this.web}${input.back}`,
+      cancel_url: `${this.web}/home/friends`,
+    });
+    if (!session.url) throw new Error('Stripe gave no checkout link');
+    return { id: session.id, url: session.url };
+  }
+
+  /**
+   * A gift moved a card plan's date on: the card's next charge moves with it (a free stretch until
+   * then, so nothing is charged or refunded now)
+   */
+  async moveRenewal(subscriptionId: string, to: Date) {
+    await this.need().subscriptions.update(subscriptionId, { trial_end: Math.floor(to.getTime() / 1000), proration_behavior: 'none' });
   }
 
   /** When a subscription's paid period ends (it's on the subscription's item) */

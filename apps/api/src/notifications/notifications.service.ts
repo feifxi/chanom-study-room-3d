@@ -119,6 +119,15 @@ export class NotificationsService {
       );
   }
 
+  /** Gift Plus: the friend hears who gave it and how long; opening it shows the card in your DM */
+  async gift(toId: string, from: Person, months: number) {
+    await this.push(toId, 'gift', {
+      text: `**${from.name}** gifted you ${months} month${months > 1 ? 's' : ''} of Plus ✨`,
+      href: from.handle ? `/home/messages/${from.handle}` : '/home/plus',
+      person: from,
+    });
+  }
+
   /**
    * A new room message (once it shows): @mentions and @room for members whose setting isn't
    * Nothing, and one growing "new messages" item for those on Every message. Never for people who

@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, ForbiddenException, Injectable,
 import { MESSAGES_PAGE } from '@connecta/shared';
 import { requireSignedUp } from '../accounts/signed-up.js';
 import { ChatService, dmPeople, messageInclude, toMessage, type SendInput } from '../chat/chat.service.js';
-import type { Card, ChatMessage, MessagePage } from '../chat/chat.schemas.js';
+import { CARD_KINDS, type Card, type ChatMessage, type MessagePage } from '../chat/chat.schemas.js';
 import { PresenceService } from '../presence/presence.service.js';
 import { RoomsService } from '../rooms/rooms.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -53,7 +53,7 @@ export class DmsService {
           ...standings(other.id),
           last: last
             ? {
-                kind: last.kind as 'text' | 'ask' | 'invite',
+                kind: last.kind as (typeof CARD_KINDS)[number],
                 text: last.deletedAt ? '' : last.text,
                 mine: last.authorId === userId,
                 pictures: !last.deletedAt && last.pictures.length > 0,
@@ -148,7 +148,7 @@ export class DmsService {
     const card = ask.card as Card;
     if (card.state !== 'open') throw new ConflictException('Already answered');
     await this.mustBeFriends(userId, ask.dm.pair);
-    if (send) await this.postInvite(userId, ask.dm.id, card.roomId);
+    if (send && card.roomId) await this.postInvite(userId, ask.dm.id, card.roomId);
     return this.chat.updateCard(messageId, { ...card, state: send ? 'sent' : 'declined' });
   }
 
@@ -184,6 +184,22 @@ export class DmsService {
       room: { name: room.name, emoji: room.emoji, mapId: room.mapId },
     };
     return this.post(userId, dmId, () => this.chat.create(userId, { dmId }, { text: '' }, [], false, { kind: 'invite', card }));
+  }
+
+  /**
+   * Gift Plus (spec 15): the gift card in your DM with the friend, once the gift is paid. Paid is
+   * paid: if you've stopped being friends since, the card is skipped and the 🔔 notice still goes.
+   */
+  async giftCard(userId: string, toId: string, gift: { months: number; note: string | null }): Promise<ChatMessage | null> {
+    if (!(await this.standings(userId, [toId]))(toId).friend) return null;
+    const pair = pairOf(userId, toId);
+    const dm = await this.prisma.dm.upsert({
+      where: { pair },
+      create: { pair, members: { create: [{ userId }, { userId: toId }] } },
+      update: {},
+    });
+    const card: Card = { roomId: null, state: null, invite: null, room: null, gift };
+    return this.post(userId, dm.id, () => this.chat.create(userId, { dmId: dm.id }, { text: '' }, [], false, { kind: 'gift', card }));
   }
 
   /** Writes a message in the DM, then moves the list's order and your read marker to it. */

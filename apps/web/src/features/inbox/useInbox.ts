@@ -78,7 +78,9 @@ export function InboxListener() {
       const dm = client.getQueryData<DmSummary[]>(DMS_KEY)?.find((d) => d.id === m.dmId);
       if (dm?.muted) return;
       toasted.add(m.id);
-      toast(`${m.author.name}: ${m.text || (m.pictures.length ? '📷 a picture' : m.kind === 'ask' ? '🚪 asked to join' : '💌 an invite')}`);
+      toast(
+        `${m.author.name}: ${m.text || (m.pictures.length ? '📷 a picture' : m.kind === 'ask' ? '🚪 asked to join' : m.kind === 'gift' ? '🎁 gifted you Plus' : '💌 an invite')}`,
+      );
     };
     let connectedBefore = socket.connected;
     // Back after a drop: catch up on what we missed

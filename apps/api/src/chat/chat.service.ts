@@ -8,7 +8,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { PicturesService, pictureUrl } from './pictures.service.js';
 import { QuestsService } from '../quests/quests.service.js';
 import { toPerson } from '../rooms/person.js';
-import type { Card, ChatMessage, MessagePage } from './chat.schemas.js';
+import type { Card, CardKind, ChatMessage, MessagePage } from './chat.schemas.js';
 
 export type SendInput = { text: string; replyToId?: string; pictureIds?: string[] };
 
@@ -120,7 +120,7 @@ export class ChatService {
     input: SendInput,
     mentions: string[],
     mentionsRoom: boolean,
-    card?: { kind: 'ask' | 'invite'; card: Card },
+    card?: { kind: CardKind; card: Card },
   ): Promise<ChatMessage> {
     const pictureIds = input.pictureIds ?? [];
     const created = await this.prisma.message.create({

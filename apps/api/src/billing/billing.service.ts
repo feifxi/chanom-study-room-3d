@@ -1,12 +1,15 @@
-import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PLUS_PLANS, type PayMethod, type PlanId } from '@connecta/shared';
+import { giftPrice, PLUS_PLANS, type PayMethod, type PlanId } from '@connecta/shared';
 import { requireSignedUp } from '../accounts/signed-up.js';
 import type { Env } from '../config/env.js';
 import { hasPlus } from '../plus/plus.js';
 import { PlusService } from '../plus/plus.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import type { Billing, CheckoutStart } from './billing.schemas.js';
+import { DmsService } from '../dms/dms.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
+import { toPerson } from '../rooms/person.js';
+import type { Billing, CheckoutStart, GiftBody } from './billing.schemas.js';
 import { StripeGateway, type StripeEvent } from './stripe.gateway.js';
 
 const addMonths = (from: Date, months: number) => {
@@ -30,13 +33,21 @@ export class BillingService {
     private readonly plus: PlusService,
     private readonly stripe: StripeGateway,
     private readonly config: ConfigService<Env, true>,
+    private readonly dms: DmsService,
+    private readonly inbox: NotificationsService,
   ) {}
 
   async view(userId: string, now = new Date()): Promise<Billing> {
-    const [user, sub, receipts] = await Promise.all([
+    const [user, sub, receipts, gifts] = await Promise.all([
       this.prisma.user.findUniqueOrThrow({ where: { id: userId }, select: { plusUntil: true } }),
       this.prisma.plusSubscription.findUnique({ where: { userId } }),
       this.prisma.payment.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 24 }),
+      this.prisma.checkout.findMany({
+        where: { userId, status: 'paid', giftToId: { not: null } },
+        include: { giftTo: true },
+        orderBy: { paidAt: 'desc' },
+        take: 24,
+      }),
     ]);
     return {
       plus: hasPlus(user, now),
@@ -51,6 +62,7 @@ export class BillingService {
         amount: r.amount,
         method: r.method as PayMethod,
       })),
+      giftsSent: gifts.map((g) => ({ to: toPerson(g.giftTo!), months: g.giftMonths ?? 0, at: (g.paidAt ?? g.createdAt).toISOString() })),
       stripe: this.stripe.enabled,
     };
   }
@@ -69,6 +81,32 @@ export class BillingService {
     return { checkoutId: checkout.id, url: session.url };
   }
 
+  /** Gift Plus for a friend: Stripe's page (one payment), or the local stand-in */
+  async gift(userId: string, body: GiftBody): Promise<CheckoutStart> {
+    const user = await requireSignedUp(this.prisma, userId);
+    const to = await this.prisma.user.findUnique({ where: { handle: body.handle } });
+    if (!to || to.deleteAt || to.id === userId) throw new NotFoundException();
+    if (!(await this.prisma.friendship.findUnique({ where: { userId_friendId: { userId, friendId: to.id } } }))) {
+      throw new ForbiddenException({ code: 'not_friends', message: 'You can gift Plus to friends only' });
+    }
+    const price = giftPrice(body.months);
+    if (!price) throw new BadRequestException('Pick 1, 3 or 12 months');
+    const checkout = await this.prisma.checkout.create({
+      data: { userId, plan: 'gift', method: body.method, giftToId: to.id, giftMonths: body.months, giftNote: body.note || null },
+    });
+    if (!this.stripe.enabled) return { checkoutId: checkout.id, url: null };
+    const session = await this.stripe.giftCheckout({
+      checkoutId: checkout.id,
+      months: body.months,
+      price,
+      method: body.method,
+      email: user.email,
+      back: `/home/messages/${to.handle}`,
+    });
+    await this.prisma.checkout.update({ where: { id: checkout.id }, data: { stripeSessionId: session.id } });
+    return { checkoutId: checkout.id, url: session.url };
+  }
+
   /** The local stand-in's Pay (never in production, never when Stripe is on) */
   async devPay(userId: string, checkoutId: string, now = new Date()): Promise<Billing> {
     if (this.config.get('NODE_ENV', { infer: true }) === 'production' || this.stripe.enabled) throw new NotFoundException();
@@ -80,41 +118,71 @@ export class BillingService {
 
   /**
    * A checkout was paid: Plus for the plan's months (on top of any Plus left), a receipt, and the
-   * plan on the account. Once only: a second notice finds the checkout paid already.
+   * plan on the account; or, for a gift, the months on the friend's Plus, a gift card in your DM and
+   * a 🔔 notice. Once only: a second notice finds the checkout paid already.
    */
   async paid(
     checkoutId: string,
     got: { ref: string; customerId?: string | null; subscriptionId?: string | null; periodEnd?: Date | null },
     now = new Date(),
   ) {
-    const checkout = await this.prisma.checkout.findUnique({ where: { id: checkoutId }, include: { user: true } });
+    const checkout = await this.prisma.checkout.findUnique({ where: { id: checkoutId }, include: { user: true, giftTo: true } });
     if (!checkout) return;
-    const plan = PLUS_PLANS[checkout.plan as PlanId];
-    const wasPlus = hasPlus(checkout.user, now);
-    // A card's period comes from Stripe; otherwise months from today or from the Plus you have left
-    const until = later(got.periodEnd ?? addMonths(later(now, checkout.user.plusUntil), plan.months), checkout.user.plusUntil);
+    const gift = checkout.giftTo && checkout.giftMonths ? { to: checkout.giftTo, months: checkout.giftMonths } : null;
+    const plan = gift ? null : PLUS_PLANS[checkout.plan as PlanId];
+    const who = gift?.to ?? checkout.user;
+    const months = gift?.months ?? plan!.months;
+    const wasPlus = hasPlus(who, now);
+    // A card's period comes from Stripe; otherwise months from today or from the Plus they have left
+    const until = later(got.periodEnd ?? addMonths(later(now, who.plusUntil), months), who.plusUntil);
+    const what = gift ? `Gift for ${gift.to.name} · ${months} month${months > 1 ? 's' : ''}` : `Plus · ${plan!.label}`;
+    const amount = gift ? giftPrice(months)! : plan!.price;
     const done = await this.prisma.$transaction(async (tx) => {
       const marked = await tx.checkout.updateMany({ where: { id: checkoutId, status: 'open' }, data: { status: 'paid', paidAt: now } });
       if (!marked.count) return false;
-      const fields = {
-        plan: checkout.plan,
-        method: checkout.method,
-        renews: true,
-        stripeCustomerId: got.customerId ?? null,
-        stripeSubscriptionId: got.subscriptionId ?? null,
-      };
-      await tx.plusSubscription.upsert({
-        where: { userId: checkout.userId },
-        create: { userId: checkout.userId, ...fields },
-        update: fields,
-      });
-      await tx.payment.create({
-        data: { userId: checkout.userId, what: `Plus · ${plan.label}`, amount: plan.price, method: checkout.method, ref: got.ref },
-      });
-      await tx.user.update({ where: { id: checkout.userId }, data: { plusUntil: until } });
+      if (!gift) {
+        const fields = {
+          plan: checkout.plan,
+          method: checkout.method,
+          renews: true,
+          stripeCustomerId: got.customerId ?? null,
+          stripeSubscriptionId: got.subscriptionId ?? null,
+        };
+        await tx.plusSubscription.upsert({
+          where: { userId: checkout.userId },
+          create: { userId: checkout.userId, ...fields },
+          update: fields,
+        });
+      }
+      await tx.payment.create({ data: { userId: checkout.userId, what, amount, method: checkout.method, ref: got.ref } });
+      await tx.user.update({ where: { id: who.id }, data: { plusUntil: until } });
       return true;
     });
-    if (done) await this.plus.announce(checkout.userId, wasPlus, now);
+    if (!done) return;
+    await this.plus.announce(who.id, wasPlus, now);
+    if (gift) await this.delivered(checkout.user, gift.to.id, gift.months, checkout.giftNote, until);
+    // Your tabs refresh the receipts too (the friend's tabs heard above)
+    if (gift) await this.plus.announce(checkout.userId, hasPlus(checkout.user, now), now);
+  }
+
+  /** A paid gift reaches the friend: the card, the notice, and a card plan's next charge moved on */
+  private async delivered(
+    from: Parameters<typeof toPerson>[0] & { id: string },
+    toId: string,
+    months: number,
+    note: string | null,
+    until: Date,
+  ) {
+    const tell = async (what: string, job: () => Promise<unknown>) => {
+      // Paid is paid: a hiccup here never undoes the gift
+      await job().catch((error: unknown) => this.log.warn(`Gift ${what}: ${String(error)}`));
+    };
+    await tell('card', () => this.dms.giftCard(from.id, toId, { months, note }));
+    await tell('notice', () => this.inbox.gift(toId, toPerson(from), months));
+    const sub = await this.prisma.plusSubscription.findUnique({ where: { userId: toId } });
+    if (sub?.renews && sub.stripeSubscriptionId && this.stripe.enabled) {
+      await tell('renewal', () => this.stripe.moveRenewal(sub.stripeSubscriptionId!, until));
+    }
   }
 
   /** Settings → Cancel Plus: it runs to the date, then ends (a card stops renewing at Stripe too) */

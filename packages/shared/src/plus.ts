@@ -14,3 +14,13 @@ export type PayMethod = (typeof PAY_METHODS)[number];
 export const REMIND_DAYS = 3;
 /** Days your rooms keep Plus space and maps after Plus ends */
 export const GRACE_DAYS = 7;
+
+/** Gift Plus: one-off, any method; the months add on top of any Plus the friend has */
+export const GIFTS = [
+  { months: 1, price: 89 },
+  { months: 3, price: 249 },
+  { months: 12, price: 890 },
+] as const;
+export const GIFT_MONTHS = GIFTS.map((g) => g.months);
+export const GIFT_NOTE_MAX = 120;
+export const giftPrice = (months: number) => GIFTS.find((g) => g.months === months)?.price;

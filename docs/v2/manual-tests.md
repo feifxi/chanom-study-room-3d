@@ -522,3 +522,18 @@ Without Stripe's keys, /checkout is the test stand-in (a strip at the top says s
 - [ ] With Stripe's test keys and `stripe listen` running (spec 15): Continue to payment opens
       Stripe's page; paying with 4242… brings you back and Plus turns on within a few seconds;
       PromptPay's test QR too; cancelling shows at Stripe.
+
+### Plus, part 3: Gift Plus
+
+You need two people who are friends (sign in as each in two browsers).
+
+- [ ] Friends → a friend's "…" → Gift Plus (also in your DM's "…", and on the Plus page with a
+      friend picker): 1, 3 or 12 months with prices, a note, Continue → the payment page shows the
+      gift and its price.
+- [ ] Pay → you land in your DM with them: "Gift sent to …", and a 🎁 card "You gifted 3 months of
+      Plus ✨" with your note.
+- [ ] Your friend: a 🔔 notice "Mai gifted you 3 months of Plus ✨" (opening it shows the DM), the
+      card "Mai gifted you…", Plus on (✨ name in rooms), and no price anywhere.
+- [ ] Gifting someone who has Plus already moves their date on by the months.
+- [ ] Settings → Plus & billing: your receipt "Gift for … · 3 months" and the "Gifts you sent" list.
+- [ ] Someone who isn't your friend can't be gifted (no menu item; the API says friends only).

@@ -16,7 +16,15 @@ import { AllowAnonymous, Session, type UserSession } from '@thallesp/nestjs-bett
 import type { Request } from 'express';
 import { z } from 'zod';
 import type { PayMethod, PlanId } from '@connecta/shared';
-import { BillingSchema, CheckoutBodySchema, CheckoutStartSchema, type Billing, type CheckoutStart } from './billing.schemas.js';
+import {
+  BillingSchema,
+  CheckoutBodySchema,
+  CheckoutStartSchema,
+  GiftBodySchema,
+  type Billing,
+  type CheckoutStart,
+  type GiftBody,
+} from './billing.schemas.js';
 import { BillingService } from './billing.service.js';
 import { StripeGateway } from './stripe.gateway.js';
 
@@ -46,6 +54,14 @@ export class BillingController {
     @Body({ schema: CheckoutBodySchema }) body: z.infer<typeof CheckoutBodySchema>,
   ): Promise<CheckoutStart> {
     return this.billing.checkout(session.user.id, body.plan as PlanId, body.method as PayMethod);
+  }
+
+  /** Gift Plus to a friend: Stripe's payment page, or null for the local stand-in (403 not_friends). */
+  @Post('gift')
+  @HttpCode(200)
+  @ApiOkResponse({ standardSchema: CheckoutStartSchema })
+  gift(@Session() session: UserSession, @Body({ schema: GiftBodySchema }) body: GiftBody): Promise<CheckoutStart> {
+    return this.billing.gift(session.user.id, body);
   }
 
   /** The local stand-in's Pay (404 in production and when Stripe is on). */

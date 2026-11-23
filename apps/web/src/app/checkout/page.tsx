@@ -9,11 +9,11 @@ import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { userById } from '@/lib/mock';
+import { useDmWith } from '@/features/dms/useDms';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMe } from '@/features/account/useMe';
 import { api } from '@/lib/api/client';
-import { BILLING_KEY, GIFTS, PLUS_PLANS, REMIND_DAYS, sendGift, usePlus, type PayMethod, type PlanId } from '@/lib/plus';
+import { BILLING_KEY, GIFTS, PLUS_PLANS, REMIND_DAYS, usePlus, type PayMethod, type PlanId } from '@/lib/plus';
 
 export default function CheckoutPage() {
   return (
@@ -28,8 +28,8 @@ export default function CheckoutPage() {
  * page (we never see card details), Stripe sends you back, and its webhook turns Plus on. Without
  * them (locally, until the owner adds test keys) this page is a stand-in for Stripe's: Pay asks the
  * API to treat the checkout as paid. Every plan and gift takes card or PromptPay; a PromptPay plan
- * renews by reminder (a QR before the date) since nobody can charge PromptPay without you. Gifts
- * are still the demo's until Plus part 3.
+ * renews by reminder (a QR before the date) since nobody can charge PromptPay without you. A gift
+ * (`?gift=<handle>&months=3&note=…`) pays once and lands in your DM with the friend.
  */
 function Checkout() {
   const router = useRouter();
@@ -39,7 +39,7 @@ function Checkout() {
   const plan = PLUS_PLANS[planId];
   const giftMonths = Number(params.get('months') ?? 1);
   const gift = giftTo ? (GIFTS.find((g) => g.months === giftMonths) ?? GIFTS[0]) : null;
-  const friend = giftTo ? userById(giftTo) : null;
+  const friend = useDmWith(giftTo).data?.with ?? null;
   const methods: PayMethod[] = ['card', 'promptpay'];
   const [method, setMethod] = useState<PayMethod>(params.get('method') === 'promptpay' ? 'promptpay' : 'card');
   const [step, setStep] = useState<'pay' | 'paying' | 'done'>('pay');
@@ -48,14 +48,14 @@ function Checkout() {
   const client = useQueryClient();
   usePlus(); // loads /api/billing: whether Stripe is on
   const billing = client.getQueryData<{ stripe: boolean }>(BILLING_KEY);
-  const stripe = !gift && !!billing?.stripe;
+  const stripe = !!billing?.stripe;
 
   const done = () => {
     setStep('done');
     setTimeout(() => {
       if (gift && friend) {
-        toast.success(`Gift sent to ${friend.name} 🎁 They’ll find it in their DMs and Inbox.`);
-        router.replace('/home/friends');
+        toast.success(`Gift sent to ${friend.name} 🎁 They’ll find it in your DMs and their Inbox.`);
+        router.replace(`/home/messages/${friend.handle}`);
       } else {
         toast.success('Welcome to Plus ✨ Your rooms just got bigger.');
         router.replace('/home/plus');
@@ -65,18 +65,17 @@ function Checkout() {
 
   const pay = async () => {
     setStep('paying');
-    // Gifts: still the demo's (Plus part 3)
-    if (gift && friend) {
-      sendGift(friend.name, gift.months, gift.price, method);
-      return setTimeout(done, 1200);
-    }
-    const { data: start, error } = await api.POST('/api/billing/checkout', { body: { plan: planId, method } });
+    const note = params.get('note') ?? undefined;
+    const { data: start, error } =
+      gift && giftTo
+        ? await api.POST('/api/billing/gift', { body: { handle: giftTo, months: gift.months, note, method } })
+        : await api.POST('/api/billing/checkout', { body: { plan: planId, method } });
     if (!start) {
       setStep('pay');
       toast.error((error as { message?: string } | undefined)?.message ?? 'Couldn’t start the payment. Try again?');
       return;
     }
-    // Stripe's own page; it sends you back to the Plus page
+    // Stripe's own page; it sends you back (the Plus page, or your DM with the friend)
     if (start.url) return void (window.location.href = start.url);
     const { data: paid } = await api.POST('/api/billing/checkout/{id}/dev-pay', { params: { path: { id: start.checkoutId } } });
     if (!paid) {

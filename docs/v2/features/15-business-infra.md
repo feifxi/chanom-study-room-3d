@@ -2,8 +2,8 @@
 
 **Status:** Plus is being built in four parts (2026-11-23): 1. Plus on the account, every limit
 following the plan (done); 2. paying with Stripe in test mode (done: a local stand-in until the
-owner adds Stripe's test keys); 3. Gift Plus; 4. when Plus ends. Gifts and grace are still the
-demo's until their parts. **Try it:** http://localhost:3100/home/plus,
+owner adds Stripe's test keys); 3. Gift Plus (done); 4. when Plus ends. Grace is still the
+demo's until part 4. **Try it:** http://localhost:3100/home/plus,
 `/checkout?plan=yearly`, and `/admin/money` (View as Connecta team). V1's infra is at tag `v1.0.0`
 (`infra/README.md`). The cloud is AWS; nginx replaced Caddy on 2026-11-21
 ([decision](../decisions.md#engineering-and-infra)).
@@ -186,6 +186,20 @@ How you pay is picked on the payment page:
   (PromptPay confirms a little later) pay the checkout; `invoice.paid` with `subscription_cycle`
   renews a card; `customer.subscription.updated` / `deleted` follow a cancel made at Stripe.
 - **Your tabs** hear `plus` after any change, and refresh your account, billing and rooms.
+
+### Gift Plus: backend notes
+
+- **Starting one:** `POST /api/billing/gift { handle, months: 1|3|12, note?, method }` (friends
+  only: 403 `not_friends`). It's a checkout like a plan's, with `plan: "gift"` and the friend,
+  months and note on it; Stripe takes it as one payment (card or PromptPay), and sends you back to
+  your DM with the friend.
+- **Once paid:** the months go on the friend's `plus_until` (on top of any Plus left); you get the
+  receipt ("Gift for Jod · 3 months") and it's under "Gifts you sent"; the friend never sees the
+  price. A gift card (`kind: "gift"`) goes in your DM and a `gift` item in their 🔔 inbox. Paid
+  is paid: if you've stopped being friends since, the card is skipped, the rest happens.
+- **A friend paying by card:** their Stripe subscription gets `trial_end` at the new date, so the
+  next charge moves back by the gift and nothing is charged or refunded now.
+- Starts at once (no "open your gift" step): a gift waiting to be opened is easy to forget.
 
 ### Setting up Stripe (the owner)
 

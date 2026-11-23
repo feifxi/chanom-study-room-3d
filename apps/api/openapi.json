@@ -3041,6 +3041,37 @@
         ]
       }
     },
+    "/api/billing/gift": {
+      "post": {
+        "operationId": "BillingController_gift",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GiftBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutStart"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "billing"
+        ]
+      }
+    },
     "/api/billing/checkout/{id}/dev-pay": {
       "post": {
         "operationId": "BillingController_devPay",
@@ -4620,7 +4651,8 @@
             "enum": [
               "text",
               "ask",
-              "invite"
+              "invite",
+              "gift"
             ]
           },
           "card": {
@@ -4719,6 +4751,7 @@
         "type": "object",
         "properties": {
           "roomId": {
+            "nullable": true,
             "type": "string"
           },
           "state": {
@@ -4776,6 +4809,26 @@
               "name",
               "emoji",
               "mapId"
+            ],
+            "additionalProperties": false
+          },
+          "gift": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "months": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "note": {
+                "nullable": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "months",
+              "note"
             ],
             "additionalProperties": false
           }
@@ -5518,7 +5571,8 @@
                 "enum": [
                   "text",
                   "ask",
-                  "invite"
+                  "invite",
+                  "gift"
                 ]
               },
               "text": {
@@ -5908,6 +5962,31 @@
               "additionalProperties": false
             }
           },
+          "giftsSent": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "to": {
+                  "$ref": "#/components/schemas/Person"
+                },
+                "months": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "at": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "to",
+                "months",
+                "at"
+              ],
+              "additionalProperties": false
+            }
+          },
           "stripe": {
             "type": "boolean"
           }
@@ -5919,6 +5998,7 @@
           "method",
           "renews",
           "receipts",
+          "giftsSent",
           "stripe"
         ],
         "additionalProperties": false
@@ -5963,6 +6043,36 @@
         ],
         "additionalProperties": false
       },
+      "GiftBody": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "months": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "card",
+              "promptpay"
+            ]
+          }
+        },
+        "required": [
+          "handle",
+          "months",
+          "method"
+        ]
+      },
       "Inbox": {
         "type": "object",
         "properties": {
@@ -5999,7 +6109,8 @@
               "joined",
               "mention",
               "messages",
-              "space"
+              "space",
+              "gift"
             ]
           },
           "text": {

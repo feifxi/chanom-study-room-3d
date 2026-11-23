@@ -438,6 +438,10 @@ decision is made or changed: one line, a date, and the reason.
   Plus skins and pets, and AI decks show as Coming soon and come as their own parts. Screen-share
   quality follows the room's plan (its bandwidth); rooms you make or join, uploads and the name tag
   follow your own.
+- **Gift Plus starts at once** (2026-11-23, the owner chose A): no "open your gift" step, since a
+  gift waiting to be opened gets forgotten. Friends only; the friend never sees the price; a friend
+  paying by card has their next charge moved back by the gift (Stripe's `trial_end`), so a gift
+  never overlaps a payment.
 - **Paying: a local stand-in until Stripe's keys** (2026-11-23, the owner: "I'll do the Stripe
   account later"). The real Stripe code is built and tested against a fake Stripe and Stripe's own
   signature helper; without keys the payment page is a test stand-in that marks the checkout paid
