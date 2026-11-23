@@ -721,7 +721,7 @@ reason, and the case moved to Done with the badge at 1. Checked at phone width. 
 - [ ] **People inside when a room is closed see "isn't there any more"** (the game server's room-gone
       close), not why; the closed message shows when they try to walk in again.
 
-### Admin site, part 3: Rooms, Common rooms, Moderation
+### Admin site, part 3: Rooms, Common rooms, Moderation (`1778254`)
 
 **Changed:** `settings` and `blocked_words` tables (the migration carries the Thai list that was in
 `@connecta/shared/moderate`, which now takes its list through `setWordFilter`); `SettingsService`
