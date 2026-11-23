@@ -662,16 +662,20 @@ model Checkout {
 /// Money in: receipts in Settings → Plus & billing, and the admin site's money page. Kept when an
 /// account is deleted (the books need them)
 model Payment {
-  id        String   @id @default(uuid(7))
-  userId    String?  @map("user_id")
+  id           String    @id @default(uuid(7))
+  userId       String?   @map("user_id")
   /// "Plus · Monthly"
-  what      String
+  what         String
   /// In baht
-  amount    Int
-  method    String
+  amount       Int
+  method       String
   /// Stripe's invoice or checkout session id (or local:<checkout>): a notice delivered twice pays once
-  ref       String   @unique
-  createdAt DateTime @default(now()) @map("created_at")
+  ref          String    @unique
+  createdAt    DateTime  @default(now()) @map("created_at")
+  /// Refunded by the Connecta team (admin site → Money), with the reason they picked
+  refundedAt   DateTime? @map("refunded_at")
+  refundReason String?   @map("refund_reason")
+  refundedById String?   @map("refunded_by_id")
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 

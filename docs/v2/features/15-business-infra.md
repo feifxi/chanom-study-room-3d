@@ -3,7 +3,7 @@
 **Status:** Plus is built (2026-11-23, in four parts): Plus on the account with every limit
 following the plan; paying with Stripe in test mode (a local stand-in until the owner adds Stripe's
 test keys); Gift Plus; and when Plus ends (reminders, the grace, rooms back to Free). The admin
-site's Money page comes with the admin site. **Try it:** http://localhost:3100/home/plus,
+site's Money page (numbers, payments, refunds) is built too (2026-11-24, [spec 14](14-open-rooms-moderation.md)). **Try it:** http://localhost:3100/home/plus,
 `/checkout?plan=yearly`, and `/admin/money` (View as Connecta team). V1's infra is at tag `v1.0.0`
 (`infra/README.md`). The cloud is AWS; nginx replaced Caddy on 2026-11-21
 ([decision](../decisions.md#engineering-and-infra)).

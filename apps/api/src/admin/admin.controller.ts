@@ -8,6 +8,15 @@ import {
   AdminAccountListSchema,
   AdminAccountQuerySchema,
   AdminCommonSchema,
+  AdminMoneyQuerySchema,
+  AdminMoneySchema,
+  AdminOverviewSchema,
+  AuditListSchema,
+  AuditQuerySchema,
+  RefundBodySchema,
+  type AdminMoney,
+  type AdminOverview,
+  type AuditList,
   AdminRoomListSchema,
   AdminRoomQuerySchema,
   AdminRoomSchema,
@@ -29,6 +38,9 @@ import {
   type ReportCaseList,
 } from './admin.schemas.js';
 import { AccountsAdminService } from './accounts-admin.service.js';
+import { AuditAdminService } from './audit-admin.service.js';
+import { MoneyAdminService } from './money-admin.service.js';
+import { OverviewAdminService } from './overview-admin.service.js';
 import { PlatformAdminService } from './platform-admin.service.js';
 import { ReportsAdminService } from './reports-admin.service.js';
 import { RoomsAdminService } from './rooms-admin.service.js';
@@ -42,6 +54,9 @@ export class AdminController {
     private readonly reports: ReportsAdminService,
     private readonly rooms: RoomsAdminService,
     private readonly platform: PlatformAdminService,
+    private readonly overviewService: OverviewAdminService,
+    private readonly moneyService: MoneyAdminService,
+    private readonly auditLog: AuditAdminService,
   ) {}
 
   /** Accounts, newest first (50), by name or @handle and a filter. */
@@ -169,5 +184,43 @@ export class AdminController {
   @ApiOkResponse({ standardSchema: ModerationSchema })
   removeWord(@Session() session: UserSession, @Param('word', { schema: z.string().max(60) }) word: string): Promise<Moderation> {
     return this.platform.removeWord(session.user.id, word);
+  }
+
+  /** How Connecta is doing now: numbers, the health strip, urgent reports, the latest actions. */
+  @Get('overview')
+  @ApiOkResponse({ standardSchema: AdminOverviewSchema })
+  overview(@Session() session: UserSession): Promise<AdminOverview> {
+    return this.overviewService.overview(session.user.id);
+  }
+
+  /** What Plus brings in, how people pay, every payment (newest 100). */
+  @Get('money')
+  @ApiOkResponse({ standardSchema: AdminMoneySchema })
+  money(
+    @Session() session: UserSession,
+    @Query({ schema: AdminMoneyQuerySchema }) query: z.infer<typeof AdminMoneyQuerySchema>,
+  ): Promise<AdminMoney> {
+    return this.moneyService.money(session.user.id, query.filter);
+  }
+
+  /** Give a payment back, for a real mistake: emailed, in the audit log. */
+  @Post('money/payments/:id/refund')
+  @HttpCode(204)
+  refund(
+    @Session() session: UserSession,
+    @Param('id', { schema: z.string().max(64) }) id: string,
+    @Body({ schema: RefundBodySchema }) body: z.infer<typeof RefundBodySchema>,
+  ): Promise<void> {
+    return this.moneyService.refund(session.user.id, id, body.reason);
+  }
+
+  /** Every team action and automatic step, newest first, 100 at a time. */
+  @Get('audit')
+  @ApiOkResponse({ standardSchema: AuditListSchema })
+  auditEntries(
+    @Session() session: UserSession,
+    @Query({ schema: AuditQuerySchema }) query: z.infer<typeof AuditQuerySchema>,
+  ): Promise<AuditList> {
+    return this.auditLog.list(session.user.id, query);
   }
 }

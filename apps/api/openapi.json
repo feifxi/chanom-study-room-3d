@@ -3766,6 +3766,140 @@
         ]
       }
     },
+    "/api/admin/overview": {
+      "get": {
+        "operationId": "AdminController_overview",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOverview"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/money": {
+      "get": {
+        "operationId": "AdminController_money",
+        "parameters": [
+          {
+            "name": "filter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "refunded",
+                "gifts"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMoney"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/money/payments/{id}/refund": {
+      "post": {
+        "operationId": "AdminController_refund",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/audit": {
+      "get": {
+        "operationId": "AdminController_auditEntries",
+        "parameters": [
+          {
+            "name": "who",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "team",
+                "auto"
+              ]
+            }
+          },
+          {
+            "name": "before",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/notifications": {
       "get": {
         "operationId": "NotificationsController_list",
@@ -7644,6 +7778,356 @@
         "required": [
           "word"
         ]
+      },
+      "AdminOverview": {
+        "type": "object",
+        "properties": {
+          "stats": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                },
+                "note": {
+                  "type": "string"
+                },
+                "warn": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "label",
+                "value",
+                "note",
+                "warn"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "health": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "ok",
+                    "warn",
+                    "down"
+                  ]
+                },
+                "detail": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "status",
+                "detail"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "urgent": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "reasons": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "where": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "reporters": {
+                  "type": "number"
+                },
+                "lastAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "kind",
+                "name",
+                "reasons",
+                "where",
+                "reporters",
+                "lastAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "latest": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditRow"
+            }
+          }
+        },
+        "required": [
+          "stats",
+          "health",
+          "urgent",
+          "latest"
+        ],
+        "additionalProperties": false
+      },
+      "AuditRow": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          },
+          "by": {
+            "nullable": true,
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "targetKind": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "details": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "at",
+          "by",
+          "action",
+          "targetKind",
+          "target",
+          "reason",
+          "details"
+        ],
+        "additionalProperties": false
+      },
+      "AdminMoney": {
+        "type": "object",
+        "properties": {
+          "stats": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                },
+                "note": {
+                  "type": "string"
+                },
+                "warn": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "label",
+                "value",
+                "note",
+                "warn"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "mix": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "plan": {
+                  "type": "string"
+                },
+                "people": {
+                  "type": "number"
+                },
+                "mrr": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "plan",
+                "people",
+                "mrr"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminPayment"
+            }
+          },
+          "stripe": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "stats",
+          "mix",
+          "payments",
+          "stripe"
+        ],
+        "additionalProperties": false
+      },
+      "AdminPayment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          },
+          "who": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "handle": {
+                "nullable": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "handle"
+            ],
+            "additionalProperties": false
+          },
+          "what": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "paid",
+              "refunded"
+            ]
+          },
+          "refund": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              },
+              "by": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "reason",
+              "at",
+              "by"
+            ],
+            "additionalProperties": false
+          },
+          "refundable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "at",
+          "who",
+          "what",
+          "method",
+          "amount",
+          "status",
+          "refund",
+          "refundable"
+        ],
+        "additionalProperties": false
+      },
+      "RefundBody": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "Charged twice",
+              "Renewed by mistake (within 48 h)",
+              "A bug on our side",
+              "Something else"
+            ]
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "AuditList": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditRow"
+            }
+          },
+          "more": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "entries",
+          "more"
+        ],
+        "additionalProperties": false
       },
       "Inbox": {
         "type": "object",

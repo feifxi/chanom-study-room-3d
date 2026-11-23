@@ -661,3 +661,17 @@ Use the Demo tab → Your Plus (it runs the reminders at once); check the 🔔 i
 - [ ] Switch **Word filter** off: rude words show as typed everywhere (switch it back on). Switch
       **Report steps** off: 3 reports in 10 minutes no longer mute anyone, but the case shows in
       Reports. **Picture check** says whether the OpenAI key is set.
+
+### Admin site, part 4: Overview, Money, Audit log
+
+- [ ] Overview: the six numbers match what's going on (open the app in another browser: Online
+      now goes up within 30 s; walk into a room: In rooms now). An urgent report shows under
+      **Needs you** and opens it in Reports.
+- [ ] The health strip: everything green with `pnpm dev` running; stop the game server (or
+      LiveKit) and it turns red within 30 s. Picture check and Payments say when keys are missing.
+- [ ] Money: pay for Plus with the local stand-in (or Stripe test mode): the payment shows, Paid this
+      month and How Plus members pay change. **Refund…** → a reason: the payment shows refunded
+      with who and why, the person gets an email, their Plus is unchanged. With Stripe keys, the
+      refund shows in Stripe's dashboard. A gift has no Refund button.
+- [ ] Audit log: every action from the other admin pages is there with who, what, on whom and why;
+      **Team** and **Auto** filter it (report steps are Auto); **Older** loads more.

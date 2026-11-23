@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, type Schemas } from '@/lib/api/client';
 
 export type AdminAccount = Schemas['AdminAccount'];
@@ -151,5 +151,54 @@ export function useModerationChange() {
           ? ok(await api.POST('/api/admin/moderation/words', { body: { word: v.add } }))
           : ok(await api.DELETE('/api/admin/moderation/words/{word}', { params: { path: { word: v.remove } } })),
     onSuccess: (data) => client.setQueryData(MODERATION_KEY, data),
+  });
+}
+
+// ── Overview, Money, Audit log (part 4) ──────────────────────────────────────────────────────
+
+export type AdminOverview = Schemas['AdminOverview'];
+export type AuditRow = Schemas['AuditRow'];
+export type AdminMoney = Schemas['AdminMoney'];
+export type AdminPayment = Schemas['AdminPayment'];
+export type RefundReason = Schemas['RefundBody']['reason'];
+export type PaymentFilter = 'all' | 'refunded' | 'gifts';
+
+export function useAdminOverview() {
+  return useQuery({
+    queryKey: ['admin', 'overview'],
+    queryFn: async () => ok(await api.GET('/api/admin/overview')),
+    refetchInterval: 30_000,
+  });
+}
+
+const MONEY_KEY = ['admin', 'money'] as const;
+
+export function useAdminMoney(filter: PaymentFilter) {
+  return useQuery({
+    queryKey: [...MONEY_KEY, filter],
+    queryFn: async () => ok(await api.GET('/api/admin/money', { params: { query: { filter } } })),
+    placeholderData: (previous) => previous,
+  });
+}
+
+/** Give a payment back: emailed, in the audit log */
+export function useRefund() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (v: { id: string; reason: RefundReason }) => {
+      const res = await api.POST('/api/admin/money/payments/{id}/refund', { params: { path: { id: v.id } }, body: { reason: v.reason } });
+      if (res.error !== undefined || !res.response.ok) throw res.error ?? new Error(`${res.response.status}`);
+    },
+    onSuccess: () => void client.invalidateQueries({ queryKey: MONEY_KEY }),
+  });
+}
+
+/** The audit log, 100 at a time, newest first */
+export function useAuditLog(who: 'all' | 'team' | 'auto') {
+  return useInfiniteQuery({
+    queryKey: ['admin', 'audit', who],
+    queryFn: async ({ pageParam }) => ok(await api.GET('/api/admin/audit', { params: { query: { who, before: pageParam } } })),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => (last.more ? last.entries[last.entries.length - 1]?.id : undefined),
   });
 }

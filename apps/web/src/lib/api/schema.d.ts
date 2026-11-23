@@ -1524,6 +1524,70 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/admin/overview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AdminController_overview'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/money': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AdminController_money'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/money/payments/{id}/refund': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AdminController_refund'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/audit': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AdminController_auditEntries'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/notifications': {
     parameters: {
       query?: never;
@@ -2499,6 +2563,83 @@ export interface components {
     };
     WordBody: {
       word: string;
+    };
+    AdminOverview: {
+      stats: {
+        label: string;
+        value: string;
+        note: string;
+        warn: boolean;
+      }[];
+      health: {
+        name: string;
+        /** @enum {string} */
+        status: 'ok' | 'warn' | 'down';
+        detail: string;
+      }[];
+      urgent: {
+        key: string;
+        kind: string;
+        name: string;
+        reasons: string[];
+        where: string | null;
+        reporters: number;
+        lastAt: string;
+      }[];
+      latest: components['schemas']['AuditRow'][];
+    };
+    AuditRow: {
+      id: string;
+      at: string;
+      by: string | null;
+      action: string;
+      targetKind: string;
+      target: string;
+      reason: string;
+      details: string | null;
+    };
+    AdminMoney: {
+      stats: {
+        label: string;
+        value: string;
+        note: string;
+        warn: boolean;
+      }[];
+      mix: {
+        plan: string;
+        people: number;
+        mrr: number;
+      }[];
+      payments: components['schemas']['AdminPayment'][];
+      stripe: boolean;
+    };
+    AdminPayment: {
+      id: string;
+      at: string;
+      who: {
+        id: string;
+        name: string;
+        handle: string | null;
+      } | null;
+      what: string;
+      method: string;
+      amount: number;
+      /** @enum {string} */
+      status: 'paid' | 'refunded';
+      refund: {
+        reason: string;
+        at: string;
+        by: string;
+      } | null;
+      refundable: boolean;
+    };
+    RefundBody: {
+      /** @enum {string} */
+      reason: 'Charged twice' | 'Renewed by mistake (within 48 h)' | 'A bug on our side' | 'Something else';
+    };
+    AuditList: {
+      entries: components['schemas']['AuditRow'][];
+      more: boolean;
     };
     Inbox: {
       items: components['schemas']['Notification'][];
@@ -5142,6 +5283,91 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['Moderation'];
+        };
+      };
+    };
+  };
+  AdminController_overview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminOverview'];
+        };
+      };
+    };
+  };
+  AdminController_money: {
+    parameters: {
+      query?: {
+        filter?: 'all' | 'refunded' | 'gifts';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminMoney'];
+        };
+      };
+    };
+  };
+  AdminController_refund: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RefundBody'];
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_auditEntries: {
+    parameters: {
+      query?: {
+        who?: 'all' | 'team' | 'auto';
+        before?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AuditList'];
         };
       };
     };

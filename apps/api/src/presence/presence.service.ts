@@ -163,6 +163,29 @@ export class PresenceService implements OnModuleDestroy {
     return (await this.inside(roomId)).length;
   }
 
+  /**
+   * Everyone online now and where (the admin site's Overview), before privacy. Walks every open tab
+   * in Redis: fine at today's size; a counter kept by the gateway would replace it later.
+   */
+  async everyone(now = Date.now()): Promise<{ online: number; rooms: Map<string, number> }> {
+    let cursor = '0';
+    const ids: string[] = [];
+    do {
+      const [next, keys] = await this.redis.scan(cursor, 'MATCH', key.tabs('*'), 'COUNT', 500);
+      cursor = next;
+      ids.push(...keys.map((k) => k.slice(key.tabs('').length)));
+    } while (cursor !== '0');
+    const states = await Promise.all(ids.map((id) => this.raw(id, now)));
+    const rooms = new Map<string, number>();
+    let online = 0;
+    for (const st of states) {
+      if (st.status === 'offline') continue;
+      online++;
+      if (st.roomId) rooms.set(st.roomId, (rooms.get(st.roomId) ?? 0) + 1);
+    }
+    return { online, rooms };
+  }
+
   /** The room someone's in, before privacy (for "Ask to join"). */
   async roomOf(userId: string, now = Date.now()): Promise<string | null> {
     return (await this.raw(userId, now)).roomId;

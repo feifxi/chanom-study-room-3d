@@ -185,3 +185,86 @@ export const ModerationBodySchema = z
 export const WordBodySchema = z
   .object({ word: z.string().trim().toLowerCase().min(2, 'At least 2 characters').max(60) })
   .meta({ id: 'WordBody' });
+
+// ── Overview, Money, Audit log (part 4) ──────────────────────────────────────────────────────
+
+const StatSchema = z.object({ label: z.string(), value: z.string(), note: z.string(), warn: z.boolean() });
+
+export const AuditRowSchema = z
+  .object({
+    id: z.string(),
+    at: z.string(),
+    /** The team member's name, or null for an automatic step */
+    by: z.string().nullable(),
+    /** "account.suspend", "room.close", "report.warn", "setting.word_add"… */
+    action: z.string(),
+    targetKind: z.string(),
+    /** Who or what, as a person reads it: "Jod @jod.dev", "Chanom Friends", "the word list" */
+    target: z.string(),
+    reason: z.string(),
+    details: z.string().nullable(),
+  })
+  .meta({ id: 'AuditRow' });
+export type AuditRow = z.infer<typeof AuditRowSchema>;
+
+export const AdminOverviewSchema = z
+  .object({
+    stats: z.array(StatSchema),
+    health: z.array(z.object({ name: z.string(), status: z.enum(['ok', 'warn', 'down']), detail: z.string() })),
+    /** The urgent open report cases, oldest first */
+    urgent: z.array(
+      z.object({
+        key: z.string(),
+        kind: z.string(),
+        name: z.string(),
+        reasons: z.array(z.string()),
+        where: z.string().nullable(),
+        reporters: z.number(),
+        lastAt: z.string(),
+      }),
+    ),
+    latest: z.array(AuditRowSchema),
+  })
+  .meta({ id: 'AdminOverview' });
+export type AdminOverview = z.infer<typeof AdminOverviewSchema>;
+
+export const REFUND_REASONS = ['Charged twice', 'Renewed by mistake (within 48 h)', 'A bug on our side', 'Something else'] as const;
+export const PAYMENT_FILTERS = ['all', 'refunded', 'gifts'] as const;
+
+export const AdminPaymentSchema = z
+  .object({
+    id: z.string(),
+    at: z.string(),
+    who: z.object({ id: z.string(), name: z.string(), handle: z.string().nullable() }).nullable(),
+    what: z.string(),
+    method: z.string(),
+    amount: z.number(),
+    status: z.enum(['paid', 'refunded']),
+    refund: z.object({ reason: z.string(), at: z.string(), by: z.string() }).nullable(),
+    /** Gifts can't be refunded once received */
+    refundable: z.boolean(),
+  })
+  .meta({ id: 'AdminPayment' });
+export type AdminPayment = z.infer<typeof AdminPaymentSchema>;
+
+export const AdminMoneySchema = z
+  .object({
+    stats: z.array(StatSchema),
+    /** Active plans by plan and method; monthly revenue counts a yearly plan over 12 months */
+    mix: z.array(z.object({ plan: z.string(), people: z.number(), mrr: z.number() })),
+    payments: z.array(AdminPaymentSchema),
+    /** false: the local stand-in takes payments, so a refund only marks the payment */
+    stripe: z.boolean(),
+  })
+  .meta({ id: 'AdminMoney' });
+export type AdminMoney = z.infer<typeof AdminMoneySchema>;
+export const AdminMoneyQuerySchema = z.object({ filter: z.enum(PAYMENT_FILTERS).optional() });
+export const RefundBodySchema = z.object({ reason: z.enum(REFUND_REASONS) }).meta({ id: 'RefundBody' });
+
+export const AuditQuerySchema = z.object({
+  who: z.enum(['all', 'team', 'auto']).optional(),
+  /** An entry's id: the page after it (older) */
+  before: z.string().max(64).optional(),
+});
+export const AuditListSchema = z.object({ entries: z.array(AuditRowSchema), more: z.boolean() }).meta({ id: 'AuditList' });
+export type AuditList = z.infer<typeof AuditListSchema>;

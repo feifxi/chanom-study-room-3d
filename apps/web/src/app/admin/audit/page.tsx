@@ -1,23 +1,29 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { AdminTitle, Pill } from '@/features/admin/AdminFrame';
-import { AUDIT } from '@/features/admin/adminData';
+import { actionLabel, whenShort } from '@/features/admin/auditLabels';
+import { useAuditLog } from '@/features/admin/useAdmin';
 
-/** Who did what: every team action and every automatic step, kept for a year. Read-only. */
+/** Who did what: every team action and every automatic step, newest first. Read-only. */
 export default function AuditPage() {
-  const [who, setWho] = useState<'All' | 'Team' | 'Auto'>('All');
-  const shown = AUDIT.filter((a) => who === 'All' || (who === 'Auto' ? a.who === 'Auto' : a.who !== 'Auto'));
+  const [who, setWho] = useState<'all' | 'team' | 'auto'>('all');
+  const log = useAuditLog(who);
+  const entries = log.data?.pages.flatMap((p) => p.entries) ?? [];
   return (
     <div className="mx-auto max-w-5xl p-5 sm:p-8">
-      <AdminTitle title="Audit log" note="Every team action and automatic step. Kept for a year; nobody can edit it.">
+      <AdminTitle title="Audit log" note="Every team action and automatic step. Nobody can edit it.">
         <div className="flex gap-1 rounded-full bg-muted p-1">
-          {(['All', 'Team', 'Auto'] as const).map((w) => (
+          {(['all', 'team', 'auto'] as const).map((w) => (
             <button
               key={w}
               onClick={() => setWho(w)}
-              className={cn('rounded-full px-3 py-1 text-xs font-extrabold', who === w ? 'bg-card shadow-sm' : 'text-muted-foreground')}
+              className={cn(
+                'rounded-full px-3 py-1 text-xs font-extrabold capitalize',
+                who === w ? 'bg-card shadow-sm' : 'text-muted-foreground',
+              )}
             >
               {w}
             </button>
@@ -36,20 +42,34 @@ export default function AuditPage() {
             </tr>
           </thead>
           <tbody>
-            {shown.map((a) => (
-              <tr key={a.at + a.target + a.action} className="border-b last:border-0">
-                <td className="px-3 py-2 text-xs whitespace-nowrap">{a.at}</td>
+            {entries.map((a) => (
+              <tr key={a.id} className="border-b align-top last:border-0">
+                <td className="px-3 py-2 text-xs whitespace-nowrap">{whenShort(a.at)}</td>
                 <td className="px-3 py-2">
-                  <Pill tone={a.who === 'Auto' ? 'info' : 'muted'}>{a.who}</Pill>
+                  <Pill tone={a.by ? 'muted' : 'info'}>{a.by ?? 'Auto'}</Pill>
                 </td>
-                <td className="px-3 py-2 font-bold">{a.action}</td>
+                <td className="px-3 py-2 font-bold">
+                  {actionLabel(a.action)}
+                  {a.details && <span className="block text-xs font-normal text-muted-foreground">{a.details}</span>}
+                </td>
                 <td className="px-3 py-2">{a.target}</td>
-                <td className="px-3 py-2 text-xs text-muted-foreground">{a.reason ?? '·'}</td>
+                <td className="px-3 py-2 text-xs text-muted-foreground">{a.reason || '·'}</td>
               </tr>
             ))}
           </tbody>
         </table>
+        {log.data && !entries.length && <p className="py-8 text-center text-sm text-muted-foreground">Nothing yet.</p>}
       </div>
+      {log.hasNextPage && (
+        <Button
+          variant="outline"
+          disabled={log.isFetchingNextPage}
+          className="mt-3 rounded-full font-bold"
+          onClick={() => void log.fetchNextPage()}
+        >
+          Older
+        </Button>
+      )}
     </div>
   );
 }

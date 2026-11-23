@@ -450,6 +450,11 @@ decision is made or changed: one line, a date, and the reason.
   stops sign-in and signs the person out everywhere at once; signing in shows until when, the reason,
   and "reply to our email to appeal" (a ban has no end). The word list moves into the database, with
   the API and the game server each keeping a copy refreshed when the team edits it.
+- **A refund gives money back and leaves Plus alone** (2026-11-24): refunds are for real mistakes
+  (spec 15), and in most (charged twice, a bug) the person keeps the Plus they meant to have; for a
+  renewal asked about in time, the person cancels from their Plus page as usual. Stripe refunds
+  first, so a refused refund changes nothing here. The Money numbers are what the database knows:
+  the server bill and failed renewals aren't tracked yet, so they aren't shown.
 - **Platform settings in the database, shared through Redis** (2026-11-24): the word list, the
   moderation switches and the Common room seats are edited on the admin site, so they left the
   code. The API holds the truth and hands the whole set to Redis on every change; each API process

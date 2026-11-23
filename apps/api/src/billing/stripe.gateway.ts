@@ -128,6 +128,29 @@ export class StripeGateway {
     await this.need().subscriptions.update(subscriptionId, { cancel_at_period_end: cancel });
   }
 
+  /**
+   * Gives a payment back (admin site → Money). The payment's ref is a checkout session (a first
+   * payment, or PromptPay) or an invoice (a card renewal); the refund goes to what was charged.
+   */
+  async refund(ref: string) {
+    const stripe = this.need();
+    let invoice: string | null = ref.startsWith('in_') ? ref : null;
+    let intent: string | null = null;
+    if (ref.startsWith('cs_')) {
+      const session = await stripe.checkout.sessions.retrieve(ref);
+      intent = idOf(session.payment_intent);
+      invoice = intent ? null : idOf(session.invoice);
+    }
+    let charge: string | null = null;
+    if (invoice) {
+      const paid = (await stripe.invoicePayments.list({ invoice, status: 'paid', limit: 1 })).data[0];
+      intent = idOf(paid?.payment.payment_intent);
+      charge = idOf(paid?.payment.charge);
+    }
+    if (!intent && !charge) throw new Error(`Nothing to refund for ${ref}`);
+    await stripe.refunds.create(intent ? { payment_intent: intent } : { charge: charge! });
+  }
+
   /** Checks the webhook's signature (a forged notice throws) */
   event(raw: Buffer, signature: string): StripeEvent {
     if (!this.webhookSecret) throw new Error('No STRIPE_WEBHOOK_SECRET');
@@ -139,3 +162,6 @@ export class StripeGateway {
     return this.stripe;
   }
 }
+
+/** Stripe fields hold an id or the expanded object */
+const idOf = (v: string | { id: string } | null | undefined) => (typeof v === 'string' ? v : (v?.id ?? null));

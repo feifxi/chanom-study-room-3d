@@ -759,3 +759,35 @@ Common room, where the banner showed. Checked at phone width. Undone afterwards.
       those shown.
 - [ ] **The mock lists the new pages replaced** (`ADMIN_ROOMS`, `WORDS`, the Common copies in
       `lib/mock.ts`) are still in the web app; part 4 can clear `adminData.ts`.
+
+### Admin site, part 4: Overview, Money, Audit log
+
+**Changed:** the API's Overview (numbers from presence and the database, a health strip that asks
+each part with a 2 s limit, urgent cases, latest actions), Money (revenue, fees at spec 15's rates,
+how members pay, payments) with refunds (`StripeGateway.refund`, `payments.refunded_at`, the
+reason, an email, the audit log) and the Audit log list (100 at a time, names resolved);
+`PresenceService.everyone`; `GAME_URL`, `LIVEKIT_URL` and `GATEWAY_URL` in the API's config. The
+web Overview, Money and Audit log pages are real, and the demo's admin mock data is gone from
+`apps/web`. **The admin site is done; so is step 5**, but for the map editor.
+
+**Bugs found and fixed while building:**
+
+- "1 Plus payments this week" and "1 payments" now read in the singular.
+
+A headless run with Mai on the team and test payments and a report in the local database: the
+Overview showed the urgent report and every health light green (the picture check and payments amber
+without keys); Money showed the numbers, and refunding one payment marked it refunded with "by Mai",
+emailed Ken and put the refund in the Audit log. Checked at phone width. Removed afterwards. The
+Stripe refund itself is untested: there are no test keys yet.
+
+**Open:**
+
+- [ ] **The Stripe refund hasn't run against Stripe** (no test keys yet); only the local stand-in path
+      is tested.
+- [ ] **Money doesn't show the server bill or failed renewals**: neither is tracked (failed renewals
+      need Stripe's `invoice.payment_failed` webhook).
+- [ ] **Online now walks every open tab in Redis** (a SCAN): fine now, slow with many people; a counter
+      kept by the gateway would replace it.
+- [ ] **The health strip has no history or alerts**: that's the monitoring server's job (spec 15).
+- [ ] **A refund doesn't touch Plus**, as decided; if a refunded renewal should also end Plus, the
+      person cancels it themselves for now.

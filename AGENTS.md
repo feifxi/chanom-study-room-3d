@@ -44,11 +44,11 @@ are done (the round flow, chess, Slave, the whiteboard, Pick a Side and Draw & G
 server). **Coins and quests** are done (quests, coins, the Shop's first set and pets). **Plus** is done
 (Plus on the account and limits, paying with Stripe or a local stand-in until the owner adds test
 keys, Gift Plus, and when Plus ends). **Moderation with Common and open rooms** is done (Common
-rooms, the word filter, reports, team accounts in Common rooms). Next is **the admin site**, the last
-feature of step 5, in four parts (agreed 2026-11-24): part 1 (the gate, Users, account actions and the
-audit log), part 2 (the reports queue) and part 3 (Rooms, Common rooms, Moderation with the word list in
-the database) are done; next is part 4, Overview, Money and the Audit log page. The map editor waits for the Blender work, which starts with the Library, the one
-main map (the Café and Rooftop are temporary demo maps).
+rooms, the word filter, reports, team accounts in Common rooms). **The admin site** is done (the gate and Users, Reports, Rooms, Common
+rooms and Moderation with settings in the database, Overview, Money and the Audit log). **Step 5 is
+done**, except the map editor, which waits for the Blender work (it starts with the Library, the one
+main map; the Café and Rooftop are temporary demo maps). Next is **step 6, the seed**: one fill of
+all the data for the owner to test with; agree what it holds with the owner first.
 Steps 1–4 are done: the skeleton; accounts and rooms; the gateway
 (friends, chat, pictures, DMs, presence and the 🔔 inbox); walking in a room (the Colyseus game
 server `apps/game` with movement, capacity and live room changes, bubbles, Away, the people list,

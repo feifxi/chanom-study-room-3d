@@ -69,3 +69,18 @@ export function roomMail(to: string, kind: RoomActionKind, roomName: string, rea
 </div>`,
   };
 }
+
+/** A payment given back by the Connecta team (admin site → Money) */
+export function refundMail(to: string, what: string, amount: number, reason: string): Mail {
+  const line = `We refunded ฿${amount} for ${what}. It can take 5–10 days to show on your card or account.`;
+  return {
+    to,
+    subject: `We refunded ฿${amount} to you`,
+    text: [line, `Reason: ${reason}`, 'Questions? Reply to this email.'].join('\n\n'),
+    html: `<div style="font-family:system-ui,sans-serif;max-width:460px;margin:auto;padding:24px">
+  <p style="font-size:16px">${esc(line)}</p>
+  <p style="font-size:15px"><b>Reason:</b> ${esc(reason)}</p>
+  <p style="color:#666;font-size:13px">Questions? Reply to this email.</p>
+</div>`,
+  };
+}

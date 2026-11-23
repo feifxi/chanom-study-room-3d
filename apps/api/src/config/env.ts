@@ -23,6 +23,11 @@ export const envSchema = z
     /** Carries live events from the API to the gateway, and between gateways */
     REDIS_URL: z.url().default('redis://localhost:6379'),
 
+    /** Where the admin site's health strip asks the game server, LiveKit and the gateway if they're up */
+    GAME_URL: z.url().default('http://localhost:4002'),
+    LIVEKIT_URL: z.url().default('http://localhost:7880'),
+    GATEWAY_URL: z.url().default('http://localhost:4001'),
+
     /** Signs join tickets for the game server (apps/game has the same value): 32+ random characters */
     GAME_SECRET: z.string().min(32),
 

@@ -1,8 +1,9 @@
 # 14. Common rooms, open rooms and moderation
 
 **Status:** decided and built in the demo; in `apps/` in four parts (2026-11-24): Common rooms
-(done), the word filter, reports, team accounts in Common rooms (all done). Suspensions, bans and the admin
-site come after. **Try it:** http://localhost:3100 with the Demo tab's
+(done), the word filter, reports, team accounts in Common rooms (all done); then the admin site in
+four parts (all done 2026-11-24), with suspensions and bans. The map editor waits for the Blender
+work. **Try it:** http://localhost:3100 with the Demo tab's
 **View as**:
 
 - Discover → **Common rooms** → Cat Café → **Walk in**: you land in Mook's copy (a friend). Mic off,
@@ -222,6 +223,20 @@ switches the word filter (everywhere: masking and refusing), the report steps (r
 the team) and the picture check (and says whether `OPENAI_API_KEY` is set); `POST
 /api/admin/moderation/words` and `DELETE …/words/:word` edit our list. Limits (slow mode) have no
 switch, and the smarter text check isn't built.
+
+**Built so far (admin site, part 4):** `GET /api/admin/overview`: six numbers (online now and in
+rooms, from presence in Redis; open reports and how many urgent; sign-ups and under-18s in the last
+24 hours; Plus members; messages in the last 24 hours), a health strip (the database and Redis
+pinged, the game server, LiveKit and the gateway asked over HTTP at `GAME_URL`, `LIVEKIT_URL` and
+`GATEWAY_URL` with a 2 s limit; whether the picture check and Stripe have keys), the urgent cases
+and the latest six audit entries; the page refreshes every 30 s. `GET /api/admin/money?filter=all|
+refunded|gifts`: monthly revenue (plans that renew, a yearly one over 12 months), Plus members,
+paid this month, Stripe's fees estimated at spec 15's rates, gifts and refunds this month, how
+members pay, and the newest 100 payments. `POST /api/admin/money/payments/:id/refund { reason }`
+(one of four reasons): Stripe gives the money back first (the payment behind the checkout session or
+invoice; a local stand-in payment is only marked), then `payments.refunded_at`, the audit log and an
+email; Plus isn't changed, and gifts can't be refunded. `GET /api/admin/audit?who=all|team|auto`:
+100 entries at a time with names as they are now. The demo's admin mock data is gone from `apps/web`.
 
 - Common rooms: a `common_room_types` table (template, name, vibe) and copies as ordinary Colyseus
   rooms with `kind = 'common'`; the room sets the rules (no LiveKit publish grant for anyone, no

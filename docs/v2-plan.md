@@ -5,7 +5,7 @@ communities hang out, study and play together. This page is the overview: status
 what each feature is, and what's left. The details are in one spec per feature
 (`docs/v2/features/`), the reasons in [decisions.md](v2/decisions.md).
 
-## Status (2026-11-23)
+## Status (2026-11-24)
 
 - Features 1–12, 14 and 15 are decided and built in `demo/`, a frontend-only prototype with mock
   data ([demo guide](v2/demo-guide.md)). 13 was dropped.
@@ -14,7 +14,8 @@ what each feature is, and what's left. The details are in one spec per feature
 - **The real app is being built fresh** in `apps/` and `packages/` (V1 was removed from `main`;
   it's at tag `v1.0.0`). Steps 1 and 2 (the skeleton; accounts and rooms) are done; step 3, the
   gateway, is done too; so is step 4, walking in a room (all five parts). Step 5, the rest of the
-  features one at a time, has started with focus (parts 1 and 2 of 3 done). Nothing is deployed.
+  features one at a time, is done: every feature is on the API, except the map editor, which waits
+  for the Blender work. Next is step 6, the seed. Nothing is deployed.
 
 | #   | Feature                                 | Status  | Spec                                                                   |
 | --- | --------------------------------------- | ------- | ---------------------------------------------------------------------- |
@@ -128,7 +129,8 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
      Remove for an hour). **Moderation is done.** Suspensions and bans come with the admin site.
    - **The admin site**, in parts (agreed 2026-11-24): ~~the gate, Users, account actions (warn,
      suspend, ban, lift, reset name) and the audit log~~ done 2026-11-24; ~~Reports~~ done 2026-11-24; ~~Rooms, Common rooms and Moderation~~ done 2026-11-24
-     (the word list moves into the database); Overview, Money and the Audit log page. **The map editor
+     (the word list moves into the database); ~~Overview, Money and the Audit log page~~ done
+     2026-11-24 (a health strip, refunds through Stripe). **The admin site is done.** **The map editor
      waits for the Blender work** ([why](v2/decisions.md#in-the-3d-room)).
 6. **The seed:** one fill of all the data (people, rooms, members, friends, DMs…) for testing the
    whole app ([why at the end](v2/decisions.md#engineering-and-infra)).

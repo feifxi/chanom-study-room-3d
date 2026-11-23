@@ -167,6 +167,6 @@ export class AccountsAdminService {
 }
 
 /** Born on or before this day: 18 or older now */
-function adultBornBy(now: Date) {
+export function adultBornBy(now: Date) {
   return new Date(Date.UTC(now.getUTCFullYear() - 18, now.getUTCMonth(), now.getUTCDate()));
 }
