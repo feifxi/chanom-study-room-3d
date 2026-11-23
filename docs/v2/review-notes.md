@@ -577,7 +577,7 @@ her, and a signed-out visitor picked a name and walked in as a guest: three in C
 - [ ] **A Common copy's look is the map's default** and the 3D room still takes the mock
       `PUBLIC_SERVER` shape, with the copy as its one room.
 
-### Moderation, part 2: the word filter
+### Moderation, part 2: the word filter (`d1006b3`)
 
 **Changed:** `@connecta/shared/moderate` holds the filter (`obscenity`'s English set, our own list
 with Thai). The API masks room chat (following the room's Filter words), DMs and edits, and refuses
