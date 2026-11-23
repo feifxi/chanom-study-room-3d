@@ -638,7 +638,7 @@ everyone" → the report was stored with the message, the room's name and counte
 - [ ] **The muted person isn't told why**: they see the usual "You're timed out", like a mod's
       timeout.
 
-### Moderation, part 4: team accounts in Common rooms
+### Moderation, part 4: team accounts in Common rooms (`c90b71d`)
 
 **Changed:** a `team` flag on users, set by `pnpm --filter @connecta/api team <handle> [off]` and in
 `/api/me`. Team accounts get a "Connecta team" chip in Common rooms (the ticket and the game
