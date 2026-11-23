@@ -12,11 +12,12 @@ let stream: MediaStream | null = null;
 export const myShareStream = () => stream;
 
 /** Ask the browser for a screen, tab or window. Null when the person cancels or the browser refuses. */
-export async function startMyShare(onEnded: () => void): Promise<{ audio: boolean } | null> {
+/** `height`: the room's plan (720p, 1080p when its owner has Plus) */
+export async function startMyShare(onEnded: () => void, height = 720): Promise<{ audio: boolean } | null> {
   stopMyShare();
   try {
     // `systemAudio` is a newer Chrome option (whole-screen sound on Windows); other browsers ignore it
-    const options = { video: true, audio: true, systemAudio: 'include' } as DisplayMediaStreamOptions;
+    const options = { video: { height: { ideal: height, max: height } }, audio: true, systemAudio: 'include' } as DisplayMediaStreamOptions;
     const s = await navigator.mediaDevices.getDisplayMedia(options);
     stream = s;
     // The browser's own "Stop sharing" bar ends the share too

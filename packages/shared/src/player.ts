@@ -31,6 +31,8 @@ export interface PlayerView {
   focusSince: number;
   /** Minutes of focus rounds they finished in this room since it opened (in memory; guests too) */
   todayMin: number;
+  /** Has Connecta Plus: an animated name tag (optional for the demo's mock players) */
+  plus?: boolean;
   typing: boolean;
   /** Talk to everyone (owner and mods): heard everywhere, and bubbles reach private zones */
   stage: boolean;

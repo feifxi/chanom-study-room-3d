@@ -38,13 +38,15 @@ export const ROOM_LANGUAGES = ['Thai', 'English', 'Japanese', 'Korean', 'Chinese
 export const DEFAULT_ROOM_RULES = '1. Be kind, no drama.\n2. Quiet at the study tables; chat in the lounge.\n3. No spam or selling.';
 
 /**
- * One subscription, Connecta Plus; a room follows its owner's plan. Members grow with capacity
- * (about 6 per spot inside), so a room never has far more members than could ever fit. `rooms` is
- * how many rooms one person can be a member of.
+ * One subscription, Connecta Plus (spec 15). The numbers wait on the playtest, so they all live here.
+ * A room follows its owner's plan (`capacity`, `members`, Big maps, `shareHeight` for screen
+ * shares); the rest follow your own (`owns`: rooms you can make, `rooms`: rooms you can be in,
+ * `uploadMb`, the animated name tag). Members grow with capacity (about 6 per spot inside), so a
+ * room never has far more members than could ever fit.
  */
 export const ROOM_PLANS = {
-  free: { capacity: 25, members: 150, rooms: 100 },
-  plus: { capacity: 100, members: 1000, rooms: 200 },
+  free: { capacity: 25, members: 150, rooms: 100, owns: 10, uploadMb: 10, shareHeight: 720 },
+  plus: { capacity: 100, members: 1000, rooms: 200, owns: 30, uploadMb: 50, shareHeight: 1080 },
 } as const;
 export const planOf = (plus: boolean) => ROOM_PLANS[plus ? 'plus' : 'free'];
 

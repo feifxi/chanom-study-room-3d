@@ -32,6 +32,7 @@ import type { LocalPlayerDriver } from '../room3d/LocalPlayerDriver';
 import { useFriendIds } from '@/features/friends/useFriends';
 import { useMutedForMe } from '@/features/voice/mutedForMe';
 import { useVoice } from '@/features/voice/useVoice';
+import { planOf } from '@connecta/shared';
 import { watchesShare } from '@connecta/shared/maps';
 import { MockRoom, type MockPerson } from '../room3d/mockRoom';
 import { LiveRoom } from '../room3d/liveRoom';
@@ -133,6 +134,8 @@ export default function RoomView({
   const router = useRouter();
   const serverId = server.id;
   const roomDef = server.rooms.find((r) => r.id === roomId) ?? server.rooms[0]!;
+  // Screen shares follow the room's plan: 1080p when its owner has Plus
+  const shareHeight = planOf(place?.ownerPlus ?? false).shareHeight;
   // `?guest=Name` from the invite page, or the Demo tab's "View as: Guest"
   const [guestAs] = useState(() => guestName ?? (isGuestViewer() ? (loadGuest()?.name ?? 'Guest') : null));
   const guest = guestAs !== null;
@@ -378,7 +381,7 @@ export default function RoomView({
   const startLiveShare = async (where: 'tv' | 'table') => {
     if (!(room instanceof LiveRoom)) return;
     if (room.state.players.get('me')?.hushed) return void toast('You can’t share your screen in this room right now');
-    const got = await startMyShare(stopLiveShare);
+    const got = await startMyShare(stopLiveShare, shareHeight);
     if (!got) return;
     setMyShare(myShareStream());
     room.setShare(where, got.audio);
@@ -460,7 +463,7 @@ export default function RoomView({
     setPuttingOn(false);
     setWatchMini(false);
     if (game) return void startLiveShare('tv');
-    const got = await startMyShare(() => hub.stopShare('me'));
+    const got = await startMyShare(() => hub.stopShare('me'), shareHeight);
     if (!got) return;
     hub.startShare({ by: 'me', audio: got.audio });
     if (!got.audio) toast('Sharing without sound. For sound, share a tab and tick “Share tab audio”');

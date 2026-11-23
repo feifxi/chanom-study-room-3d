@@ -1,10 +1,13 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
+import { useMe } from '@/features/account/useMe';
+import { api } from '@/lib/api/client';
 
 /**
- * Your Connecta Plus in the demo (feature 15). Stripe is mocked: the real app sends you to Stripe's
- * hosted Checkout and learns the result from a webhook; here the fake checkout page calls `subscribe`.
+ * Your Connecta Plus (feature 15). Whether you have it is real (the API's `plus` on your account);
+ * paying, cancelling, receipts and grace are still the demo's until Plus parts 2–4 (Stripe). Until
+ * then the fake checkout page and the Demo tab turn Plus on and off with the API's dev-only switch.
  *
  * States, switchable from the Demo tab:
  * - `active`: Plus, renewing by card, or by a PromptPay reminder
@@ -79,17 +82,34 @@ function subscribeStore(onChange: () => void) {
   return () => window.removeEventListener(EVENT, onChange);
 }
 
-export const usePlus = () =>
-  useSyncExternalStore(
+const formatDay = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+export function usePlus(): Billing {
+  const billing = useSyncExternalStore(
     subscribeStore,
     () => state,
     () => state,
   );
+  const { data: me } = useMe();
+  // Signed in: Plus on or off is the account's; the billing details are still the demo's
+  if (!me?.signedUp) return billing;
+  return {
+    ...billing,
+    state: me.plus ? (billing.state === 'cancelled' ? 'cancelled' : 'active') : billing.state === 'grace' ? 'grace' : 'free',
+    date: me.plusUntil ? formatDay(me.plusUntil) : billing.date,
+  };
+}
+
+/** Until Stripe (Plus part 2): Plus on or off for a month through the API's dev-only switch */
+function devPlus(on: boolean) {
+  void api.POST('/api/plus/dev', { body: { on } });
+}
 
 const today = '10 Nov 2026';
 
 /** After checkout succeeds (the webhook, in the real app). */
 export function subscribe(plan: PlanId, method: PayMethod) {
+  devPlus(true);
   const o = PLUS_PLANS[plan];
   set({
     state: 'active',
@@ -116,6 +136,7 @@ export const resumePlus = () => set({ state: 'active' });
 
 /** Demo tab: jump between the states. */
 export function setPlusState(s: PlusState) {
+  devPlus(s === 'active' || s === 'cancelled');
   set({ state: s, graceLeft: 5, date: s === 'cancelled' ? '13 Nov 2026' : state.date });
 }
 

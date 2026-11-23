@@ -47,6 +47,8 @@ model User {
   timeZone                 String    @default("UTC") @map("time_zone")
   /// Earned from daily quests, spent in the Shop; every change is a coin_entries row in the same transaction
   coins                    Int       @default(0)
+  /// Connecta Plus runs until then (null or past: Free). Payments and gifts move it on
+  plusUntil                DateTime? @map("plus_until")
   /// Listed on the Everyone focus ranking; null = the default for your age (on 18+, off under 18)
   showOnEveryone           Boolean?  @map("show_on_everyone")
   /// Settings → Notifications: no game invite cards while your focus timer runs

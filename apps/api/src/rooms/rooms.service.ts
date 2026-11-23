@@ -1,4 +1,5 @@
 import { randomInt } from 'node:crypto';
+import { hasPlus, planFor } from '../plus/plus.js';
 import { petsOf } from '../shop/pets.js';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import {
@@ -51,9 +52,6 @@ const randomCode = (length: number) => Array.from({ length }, () => CODE_CHARS[r
 const ROOM_ID_LENGTH = 10;
 const INVITE_CODE_LENGTH = 8;
 
-/** Connecta Plus isn't built yet (build step 5): every room and person is on the Free plan. */
-const OWNER_PLUS = false;
-
 const ROLE_ORDER: Record<RoomRole, number> = { owner: 0, mod: 1, member: 2 };
 
 /** What a room view needs: its owner and mods, your own membership, your request and guest pass, the counts. */
@@ -99,8 +97,13 @@ export class RoomsService {
   }
 
   async make(userId: string, input: { name: string; mapId: MapId }, now = new Date()): Promise<Room> {
-    await requireSignedUp(this.prisma, userId);
+    const user = await requireSignedUp(this.prisma, userId);
     await this.checkRoomLimit(userId);
+    // Rooms you can make: 10, 30 with Plus
+    const owns = await this.prisma.membership.count({ where: { userId, role: 'owner' } });
+    if (owns >= planFor(user, now).owns) {
+      throw new ConflictException({ code: 'too_many_owned', message: `You own ${owns} rooms; that’s the most on your plan` });
+    }
     const room = await this.prisma.room.create({
       data: {
         id: randomCode(ROOM_ID_LENGTH),
@@ -137,7 +140,7 @@ export class RoomsService {
       if (ownerOnly.length) throw new ForbiddenException(`Only the owner changes ${ownerOnly.join(', ')}`);
     }
     const room = await this.prisma.room.findUniqueOrThrow({ where: { id: roomId } });
-    const plus = OWNER_PLUS;
+    const plus = hasPlus(await this.ownerOf(roomId), now);
     const size = (input.size ?? room.size) as RoomSize;
     if (size === 'big' && !plus) throw new ForbiddenException({ code: 'plus_only', message: 'Big maps need the owner’s Plus' });
     const max = maxInside(plus, size);
@@ -372,7 +375,7 @@ export class RoomsService {
     const role: PlayerRole | null = member ? member.role : guest && guest.until > now ? 'guest' : null;
     if (!role) throw new NotFoundException();
     const person = toPerson(user);
-    const max = maxInside(OWNER_PLUS, room.size as RoomSize);
+    const max = maxInside(hasPlus(await this.ownerOf(roomId), now), room.size as RoomSize);
     const ticket = await this.game.ticket({
       sub: userId,
       roomId,
@@ -386,6 +389,7 @@ export class RoomsService {
       guestVoice: room.guestVoice,
       roomWideGames: room.roomWideGames,
       pets: await petsOf(this.prisma, userId),
+      plus: hasPlus(user, now),
     });
     return { ticket, place: roomId };
   }
@@ -630,8 +634,9 @@ export class RoomsService {
   }
 
   private toRoom(room: RoomRow, userId: string, now: Date): Room {
-    const plus = OWNER_PLUS;
     const owner = room.members.find((m) => m.role === 'owner');
+    // A room follows its owner's plan
+    const plus = hasPlus(owner?.user, now);
     const mine = room.members.find((m) => m.userId === userId);
     const request = room.requests[0];
     const guest = room.guests[0];
@@ -733,10 +738,16 @@ export class RoomsService {
     if (ban) throw new ForbiddenException({ code: 'banned', message: 'You can’t join this room' });
   }
 
+  /** The room's owner (whose plan the room follows) */
+  private async ownerOf(roomId: string) {
+    const owner = await this.prisma.membership.findFirst({ where: { roomId, role: 'owner' }, include: { user: true } });
+    return owner?.user ?? null;
+  }
+
   /** Someone joins: not banned, the room has space for members, and they're under their room limit. */
   private async addMember(roomId: string, userId: string, now: Date): Promise<void> {
     await this.checkNotBanned(roomId, userId);
-    const plus = OWNER_PLUS;
+    const plus = hasPlus(await this.ownerOf(roomId), now);
     const count = await this.prisma.membership.count({ where: { roomId } });
     if (count >= planOf(plus).members) throw new ConflictException({ code: 'room_full', message: 'This room has all the members it can' });
     await this.checkRoomLimit(userId);
@@ -745,8 +756,11 @@ export class RoomsService {
 
   /** One person can be in up to 100 rooms (200 with Plus). */
   private async checkRoomLimit(userId: string): Promise<void> {
-    const count = await this.prisma.membership.count({ where: { userId } });
-    if (count >= planOf(OWNER_PLUS).rooms) {
+    const [count, user] = await Promise.all([
+      this.prisma.membership.count({ where: { userId } }),
+      this.prisma.user.findUnique({ where: { id: userId }, select: { plusUntil: true } }),
+    ]);
+    if (count >= planFor(user).rooms) {
       throw new ConflictException({ code: 'too_many_rooms', message: `You’re in ${count} rooms; leave one first` });
     }
   }

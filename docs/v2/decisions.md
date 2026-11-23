@@ -431,6 +431,13 @@ decision is made or changed: one line, a date, and the reason.
   with a friend's deck, and the room's owner and mods look after them. Members write decks and
   change their own; guests play with them. We lose using one deck in several rooms; "copy to
   another room" can come later. This replaces "My decks, private to you".
+- **Plus in four parts, Stripe in test mode** (2026-11-23, the owner): 1. Plus on the account and
+  the limits; 2. paying (Stripe's hosted checkout in test mode, with a local stand-in until the
+  owner adds test keys); 3. Gift Plus; 4. when Plus ends. Built with spec 15's numbers in one place
+  (`ROOM_PLANS`), tuned after the playtest. Only perks that exist are switched on; premium maps,
+  Plus skins and pets, and AI decks show as Coming soon and come as their own parts. Screen-share
+  quality follows the room's plan (its bandwidth); rooms you make or join, uploads and the name tag
+  follow your own.
 - **Pets are room cats, not followers** (2026-11-23, the owner's idea): a pet is a cat in a Shop
   coat that its owner brings out of the Buddy Machine; it lives in the room like the other cats
   instead of trailing you. It reuses the server's cats (no new 3D animal, no per-person following

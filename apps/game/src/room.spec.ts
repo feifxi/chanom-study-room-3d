@@ -364,9 +364,13 @@ describe('bubbles and status', () => {
     await until(() => me(a).status === 'idle');
   });
 
-  it('a new look comes only from the API (which checked you own it) and shows for everyone', async () => {
+  it('a new look and Plus come only from the API and show for everyone', async () => {
     const a = track(await walkIn());
     const b = track(await walkIn({ sub: 'u-jod', name: 'Jod', handle: 'jod' }));
+    // Plus starts: an animated name tag for everyone to see
+    expect(me(a).plus).toBe(false);
+    dispatch({ roomId: '*', type: 'plus', userId: 'u-mai', plus: true });
+    await until(() => b.state.players.get(a.sessionId)!.plus);
     // There's no "look" message any more: the browser can't set its own
     dispatch({
       roomId: '*',

@@ -535,6 +535,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
         moving: false,
         subject: carried?.subject ?? '',
         todayMin: this.focusDone.get(ticket.sub) ?? 0,
+        plus: ticket.plus ?? false,
       }),
     );
     this.priv.set(client.sessionId, {
@@ -591,6 +592,12 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
         for (const sessionId of this.sessionsOf(event.userId)) {
           const p = this.state.players.get(sessionId);
           if (p) p.look = JSON.stringify(sanitizeLook(event.look));
+        }
+        break;
+      case 'plus':
+        for (const sessionId of this.sessionsOf(event.userId)) {
+          const p = this.state.players.get(sessionId);
+          if (p) p.plus = event.plus;
         }
         break;
       case 'pets':

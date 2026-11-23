@@ -43,6 +43,14 @@ Tick or strike these as they're dealt with.
 - [ ] Guests who never come back aren't cleaned up (needs a background job).
 - [ ] Signed out, the browser console logs a 401 from `/api/me`: expected, just noisy.
 
+- [ ] **Plus: cancel, receipts, the plan and grace are still the demo's** until Plus parts 2 and 4;
+      a signed-in account's Plus on/off and its date are real.
+- [ ] **Screen-share quality is only capped in the browser** (the capture's height); LiveKit doesn't
+      enforce it. Fine while it's about bandwidth, not fairness.
+- [ ] **A room's new limits reach a running game room with the next join** (capacity comes in the
+      join ticket), so turning Plus off doesn't push anyone out; part 4 handles the end of Plus.
+- [ ] **Pick a Side's AI deck count still reads the demo's `ME.plus`** (`AI_PER_DAY`); AI decks
+      aren't built.
 - [ ] **Pets add up to 4 more cats** to a full Buddy Machine (13 NPCs); the perf check doesn't
       measure that either (see the next item).
 - [ ] **A full Buddy Machine isn't measured by the perf check:** it runs a mock room with the two
@@ -440,3 +448,27 @@ A headless run checked buying and naming Snowball "Puff" (2,000 → 1,000 coins)
 out with Jod in the room (Jod sees the tag and note, and no Goodbye), and Puff going home about
 20 s after Mai closed her tab. `demo:perf` passed on every map (one café battery-saver row went
 over on JS time once and passed on the rerun).
+
+### Plus, part 1: Plus on the account
+
+**Changed:** `users.plus_until` and a `plus` module on the API (`GET /api/plus`, `plus` and
+`plusUntil` on `/api/me`, a dev-only `POST /api/plus/dev`). The "nobody has Plus" constant in rooms
+is gone: a room's people at once, members and Big maps follow its owner's plan; the rooms you can
+make (new: 10, 30 with Plus) and be in, and your upload size (10, 50 MB), follow yours. The limits
+moved into `ROOM_PLANS` (with `owns`, `uploadMb`, `shareHeight`). Players carry `plus` (from the
+ticket, and a `plus` room event when it changes), and the name tag shimmers. The web app reads
+your real Plus (the Plus page, Settings, the Demo tab's switch and the stand-in checkout call the
+dev switch), refreshes on the live `plus` event, sizes uploads by your plan and screen shares by the
+room's. The Plus page marks perks with nothing to unlock as Coming soon and uses your own name.
+
+**Bugs found and fixed while building:**
+
+- The new `plus` field never reached the browser: the room copies a fixed list of player fields,
+  so the shimmer didn't show until it was added there.
+- The Plus page promised "a pet that follows you around" and a profile banner; reworded to what
+  exists (the demo too).
+- The shimmering name sat on a white chip in the Plus page's hero, where the pastel didn't read;
+  it's on a dark chip now.
+
+A headless run checked a Free room (25 / 150), Plus on (50 / 1,000 on a Cosy map), Jod seeing
+"✨Mai" shimmer at once, and it going away when Plus ended.

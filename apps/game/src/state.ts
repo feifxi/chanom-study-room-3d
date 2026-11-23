@@ -21,6 +21,8 @@ export const Player = schema(
     subject: t.string().default(''),
     focusSince: t.number().default(0),
     todayMin: t.number().default(0),
+    /** Has Connecta Plus: an animated name tag */
+    plus: t.boolean().default(false),
     typing: t.boolean().default(false),
     /** Talk to everyone (owner and mods) */
     stage: t.boolean().default(false),

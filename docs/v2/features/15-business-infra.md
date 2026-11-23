@@ -1,6 +1,9 @@
 # 15. Business and infra
 
-**Status:** decided; payments are mocked in the demo. **Try it:** http://localhost:3100/home/plus,
+**Status:** Plus is being built in four parts (2026-11-23): 1. Plus on the account, every limit
+following the plan (done); 2. paying with Stripe in test mode; 3. Gift Plus; 4. when Plus ends.
+Until part 2 the payment page and Settings → Plus & billing are the demo's, and the checkout and
+the Demo tab turn Plus on and off with a dev-only switch. **Try it:** http://localhost:3100/home/plus,
 `/checkout?plan=yearly`, and `/admin/money` (View as Connecta team). V1's infra is at tag `v1.0.0`
 (`infra/README.md`). The cloud is AWS; nginx replaced Caddy on 2026-11-21
 ([decision](../decisions.md#engineering-and-infra)).
@@ -28,6 +31,27 @@ server with only what V2 needs added, and monitoring on its own server for SRE p
   once, and a premium or Big map moves live to its basic version.
 - **Rules:** never sell power, no ads in rooms, never charge to join. Paid perks either cost us money
   to run (capacity, HD video, storage, AI) or are purely cosmetic. Free limits follow real cost.
+- **Whose plan:** the room's owner's sets people at once, members, Big maps and screen-share
+  quality (it's the room's bandwidth). Your own sets how many rooms you can make and be in, your
+  upload size and your name tag.
+- **Built so far:** everything in the table but premium maps, Plus skins and pets, and AI decks,
+  which have nothing to unlock yet: the Plus page marks them **Coming soon**, and each arrives as
+  its own part. The profile banner was left out for now (profiles have no banner yet).
+- **The animated name tag:** your name shimmers (✨ and a pastel gradient) over your head in every
+  room, switching live when Plus starts or ends.
+
+### Plus: backend notes
+
+- `users.plus_until`: Plus runs until then (null or past: Free). `hasPlus` / `planFor`
+  (`apps/api/src/plus/plus.ts`) are the one check; the limits are `ROOM_PLANS` in
+  `@connecta/shared/rooms`, kept in one place because they wait on the playtest.
+- `GET /api/plus` and `plus` / `plusUntil` on `/api/me`. `POST /api/plus/dev { on }` gives a month
+  of Plus or none for local testing (404 in production) until Stripe arrives.
+- When Plus starts or ends, your tabs hear `plus` (your account and rooms refresh) and the game
+  servers get `{ roomId: '*', type: 'plus' }` (your name tag); the join ticket carries `plus` too.
+  A room's new limits reach its game server with the next join ticket.
+- Pictures are capped by the uploader's plan when they start an upload (`too_big`, with `maxMb`);
+  screen shares are captured at the room's plan height (720 or 1080).
 
 ## Coins and daily quests
 

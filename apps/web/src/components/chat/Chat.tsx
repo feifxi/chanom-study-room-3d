@@ -3,7 +3,8 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { ArrowDown, CornerUpLeft, ImagePlus, Pencil, Send, Smile, SmilePlus, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { PICTURE_MAX_MB, PICTURES_MAX } from '@connecta/shared';
+import { useMe } from '@/features/account/useMe';
+import { planOf, PICTURES_MAX } from '@connecta/shared';
 import { UserAvatar } from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -14,7 +15,8 @@ import { BLOCKED, ME, userById, type Message } from '@/lib/mock';
 const QUICK = ['❤️', '😂', '👍'];
 const EMOJI = ['❤️', '😂', '👍', '🥹', '🔥', '🎉', '👀', '🙏', '💖', '🍪', '🐱', '✨', '😴', '📚', '☕', '🍓'];
 export const MAX_IMAGES = PICTURES_MAX;
-export const MAX_IMAGE_MB = PICTURE_MAX_MB;
+/** Free's limit; yours is ROOM_PLANS' uploadMb (50 MB with Plus) */
+export const MAX_IMAGE_MB = planOf(false).uploadMb;
 
 /** A message ready to show: the author and the quoted reply already looked up. */
 export interface ChatMessageView {
@@ -569,11 +571,17 @@ function EmojiPicker({
 const PICKED = new Map<string, File>();
 export const pickedFile = (previewUrl: string) => PICKED.get(previewUrl);
 
+/** Your upload limit: 10 MB, 50 MB with Plus */
+function useUploadMb() {
+  const { data: me } = useMe();
+  return planOf(!!me?.plus).uploadMb;
+}
+
 /** Pictures picked or pasted into a message box: images only, size and count capped (with a toast). */
-function takeImages(list: FileList | File[] | null, have: number): string[] {
+function takeImages(list: FileList | File[] | null, have: number, maxMb = MAX_IMAGE_MB): string[] {
   if (!list?.length) return [];
-  const ok = [...list].filter((f) => f.type.startsWith('image/') && f.size <= MAX_IMAGE_MB * 1024 * 1024);
-  if (ok.length < list.length) toast(`Pictures only, up to ${MAX_IMAGE_MB} MB each`);
+  const ok = [...list].filter((f) => f.type.startsWith('image/') && f.size <= maxMb * 1024 * 1024);
+  if (ok.length < list.length) toast(`Pictures only, up to ${maxMb} MB each`);
   const room = MAX_IMAGES - have;
   if (ok.length > room) toast(`Up to ${MAX_IMAGES} pictures a message`);
   return ok.slice(0, Math.max(0, room)).map((f) => {
@@ -620,6 +628,7 @@ function FullComposer({
 }) {
   const [text, setText] = useState('');
   const [images, setImages] = useState<string[]>([]);
+  const maxMb = useUploadMb();
   const [pick, setPick] = useState(0);
   const input = useRef<HTMLInputElement>(null);
   const files = useRef<HTMLInputElement>(null);
@@ -644,7 +653,7 @@ function FullComposer({
   // Taken now, not inside the state update: the input is cleared right after, and a deferred
   // update would find its file list empty (pictures picked after typing were dropped)
   const addFiles = (list: FileList | null) => {
-    const taken = takeImages(list, images.length);
+    const taken = takeImages(list, images.length, maxMb);
     if (taken.length) setImages((all) => [...all, ...taken]);
   };
 
@@ -806,11 +815,12 @@ export function Composer({
 }) {
   const [text, setText] = useState('');
   const [images, setImages] = useState<string[]>([]);
+  const maxMb = useUploadMb();
   const files = useRef<HTMLInputElement>(null);
   const input = useRef<HTMLInputElement>(null);
   // Taken now, not inside the state update (see FullComposer)
   const add = (list: FileList | File[] | null) => {
-    const taken = takeImages(list, images.length);
+    const taken = takeImages(list, images.length, maxMb);
     if (taken.length) setImages((all) => [...all, ...taken]);
   };
   return (

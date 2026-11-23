@@ -112,6 +112,9 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
      accessories and 4 outfits built in code, bought with coins, a look only uses what you own);
      ~~pets~~ done 2026-11-23 (4 cat coats you name, brought out from the Buddy Machine, sent home
      only by you). **Coins and quests are done.**
+   - **Plus**, in parts: ~~Plus on the account~~ done 2026-11-23 (every limit follows the plan, the
+     animated name tag, a dev-only switch); paying with Stripe in test mode; Gift Plus; when Plus
+     ends (grace, rooms back to Free, PromptPay reminders).
 6. **The seed:** one fill of all the data (people, rooms, members, friends, DMs…) for testing the
    whole app ([why at the end](v2/decisions.md#engineering-and-infra)).
 7. **Infra** on AWS ([spec 15](v2/features/15-business-infra.md#architecture)), then a playtest, then launch.

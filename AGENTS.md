@@ -41,8 +41,9 @@ moderation with Common and open rooms, the admin site and map editor. Agree each
 with the owner before building. **Focus** is done (the timer on the game server, the to-do list,
 the Focus page and rankings). **Watch together and photo mode** are done. **Party and table games**
 are done (the round flow, chess, Slave, the whiteboard, Pick a Side and Draw & Guess on the game
-server). **Coins and quests** are done (quests, coins, the Shop's first set and pets). Next is **Plus**
-(agree the details with the owner first).
+server). **Coins and quests** are done (quests, coins, the Shop's first set and pets). **Plus** is in
+progress in four parts: part 1 (Plus on the account, limits follow the plan) is done; next is
+paying with Stripe in test mode (the owner sets up the Stripe test account and keys).
 Steps 1–4 are done: the skeleton; accounts and rooms; the gateway
 (friends, chat, pictures, DMs, presence and the 🔔 inbox); walking in a room (the Colyseus game
 server `apps/game` with movement, capacity and live room changes, bubbles, Away, the people list,

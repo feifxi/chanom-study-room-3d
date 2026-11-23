@@ -81,7 +81,7 @@ export const RoomSchema = z
     membersCanInvite: z.boolean(),
     allowGuests: z.boolean(),
     guestVoice: z.boolean(),
-    /** The owner has Connecta Plus (not built yet: always false) */
+    /** The owner has Connecta Plus (the room gets Plus space, Big maps and 1080p shares) */
     ownerPlus: z.boolean(),
     owner: PersonSchema,
     mods: z.array(PersonSchema),

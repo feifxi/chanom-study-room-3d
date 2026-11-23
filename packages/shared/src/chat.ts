@@ -4,8 +4,8 @@
 export const MESSAGE_MAX = 2000;
 /** Pictures in one message */
 export const PICTURES_MAX = 4;
-/** Largest picture you can pick; it's shrunk before it's stored */
-export const PICTURE_MAX_MB = 10;
+/** Largest picture anyone can pick (Plus; Free is lower: ROOM_PLANS.uploadMb); it's shrunk before it's stored */
+export const PICTURE_MAX_MB = 50;
 /** Messages per page when scrolling back */
 export const MESSAGES_PAGE = 50;
 /** "Mai is typing…" stays this long after the last keystroke signal */

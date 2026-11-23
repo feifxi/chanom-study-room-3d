@@ -32,8 +32,8 @@ const ROWS: { group: string; rows: [string, string | boolean, string | boolean][
     group: 'You',
     rows: [
       ['Base outfits and accessories', true, true],
-      ['Premium skins and pets', false, true],
-      ['Animated name tag and profile banner', false, true],
+      ['Plus skins and pets', false, true],
+      ['Animated name tag', false, true],
       ['Uploads', '10 MB', '50 MB'],
     ],
   },
@@ -126,7 +126,7 @@ export default function PlusPage() {
           <div className="relative mx-auto h-56 w-48 sm:h-72 sm:w-56 md:h-80 md:w-full">
             <div className="absolute inset-x-6 bottom-2 h-10 rounded-[50%] bg-card/50 blur-md" />
             <AvatarPreview look={look} />
-            <span className="absolute top-6 -left-2 rounded-full bg-card px-2.5 py-1 text-xs font-black shadow-md">🐾 pets</span>
+            <span className="absolute top-6 -left-2 rounded-full bg-card px-2.5 py-1 text-xs font-black shadow-md">🖥️ 1080p</span>
             <span className="absolute top-24 -right-1 rounded-full bg-card px-2.5 py-1 text-xs font-black shadow-md">100 people</span>
             <span className="absolute bottom-10 left-0 rounded-full bg-card px-2.5 py-1 text-xs font-black shadow-md">✨ {ME.name}</span>
           </div>
@@ -160,13 +160,13 @@ export default function PlusPage() {
               ))}
             </div>
           </Perk>
-          <Perk className="bg-mint text-mint-ink" title="Skins & pets" text="Premium outfits and a pet that follows you around.">
+          <Perk className="bg-mint text-mint-ink" title="Plus skins & pets" text="Outfits and pets only for Plus, on top of the Shop's.">
             <span className="mt-auto text-4xl">🐱🧥🎀</span>
           </Perk>
           <Perk className="bg-sky text-sky-ink" title="1080p sharing" text="Sharp slides and code when you share your screen.">
             <span className="mt-auto font-mono text-2xl font-black whitespace-nowrap">720p → 1080p</span>
           </Perk>
-          <Perk className="bg-card" title="Animated name tag" text="A shimmering name above your head and a banner on your profile.">
+          <Perk className="bg-card" title="Animated name tag" text="A shimmering name above your head in every room.">
             <span className="mt-auto w-fit rounded-full bg-foreground px-3 py-1 text-sm font-black">
               ✨ <span className="shimmer">{ME.name}</span>
             </span>

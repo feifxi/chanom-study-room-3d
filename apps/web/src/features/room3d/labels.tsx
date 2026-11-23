@@ -179,7 +179,8 @@ export function LabelLayer({
               {/* Taking a photo (feature 10), so people can pose */}
               {player.photo && <span className="mr-1">📸</span>}
               {STATUS_ICON[player.status] && <span className="mr-1">{STATUS_ICON[player.status]}</span>}
-              {player.name}
+              {/* Plus: a shimmering name (feature 15) */}
+              {player.plus ? <span className="shimmer">✨{player.name}</span> : player.name}
               {isLocal && ' (you)'}
               {/* How long they've been focusing, so others know not to interrupt */}
               {player.status === 'focus' && (

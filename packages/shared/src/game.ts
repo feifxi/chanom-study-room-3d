@@ -33,6 +33,8 @@ export interface GameTicket {
   roomWideGames?: boolean;
   /** Pets you own, for the Buddy Machine */
   pets?: PetOut[];
+  /** You have Plus (your animated name tag) */
+  plus?: boolean;
 }
 export const TICKET_AUDIENCE = 'connecta-game';
 export const TICKET_SECONDS = 60;
@@ -97,7 +99,9 @@ export type GameRoomEvent =
   /** A saved look (the API checked you own it): every room you're in shows it. roomId '*' = all rooms */
   | { roomId: '*'; type: 'look'; userId: string; look: AvatarLook }
   /** You bought a pet: the Buddy Machine in every room you're in offers it */
-  | { roomId: '*'; type: 'pets'; userId: string; pets: PetOut[] };
+  | { roomId: '*'; type: 'pets'; userId: string; pets: PetOut[] }
+  /** Your Plus started or ended: your name tag changes in every room you're in */
+  | { roomId: '*'; type: 'plus'; userId: string; plus: boolean };
 
 export interface GamePresence {
   userId: string;

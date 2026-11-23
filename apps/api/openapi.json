@@ -2937,6 +2937,58 @@
         ]
       }
     },
+    "/api/plus": {
+      "get": {
+        "operationId": "PlusController_status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlusStatus"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "plus"
+        ]
+      }
+    },
+    "/api/plus/dev": {
+      "post": {
+        "operationId": "PlusController_dev",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DevPlusBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlusStatus"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "plus"
+        ]
+      }
+    },
     "/api/notifications": {
       "get": {
         "operationId": "NotificationsController_list",
@@ -3156,6 +3208,13 @@
           },
           "hideInvitesWhileFocusing": {
             "type": "boolean"
+          },
+          "plus": {
+            "type": "boolean"
+          },
+          "plusUntil": {
+            "nullable": true,
+            "type": "string"
           }
         },
         "required": [
@@ -3173,7 +3232,9 @@
           "showActivity",
           "timeZone",
           "showOnEveryone",
-          "hideInvitesWhileFocusing"
+          "hideInvitesWhileFocusing",
+          "plus",
+          "plusUntil"
         ],
         "additionalProperties": false
       },
@@ -5627,6 +5688,34 @@
           "pass"
         ],
         "additionalProperties": false
+      },
+      "PlusStatus": {
+        "type": "object",
+        "properties": {
+          "plus": {
+            "type": "boolean"
+          },
+          "until": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "plus",
+          "until"
+        ],
+        "additionalProperties": false
+      },
+      "DevPlusBody": {
+        "type": "object",
+        "properties": {
+          "on": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "on"
+        ]
       },
       "Inbox": {
         "type": "object",

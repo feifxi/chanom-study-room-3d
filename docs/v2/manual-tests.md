@@ -492,3 +492,18 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
 - [ ] Leave the room: about 20 s later your pet walks back to the machine ("went home with you").
 - [ ] Buy a pet while you're in a room: it's in the machine without rejoining.
 - [ ] Look at each coat in a room from a few angles: the bow, star tag, bow tie and bell sit right.
+
+### Plus, part 1: Plus on the account
+
+Turn Plus on and off with the Demo tab → Your Plus (or by finishing the stand-in checkout).
+
+- [ ] Free: the Plus page says Get Plus; your room says 25 people at once and 150 members; Room
+      settings won't pick a Big map.
+- [ ] Plus on: the Plus page says you're on Plus; your rooms say up to 50 (100 on a Big map) and
+      1,000 members; a Big map can be picked.
+- [ ] In a room, your name shimmers with ✨ for everyone, and stops when Plus ends (no rejoin).
+- [ ] A member who has Plus doesn't change your room's limits; only the owner's plan counts.
+- [ ] Free: an 11th room you'd own is refused; with Plus you can make up to 30.
+- [ ] Free: a 20 MB picture is refused (10 MB); with Plus it goes (up to 50 MB).
+- [ ] Share your screen in a Plus owner's room: it's sharper (1080p) than in a Free room (720p).
+- [ ] The Plus page marks premium maps, Plus skins and pets, and AI decks Coming soon.

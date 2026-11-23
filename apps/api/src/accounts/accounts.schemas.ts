@@ -47,6 +47,9 @@ export const MeSchema = z
     showOnEveryone: z.boolean(),
     /** No game invite cards while your focus timer runs (Settings → Notifications) */
     hideInvitesWhileFocusing: z.boolean(),
+    /** Connecta Plus right now, and until when (null: never had it) */
+    plus: z.boolean(),
+    plusUntil: z.string().nullable(),
   })
   .meta({ id: 'Me' });
 export type Me = z.infer<typeof MeSchema>;

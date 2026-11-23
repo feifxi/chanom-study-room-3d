@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { GiftPlusDialog } from '@/components/app/GiftPlusDialog';
 import { SettingsDialog } from '@/components/app/SettingsDialog';
 import { ROOM_PLANS as PLANS } from '@connecta/shared';
-import { FUTURE_MAPS, ME } from '@/lib/mock';
+import { FUTURE_MAPS } from '@/lib/mock';
 import { useMyLook } from '@/lib/myLook';
+import { useMeAsUser } from '@/features/account/useMe';
 import { hasPlus, PLUS_PLANS, REMIND_DAYS, usePlus, type PlanId } from '@/lib/plus';
 import { cn } from '@/lib/utils';
 
@@ -23,7 +24,7 @@ const ROWS: { group: string; rows: [string, string | boolean, string | boolean][
       ['People at once', `${PLANS.free.capacity}`, `${PLANS.plus.capacity} (Big maps)`],
       ['Members', `${PLANS.free.members}`, PLANS.plus.members.toLocaleString()],
       ['Basic maps (Library, Café, Rooftop)', true, true],
-      ['Premium maps', false, true],
+      ['Premium maps (coming soon)', false, true],
       ['Screen share', '720p', '1080p'],
       ['Rooms you can make / join', '10 / 100', '30 / 200'],
     ],
@@ -32,8 +33,8 @@ const ROWS: { group: string; rows: [string, string | boolean, string | boolean][
     group: 'You',
     rows: [
       ['Base outfits and accessories', true, true],
-      ['Premium skins and pets', false, true],
-      ['Animated name tag and profile banner', false, true],
+      ['Plus skins and pets (coming soon)', false, true],
+      ['Animated name tag', false, true],
       ['Uploads', '10 MB', '50 MB'],
     ],
   },
@@ -71,6 +72,7 @@ const FAQ: [string, string][] = [
  */
 export default function PlusPage() {
   const plus = usePlus();
+  const account = useMeAsUser();
   const look = useMyLook().look;
   const [gift, setGift] = useState(false);
   const [billing, setBilling] = useState(false);
@@ -126,9 +128,11 @@ export default function PlusPage() {
           <div className="relative mx-auto h-56 w-48 sm:h-72 sm:w-56 md:h-80 md:w-full">
             <div className="absolute inset-x-6 bottom-2 h-10 rounded-[50%] bg-card/50 blur-md" />
             <AvatarPreview look={look} />
-            <span className="absolute top-6 -left-2 rounded-full bg-card px-2.5 py-1 text-xs font-black shadow-md">🐾 pets</span>
+            <span className="absolute top-6 -left-2 rounded-full bg-card px-2.5 py-1 text-xs font-black shadow-md">🖥️ 1080p</span>
             <span className="absolute top-24 -right-1 rounded-full bg-card px-2.5 py-1 text-xs font-black shadow-md">100 people</span>
-            <span className="absolute bottom-10 left-0 rounded-full bg-card px-2.5 py-1 text-xs font-black shadow-md">✨ {ME.name}</span>
+            <span className="absolute bottom-10 left-0 rounded-full bg-foreground px-2.5 py-1 text-xs font-black shadow-md">
+              ✨ <span className="shimmer">{account.name}</span>
+            </span>
           </div>
         </div>
       </section>
@@ -151,6 +155,7 @@ export default function PlusPage() {
             className="bg-peach text-peach-ink lg:col-span-2"
             title="Premium maps"
             text="New places for your room as they arrive, Big versions of every map."
+            soon
           >
             <div className="mt-auto flex gap-2">
               {FUTURE_MAPS.slice(0, 4).map((m) => (
@@ -160,18 +165,23 @@ export default function PlusPage() {
               ))}
             </div>
           </Perk>
-          <Perk className="bg-mint text-mint-ink" title="Skins & pets" text="Premium outfits and a pet that follows you around.">
+          <Perk
+            className="bg-mint text-mint-ink"
+            title="Plus skins & pets"
+            text="Outfits and pets only for Plus, on top of the Shop's."
+            soon
+          >
             <span className="mt-auto text-4xl">🐱🧥🎀</span>
           </Perk>
           <Perk className="bg-sky text-sky-ink" title="1080p sharing" text="Sharp slides and code when you share your screen.">
             <span className="mt-auto font-mono text-2xl font-black whitespace-nowrap">720p → 1080p</span>
           </Perk>
-          <Perk className="bg-card" title="Animated name tag" text="A shimmering name above your head and a banner on your profile.">
+          <Perk className="bg-card" title="Animated name tag" text="A shimmering name above your head in every room.">
             <span className="mt-auto w-fit rounded-full bg-foreground px-3 py-1 text-sm font-black">
-              ✨ <span className="shimmer">{ME.name}</span>
+              ✨ <span className="shimmer">{account.name}</span>
             </span>
           </Perk>
-          <Perk className="bg-card" title="30 AI decks a day" text="Turn your notes into Pick a Side questions for the whole room.">
+          <Perk className="bg-card" title="30 AI decks a day" text="Turn your notes into Pick a Side questions for the whole room." soon>
             <span className="mt-auto text-3xl">🧠 × 30</span>
           </Perk>
           <Perk className="bg-card lg:col-span-2" title="Bigger uploads" text="Pictures and files up to 50 MB in chats.">
@@ -354,7 +364,20 @@ function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
   );
 }
 
-function Perk({ title, text, className, children }: { title: string; text: string; className?: string; children: React.ReactNode }) {
+/** `soon`: a perk with nothing to unlock yet (premium maps, Plus skins and pets, AI decks) */
+function Perk({
+  title,
+  text,
+  className,
+  soon,
+  children,
+}: {
+  title: string;
+  text: string;
+  className?: string;
+  soon?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div
       className={cn(
@@ -363,7 +386,10 @@ function Perk({ title, text, className, children }: { title: string; text: strin
         className?.includes('bg-card') && 'border-border',
       )}
     >
-      <p className="text-lg font-black">{title}</p>
+      <p className="flex flex-wrap items-center gap-2 text-lg font-black">
+        {title}
+        {soon && <span className="rounded-full bg-card/80 px-2 py-0.5 text-[10px] font-black tracking-wider uppercase">Coming soon</span>}
+      </p>
       <p className="text-sm opacity-80">{text}</p>
       <div className="mt-3 flex flex-1 flex-col">{children}</div>
     </div>

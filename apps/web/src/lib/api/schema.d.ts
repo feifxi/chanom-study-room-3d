@@ -1108,6 +1108,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/plus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlusController_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/plus/dev": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlusController_dev"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/notifications": {
         parameters: {
             query?: never;
@@ -1212,6 +1244,8 @@ export interface components {
             timeZone: string;
             showOnEveryone: boolean;
             hideInvitesWhileFocusing: boolean;
+            plus: boolean;
+            plusUntil: string | null;
         };
         Look: {
             hair: string;
@@ -1787,6 +1821,13 @@ export interface components {
         };
         DeckPass: {
             pass: string;
+        };
+        PlusStatus: {
+            plus: boolean;
+            until: string | null;
+        };
+        DevPlusBody: {
+            on: boolean;
         };
         Inbox: {
             items: components["schemas"]["Notification"][];
@@ -3845,6 +3886,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DeckPass"];
+                };
+            };
+        };
+    };
+    PlusController_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlusStatus"];
+                };
+            };
+        };
+    };
+    PlusController_dev: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DevPlusBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlusStatus"];
                 };
             };
         };

@@ -1,7 +1,8 @@
 import { InjectQueue } from '@nestjs/bullmq';
 import { BadRequestException, HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PICTURE_MAX_MB, PICTURES_MAX } from '@connecta/shared';
+import { PICTURES_MAX } from '@connecta/shared';
+import { planFor } from '../plus/plus.js';
 import type { Queue } from 'bullmq';
 import { requireSignedUp } from '../accounts/signed-up.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -34,8 +35,11 @@ export class PicturesService {
 
   /** Step 1: a picture to fill, and the link to PUT it to. */
   async start(userId: string, file: { contentType: string; bytes: number }, now = new Date()) {
-    await requireSignedUp(this.prisma, userId);
-    if (file.bytes > PICTURE_MAX_MB * 1024 * 1024) throw new BadRequestException(`Pictures can be up to ${PICTURE_MAX_MB} MB`);
+    // Uploads follow your own plan: 10 MB, 50 MB with Plus
+    const { uploadMb } = planFor(await requireSignedUp(this.prisma, userId), now);
+    if (file.bytes > uploadMb * 1024 * 1024) {
+      throw new BadRequestException({ message: `Pictures can be up to ${uploadMb} MB`, code: 'too_big', maxMb: uploadMb });
+    }
     const recent = await this.prisma.picture.count({ where: { uploaderId: userId, createdAt: { gt: new Date(now.getTime() - HOUR_MS) } } });
     if (recent >= UPLOADS_PER_HOUR) {
       throw new HttpException({ message: 'That’s a lot of pictures. Try again in a bit.', code: 'too_many' }, HttpStatus.TOO_MANY_REQUESTS);

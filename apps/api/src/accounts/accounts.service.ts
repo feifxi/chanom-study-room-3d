@@ -19,6 +19,7 @@ import { HandlesService } from './handles.service.js';
 import { requireSignedUp } from './signed-up.js';
 import { listedOnEveryone } from '../focus/everyone.js';
 import { FocusService } from '../focus/focus.service.js';
+import { hasPlus } from '../plus/plus.js';
 import { GameService } from '../game/game.service.js';
 import { ShopService } from '../shop/shop.service.js';
 
@@ -44,6 +45,8 @@ export function toMe(user: User): Me {
     timeZone: user.timeZone,
     showOnEveryone: listedOnEveryone(user),
     hideInvitesWhileFocusing: user.hideInvitesWhileFocusing,
+    plus: hasPlus(user),
+    plusUntil: user.plusUntil?.toISOString() ?? null,
   };
 }
 
