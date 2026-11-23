@@ -10,4 +10,6 @@ export const PlusStatusSchema = z
   .meta({ id: 'PlusStatus' });
 export type PlusStatus = z.infer<typeof PlusStatusSchema>;
 
-export const DevPlusBodySchema = z.object({ on: z.boolean() }).meta({ id: 'DevPlusBody' });
+/** Local testing: Plus (a month, card), cancelled (ends in 2 days), ended 2 days ago (grace), or Free */
+export const DEV_PLUS_STATES = ['plus', 'cancelled', 'grace', 'free'] as const;
+export const DevPlusBodySchema = z.object({ state: z.enum(DEV_PLUS_STATES) }).meta({ id: 'DevPlusBody' });

@@ -49,6 +49,9 @@ model User {
   coins                    Int       @default(0)
   /// Connecta Plus runs until then (null or past: Free). Payments and gifts move it on
   plusUntil                DateTime? @map("plus_until")
+  /// The last "Plus is ending" step done for this plus_until (soon, ended, graceSoon, over), as
+  /// "<step>@<plus_until>": each step happens once, and a new date starts over
+  plusNotice               String?   @map("plus_notice")
   /// Listed on the Everyone focus ranking; null = the default for your age (on 18+, off under 18)
   showOnEveryone           Boolean?  @map("show_on_everyone")
   /// Settings → Notifications: no game invite cards while your focus timer runs

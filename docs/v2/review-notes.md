@@ -43,7 +43,6 @@ Tick or strike these as they're dealt with.
 - [ ] Guests who never come back aren't cleaned up (needs a background job).
 - [ ] Signed out, the browser console logs a 401 from `/api/me`: expected, just noisy.
 
-- [ ] **Plus: grace is still the demo's** until Plus part 4.
 - [ ] **Gift Plus's hint can't say whether the friend has Plus** (people's Plus isn't in the
       friends list), so it says "on top of any they have" for everyone.
 - [ ] **Real Stripe hasn't run end to end:** no keys yet. It's tested against a fake Stripe (every
@@ -520,3 +519,33 @@ time.
 A headless run: Mai gifted Jod 3 months with a note from Friends; Mai landed in the DM with the
 card and "Gift sent to Jod"; Jod had Plus until 23 Feb 2027, the card with the note, the 🔔 notice,
 and no receipt; Mai had the ฿249 receipt and "Gifts you sent".
+
+### Plus, part 4: when Plus ends
+
+**Changed:** rooms read their owner's Plus through `roomPlus` (Plus plus 7 days of grace), while
+personal perks keep `hasPlus`. A 10-minute sweep (`PlusEndingService`) sends each step once per
+date as a 🔔 `plus` item and an email: the 3-day reminder (PromptPay "pay to renew", or "ends on"),
+"Plus ended" (and the ✨ name goes live), the last-day warning for owners, then their rooms go back
+to Cosy and 25. A failing card keeps Plus while Stripe retries (`invoice.payment_failed`). PromptPay
+plans can pay again on top while they run. The web app's grace state, Home banner (naming your
+rooms), the Demo tab's Plus states and the inbox icon are real.
+
+**Bugs found and fixed while building:**
+
+- The sweep found nobody: "not already done" was written as SQL `NOT (plus_notice LIKE 'over@%')`,
+  which is never true for an empty `plus_notice`. It now asks for empty ones by themselves.
+- "Plus ended" said "7 more days" even when it went out late, and "your 6 rooms … goes back"; it now
+  counts the days left and agrees with one room or many.
+
+A headless run: Mai with Plus and a Big room set to 80 switched to "Ended · grace": the 🔔 item and
+the email arrived, Home showed "your rooms keep their space for 5 more days", and the room stayed
+Big at 80.
+
+**Open:**
+
+- [ ] **Plus ending is up to 10 minutes late** (the sweep's pace), and a Plus that just ran out keeps
+      its ✨ name in a room until then.
+- [ ] **Grace's end isn't live for people inside:** the lower limit applies to the next people to
+      come in (by design nobody is moved), and the Big → Cosy switch has no 3D difference yet.
+- [ ] **PromptPay renewal uses our payment page,** not a Stripe PromptPay invoice; with Stripe on it
+      pays as a one-off checkout, which is fine, but Stripe's own reminders aren't used.

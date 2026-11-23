@@ -1,16 +1,16 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { GIFTS, PLUS_PLANS, REMIND_DAYS, type PayMethod, type PlanId } from '@connecta/shared';
+import { GIFTS, GRACE_DAYS, PLUS_PLANS, REMIND_DAYS, type PayMethod, type PlanId } from '@connecta/shared';
 import { useMe } from '@/features/account/useMe';
 import { api } from '@/lib/api/client';
 
 /**
  * Your Connecta Plus (feature 15). Signed in, it's the API's (`/api/billing`: your plan, its date,
  * renewal, receipts and gifts you sent; paying goes through /checkout, Stripe or its local
- * stand-in). Grace is still the demo's until Plus part 4. Signed out (the demo's pages), it's the
+ * stand-in), and grace is the 7 days after your Plus date. Signed out (the demo's pages), it's the
  * mock below.
  *
  * States, switchable from the Demo tab:
@@ -71,6 +71,7 @@ function subscribeStore(onChange: () => void) {
 const formatDay = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
 export const BILLING_KEY = ['billing'] as const;
+const DAY_MS = 86_400_000;
 
 export function usePlus(): Billing {
   const mock = useSyncExternalStore(
@@ -79,6 +80,8 @@ export function usePlus(): Billing {
     () => state,
   );
   const { data: me } = useMe();
+  // The grace counts days, so the time the page opened is close enough
+  const [now] = useState(Date.now);
   const signedUp = !!me?.signedUp;
   const { data: real } = useQuery({
     queryKey: BILLING_KEY,
@@ -91,9 +94,12 @@ export function usePlus(): Billing {
   });
   if (!signedUp) return mock;
   const plus = real?.plus ?? me.plus;
+  // Your rooms keep Plus space for 7 days after the date
+  const graceEnds = me.plusUntil ? Date.parse(me.plusUntil) + GRACE_DAYS * DAY_MS : 0;
   return {
     ...mock,
-    state: plus ? (real && !real.renews ? 'cancelled' : 'active') : mock.state === 'grace' ? 'grace' : 'free',
+    state: plus ? (real && !real.renews ? 'cancelled' : 'active') : graceEnds > now ? 'grace' : 'free',
+    graceLeft: Math.max(1, Math.ceil((graceEnds - now) / DAY_MS)),
     plan: (real?.plan as PlanId | null) ?? 'monthly',
     method: real?.method ?? 'card',
     date: me.plusUntil ? formatDay(me.plusUntil) : mock.date,
@@ -102,9 +108,9 @@ export function usePlus(): Billing {
   };
 }
 
-/** Until Stripe's keys are in: Plus on or off for a month through the API's dev-only switch (Demo tab) */
-function devPlus(on: boolean) {
-  void api.POST('/api/plus/dev', { body: { on } });
+/** The Demo tab's switch: the API's dev-only Plus states (it runs the reminders and grace at once) */
+function devPlus(state: 'plus' | 'cancelled' | 'grace' | 'free') {
+  void api.POST('/api/plus/dev', { body: { state } });
 }
 
 /** Cancel: Plus stays until the paid period ends (your tabs refresh on the live `plus` event) */
@@ -121,7 +127,7 @@ export async function resumePlus() {
 
 /** Demo tab: jump between the states. */
 export function setPlusState(s: PlusState) {
-  devPlus(s === 'active' || s === 'cancelled');
+  devPlus(s === 'active' ? 'plus' : s);
   set({ state: s, graceLeft: 5, date: s === 'cancelled' ? '13 Nov 2026' : state.date });
 }
 

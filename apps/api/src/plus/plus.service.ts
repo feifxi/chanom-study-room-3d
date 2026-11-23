@@ -33,9 +33,14 @@ export class PlusService {
     return after;
   }
 
-  /** Local testing only: a month of Plus, or none */
-  devSet(userId: string, on: boolean, now = new Date()) {
-    return this.setUntil(userId, on ? new Date(now.getTime() + 30 * DAY_MS) : null, now);
+  /** Local testing only: jump to a Plus state (with a card plan, so Settings shows it) */
+  async devSet(userId: string, state: 'plus' | 'cancelled' | 'grace' | 'free', now = new Date()) {
+    const days = { plus: 30, cancelled: 2, grace: -2, free: null }[state];
+    const fields = { plan: 'monthly', method: 'card', renews: state === 'plus' };
+    if (state === 'free') await this.prisma.plusSubscription.deleteMany({ where: { userId } });
+    else await this.prisma.plusSubscription.upsert({ where: { userId }, create: { userId, ...fields }, update: fields });
+    await this.prisma.user.update({ where: { id: userId }, data: { plusNotice: null } });
+    return this.setUntil(userId, days === null ? null : new Date(now.getTime() + days * DAY_MS), now);
   }
 
   /** After something else moved plus_until (a payment): tells everyone if Plus started or ended */
@@ -44,6 +49,11 @@ export class PlusService {
     if (plus !== wasPlus) this.changed(userId, plus);
     // Billing changed either way (a renewal, a cancel): your tabs refresh the Plus page
     else this.live.toUser(userId, 'plus', { plus });
+  }
+
+  /** Your rooms went back to Free (the grace ended): your tabs refresh your rooms' limits */
+  roomsChanged(userId: string) {
+    this.live.toUser(userId, 'plus', { plus: false });
   }
 
   /** Your tabs refresh what Plus changes (limits, the Plus page); your name tag changes in rooms */

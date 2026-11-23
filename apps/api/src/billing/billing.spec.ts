@@ -37,8 +37,8 @@ describe('paying for Plus with the local stand-in (no Stripe keys)', () => {
     expect(days).toBeLessThan(32);
     // Paying the same checkout again changes nothing
     expect((await mai.post(`/api/billing/checkout/${start.checkoutId}/dev-pay`).expect(200)).body.receipts).toHaveLength(1);
-    // It renews already: no second plan
-    expect((await mai.post('/api/billing/checkout', { plan: 'yearly', method: 'card' }).expect(409)).body.code).toBe('already_plus');
+    // PromptPay renews by paying again (the reminder's link)
+    await mai.post('/api/billing/checkout', { plan: 'monthly', method: 'promptpay' }).expect(200);
 
     const cancelled = (await mai.post('/api/billing/cancel').expect(200)).body;
     expect(cancelled).toMatchObject({ plus: true, renews: false });
@@ -50,6 +50,8 @@ describe('paying for Plus with the local stand-in (no Stripe keys)', () => {
     const mai = await person('maimai');
     const first = (await mai.post('/api/billing/checkout', { plan: 'monthly', method: 'card' }).expect(200)).body;
     const month = (await mai.post(`/api/billing/checkout/${first.checkoutId}/dev-pay`).expect(200)).body;
+    // A card renews by itself: no second plan
+    expect((await mai.post('/api/billing/checkout', { plan: 'yearly', method: 'card' }).expect(409)).body.code).toBe('already_plus');
     await mai.post('/api/billing/cancel').expect(200);
     const second = (await mai.post('/api/billing/checkout', { plan: 'yearly', method: 'card' }).expect(200)).body;
     const year = (await mai.post(`/api/billing/checkout/${second.checkoutId}/dev-pay`).expect(200)).body;
@@ -244,6 +246,27 @@ describe('paying for Plus with Stripe (a fake Stripe: nothing leaves the machine
     const until = (await jod.get('/api/billing').expect(200)).body.until;
     expect((Date.parse(until) - periodEnd.getTime()) / DAY).toBeGreaterThan(27);
     expect(calls).toEqual(['checkout:card', 'gift:card:/home/messages/jod.dev', `move:sub_j:${until}`]);
+  });
+
+  it('a failed card renewal keeps Plus while Stripe tries again', async () => {
+    const mai = await person('maimai');
+    const start = (await mai.post('/api/billing/checkout', { plan: 'monthly', method: 'card' }).expect(200)).body;
+    await notice({
+      type: 'checkout.session.completed',
+      data: {
+        object: { id: 'cs_f', payment_status: 'paid', client_reference_id: start.checkoutId, subscription: 'sub_f', customer: 'cus_f' },
+      },
+    }).expect(200);
+    const retry = Math.floor((periodEnd.getTime() + 3 * DAY) / 1000);
+    const failed = (next: number | null) => ({
+      type: 'invoice.payment_failed',
+      data: { object: { id: 'in_f', next_payment_attempt: next, parent: { subscription_details: { subscription: 'sub_f' } } } },
+    });
+    await notice(failed(retry)).expect(200);
+    expect(Date.parse((await mai.get('/api/billing').expect(200)).body.until)).toBe(retry * 1000 + DAY);
+    // The last try: no next one, so Plus runs out on the date it has
+    await notice(failed(null)).expect(200);
+    expect(Date.parse((await mai.get('/api/billing').expect(200)).body.until)).toBe(retry * 1000 + DAY);
   });
 
   it('PromptPay finishes later: Plus once the payment goes through', async () => {

@@ -537,3 +537,20 @@ You need two people who are friends (sign in as each in two browsers).
 - [ ] Gifting someone who has Plus already moves their date on by the months.
 - [ ] Settings → Plus & billing: your receipt "Gift for … · 3 months" and the "Gifts you sent" list.
 - [ ] Someone who isn't your friend can't be gifted (no menu item; the API says friends only).
+
+### Plus, part 4: when Plus ends
+
+Use the Demo tab → Your Plus (it runs the reminders at once); check the 🔔 inbox and Mailpit
+(http://localhost:8025).
+
+- [ ] **Cancelled:** a 🔔 "Your Plus ends on …" and an email; Home shows "Your Plus ends on …" with
+      Keep Plus, which turns renewal back on.
+- [ ] **Ended · grace** (as an owner of a Big room): the ✨ name goes; a 🔔 and an email "Your Plus has
+      ended. … keeps its space for 5 more days"; Home's banner names your room and "Get Plus again";
+      the room is still Big and still takes more than 25 people; you can't switch another room to
+      Big.
+- [ ] A PromptPay plan 3 days before its date (or wait for it): "Pay ฿89 with PromptPay to keep it",
+      and the link pays on top of the date.
+- [ ] After the grace (only reachable by waiting 7 days, or with the API tests): the room is Cosy,
+      at most 25 at once; people already inside stay.
+- [ ] **Plus** and **Free** in the Demo tab put you back.

@@ -1,9 +1,9 @@
 # 15. Business and infra
 
-**Status:** Plus is being built in four parts (2026-11-23): 1. Plus on the account, every limit
-following the plan (done); 2. paying with Stripe in test mode (done: a local stand-in until the
-owner adds Stripe's test keys); 3. Gift Plus (done); 4. when Plus ends. Grace is still the
-demo's until part 4. **Try it:** http://localhost:3100/home/plus,
+**Status:** Plus is built (2026-11-23, in four parts): Plus on the account with every limit
+following the plan; paying with Stripe in test mode (a local stand-in until the owner adds Stripe's
+test keys); Gift Plus; and when Plus ends (reminders, the grace, rooms back to Free). The admin
+site's Money page comes with the admin site. **Try it:** http://localhost:3100/home/plus,
 `/checkout?plan=yearly`, and `/admin/money` (View as Connecta team). V1's infra is at tag `v1.0.0`
 (`infra/README.md`). The cloud is AWS; nginx replaced Caddy on 2026-11-21
 ([decision](../decisions.md#engineering-and-infra)).
@@ -27,8 +27,10 @@ server with only what V2 needs added, and monitoring on its own server for SRE p
 
 - **A room follows its owner's plan.** Everyone inside gets the room's space and maps; only the owner
   pays. Friends chip in by **gifting Plus**.
-- **If Plus ends:** nothing is deleted. After 7 days of grace the owner's rooms go back to 25 at
-  once, and a premium or Big map moves live to its basic version.
+- **If Plus ends:** nothing is deleted. Your own perks (the ✨ name, bigger pictures, more rooms) end
+  on the date; your rooms keep their space and Big map for 7 days of grace, then go back to 25 at
+  once and a Big map switches to Cosy. Nobody inside is sent out: new people wait at the door until
+  there's space, and members over 150 stay (nobody new joins until it's under).
 - **Rules:** never sell power, no ads in rooms, never charge to join. Paid perks either cost us money
   to run (capacity, HD video, storage, AI) or are purely cosmetic. Free limits follow real cost.
 - **Whose plan:** the room's owner's sets people at once, members, Big maps and screen-share
@@ -152,9 +154,9 @@ How you pay is picked on the payment page:
 
 - **Card:** renews by itself on the date.
 - **PromptPay:** nobody can take money from PromptPay without you scanning, so it **renews by
-  reminder**: 3 days before the date you get a new QR in the Inbox and by email (Stripe can send an
-  invoice payable by PromptPay; check this for Thai accounts). Don't pay and Plus just ends, then the
-  7-day grace, the same as a card that fails. Switch to a card any time to make it automatic.
+  reminder**: 3 days before the date a 🔔 notice and an email say "Pay ฿89 with PromptPay to keep
+  it", linking to the payment page (paying adds on top of the date). Don't pay and Plus just ends,
+  then the 7-day grace, the same as a card that fails. Switch to a card any time to make it automatic.
 - **Stripe's hosted Checkout:** we never see card details. Our page → Stripe → back to Connecta.
   Stripe sends receipts. Web only (no app store, no 30% cut).
 - **Gift Plus:** a friend's "…" → Gift Plus → 1, 3 or 12 months, a note, card or PromptPay. They get
@@ -200,6 +202,27 @@ How you pay is picked on the payment page:
 - **A friend paying by card:** their Stripe subscription gets `trial_end` at the new date, so the
   next charge moves back by the gift and nothing is charged or refunded now.
 - Starts at once (no "open your gift" step): a gift waiting to be opened is easy to forget.
+
+### When Plus ends: backend notes
+
+- **Two clocks:** `hasPlus` (your Plus, until `plus_until`) for personal perks and limits, and
+  `roomPlus` (until `plus_until` + 7 days) for a room's space, Big map and member limit. During the
+  grace a Big room stays Big and its settings save, but only Plus switches a room to Big.
+- **The sweep** (`PlusEndingService`, every 10 minutes) takes each person whose date is near or
+  recently past through four steps, each once per date (`users.plus_notice` = `step@date`; a new
+  date starts over; a late server sends only the newest step):
+  1. **soon**, 3 days before, unless a card renews it: PromptPay "pay to renew", otherwise "Plus
+     ends on …".
+  2. **ended** (a renewing card waits an hour for Stripe's notice): renewal off, the ✨ name goes in
+     rooms, your tabs refresh, and "your rooms keep their space for N more days".
+  3. **graceSoon**, the last day of the grace, owners only: "tomorrow your rooms go back to 25".
+  4. **over:** your rooms become Cosy and a people limit above 25 comes down to 25. Tickets carry
+     the new limit, so nobody inside is moved.
+     Each news step is one 🔔 `plus` item (it replaces the previous one) and an email.
+- **Failed card renewals:** `invoice.payment_failed` moves `plus_until` to a day after Stripe's next
+  try, so Plus stays on while Stripe retries; after the last try it runs out on that date.
+- **Local testing:** `POST /api/plus/dev { state: plus | cancelled | grace | free }` (the Demo tab's
+  "Your Plus") jumps there and runs the sweep at once.
 
 ### Setting up Stripe (the owner)
 

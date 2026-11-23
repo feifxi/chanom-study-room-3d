@@ -116,7 +116,8 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
      animated name tag, a dev-only switch); ~~paying with Stripe in test mode~~ done 2026-11-23
      (Stripe's hosted page and webhook, a local stand-in until the owner adds test keys; cancel,
      resume, receipts); ~~Gift Plus~~ done 2026-11-23 (friends only, a card in your DM and a 🔔
-     notice, starts at once, moves a card's next charge back); when Plus ends (grace, rooms back to Free, PromptPay reminders).
+     notice, starts at once, moves a card's next charge back); ~~when Plus ends~~ done 2026-11-23
+     (reminders by 🔔 and email, 7 days of grace for rooms, then back to Free with nobody sent out).
 6. **The seed:** one fill of all the data (people, rooms, members, friends, DMs…) for testing the
    whole app ([why at the end](v2/decisions.md#engineering-and-infra)).
 7. **Infra** on AWS ([spec 15](v2/features/15-business-infra.md#architecture)), then a playtest, then launch.

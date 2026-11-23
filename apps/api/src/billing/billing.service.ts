@@ -18,6 +18,7 @@ const addMonths = (from: Date, months: number) => {
   return d;
 };
 const later = (a: Date, b: Date | null | undefined) => (b && b > a ? b : a);
+const DAY_MS = 86_400_000;
 
 /**
  * Paying for Plus (spec 15, "Paying"): start a checkout, learn it was paid (Stripe's webhook, or the
@@ -71,7 +72,8 @@ export class BillingService {
   async checkout(userId: string, plan: PlanId, method: PayMethod, now = new Date()): Promise<CheckoutStart> {
     const user = await requireSignedUp(this.prisma, userId);
     const sub = await this.prisma.plusSubscription.findUnique({ where: { userId } });
-    if (sub?.renews && hasPlus(user, now)) {
+    // A card renews by itself; PromptPay renews by paying again (the reminder's link), on top
+    if (sub?.renews && sub.method === 'card' && hasPlus(user, now)) {
       throw new ConflictException({ code: 'already_plus', message: 'You have Plus already; it renews by itself' });
     }
     const checkout = await this.prisma.checkout.create({ data: { userId, plan, method } });
@@ -243,6 +245,22 @@ export class BillingService {
           { ref: String(o.id), amount: Math.round(Number(o.amount_paid ?? 0) / 100), until: new Date(end * 1000) },
           now,
         );
+        return;
+      }
+      // A renewal failed: Stripe tries again over about two weeks, and Plus stays on meanwhile
+      case 'invoice.payment_failed': {
+        const parent = o.parent as { subscription_details?: { subscription?: unknown } | null } | null;
+        const subscriptionId = parent?.subscription_details?.subscription;
+        const next = typeof o.next_payment_attempt === 'number' ? new Date(o.next_payment_attempt * 1000 + DAY_MS) : null;
+        if (typeof subscriptionId !== 'string' || !next) return;
+        const sub = await this.prisma.plusSubscription.findUnique({
+          where: { stripeSubscriptionId: subscriptionId },
+          include: { user: true },
+        });
+        if (!sub || !sub.user.plusUntil || sub.user.plusUntil >= next) return;
+        const wasPlus = hasPlus(sub.user, now);
+        await this.prisma.user.update({ where: { id: sub.userId }, data: { plusUntil: next } });
+        await this.plus.announce(sub.userId, wasPlus, now);
         return;
       }
       // Cancelled or resumed at Stripe (or by us), or ended after the last failed retry

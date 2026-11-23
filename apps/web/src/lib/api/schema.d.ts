@@ -1927,7 +1927,8 @@ export interface components {
             until: string | null;
         };
         DevPlusBody: {
-            on: boolean;
+            /** @enum {string} */
+            state: "plus" | "cancelled" | "grace" | "free";
         };
         Billing: {
             plus: boolean;
@@ -1976,7 +1977,7 @@ export interface components {
         Notification: {
             id: string;
             /** @enum {string} */
-            kind: "friend_request" | "friend_accepted" | "join_request" | "joined" | "mention" | "messages" | "space" | "gift";
+            kind: "friend_request" | "friend_accepted" | "join_request" | "joined" | "mention" | "messages" | "space" | "gift" | "plus";
             text: string;
             href: string;
             person: components["schemas"]["Person"] | null;

@@ -5888,12 +5888,18 @@
       "DevPlusBody": {
         "type": "object",
         "properties": {
-          "on": {
-            "type": "boolean"
+          "state": {
+            "type": "string",
+            "enum": [
+              "plus",
+              "cancelled",
+              "grace",
+              "free"
+            ]
           }
         },
         "required": [
-          "on"
+          "state"
         ]
       },
       "Billing": {
@@ -6110,7 +6116,8 @@
               "mention",
               "messages",
               "space",
-              "gift"
+              "gift",
+              "plus"
             ]
           },
           "text": {

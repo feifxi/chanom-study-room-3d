@@ -119,6 +119,11 @@ export class NotificationsService {
       );
   }
 
+  /** Your Plus is ending or ended (PlusEndingService); one item at a time, the newest news */
+  async plus(userId: string, text: string, href: string) {
+    await this.push(userId, 'plus', { text, href, person: null }, 'plus');
+  }
+
   /** Gift Plus: the friend hears who gave it and how long; opening it shows the card in your DM */
   async gift(toId: string, from: Person, months: number) {
     await this.push(toId, 'gift', {

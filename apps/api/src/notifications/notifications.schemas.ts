@@ -10,6 +10,7 @@ export const NOTIFICATION_KINDS = [
   'messages',
   'space',
   'gift',
+  'plus',
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 

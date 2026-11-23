@@ -2,7 +2,19 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Armchair, AtSign, Bell, CheckCheck, DoorOpen, Gift, MessageCircle, UserCheck, UserPlus, type LucideIcon } from 'lucide-react';
+import {
+  Armchair,
+  AtSign,
+  Bell,
+  CheckCheck,
+  Crown,
+  DoorOpen,
+  Gift,
+  MessageCircle,
+  UserCheck,
+  UserPlus,
+  type LucideIcon,
+} from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { PersonFace } from '@/components/PersonFace';
 import { useInbox, useReadInbox, type Notification } from '@/features/inbox/useInbox';
@@ -19,6 +31,7 @@ const ICON: Record<Kind, [LucideIcon, string]> = {
   messages: [MessageCircle, 'bg-sky text-sky-ink'],
   space: [Armchair, 'bg-mint text-mint-ink'],
   gift: [Gift, 'bg-peach text-peach-ink'],
+  plus: [Crown, 'bg-secondary text-secondary-foreground'],
 };
 
 /** "now", "5m", "3h", "2d" (outside the component: render can't read the clock). */

@@ -438,6 +438,10 @@ decision is made or changed: one line, a date, and the reason.
   Plus skins and pets, and AI decks show as Coming soon and come as their own parts. Screen-share
   quality follows the room's plan (its bandwidth); rooms you make or join, uploads and the name tag
   follow your own.
+- **When Plus ends, nobody is sent out** (2026-11-23, the owner chose A): at the grace's end a room
+  goes back to 25 and Big to Cosy, but people inside stay; new people wait at the door. Personal
+  perks end on the date; only rooms get the 7 days. PromptPay renews through a reminder that links
+  to our payment page (not a Stripe invoice), and a failing card keeps Plus while Stripe retries.
 - **Gift Plus starts at once** (2026-11-23, the owner chose A): no "open your gift" step, since a
   gift waiting to be opened gets forgotten. Friends only; the friend never sees the price; a friend
   paying by card has their next charge moved back by the gift (Stripe's `trial_end`), so a gift
