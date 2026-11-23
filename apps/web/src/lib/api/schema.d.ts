@@ -1236,6 +1236,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/common": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CommonController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/common/{type}/ticket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CommonController_ticket"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/notifications": {
         parameters: {
             query?: never;
@@ -1767,6 +1799,7 @@ export interface components {
             mapId: string | null;
             member: boolean;
             open: boolean;
+            common: string | null;
         };
         FriendRequests: {
             incoming: components["schemas"]["IncomingRequest"][];
@@ -1969,6 +2002,28 @@ export interface components {
             note?: string;
             /** @enum {string} */
             method: "card" | "promptpay";
+        };
+        CommonRoom: {
+            /** @enum {string} */
+            id: "library" | "cafe" | "rooftop";
+            name: string;
+            mapId: string;
+            vibe: string;
+            roomWideGames: boolean;
+            here: number;
+            copies: number;
+            friendsInside: components["schemas"]["Person"][];
+        };
+        CommonTicketBody: {
+            with?: string;
+            copy?: number;
+        };
+        CommonTicket: {
+            ticket: string;
+            place: string;
+            n: number;
+            name: string;
+            note: string | null;
         };
         Inbox: {
             items: components["schemas"]["Notification"][];
@@ -4193,6 +4248,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Billing"];
+                };
+            };
+        };
+    };
+    CommonController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommonRoom"][];
+                };
+            };
+        };
+    };
+    CommonController_ticket: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                type: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommonTicketBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommonTicket"];
                 };
             };
         };

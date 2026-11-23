@@ -3145,6 +3145,71 @@
         ]
       }
     },
+    "/api/common": {
+      "get": {
+        "operationId": "CommonController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommonRoom"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "common"
+        ]
+      }
+    },
+    "/api/common/{type}/ticket": {
+      "post": {
+        "operationId": "CommonController_ticket",
+        "parameters": [
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 20
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommonTicketBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommonTicket"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "common"
+        ]
+      }
+    },
     "/api/notifications": {
       "get": {
         "operationId": "NotificationsController_list",
@@ -5150,6 +5215,10 @@
           },
           "open": {
             "type": "boolean"
+          },
+          "common": {
+            "nullable": true,
+            "type": "string"
           }
         },
         "required": [
@@ -5159,7 +5228,8 @@
           "emoji",
           "mapId",
           "member",
-          "open"
+          "open",
+          "common"
         ],
         "additionalProperties": false
       },
@@ -6078,6 +6148,104 @@
           "months",
           "method"
         ]
+      },
+      "CommonRoom": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "library",
+              "cafe",
+              "rooftop"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "mapId": {
+            "type": "string"
+          },
+          "vibe": {
+            "type": "string"
+          },
+          "roomWideGames": {
+            "type": "boolean"
+          },
+          "here": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "copies": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "friendsInside": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Person"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "mapId",
+          "vibe",
+          "roomWideGames",
+          "here",
+          "copies",
+          "friendsInside"
+        ],
+        "additionalProperties": false
+      },
+      "CommonTicketBody": {
+        "type": "object",
+        "properties": {
+          "with": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "copy": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9999
+          }
+        }
+      },
+      "CommonTicket": {
+        "type": "object",
+        "properties": {
+          "ticket": {
+            "type": "string"
+          },
+          "place": {
+            "type": "string"
+          },
+          "n": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket",
+          "place",
+          "n",
+          "name",
+          "note"
+        ],
+        "additionalProperties": false
       },
       "Inbox": {
         "type": "object",

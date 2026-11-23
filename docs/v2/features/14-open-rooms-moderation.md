@@ -1,6 +1,8 @@
 # 14. Common rooms, open rooms and moderation
 
-**Status:** decided and built in the demo. **Try it:** http://localhost:3100 with the Demo tab's
+**Status:** decided and built in the demo; in `apps/` in four parts (2026-11-24): Common rooms
+(done), the word filter, reports, team accounts in Common rooms. Suspensions, bans and the admin
+site come after. **Try it:** http://localhost:3100 with the Demo tab's
 **View as**:
 
 - Discover → **Common rooms** → Cat Café → **Walk in**: you land in Mook's copy (a friend). Mic off,
@@ -117,6 +119,17 @@ Everyone else gets "page not found". Left nav:
   the account's history.
 
 ## Backend notes
+
+**Built so far (Common rooms):** the types are `COMMON_TYPES` in `@connecta/shared/common`. A copy
+is a game-server room with id `common-<type>-<n>` and no database row; `POST
+/api/common/:type/ticket { with?, copy? }` picks it (a friend's copy, your old copy, the copy with
+the most friends, the busiest under 20, else the first free number) and signs a ticket with
+`common: true`, which makes the game server hush everyone (no voice pass at all), refuse videos and
+slow bubbles to one per 3 s. Who's in each copy is presence's (the game server reports it), plus
+seats held 30 s for fresh tickets (Redis); empty copies close. `GET /api/common` counts each type
+and names friends inside; presence names a friend's copy (`room.common`) so Home and Friends link
+"Walk in" to `/common/<type>?with=<id>`. Without a session `/common/<type>` asks for a name and a
+look and walks in as a guest.
 
 - Common rooms: a `common_room_types` table (template, name, vibe) and copies as ordinary Colyseus
   rooms with `kind = 'common'`; the room sets the rules (no LiveKit publish grant for anyone, no

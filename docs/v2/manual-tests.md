@@ -554,3 +554,15 @@ Use the Demo tab → Your Plus (it runs the reminders at once); check the 🔔 i
 - [ ] After the grace (only reachable by waiting 7 days, or with the API tests): the room is Cosy,
       at most 25 at once; people already inside stay.
 - [ ] **Plus** and **Free** in the Demo tab put you back.
+
+### Moderation, part 1: Common rooms
+
+- [ ] Discover → Common rooms shows Library, Cat Café and Starry Rooftop with "N here · N rooms
+      open" (0 when nobody's in); Walk in → "Finding you a seat…" → you're in "Cat Café Common Room #1".
+- [ ] Inside: the mic is off and can't be turned on, chat is Bubbles only (no Room chat), no videos on
+      the TV, and a second bubble within 3 s is held back ("Slow mode").
+- [ ] A friend sees you on Home ("Friends out right now") and Friends ("Cat Café Common Room #1 ·
+      Walk in") and lands in your copy.
+- [ ] Signed out, the landing page's "Try a room as a guest" (or `/common/cafe`) asks for a name and a
+      look, then walks you in as a guest; the room offers "Make an account ✨".
+- [ ] Discover's and Home's cards show friends inside ("Mai is here").

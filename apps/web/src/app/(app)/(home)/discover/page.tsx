@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { OpenRoomCard } from '@/components/app/OpenRoomCard';
 import { mapFor } from '@/features/place/model';
 import { useListedRooms } from '@/features/rooms/useRooms';
-import { COMMON_ROOMS } from '@/lib/mock';
+import { useCommonRooms } from '@/features/common/useCommon';
 
 const TAGS = ['All', ...ROOM_TAGS];
 const LANGUAGES = ['Any language', ...ROOM_LANGUAGES];
@@ -19,8 +19,8 @@ const LANGUAGES = ['Any language', ...ROOM_LANGUAGES];
  * voice). Home shows a few under "Open now"; this is the full list.
  *
  * Listed rooms (Open and Ask to join) come from the API, biggest first; once presence is in (build
- * step 3) they're ordered by friends inside, then most people inside now. Common rooms are still
- * mock (feature 14).
+ * step 3) they're ordered by friends inside, then most people inside now. Common rooms count
+ * everyone across their copies (feature 14).
  */
 export default function DiscoverPage() {
   const [tag, setTag] = useState('All');
@@ -33,6 +33,7 @@ export default function DiscoverPage() {
     language: lang === 'Any language' ? undefined : lang,
   });
   const all = useListedRooms();
+  const common = useCommonRooms();
   const open = listed.data ?? [];
   // Tonight's pick: the biggest listed room you're not in yet
   const pick = all.data?.find((r) => !r.me.role);
@@ -84,7 +85,7 @@ export default function DiscoverPage() {
           <span className="text-sm text-muted-foreground">run by Connecta · anyone welcome · text only, so it’s comfy with strangers</span>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {COMMON_ROOMS.map((r) => (
+          {(common.data ?? []).map((r) => (
             <OpenRoomCard key={r.id} kind="common" room={r} />
           ))}
         </div>

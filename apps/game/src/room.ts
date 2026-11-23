@@ -8,6 +8,7 @@ import {
   PATCH_RATE_MS,
   RECONNECT_SECONDS,
   SAY_COOLDOWN_MS,
+  COMMON_SAY_MS,
   SIT_REACH,
   SUBJECT_MAX,
   TYPING_TIMEOUT_MS,
@@ -106,6 +107,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
   private turnedAway = false;
   /** Room settings → Guests can use voice (the newest ticket, then live changes) */
   private guestVoice = false;
+  /** A Common room copy (feature 14): text only for everyone, slow mode, no big screen */
+  private common = false;
   /** Room settings → Room-wide games (from the ticket, then live) */
   private roomWideGames = true;
   /** Muted for everyone, by account, so walking out and back in doesn't lift it; gone when the room empties */
@@ -205,7 +208,10 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
      * them; owners and mods can turn the screen off from anywhere. Skip and "ended" name the video
      * they mean, so two people at once move Up next on by one.
      */
-    'watch:add': validate(z.object({ link: z.string().max(300) }), (client, msg) => void this.addVideo(client, msg.link)),
+    'watch:add': validate(z.object({ link: z.string().max(300) }), (client, msg) => {
+      // Common rooms: no videos from strangers
+      if (!this.common) void this.addVideo(client, msg.link);
+    }),
     'watch:pause': validate(z.object({ paused: z.boolean() }), (client, msg) => {
       if (this.atTv(client)) this.tv.pause(msg.paused, Date.now());
     }),
@@ -329,7 +335,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       if (!p || !s || !text) return;
       const now = Date.now();
       if (s.quietUntil > now) return void client.send('quiet', { until: s.quietUntil } satisfies Quiet);
-      if (now - s.lastSaidAt < SAY_COOLDOWN_MS) return;
+      if (now - s.lastSaidAt < (this.common ? COMMON_SAY_MS : SAY_COOLDOWN_MS)) return;
       s.lastSaidAt = now;
       p.typing = false;
       this.quest(client.sessionId, 'said');
@@ -395,7 +401,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     /** A pass to the room's voice, listening only when you can't talk */
     voice: async (client: Client) => {
       const p = this.state.players.get(client.sessionId);
-      if (!p || !voice.current) return;
+      // Common rooms have no voice at all, not even listening
+      if (!p || !voice.current || this.common) return;
       client.send('voice', await voice.current.pass(this.connectaId, client.sessionId, p.name, !p.hushed));
     },
 
@@ -471,6 +478,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     // A newer ticket carries the latest capacity and guest voice (the owner changed Room settings)
     this.capacity = ticket.capacity;
     this.guestVoice = ticket.guestVoice ?? false;
+    this.common = ticket.common ?? false;
     this.roomWideGames = ticket.roomWideGames ?? true;
     const staff = ticket.role === 'owner' || ticket.role === 'mod';
     const others = [...this.priv.values()].filter((s) => s.userId !== ticket.sub).length;
@@ -741,7 +749,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     const s = this.priv.get(sessionId);
     if (!p || !s) return;
     p.mutedByMod = this.muted.has(s.userId);
-    const hushed = (p.role === 'guest' && !this.guestVoice) || p.mutedByMod || s.quietUntil > Date.now();
+    const hushed = this.common || (p.role === 'guest' && !this.guestVoice) || p.mutedByMod || s.quietUntil > Date.now();
     if (hushed === p.hushed) return;
     p.hushed = hushed;
     if (hushed) Object.assign(p, { stage: false, share: '', shareAudio: false });

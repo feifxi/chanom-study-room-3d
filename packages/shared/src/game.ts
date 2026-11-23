@@ -35,6 +35,8 @@ export interface GameTicket {
   pets?: PetOut[];
   /** You have Plus (your animated name tag) */
   plus?: boolean;
+  /** A Common room copy: text only for everyone, slow mode, no big screen (feature 14) */
+  common?: boolean;
 }
 export const TICKET_AUDIENCE = 'connecta-game';
 export const TICKET_SECONDS = 60;

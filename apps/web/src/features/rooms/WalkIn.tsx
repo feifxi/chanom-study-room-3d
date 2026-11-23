@@ -10,7 +10,6 @@ import { readLook, saveLook } from '@/features/place/roomLook';
 import { Scene } from '@/features/place/Scene';
 import { useInRoom } from '@/features/presence/usePresence';
 import { RoomLoader } from '@/features/room/RoomLoader';
-import { PUBLIC_SERVER } from '@/lib/mock';
 import { notifyWhenSpace, roomsApi, useRoom, type Room } from './useRooms';
 import { rememberRoom } from '@/features/focus/useFocusStats';
 
@@ -62,11 +61,6 @@ export function WalkIn({ room: initial, guestName }: { room: Room; guestName: st
       game={game.room}
     />
   );
-}
-
-/** A Common room copy (still mock, feature 14). */
-export function CommonRoom({ copyId, guestName }: { copyId: string; guestName: string | null }) {
-  return <RoomLoader key={copyId} server={PUBLIC_SERVER} roomId={copyId} guestName={guestName} />;
 }
 
 /** The room's picture, dimmed, behind whatever stands in front of it. */

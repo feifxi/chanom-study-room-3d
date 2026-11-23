@@ -16,6 +16,8 @@ export const PresenceRoomSchema = z
     member: z.boolean(),
     /** An Open room you're not in yet: join and walk in */
     open: z.boolean(),
+    /** A Common room copy (its type): join your friend in their copy */
+    common: z.string().nullable(),
   })
   .meta({ id: 'PresenceRoom' });
 export type PresenceRoom = z.infer<typeof PresenceRoomSchema>;

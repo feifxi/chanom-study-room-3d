@@ -305,6 +305,25 @@ describe('bubbles and status', () => {
     await until(() => b.state.players.get(a.sessionId)?.typing === false);
   });
 
+  it('a Common room copy is text only for everyone, with a 3 s slow mode', async () => {
+    const roomId = `common-cafe-${rooms}`;
+    const a = track(await walkIn({ roomId, common: true }));
+    const b = track(await walkIn({ roomId, common: true, sub: 'u-jod', name: 'Jod', handle: 'jod' }));
+    // Members too: nobody talks, and no voice pass at all
+    await until(() => me(a).hushed);
+    let passed = false;
+    a.onMessage('voice', () => (passed = true));
+    a.send('voice', {});
+    const heard = hear(b);
+    a.send('say', { text: 'hi' });
+    await until(() => heard.length === 1);
+    await new Promise((r) => setTimeout(r, 600));
+    a.send('say', { text: 'too soon' });
+    await new Promise((r) => setTimeout(r, 300));
+    expect(heard.map((h) => h.text)).toEqual(['hi']);
+    expect(passed).toBe(false);
+  });
+
   it('a bubble said in a private zone stays in it, unless you talk to everyone', async () => {
     const zone = mapDataFor('library').zones[0]!;
     const inside = track(await walkIn({ role: 'mod' }));

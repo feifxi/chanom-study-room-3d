@@ -118,6 +118,11 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
      resume, receipts); ~~Gift Plus~~ done 2026-11-23 (friends only, a card in your DM and a 🔔
      notice, starts at once, moves a card's next charge back); ~~when Plus ends~~ done 2026-11-23
      (reminders by 🔔 and email, 7 days of grace for rooms, then back to Free with nobody sent out).
+     **Plus is done.**
+   - **Moderation with Common and open rooms**, in parts (agreed 2026-11-24): ~~Common rooms~~ done
+     2026-11-24 (copies on the game server, picked by the API, text only for everyone, guests
+     welcome); the word filter (masks words; OpenAI's picture check behind a key); reports and their
+     automatic steps; team accounts in Common rooms. Suspensions and bans come with the admin site.
 6. **The seed:** one fill of all the data (people, rooms, members, friends, DMs…) for testing the
    whole app ([why at the end](v2/decisions.md#engineering-and-infra)).
 7. **Infra** on AWS ([spec 15](v2/features/15-business-infra.md#architecture)), then a playtest, then launch.
@@ -217,9 +222,10 @@ Users never see them, but the real app must not inherit them. When porting:
       `features/place/model.ts`; drop it and the mock `Server` type when they're ported.
 - [x] **Routes:** `/servers/[id]` and `/servers/[id]/rooms/[roomId]` became `/r/[id]` and
       `/r/[id]/walk` (2026-11-22); invites are `/i/[code]` and `/g/[code]`, Common rooms
-      `/common/[copy]`.
-- [ ] **Common rooms:** replace the `PUBLIC_SERVER` stand-in with a real model: a template, its
-      copies, and "land me in the right copy" (`commonCopyFor`).
+      `/common/[type]` (the API picks the copy; `?with=<id>` joins a friend).
+- [x] **Common rooms:** the types are in `@connecta/shared/common`, copies are game-server rooms the
+      API picks (2026-11-24). The 3D room still gets the mock `PUBLIC_SERVER` shape for its screens
+      (with the copy as its one room) until `asServer()` goes.
 - [ ] **Maps:** the data files in `features/map/` become the map file format (spec 7); the active-map
       switch becomes part of the live map change.
 - [ ] **"View as"** (`lib/viewer.ts`, `roleIn`) is demo-only: roles come from the session.

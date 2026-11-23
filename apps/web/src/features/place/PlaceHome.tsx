@@ -20,7 +20,8 @@ import { notifyWhenSpace, ROOMS_KEY, roomsApi, useListedRooms, useMyRooms, useRo
 import { api } from '@/lib/api/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
-import { ago, COMMON_ROOMS, MAPS } from '@/lib/mock';
+import { joinCommonHref, useCommonRooms } from '@/features/common/useCommon';
+import { ago, MAPS } from '@/lib/mock';
 import { chatHref, placeRoom, walkInHref, type PlaceRoom } from './model';
 import { SizePicker, TemplateCard } from './MapPickers';
 import { PlusEndingBanner } from './PlusEndingBanner';
@@ -93,6 +94,7 @@ export function PlaceHome() {
 
   // Listed rooms you're not in yet; then two of Connecta's Common rooms
   const open = (listed.data ?? []).filter((r) => !r.me.role).slice(0, 2);
+  const commonRooms = useCommonRooms().data ?? [];
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-8 p-5 sm:p-8">
@@ -249,7 +251,7 @@ export function PlaceHome() {
           {open.map((r) => (
             <OpenRoomCard key={r.id} kind="open" room={r} />
           ))}
-          {COMMON_ROOMS.slice(0, 2).map((r) => (
+          {commonRooms.slice(0, 2).map((r) => (
             <OpenRoomCard key={r.id} kind="common" room={r} />
           ))}
         </div>
@@ -273,8 +275,8 @@ function FriendsOut() {
           return (
             <Link
               key={person.id}
-              // Your room: straight in. An Open one: its page, to join first
-              href={room.member ? `/r/${room.id}/walk` : `/r/${room.id}`}
+              // Your room: straight in. An Open one: its page, to join first. A Common copy: theirs
+              href={room.common ? joinCommonHref(room.common, person.id) : room.member ? `/r/${room.id}/walk` : `/r/${room.id}`}
               className="group flex flex-none items-center gap-2.5 rounded-full border bg-card py-1.5 pr-4 pl-1.5 shadow-sm hover:border-primary/50"
             >
               <PersonFace who={person} size={34} status={presence.status} />

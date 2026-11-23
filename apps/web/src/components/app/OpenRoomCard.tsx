@@ -8,7 +8,9 @@ import { chatHref, mapFor } from '@/features/place/model';
 import type { ListedRoom } from '@/features/rooms/useRooms';
 import { AvatarStack } from '@/components/UserAvatar';
 import { cn } from '@/lib/utils';
-import { commonCopyFor, MAPS, userById, type CommonRoom } from '@/lib/mock';
+import { personAvatar } from '@/components/PersonFace';
+import type { CommonRoom } from '@/features/common/useCommon';
+import { MAPS } from '@/lib/mock';
 import { useViewer } from '@/lib/viewer';
 
 type Props = { kind: 'open'; room: ListedRoom } | { kind: 'common'; room: CommonRoom };
@@ -26,9 +28,10 @@ export function OpenRoomCard(props: Props) {
   if (props.kind === 'common') {
     const d = props.room;
     const map = MAPS.find((m) => m.id === d.mapId)!;
-    const friends = (d.friendsInside ?? []).map(userById);
+    const friends = d.friendsInside.map(personAvatar);
     return (
-      <Link href={`/common/${commonCopyFor(d.mapId)}`} className={CARD}>
+      // Walk in picks the copy: a friend's, else the busiest with space
+      <Link href={`/common/${d.id}`} className={CARD}>
         <Picture tint={map.tint} emoji={map.emoji} label="Common room · by Connecta" dark />
         <p className="mt-2 flex items-center gap-1 font-black">
           <span className="truncate">{d.name}</span>
@@ -148,7 +151,7 @@ function Picture({ tint, emoji, label, dark }: { tint: string; emoji: string; la
   );
 }
 
-function Friends({ friends, fallback }: { friends: ReturnType<typeof userById>[]; fallback?: string }) {
+function Friends({ friends, fallback }: { friends: Parameters<typeof AvatarStack>[0]['users']; fallback?: string }) {
   if (!friends.length)
     return fallback ? <p className="mt-1 text-[11px] text-muted-foreground">{fallback}</p> : <span className="mt-1 h-4" />;
   return (

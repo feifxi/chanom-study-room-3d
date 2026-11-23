@@ -549,3 +549,30 @@ Big at 80.
       come in (by design nobody is moved), and the Big → Cosy switch has no 3D difference yet.
 - [ ] **PromptPay renewal uses our payment page,** not a Stripe PromptPay invoice; with Stripe on it
       pays as a one-off checkout, which is fine, but Stripe's own reminders aren't used.
+
+### Moderation, part 1: Common rooms
+
+**Changed:** Common rooms are real. Their three types live in `@connecta/shared/common`; the API's
+`common` module picks your copy (friends first, then the busiest copy under 20, else a new one; up to
+25 when joining a friend) and signs a ticket marked Common; the game server makes that copy text
+only for everyone (no voice at all, no videos, 3 s slow mode). Presence names a friend's copy so
+Home and Friends can walk you in beside them. The web app's Discover and Home cards, the
+`/common/<type>` page (with a name-and-look step for people without a session) and the friends'
+Walk in links use it; the demo's `COMMON_ROOMS` and `commonCopyFor` mock is gone from `apps/web`
+(the admin site's Common page still reads it).
+
+**Bugs found and fixed while building:**
+
+- A guest in a Common room was offered "Join Common rooms ✨" (the old room-name sign-up nudge); it
+  says "Make an account ✨" there now.
+
+A headless run: Mai walked in from Discover (copy #1), Jod saw her on Friends and walked in beside
+her, and a signed-out visitor picked a name and walked in as a guest: three in Cat Café #1.
+
+**Open:**
+
+- [ ] **The admin site's Common page is still mock** (copies, seats and the notice banner), until
+      the admin site step.
+- [ ] **Room capacity settings for Common rooms** (25 and 5) are constants, not admin settings yet.
+- [ ] **A Common copy's look is the map's default** and the 3D room still takes the mock
+      `PUBLIC_SERVER` shape, with the copy as its one room.

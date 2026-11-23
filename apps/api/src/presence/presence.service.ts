@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
-import { focusActivity } from '@connecta/shared';
+import { commonCopyName, focusActivity, parseCommonCopy } from '@connecta/shared';
 import type { Env } from '../config/env.js';
 import { LiveService } from '../live/live.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -146,13 +146,14 @@ export class PresenceService implements OnModuleDestroy {
     return out;
   }
 
-  /** People inside a room right now (not the ones appearing offline). */
-  async inside(roomId: string, now = Date.now()): Promise<string[]> {
+  /** People inside a room right now (not the ones appearing offline, unless `everyone` for counting seats). */
+  async inside(roomId: string, now = Date.now(), everyone = false): Promise<string[]> {
     const ids = await this.redis.smembers(key.inside(roomId));
     if (!ids.length) return [];
     // A crashed gateway can leave someone listed: check their tabs
     const states = await Promise.all(ids.map((id) => this.raw(id, now)));
     const really = ids.filter((_, i) => states[i]!.roomId === roomId);
+    if (everyone) return really;
     const hidden = await this.prisma.user.findMany({ where: { id: { in: really }, appearOffline: true }, select: { id: true } });
     const skip = new Set(hidden.map((u) => u.id));
     return really.filter((id) => !skip.has(id));
@@ -222,8 +223,21 @@ export class PresenceService implements OnModuleDestroy {
       this.prisma.membership.findMany({ where: { userId: viewerId, roomId: { in: ids } }, select: { roomId: true } }),
     ]);
     const member = new Set(mine.map((m) => m.roomId));
-    return new Map(
-      rooms.map((r) => {
+    // Common room copies have no row: anyone may walk in, so they're always named
+    const common = ids.flatMap((id): [string, PresenceRoom][] => {
+      const copy = parseCommonCopy(id);
+      if (!copy) return [];
+      const { type, n } = copy;
+      return [
+        [
+          id,
+          { hidden: false, id, name: commonCopyName(type, n), emoji: '🏛️', mapId: type.mapId, member: false, open: true, common: type.id },
+        ],
+      ];
+    });
+    return new Map([
+      ...common,
+      ...rooms.map((r): [string, PresenceRoom] => {
         const isMember = member.has(r.id);
         const named = isMember || r.visibility !== 'private';
         return [
@@ -236,10 +250,11 @@ export class PresenceService implements OnModuleDestroy {
             mapId: named ? r.mapId : null,
             member: isMember,
             open: !isMember && r.visibility === 'open',
+            common: null,
           },
         ];
       }),
-    );
+    ]);
   }
 
   /** Each friend gets the view meant for them (a private room is named only to its members). */

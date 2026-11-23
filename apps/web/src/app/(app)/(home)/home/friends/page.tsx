@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Check, Copy, Gift, MessageCircle, MoreHorizontal, UserPlus, X } from 'lucide-react';
 import { GiftPlusDialog } from '@/components/app/GiftPlusDialog';
+import { joinCommonHref } from '@/features/common/useCommon';
 import { toast } from 'sonner';
 import { PersonFace } from '@/components/PersonFace';
 import { Button } from '@/components/ui/button';
@@ -105,12 +106,20 @@ function Sections({ friends }: { friends: Friend[] }) {
         ? 'You’re not a member, so it stays private'
         : room.member
           ? 'One of your rooms'
-          : room.open
-            ? 'Open room · anyone can join'
-            : 'Members only · ask for an invite',
+          : room.common
+            ? 'Common room · anyone can walk in'
+            : room.open
+              ? 'Open room · anyone can join'
+              : 'Members only · ask for an invite',
       friends: [],
-      href: room.member ? `/r/${room.id}/walk` : room.open ? `/r/${room.id}` : undefined,
-      join: room.member ? 'Walk in' : 'Join',
+      href: room.common
+        ? joinCommonHref(room.common, f.person.id)
+        : room.member
+          ? `/r/${room.id}/walk`
+          : room.open
+            ? `/r/${room.id}`
+            : undefined,
+      join: room.member || room.common ? 'Walk in' : 'Join',
     };
     card.friends.push(f);
     cards.set(key, card);

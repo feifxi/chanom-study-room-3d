@@ -1134,7 +1134,7 @@ export default function RoomView({
                     href="/login?from=guest"
                     className="panel px-3 py-2 text-xs font-extrabold text-primary hover:bg-secondary"
                   >
-                    Join {server.name} ✨
+                    {common ? 'Make an account ✨' : `Join ${server.name} ✨`}
                   </LeaveRoomLink>
                 )}
                 {!compact && <PeoplePill {...peopleProps} />}

@@ -438,6 +438,14 @@ decision is made or changed: one line, a date, and the reason.
   Plus skins and pets, and AI decks show as Coming soon and come as their own parts. Screen-share
   quality follows the room's plan (its bandwidth); rooms you make or join, uploads and the name tag
   follow your own.
+- **Moderation in four parts** (2026-11-24, the owner): Common rooms; the word filter (masks words
+  as `****` rather than refusing the message; OpenAI's free picture check built but off until a key);
+  reports with their automatic steps; team accounts in Common rooms. Suspensions and bans wait for
+  the admin site, since only the team gives them.
+- **Common room copies have no database rows** (2026-11-24): a copy is just a game-server room
+  (`common-library-2`); who's in it comes from presence, and a fresh ticket holds its seat for 30 s
+  so two people can't both take the 20th. The URL names the type (`/common/library`), not the copy:
+  the API picks the copy each time you walk in.
 - **When Plus ends, nobody is sent out** (2026-11-23, the owner chose A): at the grace's end a room
   goes back to 25 and Big to Cosy, but people inside stay; new people wait at the door. Personal
   perks end on the date; only rooms get the 7 days. PromptPay renews through a reminder that links

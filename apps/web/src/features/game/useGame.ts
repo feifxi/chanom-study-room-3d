@@ -50,9 +50,12 @@ const CLOSED: Record<number, GameEnd> = {
  * Walks into a room's game server (apps/game): a one-minute ticket from the API, then the Colyseus
  * room for this Connecta room. The web app reaches it at /game on its own origin (nginx, or a Next
  * rewrite locally). Dropped connections come back by themselves (the SDK retries; the server keeps
- * your place 20 s). `attempt` walks in again (after "Walk in here").
+ * your place 20 s). `attempt` walks in again (after "Walk in here"). `join` gets the ticket another
+ * way (a Common room copy, where the API picks which copy).
  */
-export function useGame(roomId: string, attempt = 0): GameSession {
+export type TicketFor = () => Promise<{ place: string; ticket: string } | { why: GameEnd }>;
+
+export function useGame(roomId: string, attempt = 0, join?: TicketFor): GameSession {
   // Each walk-in's result is kept with its key, so a new attempt reads as connecting until it lands
   const key = `${roomId}:${attempt}`;
   const [result, setResult] = useState<{ key: string; session: GameSession } | null>(null);
@@ -65,14 +68,13 @@ export function useGame(roomId: string, attempt = 0): GameSession {
     // connects: a second connection would take over from the first ("one of you per room")
     const start = setTimeout(async () => {
       try {
-        const res = await api.POST('/api/rooms/{id}/ticket', { params: { path: { id: roomId } } });
-        if (!res.data) {
-          const code = (res.error as { code?: string } | undefined)?.code;
-          if (!cancelled) setSession({ status: 'out', why: code === 'banned' ? 'banned' : 'gone' });
+        const got = join ? await join() : await roomTicket(roomId);
+        if ('why' in got) {
+          if (!cancelled) setSession({ status: 'out', why: got.why });
           return;
         }
         const client = new Client(`${window.location.origin}/game`);
-        const options: GameJoinOptions = { place: res.data.place, ticket: res.data.ticket };
+        const options: GameJoinOptions = { place: got.place, ticket: got.ticket };
         const room = (await client.joinOrCreate(GAME_ROOM, options)) as GameRoom;
         if (cancelled) return void room.leave();
         joined = room;
@@ -90,7 +92,17 @@ export function useGame(roomId: string, attempt = 0): GameSession {
       clearTimeout(start);
       void joined?.leave();
     };
+    // `join` is read when walking in; a new roomId or attempt walks in again
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId, attempt]);
 
   return result?.key === key ? result.session : { status: 'connecting' };
+}
+
+/** A room's own ticket: members and guest pass holders */
+async function roomTicket(roomId: string): Promise<{ place: string; ticket: string } | { why: GameEnd }> {
+  const res = await api.POST('/api/rooms/{id}/ticket', { params: { path: { id: roomId } } });
+  if (res.data) return res.data;
+  const code = (res.error as { code?: string } | undefined)?.code;
+  return { why: code === 'banned' ? 'banned' : 'gone' };
 }
