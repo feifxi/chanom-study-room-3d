@@ -1,4 +1,18 @@
-import { WALK_SPEED, randomLook, type AvatarLook, type NpcView, type PlayerView } from '@connecta/shared';
+import {
+  BUDDY_NAMES,
+  BUDDY_SUBJECTS,
+  CAT_COATS,
+  CAT_NAMES,
+  NPC_LIMITS,
+  SUMMON_REVEAL_MS,
+  WALK_SPEED,
+  pickRandom,
+  randomLook,
+  type AvatarLook,
+  type NpcKind,
+  type NpcView,
+  type PlayerView,
+} from '@connecta/shared';
 import { questProgress } from '@/lib/quests';
 import type { MapDef } from '../map/types';
 import type { StudyRoom } from './roomSession';
@@ -141,6 +155,72 @@ export class MockRoom implements StudyRoom {
       // The real server counts this for today's quests (feature 7's coin model)
       questProgress('pet-3');
     }
+  }
+
+  /**
+   * The Buddy Machine (the game server's job in the app): a capsule rolls out, and after the reveal
+   * a cat appears by the machine, or a study buddy takes a free desk and starts focusing. Returns the
+   * summon (for the machine's animation and the Bubbles line), or why it can't.
+   */
+  summon(kind: NpcKind): { name: string; label: string } | string {
+    const all = [...this.state.npcs.values()];
+    if (all.length + this.pending >= NPC_LIMITS.total) return 'The room is full of friends already';
+    if (
+      all.filter((n) => n.kind === kind).length + (kind === 'cat' ? this.pendingCats : this.pending - this.pendingCats) >=
+      NPC_LIMITS[kind]
+    )
+      return kind === 'cat' ? 'That’s plenty of cats for one room' : 'Enough study buddies for now';
+    const taken = new Set(all.map((n) => n.name));
+    const name = pickRandom((kind === 'cat' ? CAT_NAMES : BUDDY_NAMES).filter((n) => !taken.has(n)));
+    const coat = pickRandom(CAT_COATS);
+    const label = kind === 'cat' ? `${coat.label.toLowerCase()} cat` : 'study buddy';
+    this.pending++;
+    if (kind === 'cat') this.pendingCats++;
+    const id = `n${Date.now()}`;
+    setTimeout(() => {
+      this.pending--;
+      if (kind === 'cat') this.pendingCats--;
+      const at = this.map.npcSpawn;
+      if (kind === 'cat') return this.addNpc(id, cat(name, coat.id, at.x, at.z, 0, 'idle'));
+      // A study buddy takes a free desk
+      const busy = new Set([...this.state.players.values(), ...this.state.npcs.values()].map((p) => p.seatId).filter(Boolean));
+      const seat = this.map.deskSeats.find((st) => !busy.has(st.id));
+      this.addNpc(id, {
+        ...cat(name, '', seat?.x ?? at.x, seat?.z ?? at.z, 0, seat ? 'sit' : 'idle'),
+        kind: 'buddy',
+        look: JSON.stringify(randomLook()),
+        yaw: seat?.yaw ?? 0,
+        seatId: seat?.id ?? '',
+        status: 'focus',
+        focusSince: Date.now(),
+        subject: pickRandom(BUDDY_SUBJECTS),
+      });
+    }, SUMMON_REVEAL_MS);
+    questProgress('buddy-1');
+    return { name, label };
+  }
+  /** Bumped when NPCs come or go, so the scene and the machine's list re-render */
+  private version = 0;
+  private listeners = new Set<() => void>();
+  readonly subscribe = (fn: () => void) => {
+    this.listeners.add(fn);
+    return () => void this.listeners.delete(fn);
+  };
+  readonly getVersion = () => this.version;
+  private changed() {
+    this.version++;
+    for (const fn of this.listeners) fn();
+  }
+  private pending = 0;
+  private pendingCats = 0;
+  private addNpc(id: string, npc: NpcView) {
+    this.state.npcs.set(id, npc);
+    this.changed();
+  }
+
+  /** Say goodbye: anyone can; it goes home */
+  goodbye(id: string) {
+    if (this.state.npcs.delete(id)) this.changed();
   }
 
   setStatus(status: PlayerView['status'], subject = '') {

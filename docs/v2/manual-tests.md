@@ -209,3 +209,30 @@ Desktop Chrome or Edge to share (phones only watch); three people in a room.
 - [ ] A share without sound says "🔇 no sound", and the sharer gets the tip to share a tab with its
       audio.
 - [ ] On a phone at the table: the share panel fits, big and small; there's no share button.
+
+### Cats, study buddies and the Buddy Machine (part 5)
+
+Two people in a room on the Cosy Library.
+
+- [ ] Both see the same two cats: Mochi napping and Tofu near the door, then wandering, grooming
+      and napping in the same places on both screens.
+- [ ] Walk up to a cat: "Press E to pet Tofu 🐾" (tap it on a phone). Hearts float up on both
+      screens, it says something ("purr~ ❤️", or "_yawn_" if it was napping), and it follows you
+      around for about 20 s; it stops when you sit down.
+- [ ] Walk straight through a cat or a study buddy: nothing stops you.
+- [ ] At the pink machine by the door: "Press E: Buddy Machine" opens the panel beside it (right on
+      a computer, top on a phone; check light and dark). Walking away closes it.
+- [ ] **Summon** a cat: the knob turns and a capsule rolls out on both screens; about 2 s later the
+      cat steps out, the panel says "… is here ✨", and both Bubbles logs say "✨ Mai summoned a …
+      cat, …!". The button counts down 2 s before the next pull.
+- [ ] Summon a study buddy: it appears at a free desk, focusing (📖 and a subject on its label).
+      Sit in its seat: it says something like "Oh, take my seat! 😊" and finds another desk.
+- [ ] With 4 cats in the room the cat button says **Full**; the counts match on both screens.
+- [ ] The other person presses **Goodbye 👋** on one: it waves, walks back to the machine and is
+      gone for both; both logs say "👋 Jod said goodbye to …".
+- [ ] A guest can summon and say goodbye too.
+- [ ] Start a focus timer at a desk next to a study buddy and let the round end (or end it): the
+      study buddy cheers you by name. With 3 or fewer people in the room, a study buddy says hi
+      a few seconds after someone walks in.
+- [ ] Everyone leaves, then walks back in: the summoned ones are gone, Mochi and Tofu are back. The
+      owner switches the map live: the new map starts with its own two resident cats.

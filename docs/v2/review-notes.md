@@ -28,8 +28,8 @@ Tick or strike these as they're dealt with.
 
 - [ ] **Mute for everyone isn't in a mod log.** Spec 01 says every mod action goes in one (who,
       what, reason); there's no mod log yet, so it only reaches the game server's log.
-- [ ] **The cats are each browser's own until part 5 and block walking:** in a test, a cat sitting
-      at the TV rug's entrance stopped someone from walking onto it.
+- [x] ~~**The cats are each browser's own until part 5 and block walking**~~: the game server runs
+      them now, and people walk through them (part 5).
 - [ ] **Phone width, headless test:** tapping the "Press E to sit" hint didn't sit the person down.
       Maybe only the test browser (phone-sized but no touch screen); check on a real phone.
 - [ ] **The talking ring** (who's speaking) wasn't verified in a browser: Chrome's fake microphone
@@ -42,6 +42,17 @@ Tick or strike these as they're dealt with.
       (the game server reports rooms), so it's a leftover.
 - [ ] Guests who never come back aren't cleaned up (needs a background job).
 - [ ] Signed out, the browser console logs a 401 from `/api/me`: expected, just noisy.
+
+- [ ] **A full Buddy Machine isn't measured by the perf check:** it runs a mock room with the two
+      resident cats. Nine NPCs (4 cats at ~25–30 draw calls each, 5 study buddies) likely go over
+      the 5-person draw-call budget (160) until cats are merged
+      ([06](features/06-3d-room.md#performance)).
+- [ ] **A cat napping up on a shelf may be out of reach to pet:** petting needs you within 1.4 m,
+      and some nap spots are higher than the floor next to them (as in V1). Not seen in the test.
+- [ ] **NPC bubbles and summon notes aren't in Room chat**, only in Bubbles (like people's bubbles).
+      Fine by design, worth a look when you review.
+- [ ] **Petting quests still count in this browser only** (the "pet a cat" and "use the Buddy
+      Machine" quests), until coins and quests move to the API in step 5.
 
 **From the demo's design passes**
 
@@ -98,10 +109,31 @@ room empties), time outs and Away take the mic. A dev-only `window.__connecta` t
 
 **Bugs found and fixed while building:** none in the app.
 
-### Part 4: screen share
+### Part 4: screen share (`9624b93`)
 
 **Changed:** desk shares to your table and the TV share are real (LiveKit, to that audience only);
 desk shares use the TV's share panel, one per table. YouTube stays each browser's own until step 5.
 
 **Bugs found and fixed while building:** none in the app (the browser test's own timing needed
 fixing).
+
+### Part 5: cats, study buddies and the Buddy Machine
+
+**Changed:** the Buddy Machine's panel was designed in the demo first and approved (summon a cat or
+a study buddy, the "In the room" list with Goodbye, limits and the cooldown, beside the machine so
+the capsule shows). The game server runs the NPCs (`apps/game/src/npc/`, V1's NpcDirector made
+map-aware): resident cats on every map, petting with floating hearts (moved here from part 2) and
+following, study buddies at desks with 25/5, greetings and cheers, giving up a seat, goodbyes, and
+a reset with the room or a map switch. The web app mirrors them and shows their bubbles, hearts
+and notes. People walk through cats and study buddies (client collisions no longer include them;
+the server never had them). `window.__connecta.npcs()` for browser tests. V1's "sleepier at
+night" (Bangkok time) was left out. Decisions: [decision log](decisions.md), 2026-11-23.
+
+**Bugs found and fixed while building:**
+
+- The machine's panel first sat in the middle of the screen, right over the machine and the
+  capsule rolling out (seen in the demo's first screenshot): it sits beside it now (right on a
+  computer, top on a phone).
+
+The browser test needed fixing twice (a person standing on another's spot, a spot next to a chess
+stool where E sat Jod down); neither was an app bug.

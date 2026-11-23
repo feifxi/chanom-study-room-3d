@@ -1,5 +1,17 @@
 import { Callbacks } from '@colyseus/sdk';
-import type { AvatarLook, PlayerView, Quiet, Said, VoicePass } from '@connecta/shared';
+import type {
+  AvatarLook,
+  NpcKind,
+  NpcNote,
+  NpcReact,
+  NpcRefused,
+  NpcSummoned,
+  NpcView,
+  PlayerView,
+  Quiet,
+  Said,
+  VoicePass,
+} from '@connecta/shared';
 import type { GameRoom } from '@/features/game/useGame';
 import type { MapDef } from '../map/types';
 import { MockRoom, player } from './mockRoom';
@@ -44,11 +56,39 @@ const SHOWN = [
   'seatId',
 ] as const satisfies readonly (typeof FIELDS)[number][];
 
+const NPC_FIELDS = [
+  'kind',
+  'name',
+  'look',
+  'x',
+  'z',
+  'y',
+  'yaw',
+  'moving',
+  'anim',
+  'seatId',
+  'status',
+  'statusEndsAt',
+  'focusSince',
+  'subject',
+  'following',
+] as const satisfies readonly (keyof NpcView)[];
+
+/** What the server's cats and study buddies say and do, besides moving */
+export interface NpcEvents {
+  summoned(event: NpcSummoned): void;
+  said(id: string, text: string): void;
+  react(id: string, emote: string): void;
+  note(text: string): void;
+  refused(reason: string): void;
+}
+
 /**
  * A real room (build step 4) behind the same surface the 3D view and the demo's scripts use: the
  * game server's players are mirrored into `state.players` (you stay under 'me', everyone else under
  * their session id), and your moves go to the server. The objects are updated in place, so avatars
- * read them every frame. The cats are still this browser's own until part 5 brings server NPCs.
+ * read them every frame. The cats and study buddies are the game server's too, mirrored the same way
+ * into `state.npcs`.
  */
 export class LiveRoom extends MockRoom {
   private unsubscribe: () => void;
@@ -59,16 +99,25 @@ export class LiveRoom extends MockRoom {
     me: { name: string; look: AvatarLook },
   ) {
     super(map, me, [], []);
+    // The mock's own cats give way to the server's
+    this.state.npcs.clear();
     const sync = () => this.sync();
     game.onStateChange(sync);
     // Who's here changes rarely; a full sync on each patch keeps positions current
     const callbacks = Callbacks.get(game as unknown as Parameters<typeof Callbacks.get>[0]) as unknown as {
-      onAdd(c: 'players', cb: () => void): () => void;
-      onRemove(c: 'players', cb: () => void): () => void;
+      onAdd(c: 'players' | 'npcs', cb: () => void): () => void;
+      onRemove(c: 'players' | 'npcs', cb: () => void): () => void;
     };
     const offs = [
       callbacks.onAdd('players', sync),
       callbacks.onRemove('players', sync),
+      callbacks.onAdd('npcs', sync),
+      callbacks.onRemove('npcs', sync),
+      game.onMessage('npc:summoned', (m: NpcSummoned) => this.npcListeners.forEach((l) => l.summoned(m))),
+      game.onMessage('npc:said', (m: Said) => this.npcListeners.forEach((l) => l.said(m.id, m.text))),
+      game.onMessage('npc:react', (m: NpcReact) => this.npcListeners.forEach((l) => l.react(m.id, m.emote))),
+      game.onMessage('npc:note', (m: NpcNote) => this.npcListeners.forEach((l) => l.note(m.text))),
+      game.onMessage('npc:refused', (m: NpcRefused) => this.npcListeners.forEach((l) => l.refused(m.reason))),
       game.onMessage('said', (m: Said) => this.saidListeners.forEach((fn) => fn(m.id === game.sessionId ? 'me' : m.id, m.text))),
       game.onMessage('quiet', (m: Quiet) => this.quietListeners.forEach((fn) => fn(m.until))),
     ];
@@ -99,6 +148,23 @@ export class LiveRoom extends MockRoom {
   onQuiet(fn: (until: number) => void) {
     this.quietListeners.add(fn);
     return () => void this.quietListeners.delete(fn);
+  }
+
+  private npcListeners = new Set<NpcEvents>();
+  /** The Buddy Machine's news, NPC bubbles and hearts */
+  onNpc(events: NpcEvents) {
+    this.npcListeners.add(events);
+    return () => void this.npcListeners.delete(events);
+  }
+
+  /** Pull the Buddy Machine's knob; what happens comes back through onNpc */
+  override summon(kind: NpcKind) {
+    this.game.send('npc:summon', { kind });
+    return null;
+  }
+
+  override goodbye(id: string) {
+    this.game.send('npc:goodbye', { id });
   }
 
   say(text: string) {
@@ -155,7 +221,10 @@ export class LiveRoom extends MockRoom {
 
   override send(type: string, payload: unknown) {
     if (type === 'move' || type === 'sit' || type === 'stand') this.game.send(type, payload);
-    else super.send(type, payload);
+    else if (type === 'npc:pet') {
+      this.game.send(type, payload);
+      super.send(type, payload); // today's quest, still counted here until coins and quests are ported
+    } else super.send(type, payload);
   }
 
   // The demo's scripts walk scripted people around; real people walk themselves
@@ -188,6 +257,40 @@ export class LiveRoom extends MockRoom {
         changed = true;
       }
     }
+    if (this.syncNpcs()) changed = true;
     if (changed) this.changed();
+  }
+
+  /** The cats and study buddies; true when the HUD should re-render (one came or went, a nap, a desk) */
+  private syncNpcs() {
+    const npcs = this.game.state?.npcs;
+    if (!npcs) return false;
+    let changed = false;
+    for (const [id, remote] of npcs) {
+      let local = this.state.npcs.get(id);
+      if (!local) {
+        local = { ...remote } as NpcView;
+        this.state.npcs.set(id, local);
+        changed = true;
+      }
+      // A cat following you follows 'me' here
+      const following = remote.following && remote.following === this.game.sessionId ? 'me' : remote.following;
+      if (
+        local.status !== remote.status ||
+        local.seatId !== remote.seatId ||
+        local.following !== following ||
+        (local.anim === 'nap') !== (remote.anim === 'nap')
+      )
+        changed = true;
+      for (const f of NPC_FIELDS) (local as unknown as Record<string, unknown>)[f] = remote[f];
+      local.following = following;
+    }
+    for (const id of [...this.state.npcs.keys()]) {
+      if (!npcs.has(id)) {
+        this.state.npcs.delete(id);
+        changed = true;
+      }
+    }
+    return changed;
   }
 }

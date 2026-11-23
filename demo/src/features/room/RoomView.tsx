@@ -33,9 +33,10 @@ import { RoomCanvas } from '../room3d/RoomCanvas';
 import { usePerfOverlay } from '../room3d/perf';
 import { PerfOverlay } from '../room3d/PerfOverlay';
 import { ZoomControl } from '../room3d/ZoomControl';
-import { bubbleMs, type Bubble } from '../room3d/roomSession';
+import { bubbleMs, type Bubble, type Summon } from '../room3d/roomSession';
 import { zoneAt, type Zone } from '../room3d/zones';
 import { ActivitiesPanel } from './ActivitiesPanel';
+import { BuddyMachinePanel, type MachineSummon } from '../npc/BuddyMachinePanel';
 import { RoomAdmin } from './RoomAdmin';
 import { ActivityHub, type SpotState } from '../activities/hub';
 import { ActivityLayer3D } from '../activities/Activity3D';
@@ -138,6 +139,8 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
     const extra = crowd ? crowdPeople(Math.max(0, crowd - people.length - 1)) : [];
     return new MockRoom(map, { name: myName, look: guest ? (loadGuest()?.look ?? GUEST_LOOK) : getMyLook() }, people, extra);
   }, [roomDef, guest, myName, crowd, look.mapId]);
+  // Summons and goodbyes at the Buddy Machine
+  useSyncExternalStore(room.subscribe, room.getVersion, room.getVersion);
 
   // A look saved in Settings → My character swaps your character live for everyone (no rejoin)
   const myLook = useMyLook();
@@ -214,6 +217,11 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const [findId, setFindId] = useState<string | null>(null);
   const [photo, setPhoto] = useState(false);
   const [activities, setActivities] = useState(false);
+  // The Buddy Machine: E at the machine opens it; walking away closes it
+  const [machine, setMachine] = useState(false);
+  const [machineError, setMachineError] = useState<string | null>(null);
+  const [mySummon, setMySummon] = useState<MachineSummon | undefined>();
+  const [lastSummon, setLastSummon] = useState<Summon | undefined>();
   const [mic, setMic] = useState(false);
   // Deafen = hear nobody and say nothing, like Discord; undeafening brings the mic back as it was
   const [deaf, setDeaf] = useState(false);
@@ -366,6 +374,11 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
   const ids = useMemo(() => [...room.state.players.keys()], [room]);
   const npcIds = useMemo(() => [...room.state.npcs.keys()], [room]);
   const me = room.state.players.get('me')!;
+  // The Buddy Machine stays open while you stand by it (a new cat beside you takes over the E hint)
+  const gacha = activeMap().gacha;
+  const nearMachine = Math.hypot(me.x - gacha.x, me.z - gacha.z) < gacha.reach + 0.8;
+  if (machine && !nearMachine) setMachine(false);
+  const atMachine = machine && nearMachine;
   // The demo crowd's list rows come from crowdPeople (statuses, mics); their avatars walk in 3D
   const realPeople: RoomPerson[] = ids
     .filter((id) => !id.startsWith('crowd-'))
@@ -738,6 +751,11 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
             bubbles={bubbles}
             findId={findId}
             onHint={setHint}
+            onOpenMachine={() => {
+              setActivities(false);
+              setMachine(true);
+            }}
+            lastSummon={lastSummon}
             driverRef={driverRef}
             zoomRequest={zoomRequest}
             onZoom={setZoom}
@@ -1124,50 +1142,81 @@ export default function RoomView({ serverId, roomId, guestName }: { serverId: st
                   </button>
                 </div>
               )}
-              {(hint || seated) && !bigView && !atGameTable && !showPutOn && (hint || (!atFreeFloor && !atFreeArt)) && (
-                <div className="absolute bottom-[100px] left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap">
-                  <button
-                    onClick={() => {
-                      driverRef.current?.press('KeyE');
-                      driverRef.current?.release('KeyE');
-                    }}
-                    className="panel rounded-full px-4 py-2 text-sm font-bold"
-                  >
-                    {seated
-                      ? seatKind === 'sofa'
-                        ? `🛋️ Lounging · ${touch ? 'tap' : 'press E'} to get up`
-                        : `📖 At a desk · ${touch ? 'tap' : 'press E'} to stand up`
-                      : hint?.kind === 'seat'
-                        ? hintSpot
-                          ? `${touch ? 'Tap' : 'Press E'} to ${
-                              hub.spots[hintSpot.id].phase === 'free'
-                                ? `sit and start a game ${hintSpot.emoji}`
-                                : hub.spots[hintSpot.id].phase === 'playing'
-                                  ? 'sit · you’ll play next round'
-                                  : `join ${hub.spots[hintSpot.id].game.name} ${hintSpot.emoji}`
-                            }`
-                          : `${touch ? 'Tap' : 'Press E'} to sit`
-                        : hint?.kind === 'pet'
-                          ? `${touch ? 'Tap' : 'Press E'} to pet ${hint.name} 🐾`
-                          : `${touch ? 'Tap' : 'Press E'}: Buddy Machine`}
-                  </button>
-                  {seated && seatKind !== 'sofa' && !guest && !common && !compact && (
+              {(hint || seated) &&
+                !bigView &&
+                !atGameTable &&
+                !showPutOn &&
+                !(atMachine && hint?.kind === 'machine') &&
+                (hint || (!atFreeFloor && !atFreeArt)) && (
+                  <div className="absolute bottom-[100px] left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap">
                     <button
                       onClick={() => {
-                        setSharing(!sharing);
-                        toast(sharing ? 'Stopped sharing' : 'Sharing your screen with your table 🖥️');
+                        if (hint?.kind === 'machine') return setMachine(true);
+                        driverRef.current?.press('KeyE');
+                        driverRef.current?.release('KeyE');
                       }}
-                      className={cn(
-                        'flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-extrabold shadow-soft',
-                        sharing ? 'bg-destructive text-white' : 'bg-primary text-primary-foreground hover:bg-primary-ink',
-                      )}
+                      className="panel rounded-full px-4 py-2 text-sm font-bold"
                     >
-                      <MonitorUp className="size-4" /> {sharing ? 'Stop sharing' : 'Share screen to table'}
+                      {seated
+                        ? seatKind === 'sofa'
+                          ? `🛋️ Lounging · ${touch ? 'tap' : 'press E'} to get up`
+                          : `📖 At a desk · ${touch ? 'tap' : 'press E'} to stand up`
+                        : hint?.kind === 'seat'
+                          ? hintSpot
+                            ? `${touch ? 'Tap' : 'Press E'} to ${
+                                hub.spots[hintSpot.id].phase === 'free'
+                                  ? `sit and start a game ${hintSpot.emoji}`
+                                  : hub.spots[hintSpot.id].phase === 'playing'
+                                    ? 'sit · you’ll play next round'
+                                    : `join ${hub.spots[hintSpot.id].game.name} ${hintSpot.emoji}`
+                              }`
+                            : `${touch ? 'Tap' : 'Press E'} to sit`
+                          : hint?.kind === 'pet'
+                            ? `${touch ? 'Tap' : 'Press E'} to pet ${hint.name} 🐾`
+                            : `${touch ? 'Tap' : 'Press E'}: Buddy Machine`}
                     </button>
-                  )}
+                    {seated && seatKind !== 'sofa' && !guest && !common && !compact && (
+                      <button
+                        onClick={() => {
+                          setSharing(!sharing);
+                          toast(sharing ? 'Stopped sharing' : 'Sharing your screen with your table 🖥️');
+                        }}
+                        className={cn(
+                          'flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-extrabold shadow-soft',
+                          sharing ? 'bg-destructive text-white' : 'bg-primary text-primary-foreground hover:bg-primary-ink',
+                        )}
+                      >
+                        <MonitorUp className="size-4" /> {sharing ? 'Stop sharing' : 'Share screen to table'}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+              {/* Beside the machine, not over it: the capsule rolling out is the fun part */}
+              {atMachine && (
+                <div className={cn('absolute z-20', compact ? 'inset-x-3 top-[132px] flex justify-center' : 'right-3 bottom-[96px]')}>
+                  <BuddyMachinePanel
+                    npcs={[...room.state.npcs.entries()]}
+                    lastSummon={mySummon}
+                    error={machineError}
+                    onSummon={(kind) => {
+                      const got = room.summon(kind);
+                      if (typeof got === 'string') return setMachineError(got);
+                      setMachineError(null);
+                      const at = Date.now();
+                      setMySummon({ kind, ...got, at });
+                      setLastSummon({ npcId: '', kind, ...got, bySessionId: 'me', byName: myName, at });
+                      setLines((l) => [...l, { id: `summon-${at}`, system: true, text: `✨ You summoned ${got.name} the ${got.label}` }]);
+                    }}
+                    onGoodbye={(id) => {
+                      const n = room.state.npcs.get(id);
+                      room.goodbye(id);
+                      if (n) setLines((l) => [...l, { id: `bye-${Date.now()}`, system: true, text: `👋 ${n.name} went home` }]);
+                    }}
+                    onClose={() => setMachine(false)}
+                  />
                 </div>
               )}
-
               {activities && (
                 <div className="absolute bottom-[96px] left-1/2 z-20 -translate-x-1/2">
                   <ActivitiesPanel

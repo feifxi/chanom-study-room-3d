@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CLIENT_SEND_HZ, NPC_REACH, RUN_SPEED, SIT_REACH, WALK_SPEED, npcRadius, type PlayerView } from '@connecta/shared';
+import { CLIENT_SEND_HZ, NPC_REACH, RUN_SPEED, SIT_REACH, WALK_SPEED, type PlayerView } from '@connecta/shared';
 import { activeMap } from '../map/active';
 import type { LocalMotion } from './Avatar';
 import type { StudyRoom } from './roomSession';
@@ -328,11 +328,10 @@ export class LocalPlayerDriver {
     this.correction = { x: 0, z: 0 };
   }
 
-  /** Other people and NPCs we bump into. */
+  /** Other people we bump into. Cats and study buddies aren't in the way: you walk through them, so one can't block a doorway. */
   private obstaclesAround() {
     const others: { x: number; z: number; r?: number }[] = [];
     for (const [id, o] of this.room.state.players ?? []) if (id !== this.room.sessionId) others.push(o);
-    for (const [, n] of this.room.state.npcs ?? []) others.push({ x: n.x, z: n.z, r: npcRadius(n.kind) });
     return others;
   }
 }

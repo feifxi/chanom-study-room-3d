@@ -5,7 +5,7 @@ communities hang out, study and play together. This page is the overview: status
 what each feature is, and what's left. The details are in one spec per feature
 (`docs/v2/features/`), the reasons in [decisions.md](v2/decisions.md).
 
-## Status (2026-11-22)
+## Status (2026-11-23)
 
 - Features 1–12, 14 and 15 are decided and built in `demo/`, a frontend-only prototype with mock
   data ([demo guide](v2/demo-guide.md)). 13 was dropped.
@@ -13,8 +13,8 @@ what each feature is, and what's left. The details are in one spec per feature
   and dark mode.
 - **The real app is being built fresh** in `apps/` and `packages/` (V1 was removed from `main`;
   it's at tag `v1.0.0`). Steps 1 and 2 (the skeleton; accounts and rooms) are done; step 3, the
-  gateway, is done too; step 4, walking in a room, is under way (parts 1–4 of 5 done). Nothing is
-  deployed.
+  gateway, is done too; so is step 4, walking in a room (all five parts). Next is step 5, the rest
+  of the features one at a time. Nothing is deployed.
 
 | #   | Feature                                 | Status  | Spec                                                                   |
 | --- | --------------------------------------- | ------- | ---------------------------------------------------------------------- |
@@ -84,7 +84,9 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
      enforced by LiveKit, deafen, guest voice, Mute for me and Mute for everyone.
    - ~~Screen share~~ done 2026-11-22: at a desk to your table, or on the TV, with its sound, over
      LiveKit to that audience only; desk shares use the TV's share panel, one per table.
-   - Server-run cats and study buddies (V1's NpcDirector).
+   - ~~Server-run cats and study buddies~~ done 2026-11-23: V1's NpcDirector on every map, resident
+     cats, petting with hearts and following, the Buddy Machine (designed in the demo first:
+     summon, goodbye, limits), study buddies at desks with 25/5, and people walk through them.
 5. **The rest, a feature at a time:** activities and table games, Plus, coins and quests, focus,
    Common and open rooms, moderation, the editor and admin site.
 6. **The seed:** one fill of all the data (people, rooms, members, friends, DMs…) for testing the

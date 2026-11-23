@@ -94,8 +94,11 @@ export interface GamePresence {
  * `status` { status, subject?, endsAt? } (focus, break, away), `stage` { on }, `look` { look },
  * `voice` (asks for a {@link VoicePass}), `deaf` { on }, `mute` { id, on } (owner and mods: Mute
  * for everyone, by session id), `share` { where: 'tv' | 'table' | '', audio } (a screen share at
- * the TV or the desk you sit at; '' stops it).
- * What the server sends besides state: `said`, `quiet` and `voice`.
+ * the TV or the desk you sit at; '' stops it), `npc:summon` { kind } (at the Buddy Machine),
+ * `npc:goodbye` { id }, `npc:pet` { id }.
+ * What the server sends besides state: `said`, `quiet`, `voice`, and for the cats and study buddies
+ * `npc:summoned` ({@link NpcSummoned}), `npc:said` ({@link Said}, the NPC's id), `npc:react`
+ * ({@link NpcReact}), `npc:note` ({@link NpcNote}) and `npc:refused` ({@link NpcRefused}).
  */
 export interface VoicePass {
   /** LiveKit's WebSocket URL */
@@ -107,6 +110,19 @@ export interface Said {
   /** The speaker's session id */
   id: string;
   text: string;
+}
+/** A floating emote over an NPC (❤️ when petted, ✨ out of the capsule) */
+export interface NpcReact {
+  id: string;
+  emote: string;
+}
+/** A line for everyone's Bubbles log ("Mai summoned a calico cat, Nori!") */
+export interface NpcNote {
+  text: string;
+}
+/** Why the Buddy Machine said no (too far, cooling down, the room is full) */
+export interface NpcRefused {
+  reason: string;
 }
 /** You're timed out: nothing you say or type goes out until then (epoch ms). */
 export interface Quiet {

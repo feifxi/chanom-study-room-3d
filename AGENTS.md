@@ -35,12 +35,13 @@ log. Keep them current in the same change that makes them stale.
 
 ## What's next
 
-Step 4 of the plan, **walking in a room**, in five parts. Parts 1–4 are done: the Colyseus game
-server (`apps/game`) with a signed join ticket from the API, V1's movement, capacity, presence and
-live room changes; bubbles, Away, Talk to everyone and the people list's real actions; LiveKit
-proximity voice with private zones; screen share at a desk or on the TV. Next is part 5,
-server-run cats and study buddies. Steps 1–3 (the skeleton; accounts and rooms; the
-gateway: friends, chat, pictures, DMs, presence and the 🔔 inbox) are done. The plan's
+Step 5 of the plan, **the rest, a feature at a time** (activities and table games, Plus, coins and
+quests, focus, Common and open rooms, moderation, the editor and admin site): agree the order and
+each feature's details with the owner before building. Steps 1–4 are done: the skeleton; accounts
+and rooms; the gateway (friends, chat, pictures, DMs, presence and the 🔔 inbox); walking in a room
+(the Colyseus game server `apps/game` with movement, capacity and live room changes, bubbles, Away,
+the people list, LiveKit proximity voice, screen share, and server-run cats, study buddies and the
+Buddy Machine). The plan's
 [What's left](docs/v2-plan.md#whats-left) is the source of truth.
 
 ## Working agreements

@@ -18,7 +18,7 @@ import type { LocalPlayerDriver } from './LocalPlayerDriver';
 import { activeMap } from '../map/active';
 import type { MockRoom } from './mockRoom';
 import type { Quality } from './quality';
-import type { Bubble } from './roomSession';
+import { npcKey, type Bubble, type Summon } from './roomSession';
 import { StaticShadows } from './StaticShadows';
 import { startZoom, ZOOM, ZoomBridge } from './ZoomControl';
 
@@ -32,6 +32,10 @@ interface Props {
   /** Person to point at (ring under them + arrow at your feet), or null. */
   findId: string | null;
   onHint: (h: Hint | null) => void;
+  /** E at the Buddy Machine */
+  onOpenMachine: () => void;
+  /** The latest summon, for the machine's knob and capsule */
+  lastSummon?: Summon;
   driverRef: React.RefObject<LocalPlayerDriver | null>;
   /** A zoom the DOM control asked for, applied on the next frame. */
   zoomRequest: { current: number | null };
@@ -56,6 +60,8 @@ export function RoomCanvas({
   bubbles,
   findId,
   onHint,
+  onOpenMachine,
+  lastSummon,
   driverRef,
   zoomRequest,
   onZoom,
@@ -64,11 +70,12 @@ export function RoomCanvas({
   myLookVersion = 0,
   myLook,
 }: Props) {
-  // People coming and going in a real room (the mock's never change)
+  // People, cats and study buddies coming and going
   const peopleVersion = useSyncExternalStore(room.subscribe, room.getVersion, room.getVersion);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- peopleVersion says the keys changed
   const ids = useMemo(() => [...room.state.players.keys()], [room, peopleVersion]);
-  const npcIds = useMemo(() => [...room.state.npcs.keys()], [room]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- peopleVersion says the keys changed
+  const npcIds = useMemo(() => [...room.state.npcs.keys()], [room, peopleVersion]);
   const map = activeMap();
   const SPAWN = map.spawn;
   return (
@@ -94,12 +101,12 @@ export function RoomCanvas({
         maxPolarAngle={1.2}
       />
       <MockTicker room={room} />
-      <LocalController room={room} motion={motion} onHint={onHint} onOpenMachine={() => {}} driverRef={driverRef} />
+      <LocalController room={room} motion={motion} onHint={onHint} onOpenMachine={onOpenMachine} driverRef={driverRef} />
       <ClickToWalk driverRef={driverRef} />
       {children}
-      <GachaMachine lastSummon={undefined} />
+      <GachaMachine lastSummon={lastSummon} />
       {npcIds.map((id) => (
-        <NpcAvatar key={id} id={id} npc={room.state.npcs.get(id)!} board={board} />
+        <NpcAvatar key={id} id={id} npc={room.state.npcs.get(id)!} board={board} bubble={bubbles[npcKey(id)]} />
       ))}
       {ids.map((id) => (
         <Avatar

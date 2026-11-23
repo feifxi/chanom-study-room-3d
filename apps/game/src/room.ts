@@ -12,7 +12,12 @@ import {
   SIT_REACH,
   SUBJECT_MAX,
   TYPING_TIMEOUT_MS,
+  NPC_KINDS,
   sanitizeLook,
+  type NpcNote,
+  type NpcReact,
+  type NpcRefused,
+  type NpcSummoned,
   type Quiet,
   type Said,
   type GameJoinOptions,
@@ -23,6 +28,7 @@ import {
 import { inArea, mapDataFor, zoneAtIn, type MapData } from '@connecta/shared/maps';
 import { links, liveRooms } from './links.js';
 import { log } from './log.js';
+import { NpcDirector } from './npc/director.js';
 import { Player, RoomState } from './state.js';
 import { clamp, refillMoveBudget, spendMove } from './rules.js';
 import { readTicket } from './ticket.js';
@@ -33,6 +39,9 @@ export const secrets = { ticket: '' };
 
 /** Matchmaking keeps rooms apart by `place`, the Connecta room id (see GameJoinOptions). */
 type JoinOptions = GameJoinOptions;
+
+/** The cats and study buddies move ten times a second */
+const NPC_TICK_MS = 100;
 
 /** Owners and mods always fit (spec 01: "the owner and mods always fit"), so the hard cap sits well above capacity. */
 const HARD_CAP = 250;
@@ -75,6 +84,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
   private guestVoice = false;
   /** Muted for everyone, by account, so walking out and back in doesn't lift it; gone when the room empties */
   private muted = new Set<string>();
+  /** The cats and study buddies (part 5): in memory, so they reset when the room empties */
+  private npc = this.makeNpcs();
 
   messages = {
     move: validate(
@@ -105,6 +116,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       if (!p || !seat) return;
       if (Math.hypot(seat.x - p.x, seat.z - p.z) > SIT_REACH) return;
       for (const other of this.state.players.values()) if (other !== p && other.seatId === seat.id) return; // taken
+      // A study buddy there gives the seat up for a person
+      this.npc.yieldSeat(seat.id);
       p.seatId = seat.id;
       p.x = seat.x;
       p.z = seat.z;
@@ -173,6 +186,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       (client, msg) => {
         const p = this.state.players.get(client.sessionId);
         if (!p) return;
+        // A focus round ended: study buddies nearby cheer
+        if (p.status === 'focus' && msg.status !== 'focus' && p.focusSince) this.npc.focusEnded(p, (Date.now() - p.focusSince) / 60_000);
         if (msg.status === 'focus' && p.status !== 'focus') p.focusSince = Date.now();
         if (msg.status !== 'focus') p.focusSince = 0;
         p.status = msg.status;
@@ -224,6 +239,26 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       p.stage = msg.on && (p.role === 'owner' || p.role === 'mod') && p.status !== 'away' && !p.hushed;
     }),
 
+    /** The Buddy Machine: summon a cat or a study buddy for everyone (anyone can, guests too) */
+    'npc:summon': validate(z.object({ kind: z.enum(NPC_KINDS) }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (!p) return;
+      const refused = this.npc.summon(client.sessionId, p, msg.kind);
+      if (refused) client.send('npc:refused', { reason: refused } satisfies NpcRefused);
+    }),
+
+    /** Send one home: nobody owns them, so anyone can */
+    'npc:goodbye': validate(z.object({ id: z.string().max(40) }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (p) this.npc.goodbye(msg.id, p.name);
+    }),
+
+    /** Head pats for a cat within reach */
+    'npc:pet': validate(z.object({ id: z.string().max(40) }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (p) this.npc.pet(client.sessionId, p, msg.id);
+    }),
+
     /** A new look from Settings → My character, live for everyone (guests keep the one they picked) */
     look: validate(z.object({ look: z.unknown() }), (client, msg) => {
       const p = this.state.players.get(client.sessionId);
@@ -268,6 +303,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
         if (p?.hushed) this.refreshVoice(sessionId);
       }
     }, 1000);
+    this.clock.setInterval(() => this.npc.tick(NPC_TICK_MS / 1000), NPC_TICK_MS);
   }
 
   onJoin(client: Client, _options: JoinOptions, ticket: Auth) {
@@ -305,6 +341,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     });
     this.clients_.set(client.sessionId, client);
     for (const sessionId of this.priv.keys()) this.refreshVoice(sessionId);
+    this.npc.joined(this.state.players.get(client.sessionId)!, (fn, ms) => this.clock.setTimeout(fn, ms));
     links.presence({ userId: ticket.sub, tabId: tabId(client.sessionId), roomId: this.connectaId });
     log.info({ roomId: this.connectaId, userId: ticket.sub, role: ticket.role }, 'walked in');
   }
@@ -420,6 +457,42 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     for (const p of this.state.players.values()) {
       const spot = this.doorSpot();
       Object.assign(p, { seatId: '', x: spot.x, z: spot.z, yaw: Math.PI, moving: false, share: '', shareAudio: false });
+    }
+    // The new map's resident cats; summoned friends don't come along
+    this.npc.reset();
+  }
+
+  /** The NPC code's window on this room */
+  private makeNpcs() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- the host reads the room's current map
+    const room = this;
+    return new NpcDirector({
+      get state() {
+        return room.state;
+      },
+      get map() {
+        return room.map;
+      },
+      say: (id, text) => {
+        const npc = this.state.npcs.get(id);
+        if (npc) this.toHearers(npc, 'npc:said', { id, text });
+      },
+      react: (id, emote) => {
+        const npc = this.state.npcs.get(id);
+        if (npc) this.toHearers(npc, 'npc:react', { id, emote } satisfies NpcReact);
+      },
+      note: (text) => this.broadcast('npc:note', { text } satisfies NpcNote),
+      summoned: (event) => this.broadcast('npc:summoned', event satisfies NpcSummoned),
+    });
+  }
+
+  /** Whoever hears something said here: the whole room, or only the private zone it's in */
+  private toHearers(at: { x: number; z: number }, type: string, message: unknown) {
+    const zone = zoneAtIn(this.map, at.x, at.z);
+    if (!zone) return void this.broadcast(type, message);
+    for (const [sessionId, c] of this.clients_) {
+      const o = this.state.players.get(sessionId);
+      if (o && zoneAtIn(this.map, o.x, o.z)?.id === zone.id) c.send(type, message);
     }
   }
 

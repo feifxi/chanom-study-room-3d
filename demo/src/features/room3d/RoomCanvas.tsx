@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useSyncExternalStore } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -18,6 +18,7 @@ import type { LocalPlayerDriver } from './LocalPlayerDriver';
 import { activeMap } from '../map/active';
 import type { MockRoom } from './mockRoom';
 import type { Quality } from './quality';
+import type { Summon } from './roomSession';
 import type { Bubble } from './roomSession';
 import { StaticShadows } from './StaticShadows';
 import { startZoom, ZOOM, ZoomBridge } from './ZoomControl';
@@ -32,6 +33,10 @@ interface Props {
   /** Person to point at (ring under them + arrow at your feet), or null. */
   findId: string | null;
   onHint: (h: Hint | null) => void;
+  /** E at the Buddy Machine */
+  onOpenMachine: () => void;
+  /** The latest summon, for the machine's knob and capsule */
+  lastSummon?: Summon;
   driverRef: React.RefObject<LocalPlayerDriver | null>;
   /** A zoom the DOM control asked for, applied on the next frame. */
   zoomRequest: { current: number | null };
@@ -56,6 +61,8 @@ export function RoomCanvas({
   bubbles,
   findId,
   onHint,
+  onOpenMachine,
+  lastSummon,
   driverRef,
   zoomRequest,
   onZoom,
@@ -65,7 +72,10 @@ export function RoomCanvas({
   myLook,
 }: Props) {
   const ids = useMemo(() => [...room.state.players.keys()], [room]);
-  const npcIds = useMemo(() => [...room.state.npcs.keys()], [room]);
+  // Summons and goodbyes (the Buddy Machine) change who's here
+  const npcVersion = useSyncExternalStore(room.subscribe, room.getVersion, room.getVersion);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- npcVersion says the keys changed
+  const npcIds = useMemo(() => [...room.state.npcs.keys()], [room, npcVersion]);
   const map = activeMap();
   const SPAWN = map.spawn;
   return (
@@ -91,10 +101,10 @@ export function RoomCanvas({
         maxPolarAngle={1.2}
       />
       <MockTicker room={room} />
-      <LocalController room={room} motion={motion} onHint={onHint} onOpenMachine={() => {}} driverRef={driverRef} />
+      <LocalController room={room} motion={motion} onHint={onHint} onOpenMachine={onOpenMachine} driverRef={driverRef} />
       <ClickToWalk driverRef={driverRef} />
       {children}
-      <GachaMachine lastSummon={undefined} />
+      <GachaMachine lastSummon={lastSummon} />
       {npcIds.map((id) => (
         <NpcAvatar key={id} id={id} npc={room.state.npcs.get(id)!} board={board} />
       ))}

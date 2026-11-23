@@ -402,6 +402,15 @@ decision is made or changed: one line, a date, and the reason.
   which room through Redis for the gateway to write, so the gateway stays presence's one writer.
   Rejected: the game server reading Postgres or cookies (a second copy of the rules, and of the auth
   setup).
+- **Step 4 part 5: cats and study buddies** (2026-11-23, the owner): the game server runs them (V1's
+  NpcDirector, made map-aware). The Buddy Machine had no V2 design, so its panel was designed in
+  the demo first and approved (rather than porting V1's panel straight, or making the machine
+  decoration with fixed residents). Anyone can summon and anyone can say goodbye, guests too,
+  since nobody owns them (only owners and mods was turned down). People walk through cats and study
+  buddies, so a cat can't block a doorway or the TV rug (a browser test hit exactly that); they
+  still avoid furniture and each other. Every map starts with two resident cats (Mochi napping,
+  Tofu by the door); the Cat Café's extra cats wait for its art pass. V1's "sleepier at night" was
+  left out: it used Bangkok time, and rooms aren't in one time zone.
 - **Step 4 part 4: screen share** (2026-11-22, the owner): people at a desk share's table watch it in
   the TV's share panel (big, or small in the corner), not V1's strip of tiles, so watching any share
   is one flow; one share per table at a time, like the TV. The TV share is real now while YouTube

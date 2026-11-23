@@ -2,7 +2,20 @@ import { Client, type Room } from '@colyseus/sdk';
 import { listen } from 'colyseus';
 import { SignJWT } from 'jose';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { GAME_CLOSE, GAME_ROOM, TICKET_AUDIENCE, type GamePresence, type GameTicket, type PlayerView, type Said } from '@connecta/shared';
+import {
+  GAME_CLOSE,
+  GAME_ROOM,
+  TICKET_AUDIENCE,
+  type GamePresence,
+  type GameTicket,
+  type NpcNote,
+  type NpcReact,
+  type NpcRefused,
+  type NpcSummoned,
+  type NpcView,
+  type PlayerView,
+  type Said,
+} from '@connecta/shared';
 import { mapDataFor } from '@connecta/shared/maps';
 import { dispatch, links } from './links.js';
 import { decodeJwt } from 'jose';
@@ -13,7 +26,7 @@ const SECRET = process.env.GAME_SECRET!;
 const PORT = 4092;
 const client = new Client(`http://localhost:${PORT}`);
 
-type GameRoom = Room<unknown, { mapId: string; players: Map<string, PlayerView> }>;
+type GameRoom = Room<unknown, { mapId: string; players: Map<string, PlayerView>; npcs: Map<string, NpcView> }>;
 
 const presence: GamePresence[] = [];
 /** Each test walks into a room of its own (an empty room closes only a second after the last leave) */
@@ -442,4 +455,117 @@ describe('bubbles and status', () => {
       expect(me(g).share).toBe('');
     });
   });
+});
+
+describe('cats and study buddies', () => {
+  const library = mapDataFor('library');
+  const machine = library.gacha;
+  const npcs = (r: GameRoom) => [...r.state.npcs.entries()];
+  const named = (r: GameRoom, name: string) => npcs(r).find(([, n]) => n.name === name);
+  /** Everything the Buddy Machine and the NPCs tell a client */
+  function listen(r: GameRoom) {
+    const got = {
+      summoned: [] as NpcSummoned[],
+      said: [] as Said[],
+      react: [] as NpcReact[],
+      notes: [] as string[],
+      refused: [] as string[],
+    };
+    r.onMessage('npc:summoned', (m: NpcSummoned) => got.summoned.push(m));
+    r.onMessage('npc:said', (m: Said) => got.said.push(m));
+    r.onMessage('npc:react', (m: NpcReact) => got.react.push(m));
+    r.onMessage('npc:note', (m: NpcNote) => got.notes.push(m.text));
+    r.onMessage('npc:refused', (m: NpcRefused) => got.refused.push(m.reason));
+    return got;
+  }
+
+  it('a room opens with its map’s resident cats: Mochi napping, Tofu by the door', async () => {
+    const a = track(await walkIn());
+    await until(() => a.state.npcs.size === 2);
+    expect(named(a, 'Mochi')?.[1]).toMatchObject({ kind: 'cat', anim: 'nap' });
+    expect(named(a, 'Tofu')?.[1].kind).toBe('cat');
+  });
+
+  it('summons at the machine only: everyone sees the capsule, the cat steps out after it, one pull every 2 s', async () => {
+    const a = track(await walkIn());
+    const b = track(await walkIn({ sub: 'u-jod', name: 'Jod', handle: 'jod' }));
+    const heardA = listen(a);
+    const heardB = listen(b);
+    await walkTo(a, library.deskSeats[0]!.out);
+    a.send('npc:summon', { kind: 'cat' });
+    await until(() => heardA.refused.length === 1);
+    expect(heardA.refused[0]).toMatch(/walk up/i);
+
+    await walkTo(a, machine);
+    a.send('npc:summon', { kind: 'cat' });
+    await until(() => heardB.summoned.length === 1);
+    expect(heardB.summoned[0]).toMatchObject({ kind: 'cat', bySessionId: a.sessionId, byName: 'Mai' });
+    expect(a.state.npcs.size).toBe(2); // still rolling out
+    a.send('npc:summon', { kind: 'buddy' });
+    await until(() => heardA.refused.length === 2);
+    expect(heardA.refused[1]).toMatch(/cooling down/);
+    await until(() => a.state.npcs.size === 3, 3000);
+    expect(heardB.notes.at(-1)).toMatch(new RegExp(`Mai summoned an? .*cat, ${heardB.summoned[0]!.name}!`));
+    expect(heardB.react.at(-1)).toMatchObject({ id: heardB.summoned[0]!.npcId, emote: '✨' });
+  }, 20_000);
+
+  it('caps cats at 4 (the residents count), whoever pulls', async () => {
+    const people = await Promise.all(['a', 'b', 'c'].map(async (x) => track(await walkIn({ sub: `u-${x}`, name: x, handle: x }))));
+    for (const r of people) await walkTo(r, machine);
+    const heard = listen(people[2]!);
+    people[0]!.send('npc:summon', { kind: 'cat' });
+    people[1]!.send('npc:summon', { kind: 'cat' });
+    await quietly();
+    people[2]!.send('npc:summon', { kind: 'cat' });
+    await until(() => heard.refused.length === 1);
+    expect(heard.refused[0]).toMatch(/plenty of cats/);
+    // A study buddy still fits, and takes a free desk focusing
+    people[2]!.send('npc:summon', { kind: 'buddy' });
+    await until(() => npcs(people[2]!).some(([, n]) => n.kind === 'buddy'), 3000);
+    const [, buddy] = npcs(people[2]!).find(([, n]) => n.kind === 'buddy')!;
+    expect(library.deskSeats.some((s) => s.id === buddy.seatId)).toBe(true);
+    expect(buddy).toMatchObject({ status: 'focus', anim: 'sit' });
+  }, 20_000);
+
+  it('a study buddy gives its seat up to a person', async () => {
+    const a = track(await walkIn());
+    await walkTo(a, machine);
+    a.send('npc:summon', { kind: 'buddy' });
+    await until(() => npcs(a).some(([, n]) => n.kind === 'buddy' && n.seatId), 3000);
+    const [id, buddy] = npcs(a).find(([, n]) => n.kind === 'buddy')!;
+    const seat = library.seatById.get(buddy.seatId)!;
+    const heard = listen(a);
+    await walkTo(a, seat.out);
+    a.send('sit', { seatId: seat.id });
+    await until(() => me(a).seatId === seat.id);
+    expect(a.state.npcs.get(id)!.seatId).not.toBe(seat.id);
+    await until(() => heard.said.some((m) => m.id === id));
+  }, 20_000);
+
+  it('petting a cat in reach: hearts, a purr, and it follows you', async () => {
+    const a = track(await walkIn());
+    const heard = listen(a);
+    await until(() => named(a, 'Tofu'));
+    const [id, tofu] = named(a, 'Tofu')!;
+    for (let i = 0; i < 10 && tofu.following !== a.sessionId; i++) {
+      await walkTo(a, tofu);
+      a.send('npc:pet', { id });
+      await quietly(150);
+    }
+    expect(tofu.following).toBe(a.sessionId);
+    expect(heard.react).toContainEqual({ id, emote: '❤️' });
+    expect(heard.said.some((m) => m.id === id)).toBe(true);
+  }, 20_000);
+
+  it('anyone can say goodbye; a new map brings its own resident cats back', async () => {
+    const a = track(await walkIn());
+    const b = track(await walkIn({ sub: 'u-jod', name: 'Jod', handle: 'jod' }));
+    const heard = listen(a);
+    await until(() => named(b, 'Tofu'));
+    b.send('npc:goodbye', { id: named(b, 'Tofu')![0] });
+    await until(() => heard.notes.includes('👋 Jod said goodbye to Tofu'));
+    await until(() => !named(a, 'Tofu'), 15_000);
+    dispatch({ roomId: ROOM, type: 'map', mapId: 'cafe' });
+    await until(() => a.state.mapId === 'cafe' && !!named(a, 'Tofu') && a.state.npcs.size === 2);
+  }, 25_000);
 });

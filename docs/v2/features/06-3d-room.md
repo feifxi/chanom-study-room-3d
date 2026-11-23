@@ -1,16 +1,16 @@
 # 6. The 3D room
 
-**Status:** decided and built in the demo. In the real app (2026-11-22, build step 4 parts 1–4)
+**Status:** decided and built in the demo. In the real app (2026-11-22/23, build step 4, all five parts)
 you walk in for real: the game server (`apps/game`) holds who's here, movement, seats, capacity,
 live kick, ban, role and map changes, bubbles and typing, Away, Talk to everyone, live looks, and
 the people list's actions; proximity voice runs on LiveKit (distance, stereo, the 12 nearest,
 private zones, deafen, guest voice, Mute for me and Mute for everyone), and so do screen shares
-at a desk and on the TV. Still to come: the cats and study buddies
-with their hearts when petted (part 5; each browser has its own cats until then), and activities,
-focus and the study panel (step 5); Report stays a mock dialog until feature 14. **Try it:** http://localhost:3000/home → a room → Walk in, in two browsers after
+at a desk and on the TV; the cats and study buddies are the game server's, with the Buddy Machine
+and hearts when you pet a cat (part 5). Still to come: activities, focus and the study panel
+(step 5); Report stays a mock dialog until feature 14. **Try it:** http://localhost:3000/home → a room → Walk in, in two browsers after
 `pnpm dev` (the demo: http://localhost:3100/servers/chanom/rooms/library: click the floor to walk,
 step onto the Fireside rug, type a bubble, open 🛡️ Room → Talk to everyone, and Demo tab → "Go away
-now").
+now"; walk to the pink machine by the door and press E for the Buddy Machine).
 
 Everything V1 had, plus click to walk, stereo voice for crowds, private zones, away, and an
 announcement mode for owners and mods. The HUD around the room is in
@@ -94,9 +94,45 @@ focus timer, so it must never happen by accident.
   next step: full (Notify me, Read the chat), removed by a mod, banned, in another tab (Walk in
   here), the room is gone, or the room can't be reached (Try again).
 
+## Cats, study buddies and the Buddy Machine
+
+Every room is a little alive, the same for everyone in it.
+
+- **Resident cats:** each map starts with two: Mochi (calico) napping in the cosiest nap spot, and
+  Tofu (orange) by the door. Cats wander, groom, and nap on the map's nap spots (sofas, shelves,
+  cat beds).
+- **Petting:** walk up to a cat, **E** (or tap the hint) "to pet Tofu 🐾": hearts float up, it purrs
+  (or mews sleepily if it was napping) and **follows you for 20 s**, until you sit down. Counts
+  toward the "pet a cat" quest.
+- **The Buddy Machine** (a pastel capsule-toy machine; where it stands is in
+  [07-maps.md](07-maps.md)): walk up and press **E**. Its panel sits beside the machine (the right
+  side on a computer, the top on a phone) so you can watch the knob turn and the capsule roll out;
+  walking away closes it.
+  - **Summon** a cat ("Wanders, naps somewhere cosy, follows you after head pats") or a study buddy
+    ("Takes a free desk and focuses with you"), with a count for each. "A capsule is rolling out…",
+    then "Nori the calico cat is here ✨"; everyone's machine plays the capsule, and everyone's
+    Bubbles log says "✨ Mai summoned a calico cat, Nori!".
+  - **In the room** lists every cat and study buddy (coat, napping, or what they're studying), each
+    with **Goodbye 👋**: it waves, walks back to the machine and is gone ("👋 Jod said goodbye to
+    Tofu").
+  - **Nobody owns them:** anyone can summon and anyone can say goodbye, guests too. No "summoned
+    by" on the list.
+  - **Limits:** up to 4 cats and 5 study buddies, 9 in all (the resident cats count); one pull
+    every 2 s each. Full shows on the button; the machine explains a refusal ("That's plenty of
+    cats for one room").
+- **Study buddies** sit at a free desk and run 25/5: focus 25 minutes (📖 and their subject on their
+  label), then stretch on the open floor for 5. In a quiet room (3 people or fewer) one says hi when
+  you walk in; when your focus round ends near one (or at its table) it cheers you on. **Sit in a
+  study buddy's seat** and it gives it up ("Oh, take my seat! 😊") and finds another.
+- **You walk through cats and study buddies:** they never block a doorway or a rug (2026-11-23).
+  They still walk around furniture and each other.
+- **They reset with the room:** when the last person leaves, summoned friends go home; the next
+  visit starts with the resident cats again. A map switch does the same.
+
 ## What resets
 
-When the last person leaves: bubbles, who sat where, drawings and games. The room itself (name, map,
+When the last person leaves: bubbles, who sat where, drawings and games, and the summoned cats
+and study buddies (the resident cats come back). The room itself (name, map,
 settings, members, Room chat) stays.
 
 ## Performance
@@ -205,8 +241,17 @@ under 0.6M.
   and ends a share when you leave the spot, stand up, the map changes or you can't talk any more.
   The picture and sound go over LiveKit, and the sharer's client lets only that audience receive
   them (the same enforcement as private zones; `watchesShare` in `@connecta/shared/maps`).
-- **Browser tests** use a dev-only handle, `window.__connecta` (`goTo(x, z)`, `here()`, and `voice`,
-  the LiveKit room), and Chrome's fake microphone (`--use-fake-device-for-media-stream`, still
+- **Cats and study buddies** (`apps/game/src/npc/`, V1's NpcDirector made map-aware): the game
+  server runs them ten times a second in the room's state (`npcs`, synced like players; behaviour
+  state stays on the server). Messages: `npc:summon` { kind } (checked: at the machine, the
+  cooldown, the limits; a refusal comes back as `npc:refused`), `npc:goodbye` { id }, `npc:pet`
+  { id } (within reach). The server sends `npc:summoned` to everyone (the capsule; the NPC appears
+  1.8 s later), `npc:said` and `npc:react` (bubbles and hearts, only into a private zone if the NPC
+  is in one), and `npc:note` for the Bubbles log. Cats path with the map's A\*; people aren't
+  obstacles to them, and the client leaves NPCs out of your collisions. Study buddies also hear
+  your status (a focus round ending) and seat claims (`sit`). All in memory: nothing is stored.
+- **Browser tests** use a dev-only handle, `window.__connecta` (`goTo(x, z)`, `here()`, `npcs()`
+  and `voice`, the LiveKit room), and Chrome's fake microphone (`--use-fake-device-for-media-stream`, still
   with `--mute-audio`).
 - **Bubbles** go through the game server (`say`; it sends `said` back): to the whole room, or only
   to the private zone the speaker stands in (unless they're talking to everyone). It trims to 120
