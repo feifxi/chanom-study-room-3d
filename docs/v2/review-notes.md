@@ -480,7 +480,7 @@ room's. The Plus page marks perks with nothing to unlock as Coming soon and uses
 A headless run checked a Free room (25 / 150), Plus on (50 / 1,000 on a Cosy map), Jod seeing
 "✨Mai" shimmer at once, and it going away when Plus ended.
 
-### Plus, part 2: paying
+### Plus, part 2: paying (`4a1c755`)
 
 **Changed:** the API's `billing` module: checkouts, plans and receipts (`checkouts`,
 `plus_subscriptions`, `payments`), Stripe's hosted Checkout and signed webhook behind one
