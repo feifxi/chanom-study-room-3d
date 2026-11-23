@@ -317,7 +317,7 @@ timed out) would have stayed on the drawer's own screen only; the server now tak
 too. A headless run checked a late arrival getting the drawing (panel and wall), Mai's undo
 disappearing for Jod, and the Share button for a member.
 
-### Party and table games, part 4: Pick a Side and room decks
+### Party and table games, part 4: Pick a Side and room decks (`ae3fc3e`)
 
 **Changed:** Pick a Side runs on the game server (`apps/game/src/pickASide.ts`), with the rules
 and built-in decks moved to `@connecta/shared/pick-a-side`. The round flow learned **standing
