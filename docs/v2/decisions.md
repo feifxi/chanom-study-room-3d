@@ -442,6 +442,13 @@ decision is made or changed: one line, a date, and the reason.
   as `****` rather than refusing the message; OpenAI's free picture check built but off until a key);
   reports with their automatic steps; team accounts in Common rooms. Suspensions and bans wait for
   the admin site, since only the team gives them.
+- **Reports: only accounts that are there count, once each** (2026-11-24, the owner): guests can
+  report (the team reads it) but a guest is free to make, so five guests can't push someone out; a
+  report counts only from someone in that room or Common copy, and an account counts once in a
+  window. The automatic mute is a mod's timeout (one mechanism, liftable by the mods), never the
+  owner's. Mods never see reports, since they may be the problem.
+- **Bubbles in a report come from the reporter's screen** (2026-11-24): bubbles aren't stored (on
+  purpose), so the report carries the last few the reporter saw that person say, marked as such.
 - **Names are refused, messages masked** (2026-11-24): a message with a blocked word still says
   something once it's `****`, but a name, an @handle or a room name of asterisks helps nobody, so
   those are refused with a reason. Thai has no spaces, so our Thai list only holds words that can't

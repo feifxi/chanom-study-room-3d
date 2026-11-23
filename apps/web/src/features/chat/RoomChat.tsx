@@ -1,11 +1,12 @@
 'use client';
 
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { ChatView, pickedFile, type ChatMessageView, type Mentionable } from '@/components/chat/Chat';
 import { useMe } from '@/features/account/useMe';
 import { DmCard } from '@/features/dms/DmCard';
 import { useBlocks } from '@/features/friends/useFriends';
+import { ReportDialog } from '@/features/moderation/ReportDialog';
 import { useMembers } from '@/features/rooms/useRooms';
 import { useChat, type ChatMessage, type Thread } from './useRoomChat';
 
@@ -73,6 +74,7 @@ export function ThreadChat({
   className?: string;
 }) {
   const { data: me } = useMe();
+  const [reporting, setReporting] = useState<ChatMessageView | null>(null);
   const chat = useChat(thread);
   const blocks = useBlocks(!!me?.signedUp);
   const blocked = useMemo(() => new Set(blocks.data?.map((b) => b.person.id)), [blocks.data]);
@@ -106,42 +108,54 @@ export function ThreadChat({
   }
 
   return (
-    <ChatView
-      key={'room' in thread ? thread.room : thread.dm}
-      className={className}
-      messages={chat.messages.map(view)}
-      placeholder={placeholder}
-      mentionables={mentionables}
-      moderator={moderator}
-      locked={locked}
-      dividerAt={firstUnread(chat.messages, chat.lastReadId, me?.id)}
-      typing={chat.typing}
-      intro={intro}
-      hasMore={chat.query.hasNextPage}
-      onLoadMore={() => void chat.query.fetchNextPage()}
-      onSend={(text, images, replyTo) => {
-        const files = images.map(pickedFile).filter((f): f is File => !!f);
-        const sending = chat.send.mutateAsync({ text, replyToId: replyTo?.id, files });
-        if (files.length)
-          toast.promise(sending, {
-            loading: files.length === 1 ? 'Sending your picture…' : `Sending ${files.length} pictures…`,
-            success: 'Sent',
-            error: () => null,
-          });
-        sending.catch(() => {}).finally(() => images.forEach((url) => URL.revokeObjectURL(url)));
-      }}
-      onEdit={(m, text) => chat.edit.mutate({ id: m.id, text })}
-      onDelete={(m) => {
-        const original = byId.get(m.id);
-        if (original) chat.remove(original, m.mine ? 'Message deleted' : `Deleted ${m.author.name}’s message`);
-      }}
-      onReact={(m, emoji) => chat.react.mutate({ id: m.id, emoji, on: !m.reactions.find((r) => r.emoji === emoji)?.mine })}
-      onSeeLatest={() => {
-        const last = chat.messages[chat.messages.length - 1];
-        if (last) chat.markRead(last.id);
-      }}
-      onTyping={chat.sendTyping}
-    />
+    <>
+      <ChatView
+        key={'room' in thread ? thread.room : thread.dm}
+        className={className}
+        messages={chat.messages.map(view)}
+        placeholder={placeholder}
+        mentionables={mentionables}
+        moderator={moderator}
+        locked={locked}
+        dividerAt={firstUnread(chat.messages, chat.lastReadId, me?.id)}
+        typing={chat.typing}
+        intro={intro}
+        hasMore={chat.query.hasNextPage}
+        onLoadMore={() => void chat.query.fetchNextPage()}
+        onSend={(text, images, replyTo) => {
+          const files = images.map(pickedFile).filter((f): f is File => !!f);
+          const sending = chat.send.mutateAsync({ text, replyToId: replyTo?.id, files });
+          if (files.length)
+            toast.promise(sending, {
+              loading: files.length === 1 ? 'Sending your picture…' : `Sending ${files.length} pictures…`,
+              success: 'Sent',
+              error: () => null,
+            });
+          sending.catch(() => {}).finally(() => images.forEach((url) => URL.revokeObjectURL(url)));
+        }}
+        onEdit={(m, text) => chat.edit.mutate({ id: m.id, text })}
+        onDelete={(m) => {
+          const original = byId.get(m.id);
+          if (original) chat.remove(original, m.mine ? 'Message deleted' : `Deleted ${m.author.name}’s message`);
+        }}
+        onReport={me?.isGuest ? undefined : setReporting}
+        onReact={(m, emoji) => chat.react.mutate({ id: m.id, emoji, on: !m.reactions.find((r) => r.emoji === emoji)?.mine })}
+        onSeeLatest={() => {
+          const last = chat.messages[chat.messages.length - 1];
+          if (last) chat.markRead(last.id);
+        }}
+        onTyping={chat.sendTyping}
+      />
+      {reporting && (
+        <ReportDialog
+          person={{ id: reporting.author.id, name: reporting.author.name }}
+          messageId={reporting.id}
+          canBlock={false}
+          open
+          onOpenChange={(o) => !o && setReporting(null)}
+        />
+      )}
+    </>
   );
 }
 

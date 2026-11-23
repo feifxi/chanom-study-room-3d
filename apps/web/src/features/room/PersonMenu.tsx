@@ -19,7 +19,6 @@ import {
 import { toast } from 'sonner';
 import { UserAvatar } from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   DropdownMenu,
@@ -35,12 +34,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { friendsApi } from '@/features/friends/useFriends';
 import { TIMEOUTS } from '@/features/place/membership';
 import { problem, roomsApi } from '@/features/rooms/useRooms';
 import { setMutedForMe as rememberMutedForMe } from '@/features/voice/mutedForMe';
+import { ReportDialog } from '@/features/moderation/ReportDialog';
 import { cn } from '@/lib/utils';
 import type { RoomPerson, RoomRole } from './RoomPeople';
 
@@ -60,6 +59,8 @@ export function PersonMenu({
   p,
   myRole,
   roomId,
+  place,
+  bubbles,
   youGuest,
   onFind,
   onMessage,
@@ -70,6 +71,10 @@ export function PersonMenu({
   myRole?: RoomRole;
   /** A real room (build step 4); none in the demo and Common rooms */
   roomId?: string;
+  /** Where a report says it happened (the room, or the Common copy) */
+  place?: string;
+  /** What they said in bubbles lately, sent with a report */
+  bubbles?: string[];
   /** You're a guest: no messages, friends or blocks */
   youGuest?: boolean;
   onFind: () => void;
@@ -293,7 +298,14 @@ export function PersonMenu({
           void act(call, CONFIRM[kind].done(p.name));
         }}
       />
-      <ReportDialog p={p} open={report} onOpenChange={setReport} />
+      <ReportDialog
+        person={{ id: p.userId || undefined, name: p.name, guest: p.guest }}
+        place={place}
+        bubbles={bubbles}
+        canBlock={!p.guest && !youGuest}
+        open={report}
+        onOpenChange={setReport}
+      />
     </>
   );
 }
@@ -379,70 +391,6 @@ function ConfirmDialog({
           </DialogFooter>
         </DialogContent>
       )}
-    </Dialog>
-  );
-}
-
-const REASONS = [
-  ['harass', 'Harassment or bullying'],
-  ['hate', 'Hate or discrimination'],
-  ['sexual', 'Sexual content'],
-  ['spam', 'Spam or scams'],
-  ['name', 'Offensive name or avatar'],
-  ['other', 'Something else'],
-] as const;
-
-function ReportDialog({ p, open, onOpenChange }: { p: RoomPerson; open: boolean; onOpenChange: (o: boolean) => void }) {
-  const [reason, setReason] = useState<string>('');
-  const [block, setBlock] = useState(!p.guest);
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[calc(100%-2rem)] rounded-3xl sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="font-black">Report {p.name}</DialogTitle>
-          <DialogDescription>
-            Reports go to the Connecta team, and to this room’s mods. {p.name} won’t know who reported them.
-          </DialogDescription>
-        </DialogHeader>
-        <RadioGroup value={reason} onValueChange={setReason} className="gap-1">
-          {REASONS.map(([id, label]) => (
-            <Label
-              key={id}
-              htmlFor={`report-${id}`}
-              className={cn(
-                'flex items-center gap-2.5 rounded-xl border px-3 py-2 text-sm font-bold',
-                reason === id && 'border-primary bg-secondary',
-              )}
-            >
-              <RadioGroupItem id={`report-${id}`} value={id} />
-              {label}
-            </Label>
-          ))}
-        </RadioGroup>
-        <Textarea placeholder="What happened? (optional)" rows={2} className="rounded-xl" />
-        {!p.guest && (
-          <Label className="flex items-center gap-2 text-sm font-bold">
-            <Checkbox checked={block} onCheckedChange={(v) => setBlock(v === true)} /> Also block {p.name}
-          </Label>
-        )}
-        <DialogFooter>
-          <Button variant="outline" className="rounded-full font-extrabold" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            variant="destructive"
-            disabled={!reason}
-            className="rounded-full bg-destructive font-extrabold text-white hover:bg-destructive/90"
-            onClick={() => {
-              toast.success(`Thanks. ${p.name} was reported${block && !p.guest ? ' and blocked' : ''}.`);
-              onOpenChange(false);
-              setReason('');
-            }}
-          >
-            Send report
-          </Button>
-        </DialogFooter>
-      </DialogContent>
     </Dialog>
   );
 }

@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DmChat } from '@/features/dms/DmChat';
+import { ReportDialog } from '@/features/moderation/ReportDialog';
 import { muteDm, useDmWith } from '@/features/dms/useDms';
 import { friendsApi, useFriendAction } from '@/features/friends/useFriends';
 import { mapFor } from '@/features/place/model';
@@ -37,6 +38,7 @@ export default function DmPage() {
   );
   const block = useFriendAction(friendsApi.block, () => toast(`${u?.name} is blocked. Their messages are hidden in rooms you share.`));
   const [gifting, setGifting] = useState(false);
+  const [reporting, setReporting] = useState(false);
 
   return (
     <div className="flex h-full">
@@ -55,6 +57,7 @@ export default function DmPage() {
             <p className="truncate text-xs text-muted-foreground">@{handle}</p>
           </div>
           {u && dm.data?.friend && <GiftPlusDialog to={u} open={gifting} onOpenChange={setGifting} />}
+          {u && <ReportDialog person={u} canBlock={!dm.data?.blocked} open={reporting} onOpenChange={setReporting} />}
           {u && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -92,7 +95,7 @@ export default function DmPage() {
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive" onSelect={() => toast('Report sent. Thanks for telling us.')}>
+                <DropdownMenuItem variant="destructive" onSelect={() => setReporting(true)}>
                   <Flag /> Report
                 </DropdownMenuItem>
               </DropdownMenuContent>

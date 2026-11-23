@@ -18,6 +18,8 @@ import type { ChatTarget } from './ChannelOverlay';
 /** A line of Bubbles: what someone said out loud in the room (it also pops over their head). */
 export interface RoomLine {
   id: string;
+  /** Who said it (their id in the room), for reports */
+  by?: string;
   name?: string;
   text: string;
   system?: boolean;

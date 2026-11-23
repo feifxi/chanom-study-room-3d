@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { ArrowDown, CornerUpLeft, ImagePlus, Pencil, Send, Smile, SmilePlus, Trash2, X } from 'lucide-react';
+import { ArrowDown, CornerUpLeft, Flag, ImagePlus, Pencil, Send, Smile, SmilePlus, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useMe } from '@/features/account/useMe';
 import { planOf, PICTURES_MAX } from '@connecta/shared';
@@ -78,6 +78,8 @@ type ViewProps = {
   onSend: (text: string, images: string[], replyTo: ChatMessageView | null) => void;
   onEdit: (m: ChatMessageView, text: string) => void;
   onDelete: (m: ChatMessageView) => void;
+  /** Someone else's message: report it to the Connecta team */
+  onReport?: (m: ChatMessageView) => void;
   onReact: (m: ChatMessageView, emoji: string) => void;
   /** You've scrolled to the latest message (to mark the chat read) */
   onSeeLatest?: () => void;
@@ -112,6 +114,7 @@ export function ChatView({
   onSend,
   onEdit,
   onDelete,
+  onReport,
   onReact,
   onSeeLatest,
   onTyping,
@@ -193,6 +196,7 @@ export function ChatView({
                     setEditing(null);
                   }}
                   onDelete={() => onDelete(m)}
+                  onReport={onReport && !m.mine ? () => onReport(m) : undefined}
                 />
               </div>
             );
@@ -356,6 +360,7 @@ function Row({
   onEdit,
   onSave,
   onDelete,
+  onReport,
 }: {
   m: ChatMessageView;
   grouped: boolean;
@@ -366,6 +371,7 @@ function Row({
   onEdit: () => void;
   onSave: (text: string) => void;
   onDelete: () => void;
+  onReport?: () => void;
 }) {
   const [shown, setShown] = useState(false);
   if (m.system) return <p className="my-2 rounded-2xl bg-muted px-3 py-2 text-center text-sm text-muted-foreground">{m.text}</p>;
@@ -488,6 +494,11 @@ function Row({
           {canDelete && (
             <ToolButton label="Delete" onClick={onDelete} danger>
               <Trash2 className="size-4" />
+            </ToolButton>
+          )}
+          {onReport && (
+            <ToolButton label="Report" onClick={onReport} danger>
+              <Flag className="size-4" />
             </ToolButton>
           )}
         </div>

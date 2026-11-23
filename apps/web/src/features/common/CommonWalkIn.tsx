@@ -29,10 +29,12 @@ export function CommonWalkIn({ type, withId, guestName }: { type: CommonType; wi
   const [copy, setCopy] = useState<Copy | null>(null);
   const last = useRef<number | undefined>(undefined);
   const join: TicketFor = async () => {
-    const { data } = await api.POST('/api/common/{type}/ticket', {
+    const { data, response } = await api.POST('/api/common/{type}/ticket', {
       params: { path: { type: type.id } },
       body: { with: withId ?? undefined, copy: last.current },
     });
+    // Out of Common rooms for a while after enough reports
+    if (response.status === 403) return { why: 'banned' };
     if (!data) return { why: 'unreachable' };
     last.current = data.n;
     setCopy({ place: data.place, n: data.n, name: data.name });
@@ -83,7 +85,11 @@ function CantWalkIn({ type, why, guest, onRetry }: { type: CommonType; why: Game
   const copy: Partial<Record<GameEnd, { emoji: string; title: string; body: string }>> = {
     full: { emoji: '🫧', title: 'That copy just filled up', body: 'Try again and we’ll find you another seat.' },
     kicked: { emoji: '🚪', title: 'You were taken out', body: 'The Connecta team took you out of this Common room.' },
-    banned: { emoji: '🙅', title: 'You can’t come into Common rooms for now', body: 'People reported you. Try again in a while.' },
+    banned: {
+      emoji: '🙅',
+      title: 'You can’t come into Common rooms for now',
+      body: 'Several people here reported you, so you’re out of Common rooms for an hour.',
+    },
     elsewhere: {
       emoji: '🪞',
       title: `You’re in the ${type.name} in another tab`,

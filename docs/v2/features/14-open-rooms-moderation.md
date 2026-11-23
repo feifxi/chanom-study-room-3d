@@ -1,7 +1,7 @@
 # 14. Common rooms, open rooms and moderation
 
 **Status:** decided and built in the demo; in `apps/` in four parts (2026-11-24): Common rooms
-(done), the word filter (done), reports, team accounts in Common rooms. Suspensions, bans and the admin
+(done), the word filter (done), reports (done), team accounts in Common rooms. Suspensions, bans and the admin
 site come after. **Try it:** http://localhost:3100 with the Demo tab's
 **View as**:
 
@@ -89,6 +89,23 @@ on or off in the admin site, cheapest first:
    picture is dropped from its message. Built, and off until the owner adds `OPENAI_API_KEY`. Smarter
    text checks and paid AI checks only if needed later.
 
+## Reporting a person or a message
+
+- **A person:** their "…" in a room's people list (3D) or in your DM with them. **A message:** the
+  Report button when you hover someone else's message, in room chat or a DM. Reasons: harassment or
+  bullying, hate or discrimination, sexual content, spam or scams, an offensive name or avatar,
+  something else; optional details; "Also block" (accounts reporting accounts).
+- **Only the Connecta team sees reports**, never the room's owner or mods, and the person never learns
+  who reported them. A report keeps what the team needs: the message and a few around it, the
+  person's recent messages there, and the bubbles the reporter's screen showed (bubbles aren't
+  stored).
+- **The automatic steps** count reports from **accounts that are there**, each account once in a
+  window; guests can report (kept for the team) but don't count, since a guest is free to make.
+  - In a room: **3 in 10 minutes → muted there for 15 minutes**, the same as a mod's timeout (mods see
+    "Timed out", not who reported or why, and can lift it). Never the owner.
+  - In Common rooms: **5 in 30 minutes → out of every Common room for an hour**, sent out at once
+    ("You can't come into Common rooms for now").
+
 ## Reporting a room
 
 - In the room's "…" menu (Home), the Room card in 3D ("Report this room", not for your own room) and
@@ -135,6 +152,15 @@ seats held 30 s for fresh tickets (Redis); empty copies close. `GET /api/common`
 and names friends inside; presence names a friend's copy (`room.common`) so Home and Friends link
 "Walk in" to `/common/<type>?with=<id>`. Without a session `/common/<type>` asks for a name and a
 look and walks in as a guest.
+
+**Built so far (reports):** `POST /api/reports` (`src/reports/`) takes a person (`userId`, `place`,
+`bubbles`), a message (`messageId`, checked against what the reporter can see) or a room (`place`,
+not your own). Rows go in `reports` with the context as JSON, read later by the admin site. The
+counts are Redis sorted sets of reporters per window (`reports:room:<room>:<user>`,
+`reports:common:<user>`); a room's step sets the membership's `timedOutUntil` and sends the game
+server a `timeout`; the Common step sets `common:out:<user>` for an hour, which the Common ticket
+refuses (403 `common_out`), and sends the copy a `ban` so they're out at once. Reasons and limits
+are in `@connecta/shared` (`PERSON_REASONS`, `ROOM_REASONS`, `REPORT_STEPS`).
 
 **Built so far (the word filter):** `maskWords` and `hasBlockedWord` in `@connecta/shared/moderate`
 (its own entry, so the web bundle doesn't carry the word lists): `obscenity`'s English set plus

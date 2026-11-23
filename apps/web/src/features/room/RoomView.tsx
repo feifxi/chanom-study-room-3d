@@ -529,7 +529,7 @@ export default function RoomView({
 
   const say = useCallback((id: string, name: string, text: string) => {
     setBubbles((b) => ({ ...b, [id]: { text, until: Date.now() + bubbleMs(text) } }));
-    setLines((l) => [...l, { id: `${Date.now()}-${id}`, name, text }]);
+    setLines((l) => [...l, { id: `${Date.now()}-${id}`, by: id, name, text }]);
   }, []);
 
   // Bubbles in a real room come back from the game server (it decides who hears: private zones, time outs)
@@ -809,6 +809,13 @@ export default function RoomView({
     onFind: find,
     myRole,
     roomId: game ? server.id : undefined,
+    // Reports name where it happened: the room, or the Common copy
+    place: game ? (common ? roomDef.id : server.id) : undefined,
+    bubblesOf: (id: string) =>
+      lines
+        .filter((l) => l.by === id && !l.system)
+        .slice(-10)
+        .map((l) => l.text),
     youGuest: guest,
     onMuteForEveryone: room instanceof LiveRoom ? (p: RoomPerson, on: boolean) => room.muteForEveryone(p.id, on) : undefined,
     onMessage: (p: RoomPerson) => {

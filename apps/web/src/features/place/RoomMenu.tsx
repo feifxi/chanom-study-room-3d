@@ -143,7 +143,7 @@ export function RoomMenu({
 
       <AboutRoomDialog room={room} open={about} onOpenChange={setAbout} onSettings={canEdit ? () => setSettings('overview') : undefined} />
       <InviteDialog room={room} open={invite} onOpenChange={setInvite} />
-      <ReportRoomDialog name={room.name} open={report} onOpenChange={setReport} />
+      <ReportRoomDialog roomId={room.id} name={room.name} open={report} onOpenChange={setReport} />
       <RoomSettingsDialog room={room} tab={settings} onClose={() => setSettings(null)} />
       <Dialog open={leaving} onOpenChange={setLeaving}>
         <DialogContent className="max-w-[calc(100%-2rem)] rounded-3xl sm:max-w-sm">

@@ -3210,6 +3210,37 @@
         ]
       }
     },
+    "/api/reports": {
+      "post": {
+        "operationId": "ReportsController_report",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportSent"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
     "/api/notifications": {
       "get": {
         "operationId": "NotificationsController_list",
@@ -6244,6 +6275,79 @@
           "n",
           "name",
           "note"
+        ],
+        "additionalProperties": false
+      },
+      "ReportBody": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "person",
+              "message",
+              "room"
+            ]
+          },
+          "userId": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "messageId": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "place": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "harass",
+              "hate",
+              "sexual",
+              "spam",
+              "name",
+              "other",
+              "room_name",
+              "room_about",
+              "room_inside",
+              "room_spam",
+              "room_danger",
+              "room_other"
+            ]
+          },
+          "details": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "block": {
+            "type": "boolean"
+          },
+          "bubbles": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        },
+        "required": [
+          "kind",
+          "reason"
+        ]
+      },
+      "ReportSent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
         ],
         "additionalProperties": false
       },

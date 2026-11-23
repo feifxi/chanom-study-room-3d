@@ -61,6 +61,10 @@ type PeopleProps = {
   myRole?: RoomRole;
   /** A real room: the people list's actions go to the API */
   roomId?: string;
+  /** Where reports say it happened: the room's id, or the Common copy's */
+  place?: string;
+  /** What someone said in bubbles lately, for a report */
+  bubblesOf?: (id: string) => string[];
   /** You're a guest: no messages, friends or blocks (those need an account) */
   youGuest?: boolean;
   /** A real room: Mute for everyone through the game server */
@@ -113,6 +117,8 @@ export function RoomPeople({
   onFind,
   myRole,
   roomId,
+  place,
+  bubblesOf,
   youGuest,
   onMuteForEveryone,
   onMessage,
@@ -206,6 +212,8 @@ export function RoomPeople({
                           p={p}
                           myRole={myRole}
                           roomId={roomId}
+                          place={place}
+                          bubbles={bubblesOf?.(p.id)}
                           youGuest={youGuest}
                           onMuteForEveryone={onMuteForEveryone && ((on) => onMuteForEveryone(p, on))}
                           onFind={() => onFind(p.id)}

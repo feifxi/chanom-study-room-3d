@@ -137,7 +137,7 @@ export function RoomCard({
           )}
         </div>
       )}
-      <ReportRoomDialog name={name} open={report} onOpenChange={setReport} />
+      <ReportRoomDialog roomId={server.id} name={name} open={report} onOpenChange={setReport} />
 
       {!isPublic && !guest && (
         <>

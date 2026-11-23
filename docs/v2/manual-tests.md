@@ -580,3 +580,19 @@ Use the Demo tab → Your Plus (it runs the reminders at once); check the 🔔 i
       as not available; a room name, description or rules like that won't save.
 - [ ] Pictures still send as before with no `OPENAI_API_KEY` (the API logs "chat pictures aren't
       checked"). With a key: a picture OpenAI flags is dropped from its message.
+
+### Moderation, part 3: reports
+
+- [ ] Hover someone else's message in room chat or a DM → **Report** (flag) → pick a reason, add
+      details → "Thanks. The message was reported." Your own messages have no Report.
+- [ ] In a 3D room, a person's "…" → **Report**: "Only the Connecta team sees reports…", Also block
+      (not for guests). In a DM, "…" → Report opens the same dialog.
+- [ ] Room card → **Report this room** (not your own room, not in Common rooms), and Discover's room
+      preview: the room's reasons; sends and thanks you.
+- [ ] Three accounts in a room report the same member within 10 minutes → that member can't send room
+      chat or bubbles for 15 minutes ("You're timed out"); the owner and mods see "Timed out". The
+      owner is never muted this way; one account reporting three times doesn't do it.
+- [ ] Five accounts in a Common copy report the same person within 30 minutes → they're sent out with
+      "You can't come into Common rooms for now", and Walk in shows it for an hour.
+- [ ] `pnpm db:studio` → `reports`: each report with its reason, details and context (the message,
+      messages around it, bubbles seen, the room's name).

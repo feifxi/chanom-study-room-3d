@@ -128,7 +128,7 @@ export function JoinRoomDialog({ room, open, onOpenChange }: { room: ListedRoom;
           </p>
         </div>
       </DialogContent>
-      <ReportRoomDialog name={room.name} open={report} onOpenChange={setReport} />
+      <ReportRoomDialog roomId={room.id} name={room.name} open={report} onOpenChange={setReport} />
     </Dialog>
   );
 }

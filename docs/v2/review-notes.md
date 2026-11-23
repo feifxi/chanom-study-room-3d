@@ -607,3 +607,33 @@ as "Mint" and "this is shit lol" popped up as "this is **** lol".
       answer. When the owner adds a key, send a picture to confirm.
 - [ ] **Links aren't clickable in Common rooms** (spec 14) was already true for bubbles (bubbles
       never make links); nothing else changed there.
+
+### Moderation, part 3: reports
+
+**Changed:** a `reports` table and the API's `reports` module (`POST /api/reports`) for people,
+messages and rooms, with the context the team needs. The automatic steps count accounts that are
+there, once each per window: 3 in 10 minutes mutes someone in a room for 15 minutes (the mod
+timeout, never the owner); 5 in 30 minutes puts someone out of Common rooms for an hour (the Common
+ticket refuses them, the game server sends them out). The web app has one report dialog for people
+and messages (the people list in 3D, DMs' "…", and a new Report button on others' messages in room
+chat and DMs, carrying the bubbles you saw), and the room report dialog sends for real. The person
+dialog no longer says reports go to the room's mods.
+
+**Bugs found and fixed while building:**
+
+- None in the app. (A browser script's sign-ins hit Better Auth's rate limit when run back to back;
+  the script retries now.)
+
+A headless run: Jod wrote in Mai's room, Mai hovered the message → Report → Harassment, "mean to
+everyone" → the report was stored with the message, the room's name and counted.
+
+**Open:**
+
+- [ ] **Nobody reads reports yet**: the admin site's Reports page (next step) is still mock; until
+      then they're in `pnpm db:studio`.
+- [ ] **A guest's automatic mute lasts only while they're inside**: guests have no membership to
+      hold a timeout, so walking back in clears it (they can't use room chat anyway).
+- [ ] **No limit on how often one account reports**: repeats are kept but count once; the admin
+      site can show who reports too much.
+- [ ] **The muted person isn't told why**: they see the usual "You're timed out", like a mod's
+      timeout.

@@ -23,6 +23,9 @@ import type { CommonRoomView, CommonTicket } from './common.schemas.js';
 /** A ticket holds a seat this long before its person is inside (two people never get the 20th seat) */
 const HOLD_MS = 30_000;
 
+/** Out of Common rooms after enough reports (feature 14): the reports module sets it, walking in reads it */
+export const commonOutKey = (userId: string) => `common:out:${userId}`;
+
 const key = {
   /** The copy numbers open for a type */
   copies: (type: string) => `common:copies:${type}`,
@@ -91,6 +94,14 @@ export class CommonService implements OnModuleDestroy {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException();
     if (!user.isAnonymous && !user.handle) throw new ForbiddenException('Finish signing up first');
+    const out = await this.redis.get(commonOutKey(userId));
+    if (out) {
+      throw new ForbiddenException({
+        message: 'You can’t come into Common rooms for now',
+        code: 'common_out',
+        until: new Date(Number(out)).toISOString(),
+      });
+    }
     const { n, note } = await this.pick(userId, type, ask, now);
     const place = commonCopyId(type.id, n);
     await this.redis.sadd(key.copies(type.id), String(n));

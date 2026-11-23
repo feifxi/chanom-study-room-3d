@@ -10,6 +10,7 @@ import { DecksModule } from './decks/decks.module.js';
 import { QuestsModule } from './quests/quests.module.js';
 import { BillingModule } from './billing/billing.module.js';
 import { CommonModule } from './common/common.module.js';
+import { ReportsModule } from './reports/reports.module.js';
 import { PlusModule } from './plus/plus.module.js';
 import { ShopModule } from './shop/shop.module.js';
 import { FocusModule } from './focus/focus.module.js';
@@ -71,6 +72,7 @@ import { PrismaService } from './prisma/prisma.service.js';
     PlusModule,
     BillingModule,
     CommonModule,
+    ReportsModule,
     LiveModule,
     PresenceModule,
     NotificationsModule,

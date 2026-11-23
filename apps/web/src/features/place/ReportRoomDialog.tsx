@@ -1,28 +1,45 @@
 'use client';
 
 import { useState } from 'react';
+import { REPORT_DETAILS_MAX, ROOM_REASONS, type RoomReason } from '@connecta/shared';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { problem } from '@/features/rooms/useRooms';
+import { api } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
-
-const REASONS = [
-  'Its name or picture',
-  'Its description or rules',
-  'What goes on inside',
-  'Spam or a scam',
-  'Someone may be in danger',
-  'Something else',
-];
 
 /**
  * Report a whole room (feature 14): goes to the Connecta team only (the room's own mods may be the
  * problem), anonymous. The team can delist it from Discover or close it. People are reported from
  * their own "…" menu instead.
  */
-export function ReportRoomDialog({ name, open, onOpenChange }: { name: string; open: boolean; onOpenChange: (o: boolean) => void }) {
-  const [reason, setReason] = useState<string | null>(null);
+export function ReportRoomDialog({
+  roomId,
+  name,
+  open,
+  onOpenChange,
+}: {
+  roomId: string;
+  name: string;
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+}) {
+  const [reason, setReason] = useState<RoomReason | null>(null);
+  const [details, setDetails] = useState('');
+  const [busy, setBusy] = useState(false);
+  const send = async () => {
+    if (!reason) return;
+    setBusy(true);
+    const { error } = await api.POST('/api/reports', { body: { kind: 'room', place: roomId, reason, details: details || undefined } });
+    setBusy(false);
+    if (error) return toast.error(problem(error, 'Couldn’t send the report. Try again?'));
+    onOpenChange(false);
+    setReason(null);
+    setDetails('');
+    toast.success('Thanks. The Connecta team will take a look.');
+  };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[calc(100%-2rem)] rounded-3xl sm:max-w-md">
@@ -31,7 +48,7 @@ export function ReportRoomDialog({ name, open, onOpenChange }: { name: string; o
           <DialogDescription>Only the Connecta team sees this, not the room’s owner or mods. It’s anonymous.</DialogDescription>
         </DialogHeader>
         <div className="flex flex-wrap gap-1.5">
-          {REASONS.map((r) => (
+          {ROOM_REASONS.map(({ id: r, label }) => (
             <button
               key={r}
               type="button"
@@ -42,24 +59,23 @@ export function ReportRoomDialog({ name, open, onOpenChange }: { name: string; o
                 reason === r ? 'border-primary bg-secondary text-secondary-foreground' : 'hover:bg-muted',
               )}
             >
-              {r}
+              {label}
             </button>
           ))}
         </div>
-        <Textarea rows={3} maxLength={500} placeholder="Anything that helps (optional)" className="rounded-xl" />
+        <Textarea
+          value={details}
+          onChange={(e) => setDetails(e.target.value)}
+          rows={3}
+          maxLength={REPORT_DETAILS_MAX}
+          placeholder="Anything that helps (optional)"
+          className="rounded-xl"
+        />
         <DialogFooter>
           <Button variant="ghost" className="rounded-full font-bold" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            disabled={!reason}
-            className="rounded-full font-extrabold"
-            onClick={() => {
-              onOpenChange(false);
-              setReason(null);
-              toast.success('Thanks. The Connecta team will take a look.');
-            }}
-          >
+          <Button disabled={!reason || busy} className="rounded-full font-extrabold" onClick={() => void send()}>
             Send report
           </Button>
         </DialogFooter>
