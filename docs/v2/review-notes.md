@@ -760,7 +760,7 @@ Common room, where the banner showed. Checked at phone width. Undone afterwards.
 - [ ] **The mock lists the new pages replaced** (`ADMIN_ROOMS`, `WORDS`, the Common copies in
       `lib/mock.ts`) are still in the web app; part 4 can clear `adminData.ts`.
 
-### Admin site, part 4: Overview, Money, Audit log
+### Admin site, part 4: Overview, Money, Audit log (`d32db42`)
 
 **Changed:** the API's Overview (numbers from presence and the database, a health strip that asks
 each part with a 2 s limit, urgent cases, latest actions), Money (revenue, fees at spec 15's rates,
