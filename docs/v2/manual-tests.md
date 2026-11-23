@@ -128,6 +128,9 @@ two browsers, members of the same room.
       tab: out after about 20 seconds (your place is held in case the network drops).
 - [ ] Open the same room in a second tab: the first says "You're in … in another tab"; **Walk in
       here** takes it back.
+- [ ] Walk into a different room in a second tab: the first says "You walked into another room";
+      **Walk back in** takes you back there, and now the second tab says it. Home, chats and DMs in
+      other tabs are never affected.
 - [ ] The owner kicks you while you're inside: "You were taken out of …". Ban: "You can't come
       into …", and walking in again stays refused.
 - [ ] The owner makes you a mod while you're inside: the people list shows "Mod" by your name at
@@ -255,8 +258,8 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
 - [ ] Stop after less than a minute: nothing is added to Today.
 - [ ] Leave mid-round: the round ends and what you did counts (Today shows it when you're back).
 - [ ] **Reload** the page mid-round: you walk back in still focusing, same countdown and subject.
-- [ ] Open a second room in another tab and start a timer there: the first room's timer stops
-      (and its minutes count).
+- [ ] Mid-round, walk into a second room in another tab: the first tab says "You walked into
+      another room" and the round's minutes count (Today in the first room shows them).
 - [ ] Leave the keyboard alone for 10+ minutes while focusing: no 💤, your mic isn't turned off.
       After stopping, 10 quiet minutes make you Away as before.
 - [ ] Jod's Friends page: Mai shows "Focusing · Calculus" while her round runs and never "Away".

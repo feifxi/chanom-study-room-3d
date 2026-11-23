@@ -163,7 +163,7 @@ its own message, with a running round winning over away. Ended rounds of 1+ minu
 queue (`focus-rounds`) that the API's new focus module saves into `focus_sessions` on the person's
 own day (`users.time_zone`, synced quietly from the browser through `PUT /api/me/time-zone`).
 `GET /api/rooms/:id/focus/today` plus the game server's `todayMin` and running rounds fill the
-Study panel's Today tab in real rooms. One timer per account across rooms (`game:focus`), a reload
+Study panel's Today tab in real rooms. One timer per account across rooms (`game:focus`, later replaced by one room at a time), a reload
 carries a running round over, and presence shows "Focusing · Calculus" to friends (never Away).
 Guests get the timer, never saved. Mock rooms (Common rooms until feature 14) keep the browser's
 own timer. Decisions: [decision log](decisions.md), 2026-11-23.
@@ -183,3 +183,13 @@ list.
 
 **Bugs found and fixed while building:** none in the app. A headless run at phone width in dark mode
 added, ticked, reloaded, cleared done and deleted, and the API held the result.
+
+### One 3D room at a time
+
+**Changed:** walking into a room tells every game server (`game:walked-in`), and any other room
+you're in lets you go with a new close code (4005, "You walked into another room" with **Walk back
+in**). It replaces part 1's separate "one timer per account" channel, since one room at a time
+covers it. Decision: [decision log](decisions.md), 2026-11-23.
+
+**Bugs found and fixed while building:** none. A headless run with two tabs in two rooms saw the
+first tab let go, Walk back in work, and the second tab let go in turn.

@@ -19,7 +19,7 @@ import {
 } from '@connecta/shared';
 import { mapDataFor } from '@connecta/shared/maps';
 import { timing } from './focus.js';
-import { dispatch, dispatchFocus, links } from './links.js';
+import { dispatch, dispatchWalkedIn, links } from './links.js';
 import { decodeJwt } from 'jose';
 import { gameServer } from './server.js';
 import { liveKitVoice, voice } from './voice.js';
@@ -93,7 +93,7 @@ beforeAll(async () => {
   links.presence = (p) => presence.push(p);
   links.space = (id) => spaces.push(id);
   links.focusRound = (r) => rounds.push(r);
-  links.focusStarted = dispatchFocus;
+  links.walkedIn = dispatchWalkedIn;
   timing.minuteMs = MINUTE;
   server = gameServer(SECRET);
   await listen(server, PORT);
@@ -132,6 +132,17 @@ describe('walking in', () => {
     await expect(client.joinOrCreate(GAME_ROOM, { place: ROOM, ticket: old })).rejects.toThrow(/unauthorized/);
     const other = await ticket({ roomId: `${ROOM}-b` });
     await expect(client.joinOrCreate(GAME_ROOM, { place: ROOM, ticket: other })).rejects.toThrow(/unauthorized/);
+  });
+
+  it('one room at a time: walking into another room takes you out of the first', async () => {
+    const a = await walkIn();
+    const stay = track(await walkIn({ sub: 'u-jod', name: 'Jod' }));
+    const code = closed(a);
+    const b = track(await walkIn({ roomId: `${ROOM}-b` }));
+    expect(await code).toBe(GAME_CLOSE.otherRoom);
+    await until(() => stay.state.players.size === 1);
+    await until(() => presence.some((u) => u.userId === 'u-mai' && u.roomId === null));
+    expect(me(b).userId).toBe('u-mai');
   });
 
   it('keeps rooms apart: people in another room never show up', async () => {
@@ -537,7 +548,7 @@ describe('the focus timer', () => {
     expect(stay.state.players.size).toBe(2);
   });
 
-  it('a reload keeps your round; one timer per account across rooms', async () => {
+  it('a reload keeps your round; walking into another room ends it there and counts it', async () => {
     const a = await walkIn();
     a.send('focus:start', { preset: 0, subject: 'Physics' });
     await until(() => me(a).status === 'focus');
@@ -548,12 +559,12 @@ describe('the focus timer', () => {
     expect(me(again)).toMatchObject({ focusSince: since, subject: 'Physics' });
     expect(rounds).toEqual([]);
 
-    // Starting a timer in another room ends this one (and counts it)
+    // One room at a time: walking into another lets you go here, and the round counts
     await quietly(MINUTE + 20);
-    const other = track(await walkIn({ roomId: `${ROOM}-b` }));
-    other.send('focus:start', { preset: 0 });
-    await until(() => me(again).status === 'idle');
-    await until(() => me(other).status === 'focus');
+    const code = closed(again);
+    track(await walkIn({ roomId: `${ROOM}-b` }));
+    expect(await code).toBe(GAME_CLOSE.otherRoom);
+    await until(() => rounds.length === 1);
     expect(rounds).toEqual([expect.objectContaining({ roomId: ROOM, subject: 'Physics' })]);
   });
 });

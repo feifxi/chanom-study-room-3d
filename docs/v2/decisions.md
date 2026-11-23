@@ -110,6 +110,12 @@ decision is made or changed: one line, a date, and the reason.
 - **One of you per room, the newest tab wins** (2026-11-22): opening a room you're already in takes
   it over and the old tab says "You're in … in another tab" with **Walk in here**. Refusing the new
   tab instead would trap someone whose old tab is on another device.
+- **One 3D room at a time per account** (2026-11-23, the owner asked about one tab only): walking
+  into a room takes you out of any other, newest wins as above, and the old tab says "You walked
+  into another room" with **Walk back in**. Nobody can be in two places, and your character and
+  voice were in both. One tab for the whole app was turned down: people keep notes, Home or a DM
+  open beside a room (as in Discord, Slack and Gather), and presence, unread counts and the timer
+  already handle several tabs.
 
 ### Activities
 
@@ -414,7 +420,8 @@ decision is made or changed: one line, a date, and the reason.
   The four open points, agreed: the timer is **3D only** (the room's chat page has none: the game
   server is what times it); a **reload or a dropped connection keeps the round** if you're back
   within the reconnect window, otherwise it ends and counts like Leave; **one running timer per
-  account**, so starting one in another room ends (and counts) the first and nothing counts twice;
+  account**, so nothing counts twice (it now follows from one room at a time, decided the same
+  day);
   each person's **own time zone** (saved quietly from their browser) sets which day a round counts
   for, for the 12-hour cap, while rankings use the viewer's time zone. **Guests** show in "This room
   today" from the game server's memory and are never saved. A running round shows 📖 even if you've

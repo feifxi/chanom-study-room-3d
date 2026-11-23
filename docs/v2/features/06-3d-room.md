@@ -92,7 +92,8 @@ focus timer, so it must never happen by accident.
   guests). A copy of the page sits on top of the history so Back lands on it and asks.
 - **Can't walk in, or sent out:** a card over the room's picture says why, mood first, with the one
   next step: full (Notify me, Read the chat), removed by a mod, banned, in another tab (Walk in
-  here), the room is gone, or the room can't be reached (Try again).
+  here), you walked into another room (Walk back in), the room is gone, or the room can't be
+  reached (Try again).
 
 ## Cats, study buddies and the Buddy Machine
 
@@ -200,6 +201,10 @@ under 0.6M.
   - **One of you per room:** a newer connection for the same account takes over; the older one is
     closed with "in another tab". A dropped connection keeps your place for 20 s (the SDK
     reconnects by itself).
+  - **One room at a time:** walking into a room tells every game server (`game:walked-in` on
+    Redis); any other room you're in closes your connection with "you walked into another room"
+    (code 4005), ending a focus round there and counting it. Any number of tabs of the rest of the
+    app (Home, chat, DMs) stay fine.
   - **Room changes from the API** go through Redis (`game:rooms`): kick, ban and leaving close your
     connection with a reason (WebSocket codes 4001–4004); a role change shows at once; a new map
     moves everyone to its door; a deleted room sends everyone out.

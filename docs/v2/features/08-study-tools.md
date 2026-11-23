@@ -30,7 +30,8 @@ minimal on purpose: two presets, no streaks, no shared sessions.
   you turned "Show what I'm doing" off).
 - Guests get the timer too; nothing is saved for them.
 - **Inside the 3D room only:** the room's chat page has no timer (the game server times it).
-- **One at a time:** starting a timer in another room ends the first one, counting what you did.
+- **One at a time:** you're in one room at a time, so walking into another room ends a round
+  running in the first, counting what you did.
 - **A reload keeps your round** if you're back within 20 seconds (the game server's reconnect
   window); a longer drop ends it like leaving.
 
@@ -77,7 +78,7 @@ minimal on purpose: two presets, no streaks, no shared sessions.
 - The **game server** runs each person's timer (`apps/game/src/focus.ts`): `focus:start { preset,
 subject }`, `focus:stop`, `focus:subject`; it shows the status on your player and tells the
   gateway you're focusing (presence). When a member's round of 1+ minute ends, it adds a job to the
-  `focus-rounds` BullMQ queue; "a timer started" goes to other game servers on `game:focus`.
+  `focus-rounds` BullMQ queue.
 - `focus_sessions (id, user_id, room_id, subject, started_at, ended_at, minutes, day)`, written by
   the API's focus worker: the id is the game server's round id (a retried job saves once), `day` is
   the start's date in the person's `users.time_zone` (`PUT /api/me/time-zone`), and `room_id` is

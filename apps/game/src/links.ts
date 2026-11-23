@@ -1,4 +1,4 @@
-import type { FocusRound, GameFocusStarted, GamePresence, GameRoomEvent } from '@connecta/shared';
+import type { FocusRound, GamePresence, GameRoomEvent, GameWalkedIn } from '@connecta/shared';
 
 /**
  * What the room reports outward and listens to, wired by the entry point (Redis in the real server,
@@ -11,15 +11,15 @@ export interface Links {
   space(roomId: string): void;
   /** A member's focus round of 1+ minute ended: the API saves it (a job, so it survives an API restart) */
   focusRound(round: FocusRound): void;
-  /** Someone started a timer: their timer in any other room, on any game server, ends */
-  focusStarted(event: GameFocusStarted): void;
+  /** Someone walked into a room: any other room they're in, on any game server, lets them go */
+  walkedIn(event: GameWalkedIn): void;
 }
 
-export const links: Links = { presence: () => {}, space: () => {}, focusRound: () => {}, focusStarted: () => {} };
+export const links: Links = { presence: () => {}, space: () => {}, focusRound: () => {}, walkedIn: () => {} };
 
 interface LiveRoom {
   apply(event: GameRoomEvent): void;
-  focusStarted(event: GameFocusStarted): void;
+  walkedIn(event: GameWalkedIn): void;
 }
 
 /** The live rooms in this process, by Connecta room id, so API events reach the right one. */
@@ -29,7 +29,7 @@ export function dispatch(event: GameRoomEvent) {
   liveRooms.get(event.roomId)?.apply(event);
 }
 
-/** Every room hears it; each ends the person's timer unless it's the room they started it in. */
-export function dispatchFocus(event: GameFocusStarted) {
-  for (const room of liveRooms.values()) room.focusStarted(event);
+/** Every room hears it; each lets the person go unless it's the room they walked into. */
+export function dispatchWalkedIn(event: GameWalkedIn) {
+  for (const room of liveRooms.values()) room.walkedIn(event);
 }

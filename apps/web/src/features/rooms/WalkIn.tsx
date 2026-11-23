@@ -96,6 +96,11 @@ function CantWalkIn({ room, why, guest, onRetry }: { room: Room; why: GameEnd; g
       title: `You’re in ${room.name} in another tab`,
       body: 'You can be in a room once at a time. Walk in here instead?',
     },
+    otherRoom: {
+      emoji: '🚶',
+      title: `You walked into another room`,
+      body: `You can be in one room at a time, so you left ${room.name}. Come back any time.`,
+    },
     gone: { emoji: '🍃', title: `${room.name} isn’t there any more`, body: 'The room was closed, or you’re no longer in it.' },
     unreachable: { emoji: '📡', title: 'Couldn’t reach the room', body: 'Check your connection, then try again.' },
   };
@@ -112,12 +117,12 @@ function CantWalkIn({ room, why, guest, onRetry }: { room: Room; why: GameEnd; g
               <Bell /> Notify me
             </Button>
           )}
-          {(why === 'elsewhere' || why === 'unreachable' || (why === 'full' && guest)) && (
+          {(why === 'elsewhere' || why === 'otherRoom' || why === 'unreachable' || (why === 'full' && guest)) && (
             <Button className="h-11 rounded-full font-black" onClick={onRetry}>
-              <RotateCw /> {why === 'elsewhere' ? 'Walk in here' : 'Try again'}
+              <RotateCw /> {why === 'elsewhere' ? 'Walk in here' : why === 'otherRoom' ? 'Walk back in' : 'Try again'}
             </Button>
           )}
-          {chat && (why === 'full' || why === 'unreachable' || why === 'elsewhere') && (
+          {chat && (why === 'full' || why === 'unreachable' || why === 'elsewhere' || why === 'otherRoom') && (
             <Button asChild variant="outline" className="h-11 rounded-full font-extrabold">
               <Link href={chat}>
                 <MessageCircle /> Read the chat

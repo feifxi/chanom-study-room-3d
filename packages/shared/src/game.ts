@@ -61,6 +61,8 @@ export const GAME_CLOSE = {
   elsewhere: 4003,
   /** The room was deleted, or you left it */
   gone: 4004,
+  /** You walked into another room: one room at a time */
+  otherRoom: 4005,
 } as const;
 
 /** Redis channels between the API and the game server. */
@@ -71,12 +73,12 @@ export const GAME_CHANNELS = {
   presence: 'game:presence',
   /** Game → API: a full room has space again ("Full · notify me") */
   space: 'game:space',
-  /** Game → game: someone started a focus timer ({@link GameFocusStarted}); their timer in any other room ends */
-  focus: 'game:focus',
+  /** Game → game: someone walked into a room ({@link GameWalkedIn}); any other room they're in lets them go */
+  walkedIn: 'game:walked-in',
 } as const;
 
-/** One running timer per account: starting one in a room ends the one in any other. */
-export interface GameFocusStarted {
+/** One room at a time per account: walking into one takes you out of any other (and ends a focus round there). */
+export interface GameWalkedIn {
   userId: string;
   roomId: string;
 }

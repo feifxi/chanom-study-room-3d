@@ -14,7 +14,7 @@ export interface GameState {
 export type GameRoom = Room<unknown, GameState>;
 
 /** Why you're not (or no longer) in the room. */
-export type GameEnd = 'full' | 'kicked' | 'banned' | 'elsewhere' | 'gone' | 'unreachable';
+export type GameEnd = 'full' | 'kicked' | 'banned' | 'elsewhere' | 'otherRoom' | 'gone' | 'unreachable';
 
 export type GameSession = { status: 'connecting' } | { status: 'in'; room: GameRoom } | { status: 'out'; why: GameEnd };
 
@@ -22,6 +22,7 @@ const CLOSED: Record<number, GameEnd> = {
   [GAME_CLOSE.kicked]: 'kicked',
   [GAME_CLOSE.banned]: 'banned',
   [GAME_CLOSE.elsewhere]: 'elsewhere',
+  [GAME_CLOSE.otherRoom]: 'otherRoom',
   [GAME_CLOSE.gone]: 'gone',
 };
 

@@ -21,10 +21,10 @@ import {
   type Quiet,
   type Said,
   type FocusPreset,
-  type GameFocusStarted,
   type GameJoinOptions,
   type GameRoomEvent,
   type GameTicket,
+  type GameWalkedIn,
   type PlayerRole,
 } from '@connecta/shared';
 import { inArea, mapDataFor, zoneAtIn, type MapData } from '@connecta/shared/maps';
@@ -207,7 +207,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
 
     /**
      * The focus timer (feature 8): personal, 25/5 or 50/10, each round started by a press. One timer
-     * per account: starting here ends one running in any other room.
+     * per account follows from one room at a time.
      */
     'focus:start': validate(z.object({ preset: z.union([z.literal(0), z.literal(1)]), subject: z.string().optional() }), (client, msg) => {
       const p = this.state.players.get(client.sessionId);
@@ -217,7 +217,6 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       s.timer = startFocus(msg.preset as FocusPreset, Date.now());
       this.showStatus(p, s);
       this.tellPresence(client.sessionId);
-      links.focusStarted({ userId: s.userId, roomId: this.connectaId });
     }),
 
     'focus:stop': (client: Client) => this.stopFocus(client.sessionId),
@@ -385,6 +384,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     for (const sessionId of this.priv.keys()) this.refreshVoice(sessionId);
     this.npc.joined(this.state.players.get(client.sessionId)!, (fn, ms) => this.clock.setTimeout(fn, ms));
     this.tellPresence(client.sessionId);
+    // Any other room you're in lets you go
+    links.walkedIn({ userId: ticket.sub, roomId: this.connectaId });
     log.info({ roomId: this.connectaId, userId: ticket.sub, role: ticket.role }, 'walked in');
   }
 
@@ -457,15 +458,19 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     }
   }
 
-  /** Someone started a timer, maybe in another room: theirs here ends (and counts). */
-  focusStarted(event: GameFocusStarted) {
+  /** One room at a time: they walked into another room, so they leave this one (a focus round counts). */
+  walkedIn(event: GameWalkedIn) {
     if (event.roomId === this.connectaId) return;
-    for (const sessionId of this.sessionsOf(event.userId)) this.stopFocus(sessionId);
+    for (const sessionId of this.sessionsOf(event.userId)) {
+      const client = this.clients_.get(sessionId);
+      this.remove(sessionId);
+      client?.leave(GAME_CLOSE.otherRoom);
+    }
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────────────────────────
 
-  /** Stop pressed, or ended elsewhere: a focus round counts what you did. */
+  /** Stop pressed: a focus round counts what you did. */
   private stopFocus(sessionId: string) {
     const s = this.priv.get(sessionId);
     const p = this.state.players.get(sessionId);
