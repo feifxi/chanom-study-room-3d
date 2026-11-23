@@ -262,7 +262,7 @@ can pose. Decision: [decision log](decisions.md), 2026-11-23 (Watch together and
 on the phone, Share post the photo to Room chat (processed, 1248×716), and the 📸 go when she
 closed photo mode.
 
-### Party and table games, part 1: the round flow and chess
+### Party and table games, part 1: the round flow and chess (`447e85f`)
 
 **Changed:** the game server runs the activity framework's round flow (`apps/game/src/activity.ts`):
 sitting opens a lobby with the first to sit as host, the host's Start (3 s countdown), End and 📣
