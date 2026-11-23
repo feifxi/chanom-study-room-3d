@@ -38,6 +38,14 @@ export class PlusService {
     return this.setUntil(userId, on ? new Date(now.getTime() + 30 * DAY_MS) : null, now);
   }
 
+  /** After something else moved plus_until (a payment): tells everyone if Plus started or ended */
+  async announce(userId: string, wasPlus: boolean, now = new Date()) {
+    const { plus } = await this.status(userId, now);
+    if (plus !== wasPlus) this.changed(userId, plus);
+    // Billing changed either way (a renewal, a cancel): your tabs refresh the Plus page
+    else this.live.toUser(userId, 'plus', { plus });
+  }
+
   /** Your tabs refresh what Plus changes (limits, the Plus page); your name tag changes in rooms */
   private changed(userId: string, plus: boolean) {
     this.live.toUser(userId, 'plus', { plus });

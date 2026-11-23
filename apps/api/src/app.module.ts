@@ -8,6 +8,7 @@ import { AccountsModule } from './accounts/accounts.module.js';
 import { DmsModule } from './dms/dms.module.js';
 import { DecksModule } from './decks/decks.module.js';
 import { QuestsModule } from './quests/quests.module.js';
+import { BillingModule } from './billing/billing.module.js';
 import { PlusModule } from './plus/plus.module.js';
 import { ShopModule } from './shop/shop.module.js';
 import { FocusModule } from './focus/focus.module.js';
@@ -40,6 +41,8 @@ import { PrismaService } from './prisma/prisma.service.js';
       inject: [ConfigService, PrismaService, MailService],
       useFactory: (config: ConfigService<Env, true>, prisma: PrismaService, mail: MailService) => ({
         auth: authFromConfig(config, prisma, mail),
+        // Keeps each JSON body's bytes too: Stripe's webhook signature is over the raw body
+        enableRawBodyParser: true,
       }),
     }),
     // Per-route limits (@Throttle) on endpoints people could hammer. In memory: one API process for now
@@ -65,6 +68,7 @@ import { PrismaService } from './prisma/prisma.service.js';
     QuestsModule,
     ShopModule,
     PlusModule,
+    BillingModule,
     LiveModule,
     PresenceModule,
     NotificationsModule,

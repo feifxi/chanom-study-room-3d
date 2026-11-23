@@ -84,6 +84,9 @@ model User {
   questProgress    QuestProgress[]
   coinEntries      CoinEntry[]
   ownedItems       OwnedItem[]
+  plusSubscription PlusSubscription?
+  checkouts        Checkout[]
+  payments         Payment[]
 
   @@index([deleteAt])
   @@map("users")
@@ -595,4 +598,62 @@ model OwnedItem {
 
   @@id([userId, itemId])
   @@map("owned_items")
+}
+
+// ── Plus (docs/v2/features/15-business-infra.md#paying-stripe) ────────────────────────────────────
+
+/// Your Plus plan: how it's paid and whether it renews. users.plus_until is what counts for perks
+model PlusSubscription {
+  userId               String   @id @map("user_id")
+  /// monthly | yearly
+  plan                 String
+  /// card (renews by itself) | promptpay (renews by reminder)
+  method               String
+  /// false once cancelled: Plus runs to plus_until, then ends
+  renews               Boolean  @default(true)
+  stripeCustomerId     String?  @map("stripe_customer_id")
+  stripeSubscriptionId String?  @unique @map("stripe_subscription_id")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("plus_subscriptions")
+}
+
+/// A payment started from the payment page, paid once (Stripe's webhook, or the local stand-in)
+model Checkout {
+  id              String    @id @default(uuid(7))
+  userId          String    @map("user_id")
+  plan            String
+  method          String
+  /// open | paid
+  status          String    @default("open")
+  stripeSessionId String?   @unique @map("stripe_session_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  paidAt          DateTime? @map("paid_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("checkouts")
+}
+
+/// Money in: receipts in Settings → Plus & billing, and the admin site's money page. Kept when an
+/// account is deleted (the books need them)
+model Payment {
+  id        String   @id @default(uuid(7))
+  userId    String?  @map("user_id")
+  /// "Plus · Monthly"
+  what      String
+  /// In baht
+  amount    Int
+  method    String
+  /// Stripe's invoice or checkout session id (or local:<checkout>): a notice delivered twice pays once
+  ref       String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@map("payments")
 }

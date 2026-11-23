@@ -1,9 +1,9 @@
 # 15. Business and infra
 
 **Status:** Plus is being built in four parts (2026-11-23): 1. Plus on the account, every limit
-following the plan (done); 2. paying with Stripe in test mode; 3. Gift Plus; 4. when Plus ends.
-Until part 2 the payment page and Settings → Plus & billing are the demo's, and the checkout and
-the Demo tab turn Plus on and off with a dev-only switch. **Try it:** http://localhost:3100/home/plus,
+following the plan (done); 2. paying with Stripe in test mode (done: a local stand-in until the
+owner adds Stripe's test keys); 3. Gift Plus; 4. when Plus ends. Gifts and grace are still the
+demo's until their parts. **Try it:** http://localhost:3100/home/plus,
 `/checkout?plan=yearly`, and `/admin/money` (View as Connecta team). V1's infra is at tag `v1.0.0`
 (`infra/README.md`). The cloud is AWS; nginx replaced Caddy on 2026-11-21
 ([decision](../decisions.md#engineering-and-infra)).
@@ -166,6 +166,36 @@ How you pay is picked on the payment page:
   costs more. Gifts can't be refunded once received.
 - **Failed renewals:** Stripe retries 4 times over about two weeks and emails the person; Plus stays
   on meanwhile. After the last try Plus ends and the 7-day grace starts.
+
+### Paying: backend notes
+
+- **Stripe in one place:** `StripeGateway` (`apps/api/src/billing/stripe.gateway.ts`) makes the
+  hosted Checkout (a card subscribes, renewing by itself; PromptPay pays once for the period) and
+  checks the webhook's signature. It's off without `STRIPE_SECRET_KEY`: then `/checkout` is a test
+  stand-in for Stripe's page and its Pay calls `POST /api/billing/checkout/:id/dev-pay` (404 in
+  production and when Stripe is on).
+- **Tables:** `checkouts` (one per Continue, paid once), `plus_subscriptions` (your plan, how you
+  pay, whether it renews, Stripe's ids), `payments` (receipts; kept when an account is deleted,
+  each with a unique `ref` so a notice delivered twice pays once). Paying moves `users.plus_until`
+  on (from today, or on top of any Plus left).
+- **Routes:** `GET /api/billing` (plan, date, renews, receipts, whether Stripe is on),
+  `POST /api/billing/checkout { plan, method }` (Stripe's page, or null for the stand-in; 409
+  `already_plus` while a plan renews), `POST /api/billing/cancel` and `/resume`, and
+  `POST /api/billing/stripe-webhook` (no session; the signature is the proof).
+- **Webhook events:** `checkout.session.completed` and `checkout.session.async_payment_succeeded`
+  (PromptPay confirms a little later) pay the checkout; `invoice.paid` with `subscription_cycle`
+  renews a card; `customer.subscription.updated` / `deleted` follow a cancel made at Stripe.
+- **Your tabs** hear `plus` after any change, and refresh your account, billing and rooms.
+
+### Setting up Stripe (the owner)
+
+1. Make a Stripe account and stay in **test mode**. In Settings → Payment methods, turn on Cards
+   and PromptPay (Thai accounts).
+2. Copy the test secret key (`sk_test_…`) into `apps/api/.env` as `STRIPE_SECRET_KEY`.
+3. Install the Stripe CLI and run `stripe listen --forward-to localhost:4000/api/billing/stripe-webhook`;
+   put the `whsec_…` it prints in `STRIPE_WEBHOOK_SECRET`. Restart the API.
+4. Pay with test card `4242 4242 4242 4242` (any future date, any CVC), or PromptPay's test QR.
+   Production uses the live keys and a webhook endpoint made in Stripe's dashboard.
 
 ### In the demo (Stripe mocked)
 

@@ -438,6 +438,12 @@ decision is made or changed: one line, a date, and the reason.
   Plus skins and pets, and AI decks show as Coming soon and come as their own parts. Screen-share
   quality follows the room's plan (its bandwidth); rooms you make or join, uploads and the name tag
   follow your own.
+- **Paying: a local stand-in until Stripe's keys** (2026-11-23, the owner: "I'll do the Stripe
+  account later"). The real Stripe code is built and tested against a fake Stripe and Stripe's own
+  signature helper; without keys the payment page is a test stand-in that marks the checkout paid
+  through the API, so the rest of the flow is the real one. Card plans subscribe at Stripe; PromptPay
+  pays once per period (Stripe can't charge PromptPay without you). Prices are sent inline, so
+  nothing needs setting up in Stripe's dashboard but the keys and PromptPay.
 - **Pets are room cats, not followers** (2026-11-23, the owner's idea): a pet is a cat in a Shop
   coat that its owner brings out of the Buddy Machine; it lives in the room like the other cats
   instead of trailing you. It reuses the server's cats (no new 3D animal, no per-person following

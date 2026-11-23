@@ -16,3 +16,4 @@ export * from './activities.js';
 export * from './board.js';
 export * from './quests.js';
 export * from './shop.js';
+export * from './plus.js';

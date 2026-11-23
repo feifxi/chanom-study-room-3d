@@ -507,3 +507,18 @@ Turn Plus on and off with the Demo tab → Your Plus (or by finishing the stand-
 - [ ] Free: a 20 MB picture is refused (10 MB); with Plus it goes (up to 50 MB).
 - [ ] Share your screen in a Plus owner's room: it's sharper (1080p) than in a Free room (720p).
 - [ ] The Plus page marks premium maps, Plus skins and pets, and AI decks Coming soon.
+
+### Plus, part 2: paying
+
+Without Stripe's keys, /checkout is the test stand-in (a strip at the top says so).
+
+- [ ] Plus page → Get Plus (monthly or yearly) → the payment page shows the price, your email, Card
+      or PromptPay; Pay (or "I've paid" for PromptPay) brings you back to the Plus page with
+      "Welcome to Plus ✨", and you're on Plus.
+- [ ] Settings → Plus & billing: your plan, "Renews on …" (or the PromptPay QR note), and a receipt.
+- [ ] Cancel Plus: "Ends on …, it won't renew"; you still have Plus; Turn renewal back on works.
+- [ ] While Plus renews, starting another payment says you have Plus already.
+- [ ] Cancelled, then buy a yearly plan: the date moves a year past the old one; two receipts.
+- [ ] With Stripe's test keys and `stripe listen` running (spec 15): Continue to payment opens
+      Stripe's page; paying with 4242… brings you back and Plus turns on within a few seconds;
+      PromptPay's test QR too; cancelling shows at Stripe.

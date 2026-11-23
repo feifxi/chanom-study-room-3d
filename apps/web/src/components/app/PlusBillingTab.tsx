@@ -51,9 +51,8 @@ export function PlusBillingTab() {
             <Button
               size="sm"
               className="rounded-full font-bold"
-              onClick={() => {
-                resumePlus();
-                toast.success('Plus will renew again ✨');
+              onClick={async () => {
+                if (await resumePlus()) toast.success('Plus will renew again ✨');
               }}
             >
               Turn renewal back on
@@ -76,10 +75,9 @@ export function PlusBillingTab() {
                 size="sm"
                 variant="destructive"
                 className="rounded-full font-bold"
-                onClick={() => {
-                  cancelPlus();
+                onClick={async () => {
                   setConfirm(false);
-                  toast(`Plus won’t renew. It stays on until ${plus.date}.`);
+                  if (await cancelPlus()) toast(`Plus won’t renew. It stays on until ${plus.date}.`);
                 }}
               >
                 Cancel Plus
@@ -96,7 +94,7 @@ export function PlusBillingTab() {
         <section className="flex items-center gap-3 rounded-2xl border p-3">
           {card ? <CreditCard className="size-5 text-primary" /> : <QrCode className="size-5 text-primary" />}
           <span className="min-w-0 flex-1 text-sm">
-            <span className="block font-bold">{card ? 'Visa ···· 4242' : 'PromptPay'}</span>
+            <span className="block font-bold">{card ? 'Card' : 'PromptPay'}</span>
             <span className="text-xs text-muted-foreground">
               {card ? 'Charged by itself on the date' : 'You scan a QR each time; switch to a card to make it automatic'}
             </span>

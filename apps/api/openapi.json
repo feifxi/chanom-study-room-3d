@@ -2989,6 +2989,131 @@
         ]
       }
     },
+    "/api/billing": {
+      "get": {
+        "operationId": "BillingController_view",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Billing"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/billing/checkout": {
+      "post": {
+        "operationId": "BillingController_checkout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutStart"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/billing/checkout/{id}/dev-pay": {
+      "post": {
+        "operationId": "BillingController_devPay",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Billing"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/billing/cancel": {
+      "post": {
+        "operationId": "BillingController_cancel",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Billing"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/billing/resume": {
+      "post": {
+        "operationId": "BillingController_resume",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Billing"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "billing"
+        ]
+      }
+    },
     "/api/notifications": {
       "get": {
         "operationId": "NotificationsController_list",
@@ -5716,6 +5841,127 @@
         "required": [
           "on"
         ]
+      },
+      "Billing": {
+        "type": "object",
+        "properties": {
+          "plus": {
+            "type": "boolean"
+          },
+          "until": {
+            "nullable": true,
+            "type": "string"
+          },
+          "plan": {
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "monthly",
+              "yearly"
+            ]
+          },
+          "method": {
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "card",
+              "promptpay"
+            ]
+          },
+          "renews": {
+            "type": "boolean"
+          },
+          "receipts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "at": {
+                  "type": "string"
+                },
+                "what": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "method": {
+                  "type": "string",
+                  "enum": [
+                    "card",
+                    "promptpay"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "at",
+                "what",
+                "amount",
+                "method"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "stripe": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "plus",
+          "until",
+          "plan",
+          "method",
+          "renews",
+          "receipts",
+          "stripe"
+        ],
+        "additionalProperties": false
+      },
+      "CheckoutBody": {
+        "type": "object",
+        "properties": {
+          "plan": {
+            "type": "string",
+            "enum": [
+              "monthly",
+              "yearly"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "card",
+              "promptpay"
+            ]
+          }
+        },
+        "required": [
+          "plan",
+          "method"
+        ]
+      },
+      "CheckoutStart": {
+        "type": "object",
+        "properties": {
+          "checkoutId": {
+            "type": "string"
+          },
+          "url": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "checkoutId",
+          "url"
+        ],
+        "additionalProperties": false
       },
       "Inbox": {
         "type": "object",

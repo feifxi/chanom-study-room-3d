@@ -40,6 +40,10 @@
     "./shop": {
       "types": "./dist/shop.d.ts",
       "default": "./dist/shop.js"
+    },
+    "./plus": {
+      "types": "./dist/plus.d.ts",
+      "default": "./dist/plus.js"
     }
   },
   "scripts": {

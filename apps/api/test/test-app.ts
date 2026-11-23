@@ -1,5 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import { Test, type TestingModuleBuilder } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
 import type { Mail } from '../src/mail/mail.service.js';
@@ -40,17 +40,18 @@ export class MemoryStorage {
 
 /**
  * The whole app on the test database, with email caught in `sent` instead of delivered and files
- * kept in `storage` instead of S3.
+ * kept in `storage` instead of S3. `more` overrides further providers (a fake Stripe).
  */
-export async function createTestApp() {
+export async function createTestApp(more: (builder: TestingModuleBuilder) => TestingModuleBuilder = (b) => b) {
   const sent: Mail[] = [];
   const storage = new MemoryStorage();
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-    .overrideProvider(MailService)
-    .useValue({ deliver: async (mail: Mail) => void sent.push(mail) })
-    .overrideProvider(StorageService)
-    .useValue(storage)
-    .compile();
+  const moduleRef = await more(
+    Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(MailService)
+      .useValue({ deliver: async (mail: Mail) => void sent.push(mail) })
+      .overrideProvider(StorageService)
+      .useValue(storage),
+  ).compile();
   const app = moduleRef.createNestApplication({ ...APP_OPTIONS, logger: false });
   configureApp(app);
   await app.init();

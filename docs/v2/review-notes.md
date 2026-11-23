@@ -43,8 +43,15 @@ Tick or strike these as they're dealt with.
 - [ ] Guests who never come back aren't cleaned up (needs a background job).
 - [ ] Signed out, the browser console logs a 401 from `/api/me`: expected, just noisy.
 
-- [ ] **Plus: cancel, receipts, the plan and grace are still the demo's** until Plus parts 2 and 4;
-      a signed-in account's Plus on/off and its date are real.
+- [ ] **Plus: gifts and grace are still the demo's** until Plus parts 3 and 4.
+- [ ] **Real Stripe hasn't run end to end:** no keys yet. It's tested against a fake Stripe (every
+      webhook event) and Stripe's own signature helper; try it with test keys (manual tests).
+- [ ] **No plan change:** while a plan renews, a new checkout is refused ("Change plan" on
+      Settings leads to the Plus page, which can't switch monthly ↔ yearly yet). Cancel, then buy.
+- [ ] **Settings' "Change" (how you pay) and receipts' "PDF" are still demo toasts**; Stripe's
+      customer portal and receipt emails would do both once Stripe is on.
+- [ ] **A card plan bought while gifted Plus is left** starts its Stripe period today; the date
+      keeps whichever is later, so the overlap is lost (gifts come in part 3).
 - [ ] **Screen-share quality is only capped in the browser** (the capture's height); LiveKit doesn't
       enforce it. Fine while it's about bandwidth, not fairness.
 - [ ] **A room's new limits reach a running game room with the next join** (capacity comes in the
@@ -472,3 +479,25 @@ room's. The Plus page marks perks with nothing to unlock as Coming soon and uses
 
 A headless run checked a Free room (25 / 150), Plus on (50 / 1,000 on a Cosy map), Jod seeing
 "✨Mai" shimmer at once, and it going away when Plus ended.
+
+### Plus, part 2: paying
+
+**Changed:** the API's `billing` module: checkouts, plans and receipts (`checkouts`,
+`plus_subscriptions`, `payments`), Stripe's hosted Checkout and signed webhook behind one
+`StripeGateway`, and a local stand-in when `STRIPE_SECRET_KEY` is unset (the case until the owner
+sets up Stripe). Paying, cancelling and resuming are real; a paid checkout moves `plus_until` on and
+tells your tabs and rooms. JSON bodies keep their raw bytes (Better Auth's body parser option) for the
+signature. The web app's payment page starts a real checkout (Stripe's page, or the stand-in), and
+Settings → Plus & billing shows your real plan, date and receipts, with Cancel and Turn renewal back
+on. The prices moved to `@connecta/shared/plus`.
+
+**Bugs found and fixed while building:**
+
+- Stripe's newer API moved the renewal date onto the subscription's items and the invoice's
+  subscription under `parent.subscription_details`; the code reads them there (checked in the SDK's
+  types, not from memory).
+- PromptPay's checkout completes before the money arrives (`payment_status: unpaid`), so Plus waits
+  for `async_payment_succeeded` instead of turning on early.
+
+A headless run paid for yearly Plus with PromptPay on the stand-in (Plus until next year, a ฿890
+receipt), was refused a second plan, and cancelled from Settings ("Ends on 23 Nov 2027").

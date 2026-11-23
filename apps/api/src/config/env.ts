@@ -45,12 +45,20 @@ export const envSchema = z
     /** The AWS Emulator's certificate (it serves HTTPS with its own CA) */
     AWS_CA_BUNDLE: optional,
     S3_BUCKET: z.string().default('connecta-files'),
+
+    /** Stripe (test mode until launch). Unset: the payment page is a local stand-in */
+    STRIPE_SECRET_KEY: optional,
+    /** From `stripe listen` locally, or the webhook endpoint in Stripe's dashboard */
+    STRIPE_WEBHOOK_SECRET: optional,
   })
   .refine((env) => !env.GOOGLE_CLIENT_ID === !env.GOOGLE_CLIENT_SECRET, {
     message: 'Set both GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, or neither',
   })
   .refine((env) => !env.DISCORD_CLIENT_ID === !env.DISCORD_CLIENT_SECRET, {
     message: 'Set both DISCORD_CLIENT_ID and DISCORD_CLIENT_SECRET, or neither',
+  })
+  .refine((env) => !env.STRIPE_SECRET_KEY === !env.STRIPE_WEBHOOK_SECRET, {
+    message: 'Set both STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET, or neither',
   });
 
 export type Env = z.infer<typeof envSchema>;

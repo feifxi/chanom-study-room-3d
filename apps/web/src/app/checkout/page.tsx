@@ -10,7 +10,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { userById } from '@/lib/mock';
-import { GIFTS, PLUS_PLANS, REMIND_DAYS, sendGift, subscribe, type PayMethod, type PlanId } from '@/lib/plus';
+import { useQueryClient } from '@tanstack/react-query';
+import { useMe } from '@/features/account/useMe';
+import { api } from '@/lib/api/client';
+import { BILLING_KEY, GIFTS, PLUS_PLANS, REMIND_DAYS, sendGift, usePlus, type PayMethod, type PlanId } from '@/lib/plus';
 
 export default function CheckoutPage() {
   return (
@@ -21,10 +24,12 @@ export default function CheckoutPage() {
 }
 
 /**
- * Demo stand-in for Stripe's hosted Checkout (feature 15). The real app never shows a card form of
- * its own: "Continue to payment" opens Stripe's page, Stripe sends you back, and a webhook turns
- * Plus on. Every plan and gift takes card or PromptPay; a PromptPay plan renews by reminder (a QR
- * before the date) since nobody can charge PromptPay without you.
+ * The payment page (feature 15). With Stripe's keys set, "Continue to payment" opens Stripe's hosted
+ * page (we never see card details), Stripe sends you back, and its webhook turns Plus on. Without
+ * them (locally, until the owner adds test keys) this page is a stand-in for Stripe's: Pay asks the
+ * API to treat the checkout as paid. Every plan and gift takes card or PromptPay; a PromptPay plan
+ * renews by reminder (a QR before the date) since nobody can charge PromptPay without you. Gifts
+ * are still the demo's until Plus part 3.
  */
 function Checkout() {
   const router = useRouter();
@@ -39,30 +44,56 @@ function Checkout() {
   const [method, setMethod] = useState<PayMethod>(params.get('method') === 'promptpay' ? 'promptpay' : 'card');
   const [step, setStep] = useState<'pay' | 'paying' | 'done'>('pay');
   const price = gift ? gift.price : plan.price;
+  const { data: me } = useMe();
+  const client = useQueryClient();
+  usePlus(); // loads /api/billing: whether Stripe is on
+  const billing = client.getQueryData<{ stripe: boolean }>(BILLING_KEY);
+  const stripe = !gift && !!billing?.stripe;
 
-  const pay = () => {
-    setStep('paying');
+  const done = () => {
+    setStep('done');
     setTimeout(() => {
-      setStep('done');
-      if (gift && friend) sendGift(friend.name, gift.months, gift.price, method);
-      else subscribe(planId, method);
-      setTimeout(() => {
-        if (gift && friend) {
-          toast.success(`Gift sent to ${friend.name} 🎁 They’ll find it in their DMs and Inbox.`);
-          router.replace('/home/friends');
-        } else {
-          toast.success('Welcome to Plus ✨ Your rooms just got bigger.');
-          router.replace('/home/plus');
-        }
-      }, 900);
-    }, 1200);
+      if (gift && friend) {
+        toast.success(`Gift sent to ${friend.name} 🎁 They’ll find it in their DMs and Inbox.`);
+        router.replace('/home/friends');
+      } else {
+        toast.success('Welcome to Plus ✨ Your rooms just got bigger.');
+        router.replace('/home/plus');
+      }
+    }, 900);
+  };
+
+  const pay = async () => {
+    setStep('paying');
+    // Gifts: still the demo's (Plus part 3)
+    if (gift && friend) {
+      sendGift(friend.name, gift.months, gift.price, method);
+      return setTimeout(done, 1200);
+    }
+    const { data: start, error } = await api.POST('/api/billing/checkout', { body: { plan: planId, method } });
+    if (!start) {
+      setStep('pay');
+      toast.error((error as { message?: string } | undefined)?.message ?? 'Couldn’t start the payment. Try again?');
+      return;
+    }
+    // Stripe's own page; it sends you back to the Plus page
+    if (start.url) return void (window.location.href = start.url);
+    const { data: paid } = await api.POST('/api/billing/checkout/{id}/dev-pay', { params: { path: { id: start.checkoutId } } });
+    if (!paid) {
+      setStep('pay');
+      return void toast.error('Couldn’t pay. Try again?');
+    }
+    void client.invalidateQueries({ queryKey: BILLING_KEY });
+    done();
   };
 
   return (
     <div className="min-h-dvh bg-muted/40">
-      <p className="border-b border-dashed border-primary/60 bg-card px-4 py-1.5 text-center text-xs font-bold text-muted-foreground">
-        Demo: in the real app this page is Stripe’s hosted payment page. Nothing is charged here.
-      </p>
+      {!stripe && (
+        <p className="border-b border-dashed border-primary/60 bg-card px-4 py-1.5 text-center text-xs font-bold text-muted-foreground">
+          Test stand-in for Stripe’s payment page (no Stripe keys yet). Nothing is charged here.
+        </p>
+      )}
       <div className="mx-auto grid max-w-4xl gap-6 p-5 sm:p-10 md:grid-cols-2">
         {/* What you're buying */}
         <section className="flex flex-col gap-5">
@@ -113,7 +144,7 @@ function Checkout() {
                 <label htmlFor="co-email" className="text-sm font-bold">
                   Email for the receipt
                 </label>
-                <Input id="co-email" defaultValue="feifei@example.com" className="rounded-xl" />
+                <Input id="co-email" defaultValue={me?.email ?? ''} className="rounded-xl" />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
@@ -133,7 +164,11 @@ function Checkout() {
                 ))}
               </div>
 
-              {method === 'card' ? (
+              {stripe ? (
+                <p className="rounded-2xl bg-muted/60 p-4 text-sm text-muted-foreground">
+                  You’ll pay on Stripe’s secure page{method === 'promptpay' ? ' with a PromptPay QR' : ''}, then come back here.
+                </p>
+              ) : method === 'card' ? (
                 <div className="flex flex-col gap-1.5">
                   <p className="text-sm font-bold">Card</p>
                   <Input defaultValue="4242 4242 4242 4242" aria-label="Card number" className="rounded-xl font-mono" />
@@ -155,8 +190,10 @@ function Checkout() {
                   <>
                     <Loader2 className="animate-spin" /> Paying…
                   </>
+                ) : stripe ? (
+                  'Continue to payment'
                 ) : method === 'promptpay' ? (
-                  'I’ve paid (demo)'
+                  'I’ve paid (test)'
                 ) : (
                   `Pay ฿${price}`
                 )}
