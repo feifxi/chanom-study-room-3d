@@ -184,7 +184,7 @@ list.
 **Bugs found and fixed while building:** none in the app. A headless run at phone width in dark mode
 added, ticked, reloaded, cleared done and deleted, and the API held the result.
 
-### One 3D room at a time
+### One 3D room at a time (`3aa567d`)
 
 **Changed:** walking into a room tells every game server (`game:walked-in`), and any other room
 you're in lets you go with a new close code (4005, "You walked into another room" with **Walk back
