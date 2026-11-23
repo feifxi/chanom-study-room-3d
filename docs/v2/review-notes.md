@@ -337,7 +337,7 @@ ahead when both stood still for the rest of the quiz; it now checks the order by
 run checked the "This room" tab with "by Mai", picking a room deck, the room deck's question on
 Jod's phone, and the Would you rather reveal ("Mai picked with you").
 
-### Party and table games, part 5: Draw & Guess
+### Party and table games, part 5: Draw & Guess (`5ba5b1f`)
 
 **Changed:** Draw & Guess runs on the game server (`apps/game/src/drawGuess.ts`), with its rules
 moved to `@connecta/shared/draw-guess`. The room state carries only the flow; each player gets only
