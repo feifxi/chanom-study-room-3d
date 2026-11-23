@@ -31,9 +31,9 @@ server with only what V2 needs added, and monitoring on its own server for SRE p
 
 ## Coins and daily quests
 
-**Status:** quests and coins are real (2026-11-23, part 1). The Shop's first set (accessories and
-outfits that really show on your character, designed in the demo first) is part 2; pets follow as
-their own part. Until part 2 the Shop's items are the demo's and Buy says "opens soon".
+**Status:** quests and coins are real (2026-11-23, part 1), and so is the Shop's first set (part 2,
+approved in the demo). Pets follow as their own part. **Try it:** http://localhost:3100/home/shop
+(the demo starts you with 1,240 coins).
 
 - **Coins are earned, never bought.** Money only buys Plus. Coins buy cosmetics in the Shop
   (accessories ~200–400, outfits ~500–800, pets ~1,000–1,500: something new about once a week).
@@ -52,6 +52,23 @@ their own part. Until part 2 the Shop's items are the demo's and Buy says "opens
   Each day's three are picked for you at random, one per group, from the seven above plus 🎲 "Play
   any activity once", and don't change during the day. New accounts start at 0 coins.
 - **Who earns:** every account, in any room, a visitor on a guest pass too; anonymous guests don't.
+
+### The Shop
+
+- **Only things that really show on your character in every room**, built in code like the rest of
+  the character (`features/avatar/character.ts`), listed with prices in `@connecta/shared/shop`:
+  - Accessories (the one accessory slot): Bunny Ears 200, Bear Ears 200, Star Clips 220, Flower
+    Crown 280, Halo 300, Witch Hat 380.
+  - Outfits (a shape that takes your outfit colour, so each comes in every colour): Hoodie 500,
+    Overalls 550, Raincoat 650 (with matching boots), Yukata 800.
+- The free base set stays free: every hair and outfit colour, the sailor top, and the seven free
+  accessories. Guests pick from it.
+- **Try it on** shows the item on your own character; **Buy** takes the coins (final, no refunds);
+  **Wear it** changes your look in every room. Cards say Owned ✓ or Wearing. What you own appears
+  in Settings → My character (an Outfit row and more accessories).
+- Tabs: Everything, Outfits, Accessories. "New this week" shows the newest item on your character
+  (a real weekly drop waits for the admin site). On a phone the quests come after the items.
+- Not now: pets (their own part), photo frames, Plus-only items (until Plus).
 
 ### Coins and quests: backend notes
 
@@ -275,3 +292,12 @@ the public server, history survives rebuilds, and chaos drills become possible.
 
 Load balancer, autoscaling, Fargate or ECS, ElastiCache, Multi-AZ RDS, LiveKit on its own server, WAF.
 Revisit when the playtest shows the app server or bandwidth is the limit.
+
+- **The Shop:** `owned_items` (user, item) holds what you bought; `GET /api/shop/wardrobe` gives your
+  coins and items, `POST /api/shop/items/:id/buy` buys (400 `not_enough_coins`, 409 when you have
+  it). A buy takes the coins only if there are enough, writes a `-price` coin entry (`shop:<id>`) and
+  adds the item in one transaction, so two buys at once never overspend.
+- **A look only uses what you own:** sign-up, the guest pass and Settings all go through
+  `ShopService.checkLook` (400 `not_owned`). **The game server takes looks only from the API**: a
+  saved look goes out as a room event to every room (`{ roomId: '*', type: 'look' }`); there's no
+  `look` message from the browser any more, so nobody can wear what they didn't buy.

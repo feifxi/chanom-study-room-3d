@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { ME } from '@/lib/mock';
 import { useGlobalOptIn } from '@/lib/focus';
 import { getMyLook, saveMyLook, useMyLook } from '@/lib/myLook';
+import { useOwned } from '@/lib/wardrobe';
 import { KEYS, useClickToWalk, useHideInvitesWhileFocusing } from '@/lib/controls';
 
 const AvatarPreview = dynamic(() => import('@/features/avatar/AvatarPreview').then((m) => m.AvatarPreview), { ssr: false });
@@ -132,22 +133,13 @@ function Profile({ onEditCharacter }: { onEditCharacter: () => void }) {
 /** Same editor as sign-up, plus what you own from the shop. Saving changes how you look in every room. */
 function Character() {
   const [look, setLook] = useState<AvatarLook>(getMyLook);
+  const owned = useOwned();
   return (
     <div className="flex flex-col gap-5">
-      <CharacterEditor look={look} onChange={setLook} previewClassName="h-64 w-44" />
-      <section>
-        <p className="mb-2 text-sm font-extrabold">From the shop</p>
-        <div className="flex flex-wrap gap-2">
-          {['🎒 School uniform', '👓 Round glasses', '🐱 Cat ears'].map((item) => (
-            <span key={item} className="rounded-full border bg-card px-3 py-1 text-xs font-bold">
-              {item}
-            </span>
-          ))}
-          <Link href="/home/shop" className="rounded-full bg-peach px-3 py-1 text-xs font-bold text-peach-ink">
-            Get more in the shop →
-          </Link>
-        </div>
-      </section>
+      <CharacterEditor look={look} onChange={setLook} previewClassName="h-64 w-44" owned={owned} />
+      <Link href="/home/shop" className="w-fit rounded-full bg-peach px-3 py-1 text-xs font-bold text-peach-ink">
+        {owned.length ? 'Get more in the Shop →' : 'Outfits and accessories in the Shop →'}
+      </Link>
       <Button
         className="w-fit rounded-full font-extrabold"
         onClick={() => {

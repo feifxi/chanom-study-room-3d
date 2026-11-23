@@ -2,59 +2,67 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
-import { Coins, Crown } from 'lucide-react';
-import { QuestList } from '@/components/app/QuestList';
+import { Check, Coins } from 'lucide-react';
 import { toast } from 'sonner';
-import type { Accessory, AvatarLook } from '@connecta/shared';
+import { SHOP_ITEMS, type AvatarLook, type ShopItem } from '@connecta/shared';
+import { QuestList } from '@/components/app/QuestList';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { ME, SHOP, type ShopCategory, type ShopItem } from '@/lib/mock';
+import { useMyLook } from '@/lib/myLook';
 import { useQuests } from '@/features/quests/useQuests';
+import { useBuy, useSaveLook, useWardrobe } from '@/features/shop/useWardrobe';
 
 const AvatarPreview = dynamic(() => import('@/features/avatar/AvatarPreview').then((m) => m.AvatarPreview), { ssr: false });
 
-/** What trying an item on changes on the real 3D character (the rest are previews). */
-const TRY_ON: Record<string, Partial<AvatarLook>> = {
-  'strawberry-dress': { outfit: '#ff6fa8' },
-  'matcha-hoodie': { outfit: '#12a37f' },
-  'starry-pajamas': { outfit: '#7c5cff' },
-  'school-uniform': { outfit: '#2f80ed' },
-  'bunny-ears': { accessory: 'ahoge' as Accessory },
-  'flower-crown': { accessory: 'ribbon' as Accessory },
-  'round-glasses': { accessory: 'glasses' as Accessory },
-  'cat-ears': { accessory: 'catEars' as Accessory },
-};
-
-const CATEGORIES: [ShopCategory | 'all', string][] = [
+type Category = 'all' | ShopItem['kind'];
+const CATEGORIES: [Category, string][] = [
   ['all', 'Everything'],
-  ['outfits', 'Outfits'],
-  ['accessories', 'Accessories'],
-  ['pets', 'Pets'],
-  ['frames', 'Photo frames'],
+  ['outfit', 'Outfits'],
+  ['accessory', 'Accessories'],
 ];
+const TINTS = ['bg-secondary', 'bg-mint', 'bg-lavender', 'bg-sky', 'bg-peach'];
 
-/** The shop: cosmetics only (never power). Try things on your real character before buying. */
+/** An item on your look: outfits change the shape (your colour stays), accessories the one slot */
+const wearing = (look: AvatarLook, item: ShopItem): AvatarLook =>
+  item.kind === 'outfit' ? { ...look, style: item.value } : { ...look, accessory: item.value };
+const isWorn = (look: AvatarLook, item: ShopItem) =>
+  item.kind === 'outfit' ? (look.style ?? 'sailor') === item.value : look.accessory === item.value;
+
+/**
+ * The Shop (spec 15): only things that really show on your character in every room, bought with
+ * coins you earn. Try anything on your own character first; what you own joins Settings → My
+ * character.
+ */
 export default function ShopPage() {
-  const [cat, setCat] = useState<ShopCategory | 'all'>('all');
+  const [cat, setCat] = useState<Category>('all');
   const [trying, setTrying] = useState<ShopItem | null>(null);
-  const [owned] = useState(() => new Set(SHOP.filter((i) => i.owned).map((i) => i.id)));
+  const { owned } = useWardrobe();
   const { coins } = useQuests();
-  const look = { ...ME.look, ...(trying ? TRY_ON[trying.id] : {}) };
-  const items = SHOP.filter((i) => cat === 'all' || i.category === cat);
-  const duck = SHOP.find((i) => i.id === 'pet-duck')!;
+  const buyItem = useBuy();
+  const saveLook = useSaveLook();
+  const { look: mine } = useMyLook();
+  const look = trying ? wearing(mine, trying) : mine;
+  const items = SHOP_ITEMS.filter((i) => cat === 'all' || i.kind === cat);
+  const featured = SHOP_ITEMS.at(-1)!;
 
-  const buy = (item: ShopItem) => {
-    // Buying comes with the Shop's first real set (coins and quests, part 2)
-    if (coins < item.price) return toast.error('Not enough coins yet. Today’s quests earn more.');
-    toast('🛍️ The Shop opens soon. Keep your coins!');
-    toast.success(`${item.emoji} ${item.name} is yours!`);
+  const buy = async (item: ShopItem) => {
+    if (coins < item.price) return toast.error(`Not enough coins yet: ${item.price - coins} to go. Today’s quests earn more.`);
+    const failed = await buyItem.mutateAsync(item.id);
+    if (failed) return toast.error(failed);
+    setTrying(item);
+    toast.success(`${item.emoji} ${item.name} is yours! Wear it now or any time from Settings.`);
+  };
+  const wear = async (item: ShopItem) => {
+    const r = await saveLook(wearing(mine, item));
+    if (!r.ok) return toast(r.message);
+    setTrying(null);
+    toast.success(`${item.emoji} Looking good! Everyone in the room sees it now`);
   };
 
   return (
     <div className="flex h-full flex-col lg:flex-row">
-      <aside className="flex flex-none flex-col gap-4 border-b p-5 lg:w-80 lg:border-r lg:border-b-0">
+      <aside className="flex flex-none flex-col gap-4 border-b p-5 lg:w-80 lg:overflow-y-auto lg:border-r lg:border-b-0">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-black tracking-[-0.03em]">Shop</h1>
           <span className="flex items-center gap-1.5 rounded-full bg-peach px-3 py-1 text-sm font-black text-peach-ink">
@@ -63,36 +71,33 @@ export default function ShopPage() {
         </div>
         <div className="relative h-72 overflow-hidden rounded-3xl bg-gradient-to-b from-lavender via-secondary to-peach">
           <AvatarPreview look={look} />
-          {trying?.category === 'pets' && <span className="absolute bottom-6 left-6 animate-bounce text-4xl">{trying.emoji}</span>}
           <span className="absolute top-3 left-3 rounded-full bg-card/90 px-2.5 py-1 text-xs font-bold">
             {trying ? `Trying on: ${trying.name}` : 'Your character'}
           </span>
         </div>
-        {/* Premium skins come with Plus and are never sold for coins */}
-        {trying?.plusOnly && !ME.plus ? (
-          <Button asChild className="h-11 rounded-2xl font-extrabold">
-            <Link href="/home/plus">
-              <Crown /> Comes with Plus
-            </Link>
+        {!trying ? (
+          <Button variant="secondary" className="h-11 rounded-2xl font-bold" disabled>
+            Pick something to try on
           </Button>
-        ) : trying && !trying.plusOnly && !owned.has(trying.id) ? (
-          <Button className="h-11 rounded-2xl font-extrabold" onClick={() => buy(trying)}>
-            Buy for {trying.price} <Coins />
+        ) : !owned.includes(trying.id) ? (
+          <div className="flex gap-2">
+            <Button className="h-11 flex-1 rounded-2xl font-extrabold" disabled={buyItem.isPending} onClick={() => buy(trying)}>
+              Buy for {trying.price} <Coins />
+            </Button>
+            <Button variant="secondary" className="h-11 rounded-2xl font-bold" onClick={() => setTrying(null)}>
+              Take off
+            </Button>
+          </div>
+        ) : isWorn(mine, trying) ? (
+          <Button variant="secondary" className="h-11 rounded-2xl font-bold" onClick={() => setTrying(null)}>
+            <Check /> You’re wearing it
           </Button>
         ) : (
-          <Button variant="secondary" className="h-11 rounded-2xl font-bold" onClick={() => setTrying(null)}>
-            {trying ? 'Wear it' : 'Pick something to try on'}
+          <Button className="h-11 rounded-2xl font-extrabold" onClick={() => wear(trying)}>
+            Wear it
           </Button>
         )}
-        <section className="flex flex-col gap-2">
-          <h2 className="flex items-baseline justify-between text-sm font-black">
-            Today’s quests <span className="text-[11px] font-bold text-muted-foreground">new at midnight</span>
-          </h2>
-          <QuestList />
-        </section>
-        <p className="text-xs text-muted-foreground">
-          Everything here is just for looks. Coins can’t be bought: you earn them with quests. Premium skins come with Plus.
-        </p>
+        <Quests className="hidden lg:flex" />
       </aside>
 
       <section className="min-w-0 flex-1 overflow-y-auto p-5">
@@ -102,31 +107,25 @@ export default function ShopPage() {
             <span className="rounded-full bg-card/80 px-3 py-1 text-xs font-black tracking-wider text-mint-ink uppercase">
               ✨ New this week
             </span>
-            <p className="text-4xl font-black tracking-[-0.03em]">Pet Duckling</p>
-            <p className="max-w-sm text-sm">Waddles after you in every room. Quacks when you finish a Pomodoro.</p>
+            <p className="text-4xl font-black tracking-[-0.03em]">
+              {featured.emoji} {featured.name}
+            </p>
+            <p className="max-w-sm text-sm">{featured.blurb}. In your outfit colour, in every room.</p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <span className="flex items-center gap-1 rounded-full bg-card px-3 py-1.5 text-sm font-black">
-                <Coins className="size-4 text-gold" /> {duck.price}
+                <Coins className="size-4 text-gold" /> {featured.price}
               </span>
-              <Button className="rounded-full font-extrabold" onClick={() => setTrying(duck)}>
+              <Button className="rounded-full font-extrabold" onClick={() => setTrying(featured)}>
                 Try it on
               </Button>
-              {!owned.has(duck.id) && (
-                <Button variant="secondary" className="rounded-full bg-card font-extrabold" onClick={() => buy(duck)}>
-                  Buy
-                </Button>
-              )}
+              {owned.includes(featured.id) && <span className="text-sm font-black text-mint-ink">Owned ✓</span>}
             </div>
           </div>
-          <div className="relative mx-auto grid size-40 place-items-center sm:size-48">
-            <span className="absolute inset-0 rounded-full bg-card/50" />
-            <span className="absolute inset-5 rounded-full bg-card/60" />
-            <span className="relative animate-[hop_1.6s_ease-in-out_infinite] text-8xl">🐥</span>
-            <span className="absolute top-2 right-4 text-xl">✨</span>
-            <span className="absolute bottom-6 left-2 text-lg">✨</span>
+          <div className="relative mx-auto size-44 overflow-hidden rounded-full bg-card/50 sm:size-52">
+            <AvatarPreview look={wearing(mine, featured)} />
           </div>
         </div>
-        <Tabs value={cat} onValueChange={(v) => setCat(v as ShopCategory | 'all')}>
+        <Tabs value={cat} onValueChange={(v) => setCat(v as Category)}>
           <TabsList className="h-10 flex-wrap rounded-2xl">
             {CATEGORIES.map(([id, label]) => (
               <TabsTrigger key={id} value={id} className="rounded-xl px-3 font-bold">
@@ -135,9 +134,9 @@ export default function ShopPage() {
             ))}
           </TabsList>
         </Tabs>
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
           {items.map((item) => {
-            const has = owned.has(item.id);
+            const has = owned.includes(item.id);
             return (
               <button
                 key={item.id}
@@ -149,30 +148,27 @@ export default function ShopPage() {
               >
                 <span
                   className={cn(
-                    'relative grid h-32 place-items-center bg-[radial-gradient(circle,rgb(255_255_255/0.55)_1.5px,transparent_1.5px)] bg-[length:14px_14px] text-6xl',
-                    item.tint,
+                    'relative grid h-28 place-items-center bg-[radial-gradient(circle,rgb(255_255_255/0.55)_1.5px,transparent_1.5px)] bg-[length:14px_14px] text-6xl',
+                    TINTS[SHOP_ITEMS.indexOf(item) % TINTS.length],
                   )}
                 >
                   <span className="drop-shadow-md transition-transform group-hover:-translate-y-1.5 group-hover:scale-110">
                     {item.emoji}
                   </span>
-                  {item.isNew && (
+                  {item === featured && (
                     <span className="absolute top-2 left-2 rounded-full bg-primary px-2 text-[10px] font-black text-primary-foreground">
                       NEW
                     </span>
                   )}
-                  {item.plusOnly && (
-                    <span className="absolute top-2 right-2 flex items-center gap-0.5 rounded-full bg-card px-2 text-[10px] font-black">
-                      <Crown className="size-3" /> Plus
-                    </span>
+                  {isWorn(mine, item) && (
+                    <span className="absolute top-2 right-2 rounded-full bg-card px-2 text-[10px] font-black text-mint-ink">Wearing</span>
                   )}
                 </span>
                 <span className="p-3">
                   <span className="block truncate text-sm font-extrabold">{item.name}</span>
-                  <span className="mt-0.5 flex items-center gap-1 text-sm font-bold text-muted-foreground">
-                    {item.plusOnly ? (
-                      <span className={ME.plus ? 'text-mint-ink' : undefined}>{ME.plus ? 'Yours with Plus ✓' : 'With Plus'}</span>
-                    ) : has ? (
+                  <span className="block truncate text-[11px] text-muted-foreground">{item.blurb}</span>
+                  <span className="mt-1 flex items-center gap-1 text-sm font-bold text-muted-foreground">
+                    {has ? (
                       <span className="text-mint-ink">Owned ✓</span>
                     ) : (
                       <>
@@ -185,7 +181,25 @@ export default function ShopPage() {
             );
           })}
         </div>
+        {/* On a phone the quests come after the items, so the Shop opens on things to try */}
+        <Quests className="mt-6 lg:hidden" />
       </section>
+    </div>
+  );
+}
+
+function Quests({ className }: { className?: string }) {
+  return (
+    <div className={cn('flex flex-col gap-4', className)}>
+      <section className="flex flex-col gap-2">
+        <h2 className="flex items-baseline justify-between text-sm font-black">
+          Today’s quests <span className="text-[11px] font-bold text-muted-foreground">new at midnight</span>
+        </h2>
+        <QuestList />
+      </section>
+      <p className="text-xs text-muted-foreground">
+        Everything here is just for looks. Coins can’t be bought: you earn them with quests. Outfits come in your outfit colour.
+      </p>
     </div>
   );
 }

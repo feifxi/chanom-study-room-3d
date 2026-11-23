@@ -431,6 +431,11 @@ decision is made or changed: one line, a date, and the reason.
   with a friend's deck, and the room's owner and mods look after them. Members write decks and
   change their own; guests play with them. We lose using one deck in several rooms; "copy to
   another room" can come later. This replaces "My decks, private to you".
+- **The Shop's first set** (2026-11-23, the owner approved it in the demo): Bunny Ears 200, Bear
+  Ears 200, Star Clips 220, Flower Crown 280, Halo 300, Witch Hat 380; Hoodie 500, Overalls 550,
+  Raincoat 650, Yukata 800. Outfits are shapes in your outfit colour; one accessory slot, as before.
+  While building: **the game server no longer takes a look from the browser**; the API checks you
+  own a look's items and sends it to every room, so a changed client can't wear unbought items.
 - **Coins and quests, in parts** (2026-11-23, the owner): 1. quests and coins, counted by the
   servers; 2. the Shop's first set, **only things that really show on your character in every
   room** (about 6 accessories and 3–4 outfits, built in code, designed in the demo first; today's

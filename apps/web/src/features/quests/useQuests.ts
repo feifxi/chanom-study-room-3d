@@ -42,7 +42,11 @@ export function QuestsListener() {
   useEffect(() => {
     if (!on) return;
     const socket = liveSocket();
-    const refresh = () => void client.invalidateQueries({ queryKey: QUESTS_KEY });
+    // Coins changed (a quest paid, or a buy in another tab): the Shop's wardrobe too
+    const refresh = () => {
+      void client.invalidateQueries({ queryKey: QUESTS_KEY });
+      void client.invalidateQueries({ queryKey: ['shop'] });
+    };
     const onDone = (done: QuestDone) => {
       toast.success(`🎯 ${done.title} · +${done.coins} 🪙`);
       refresh();

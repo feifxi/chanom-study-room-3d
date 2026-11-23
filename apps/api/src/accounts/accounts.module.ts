@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { FocusModule } from '../focus/focus.module.js';
 import { FriendsModule } from '../friends/friends.module.js';
 import { RoomsModule } from '../rooms/rooms.module.js';
+import { ShopModule } from '../shop/shop.module.js';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config/env.js';
 import { AccountsCleanup } from './accounts-cleanup.js';
@@ -11,7 +12,7 @@ import { HandlesService } from './handles.service.js';
 import { MeController } from './me.controller.js';
 
 @Module({
-  imports: [RoomsModule, FriendsModule, FocusModule],
+  imports: [RoomsModule, FriendsModule, FocusModule, ShopModule],
   controllers: [MeController, HandlesController],
   providers: [
     AccountsService,

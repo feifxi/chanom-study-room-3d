@@ -81,6 +81,7 @@ model User {
   todos            Todo[]
   questProgress    QuestProgress[]
   coinEntries      CoinEntry[]
+  ownedItems       OwnedItem[]
 
   @@index([deleteAt])
   @@map("users")
@@ -578,4 +579,16 @@ model CoinEntry {
 
   @@index([userId, createdAt])
   @@map("coin_entries")
+}
+
+/// A Shop item you bought (an id from SHOP_ITEMS in @connecta/shared/shop); yours for good
+model OwnedItem {
+  userId   String   @map("user_id")
+  itemId   String   @map("item_id")
+  boughtAt DateTime @default(now()) @map("bought_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, itemId])
+  @@map("owned_items")
 }

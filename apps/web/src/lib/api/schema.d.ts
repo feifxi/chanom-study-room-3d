@@ -900,6 +900,38 @@ export interface paths {
         patch: operations["TodosController_tick"];
         trace?: never;
     };
+    "/api/shop/wardrobe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ShopController_wardrobe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shop/items/{id}/buy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ShopController_buy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/dms": {
         parameters: {
             query?: never;
@@ -1185,7 +1217,9 @@ export interface components {
             hair: string;
             outfit: string;
             /** @enum {string} */
-            accessory: "none" | "ribbon" | "catEars" | "glasses" | "headphones" | "ahoge" | "twintails";
+            accessory: "none" | "ribbon" | "catEars" | "glasses" | "headphones" | "ahoge" | "twintails" | "bunnyEars" | "bearEars" | "starClips" | "flowerCrown" | "halo" | "witchHat";
+            /** @enum {string} */
+            style?: "sailor" | "hoodie" | "overalls" | "raincoat" | "yukata";
         };
         BirthdayBody: {
             /**
@@ -1669,6 +1703,10 @@ export interface components {
             id: string;
             text: string;
             done: boolean;
+        };
+        Wardrobe: {
+            coins: number;
+            owned: string[];
         };
         DmSummary: {
             id: string;
@@ -3425,6 +3463,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Todo"];
+                };
+            };
+        };
+    };
+    ShopController_wardrobe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Wardrobe"];
+                };
+            };
+        };
+    };
+    ShopController_buy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Wardrobe"];
                 };
             };
         };

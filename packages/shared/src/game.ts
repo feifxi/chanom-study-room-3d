@@ -42,8 +42,6 @@ export const SAY_COOLDOWN_MS = 400;
 export const TYPING_TIMEOUT_MS = 6000;
 /** What you're focusing on, shown by your name */
 export const SUBJECT_MAX = 24;
-/** A new look inside a room, at most this often */
-export const LOOK_EVERY_MS = 5000;
 
 /** Proximity voice (feature 6): full volume within NEAR metres, silent from FAR. */
 export const VOICE_NEAR = 2.5;
@@ -92,7 +90,9 @@ export type GameRoomEvent =
   | { roomId: string; type: 'map'; mapId: string }
   | { roomId: string; type: 'guestVoice'; on: boolean }
   | { roomId: string; type: 'roomWideGames'; on: boolean }
-  | { roomId: string; type: 'deleted' };
+  | { roomId: string; type: 'deleted' }
+  /** A saved look (the API checked you own it): every room you're in shows it. roomId '*' = all rooms */
+  | { roomId: '*'; type: 'look'; userId: string; look: AvatarLook };
 
 export interface GamePresence {
   userId: string;
@@ -107,7 +107,7 @@ export interface GamePresence {
 /**
  * What a client sends: `move`, `sit`, `stand` (movement), `say` { text }, `typing` { typing },
  * `away` { on } (no input for 10 minutes), `focus:start` { preset, subject } and `focus:stop` (the
- * timer, run by the server), `focus:subject` { subject }, `stage` { on }, `look` { look },
+ * timer, run by the server), `focus:subject` { subject }, `stage` { on },
  * `voice` (asks for a {@link VoicePass}), `deaf` { on }, `mute` { id, on } (owner and mods: Mute
  * for everyone, by session id), `share` { where: 'tv' | 'table' | '', audio } (a screen share at
  * the TV or the desk you sit at; '' stops it), `npc:summon` { kind } (at the Buddy Machine),

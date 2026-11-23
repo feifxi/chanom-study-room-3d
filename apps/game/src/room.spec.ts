@@ -364,18 +364,18 @@ describe('bubbles and status', () => {
     await until(() => me(a).status === 'idle');
   });
 
-  it('a new look shows for everyone, at most once every 5 seconds; guests keep theirs', async () => {
+  it('a new look comes only from the API (which checked you own it) and shows for everyone', async () => {
     const a = track(await walkIn());
-    const pink = { hair: '#f59ac0', outfit: '#ff6fa8', accessory: 'catEars' };
-    a.send('look', { look: pink });
-    await until(() => JSON.parse(me(a).look).accessory === 'catEars');
-    a.send('look', { look: { ...pink, accessory: 'glasses' } });
-    await quietly();
-    expect(JSON.parse(me(a).look).accessory).toBe('catEars');
-    const g = track(await walkIn({ sub: 'u-guest', role: 'guest', name: 'Mint', handle: null }));
-    g.send('look', { look: pink });
-    await quietly();
-    expect(JSON.parse(me(g).look).accessory).not.toBe('catEars');
+    const b = track(await walkIn({ sub: 'u-jod', name: 'Jod', handle: 'jod' }));
+    // There's no "look" message any more: the browser can't set its own
+    dispatch({
+      roomId: '*',
+      type: 'look',
+      userId: 'u-mai',
+      look: { hair: '#f59ac0', outfit: '#ff6fa8', accessory: 'witchHat', style: 'yukata' },
+    });
+    await until(() => JSON.parse(b.state.players.get(a.sessionId)!.look).style === 'yukata');
+    await until(() => JSON.parse(me(a).look).accessory === 'witchHat');
   });
 
   it('resets when the last person leaves: the next visit starts a fresh room', async () => {

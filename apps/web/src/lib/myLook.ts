@@ -7,8 +7,7 @@ import { ME } from './mock';
 /**
  * Your character's look, changeable anywhere, inside a room too (decided 2026-11-09): saving swaps
  * it live for everyone in the room with a little sparkle, no rejoin. At most once every 5 s so nobody
- * flickers outfits. The real app sends one "change my look" message; the server checks you own the
- * items and updates the synced look.
+ * flickers outfits. The API saves it, checks you own its Shop items, and tells the game servers.
  */
 export const LOOK_COOLDOWN_MS = 5000;
 
@@ -23,6 +22,9 @@ export function initMyLook(look: AvatarLook) {
   if (state.look === look) return;
   state = { look, version: state.version };
 }
+
+/** Seconds until the look can change again (0: now) */
+export const lookWait = () => Math.max(0, Math.ceil((lastSaved + LOOK_COOLDOWN_MS - Date.now()) / 1000));
 
 /** Saves the look, or says how long to wait. */
 export function saveMyLook(look: AvatarLook): { ok: true } | { ok: false; waitS: number } {

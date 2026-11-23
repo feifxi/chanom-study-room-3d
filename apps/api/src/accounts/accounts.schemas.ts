@@ -1,4 +1,4 @@
-import { ACCESSORIES, DISPLAY_NAME_MAX, HAIR_COLORS, OUTFIT_COLORS, REQUESTS_FROM } from '@connecta/shared';
+import { ALL_ACCESSORIES, DISPLAY_NAME_MAX, HAIR_COLORS, OUTFIT_COLORS, OUTFIT_STYLES, REQUESTS_FROM } from '@connecta/shared';
 import { z } from 'zod';
 
 /** A colour from one of the palettes. Typed as a plain string, like AvatarLook in @connecta/shared. */
@@ -10,7 +10,10 @@ export const LookSchema = z
   .object({
     hair: paletteColor(HAIR_COLORS, 'hair'),
     outfit: paletteColor(OUTFIT_COLORS, 'outfit'),
-    accessory: z.enum(ACCESSORIES),
+    /** Shop accessories only if you own them (checked when saving) */
+    accessory: z.enum(ALL_ACCESSORIES),
+    /** The outfit shape; missing = the free sailor top. Shop ones only if you own them */
+    style: z.enum(OUTFIT_STYLES).optional(),
   })
   .meta({ id: 'Look' });
 

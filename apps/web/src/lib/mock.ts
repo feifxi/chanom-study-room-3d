@@ -588,36 +588,6 @@ export const SENT_REQUESTS = [{ handle: 'tonkla_', name: 'Tonkla', color: '#6aa6
  */
 export const FRIENDS = Object.values(USERS).filter((u) => !['bow', 'pim', 'ken'].includes(u.id));
 
-export type ShopCategory = 'outfits' | 'accessories' | 'pets' | 'frames';
-
-export interface ShopItem {
-  id: string;
-  name: string;
-  category: ShopCategory;
-  emoji: string;
-  price: number;
-  tint: string;
-  owned?: boolean;
-  plusOnly?: boolean;
-  isNew?: boolean;
-}
-
-export const SHOP: ShopItem[] = [
-  { id: 'strawberry-dress', name: 'Strawberry Dress', category: 'outfits', emoji: '🍓', price: 300, tint: 'bg-secondary', isNew: true },
-  { id: 'matcha-hoodie', name: 'Matcha Hoodie', category: 'outfits', emoji: '🍵', price: 280, tint: 'bg-mint' },
-  { id: 'starry-pajamas', name: 'Starry Pajamas', category: 'outfits', emoji: '🌙', price: 350, tint: 'bg-lavender', plusOnly: true },
-  { id: 'school-uniform', name: 'School Uniform', category: 'outfits', emoji: '🎒', price: 200, tint: 'bg-sky', owned: true },
-  { id: 'bunny-ears', name: 'Bunny Ears', category: 'accessories', emoji: '🐰', price: 150, tint: 'bg-secondary' },
-  { id: 'flower-crown', name: 'Flower Crown', category: 'accessories', emoji: '🌸', price: 180, tint: 'bg-peach', isNew: true },
-  { id: 'round-glasses', name: 'Round Glasses', category: 'accessories', emoji: '👓', price: 90, tint: 'bg-lavender', owned: true },
-  { id: 'cat-ears', name: 'Cat Ears', category: 'accessories', emoji: '🐱', price: 120, tint: 'bg-mint', owned: true },
-  { id: 'pet-cat', name: 'Pet Kitten', category: 'pets', emoji: '🐈', price: 500, tint: 'bg-peach' },
-  { id: 'pet-duck', name: 'Pet Duckling', category: 'pets', emoji: '🐥', price: 450, tint: 'bg-mint', isNew: true },
-  { id: 'pet-bunny', name: 'Pet Bunny', category: 'pets', emoji: '🐇', price: 520, tint: 'bg-lavender', plusOnly: true },
-  { id: 'frame-sakura', name: 'Sakura Photo Frame', category: 'frames', emoji: '🌸', price: 100, tint: 'bg-secondary' },
-  { id: 'frame-polaroid', name: 'Polaroid Frame', category: 'frames', emoji: '📸', price: 80, tint: 'bg-sky', owned: true },
-];
-
 /**
  * Common rooms (were "drop-in rooms", renamed 2026-11-09): run by Connecta from its templates, open
  * to everyone, guests included, with no members and no saved chat. When a copy fills, a new one

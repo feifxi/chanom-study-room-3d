@@ -1,5 +1,14 @@
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { ageOn, DELETE_GRACE_DAYS, HANDLE_CHANGE_DAYS, HANDLE_HOLD_DAYS, MIN_AGE, sanitizeLook, type RequestsFrom } from '@connecta/shared';
+import {
+  ageOn,
+  DELETE_GRACE_DAYS,
+  HANDLE_CHANGE_DAYS,
+  HANDLE_HOLD_DAYS,
+  MIN_AGE,
+  sanitizeLook,
+  type AvatarLook,
+  type RequestsFrom,
+} from '@connecta/shared';
 import { Prisma, type User } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { AccountDetails, Me } from './accounts.schemas.js';
@@ -10,6 +19,8 @@ import { HandlesService } from './handles.service.js';
 import { requireSignedUp } from './signed-up.js';
 import { listedOnEveryone } from '../focus/everyone.js';
 import { FocusService } from '../focus/focus.service.js';
+import { GameService } from '../game/game.service.js';
+import { ShopService } from '../shop/shop.service.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -55,6 +66,8 @@ export class AccountsService {
     private readonly friends: FriendsService,
     private readonly presence: PresenceService,
     private readonly focus: FocusService,
+    private readonly shop: ShopService,
+    private readonly game: GameService,
     @Inject(SIGN_IN_PROVIDERS) private readonly providers: SignInProviders,
   ) {}
 
@@ -107,7 +120,9 @@ export class AccountsService {
   }
 
   /** The last step: character, display name and @handle. Then the app opens Home. */
-  async signUp(userId: string, input: { name: string; handle: string; look: object }): Promise<Me> {
+  async signUp(userId: string, input: { name: string; handle: string; look: Partial<AvatarLook> }): Promise<Me> {
+    // A new account owns nothing yet: free items only
+    await this.shop.checkLook(userId, input.look);
     const user = await this.user(userId);
     if (user.isAnonymous) throw new ForbiddenException('Guests sign up with Google, Discord or email first');
     if (user.handle) throw new ConflictException('Sign-up is already finished');
@@ -132,16 +147,21 @@ export class AccountsService {
   }
 
   /** A guest's name and character (from the invite page). */
-  async setGuest(userId: string, input: { name: string; look: object }): Promise<Me> {
+  async setGuest(userId: string, input: { name: string; look: Partial<AvatarLook> }): Promise<Me> {
     const user = await this.user(userId);
     if (!user.isAnonymous) throw new ForbiddenException('Only guests set a guest name');
+    await this.shop.checkLook(userId, input.look);
     return toMe(await this.prisma.user.update({ where: { id: userId }, data: { name: input.name, look: input.look } }));
   }
 
   /** Settings → My profile and My character: display name and look. */
-  async updateProfile(userId: string, input: { name?: string; look?: object }): Promise<Me> {
+  async updateProfile(userId: string, input: { name?: string; look?: Partial<AvatarLook> }): Promise<Me> {
     await this.signedUp(userId);
-    return toMe(await this.prisma.user.update({ where: { id: userId }, data: { name: input.name, look: input.look } }));
+    if (input.look) await this.shop.checkLook(userId, input.look);
+    const me = toMe(await this.prisma.user.update({ where: { id: userId }, data: { name: input.name, look: input.look } }));
+    // Every room you're in shows it at once (the game servers take looks only from here, checked)
+    if (input.look && me.look) this.game.roomEvent({ roomId: '*', type: 'look', userId, look: me.look });
+    return me;
   }
 
   /**

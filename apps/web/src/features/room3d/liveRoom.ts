@@ -602,11 +602,6 @@ export class LiveRoom extends MockRoom {
     this.game.send('share', { where, audio });
   }
 
-  /** Your new look, for everyone (at most once every 5 s). */
-  setLook(look: AvatarLook) {
-    this.game.send('look', { look });
-  }
-
   override send(type: string, payload: unknown) {
     if (type === 'move' || type === 'sit' || type === 'stand') this.game.send(type, payload);
     else if (type === 'npc:pet') {

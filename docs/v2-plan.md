@@ -108,8 +108,9 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
      Guess~~ done 2026-11-23 (chains on the game server, each turn private to its player; the album
      in step for everyone). **Party and table games are done.**
    - **Coins and quests**, in parts: ~~quests and coins~~ done 2026-11-23 (counted by the game
-     server and the API, paid once, live toasts); the Shop's first set (accessories and outfits that
-     show on your character, designed in the demo first); pets.
+     server and the API, paid once, live toasts); ~~the Shop's first set~~ done 2026-11-23 (6
+     accessories and 4 outfits built in code, bought with coins, a look only uses what you own);
+     pets.
 6. **The seed:** one fill of all the data (people, rooms, members, friends, DMs…) for testing the
    whole app ([why at the end](v2/decisions.md#engineering-and-infra)).
 7. **Infra** on AWS ([spec 15](v2/features/15-business-infra.md#architecture)), then a playtest, then launch.

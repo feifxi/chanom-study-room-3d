@@ -67,8 +67,13 @@ Tick or strike these as they're dealt with.
       link, though the server's title is the one used: one extra request per link.
 - [ ] **Common rooms keep the demo's local TV** until moderation and open rooms; photo mode
       there has no Share (they're text only until feature 14).
-- [ ] **The Shop still shows the demo's items** (emoji, "Owned" marks from the mock) until coins and
-      quests part 2; Buy only says it opens soon.
+- [ ] **The 3D budget check doesn't dress anyone in Shop items** (its crowd picks free looks), so a
+      room full of witch hats and flower crowns isn't measured. The crown was cut to about 1,500
+      triangles; the café at 52 people had ~170k triangles to spare.
+- [ ] **The 5-second look cooldown is only in the browser** now that looks go through the API.
+      Changing looks quickly with a script would make the API re-send looks to rooms.
+- [ ] **A saved look is sent to every room on every game server** (`roomId '*'`), which only
+      matters with many game servers; the gateway's presence knows which room you're in.
 - [ ] **Old quest progress is never cleaned up** (three small rows per person per day). A nightly
       job could drop rows older than a month; the coin entries stay as the record.
 - [ ] **Focus minutes count towards the quest when a round ends**, not minute by minute, so a long
@@ -385,3 +390,29 @@ stopped focus round no longer counts as a finished session, as the browser versi
 reached a break; a refused Buddy Machine summon no longer counts). A headless run checked minutes
 with others counted through the queue, and the Buddy Machine paying 15 coins with the toast,
 shown live in My tools and the Shop.
+
+### Coins and quests, part 2: the Shop's first set
+
+**Changed:** the Shop sells 10 items that really show on your character: 6 accessories and 4 outfit
+shapes (in your outfit colour), built in code (`features/avatar/character.ts`, the same in the demo
+and apps/web) and listed in `@connecta/shared/shop`. Designed in the demo and approved by the owner.
+The API's new `src/shop` module owns what you bought (`owned_items`), buys with coins in one
+transaction, and checks every saved look (sign-up, guest pass, Settings) only uses free items and
+ones you own. The game server takes looks only from the API now (a `look` room event to every
+room); the browser's `look` message is gone. Settings → My character shows an Outfit row and your
+bought accessories; the Shop page uses the real wardrobe; on a phone the quests come after the items.
+
+**Bugs found and fixed while building:**
+
+- **Anyone could wear anything:** the game server took a look straight from the browser, so a
+  changed client could wear Shop items without buying them. Looks now come only from the API.
+- **A look saved in Settings changed in the room even when the API refused it** (it switched first
+  and saved after). It now saves first and changes only when the API agrees.
+- **The same item bought twice at once** answered with a server error from the second buy (nothing
+  was charged twice); it now says 409 "You already have it".
+- While designing: the flower crown sat inside the hair and cost ~4,600 triangles, the star clips
+  were tiny, the bunny ears were cut off in the preview, and the overalls looked like the sailor top
+  until they got trouser legs and tee sleeves.
+
+A headless run checked the API refusing an unowned witch hat, buying it in the Shop (1,000 → 620
+coins), wearing it, and Jod seeing it on Mai in the room at once.

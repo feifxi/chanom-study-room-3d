@@ -5,7 +5,6 @@ import {
   DEFAULT_LOOK,
   GAME_CLOSE,
   MIN_COUNTED_FOCUS_MIN,
-  LOOK_EVERY_MS,
   PATCH_RATE_MS,
   RECONNECT_SECONDS,
   SAY_COOLDOWN_MS,
@@ -75,7 +74,6 @@ interface Private {
   moveBudget: number;
   lastSaidAt: number;
   typingAt: number;
-  lookAt: number;
   /** Timed out until then (epoch ms): no bubbles, no typing */
   quietUntil: number;
   /** No input for 10 minutes (the client decides; a running focus round still shows as focus) */
@@ -449,16 +447,6 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       const p = this.state.players.get(client.sessionId);
       if (p && this.npc.pet(client.sessionId, p, msg.id)) this.quest(client.sessionId, 'pets');
     }),
-
-    /** A new look from Settings → My character, live for everyone (guests keep the one they picked) */
-    look: validate(z.object({ look: z.unknown() }), (client, msg) => {
-      const p = this.state.players.get(client.sessionId);
-      const s = this.priv.get(client.sessionId);
-      const now = Date.now();
-      if (!p || !s || p.role === 'guest' || now - s.lookAt < LOOK_EVERY_MS) return;
-      s.lookAt = now;
-      p.look = JSON.stringify(sanitizeLook(msg.look));
-    }),
   };
 
   /** The ticket is the only proof of who you are; its room must be this room. */
@@ -541,7 +529,6 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       moveBudget: 0,
       lastSaidAt: 0,
       typingAt: 0,
-      lookAt: 0,
       quietUntil: ticket.timedOutUntil ?? 0,
       away: false,
       timer: carried?.timer ?? idleTimer(),
@@ -584,6 +571,13 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
   /** Something changed in the API (kick, ban, a new map…). */
   apply(event: GameRoomEvent) {
     switch (event.type) {
+      // A look saved in Settings: the API checked you own its Shop items, so only it sends looks
+      case 'look':
+        for (const sessionId of this.sessionsOf(event.userId)) {
+          const p = this.state.players.get(sessionId);
+          if (p) p.look = JSON.stringify(sanitizeLook(event.look));
+        }
+        break;
       case 'kick':
       case 'ban':
       case 'left':

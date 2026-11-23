@@ -459,3 +459,19 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
 - [ ] A guest without an account earns nothing; a member visiting another room on a guest pass
       does.
 - [ ] The Shop's Buy says the Shop opens soon (part 2).
+
+### Coins and quests, part 2: the Shop's first set
+
+- [ ] The Shop lists the 10 items (6 accessories, 4 outfits) with prices; the tabs filter them;
+      "New this week" shows the Yukata on your own character.
+- [ ] Try anything on: your character in the Shop wears it (outfits in your outfit colour). Take
+      off puts it back.
+- [ ] Without enough coins Buy says how many to go. With enough, Buy takes the coins (the header
+      and quests card follow), the card says Owned ✓, and Wear it changes your look.
+- [ ] Someone in a room with you sees your new look at once, with no rejoin.
+- [ ] Settings → My character shows an Outfit row and your bought accessories next to the free
+      ones; switching and saving works; the free items are still there.
+- [ ] Check each item in a room from a few angles (walking and sitting): nothing pokes through the
+      hair or floats oddly; the overalls' trouser legs and the raincoat's boots move with the legs.
+- [ ] A guest's character maker (invite page) shows only the free items.
+- [ ] Phone width: the Shop opens on your character and the items; the quests come after.

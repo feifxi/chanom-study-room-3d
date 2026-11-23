@@ -3,7 +3,16 @@
 import type { ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import { Dices } from 'lucide-react';
-import { ACCESSORIES, HAIR_COLORS, OUTFIT_COLORS, randomLook, type AvatarLook } from '@connecta/shared';
+import {
+  ACCESSORIES,
+  HAIR_COLORS,
+  OUTFIT_COLORS,
+  randomLook,
+  SHOP_ITEMS,
+  type Accessory,
+  type AvatarLook,
+  type OutfitStyle,
+} from '@connecta/shared';
 import { cn } from '@/lib/utils';
 
 const AvatarPreview = dynamic(() => import('./AvatarPreview').then((m) => m.AvatarPreview), { ssr: false });
@@ -27,13 +36,25 @@ export function CharacterEditor({
   onChange,
   children,
   previewClassName,
+  owned,
 }: {
   look: AvatarLook;
   onChange: (look: AvatarLook) => void;
   /** Extra fields beside the swatches, e.g. the display name when signing up. */
   children?: ReactNode;
   previewClassName?: string;
+  /** Shop items you own (ids): they join the free accessories and the sailor top */
+  owned?: readonly string[];
 }) {
+  const mine = SHOP_ITEMS.filter((i) => owned?.includes(i.id));
+  const accessories: { id: Accessory; label: string }[] = [
+    ...ACCESSORIES.map((a) => ({ id: a, label: ACCESSORY_LABELS[a]! })),
+    ...mine.flatMap((i) => (i.kind === 'accessory' ? [{ id: i.value, label: `${i.emoji} ${i.name}` }] : [])),
+  ];
+  const styles: { id: OutfitStyle; label: string }[] = [
+    { id: 'sailor', label: 'Sailor top' },
+    ...mine.flatMap((i) => (i.kind === 'outfit' ? [{ id: i.value, label: `${i.emoji} ${i.name}` }] : [])),
+  ];
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-4">
@@ -59,18 +80,45 @@ export function CharacterEditor({
           <Swatches label="Outfit" colors={OUTFIT_COLORS} value={look.outfit} onPick={(outfit) => onChange({ ...look, outfit })} />
         </div>
       </div>
+      {styles.length > 1 && (
+        <Chips label="Outfit" options={styles} value={look.style ?? 'sailor'} onPick={(style) => onChange({ ...look, style })} />
+      )}
+      <Chips
+        label={styles.length > 1 ? 'Accessory' : undefined}
+        options={accessories}
+        value={look.accessory}
+        onPick={(accessory) => onChange({ ...look, accessory })}
+      />
+    </div>
+  );
+}
+
+function Chips<T extends string>({
+  label,
+  options,
+  value,
+  onPick,
+}: {
+  label?: string;
+  options: { id: T; label: string }[];
+  value: T;
+  onPick: (v: T) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      {label && <span className="text-xs font-bold text-muted-foreground">{label}</span>}
       <div className="flex flex-wrap gap-1.5">
-        {ACCESSORIES.map((a) => (
+        {options.map((o) => (
           <button
             type="button"
-            key={a}
-            onClick={() => onChange({ ...look, accessory: a })}
+            key={o.id}
+            onClick={() => onPick(o.id)}
             className={cn(
               'rounded-full border px-3 py-1 text-xs font-bold',
-              look.accessory === a ? 'border-primary bg-secondary text-secondary-foreground' : 'bg-card hover:bg-muted',
+              value === o.id ? 'border-primary bg-secondary text-secondary-foreground' : 'bg-card hover:bg-muted',
             )}
           >
-            {ACCESSORY_LABELS[a]}
+            {o.label}
           </button>
         ))}
       </div>

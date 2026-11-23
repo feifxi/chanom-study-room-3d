@@ -2383,6 +2383,58 @@
         ]
       }
     },
+    "/api/shop/wardrobe": {
+      "get": {
+        "operationId": "ShopController_wardrobe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Wardrobe"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "shop"
+        ]
+      }
+    },
+    "/api/shop/items/{id}/buy": {
+      "post": {
+        "operationId": "ShopController_buy",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Wardrobe"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "shop"
+        ]
+      }
+    },
     "/api/dms": {
       "get": {
         "operationId": "DmsController_list",
@@ -3133,7 +3185,23 @@
               "glasses",
               "headphones",
               "ahoge",
-              "twintails"
+              "twintails",
+              "bunnyEars",
+              "bearEars",
+              "starClips",
+              "flowerCrown",
+              "halo",
+              "witchHat"
+            ]
+          },
+          "style": {
+            "type": "string",
+            "enum": [
+              "sailor",
+              "hoodie",
+              "overalls",
+              "raincoat",
+              "yukata"
             ]
           }
         },
@@ -5169,6 +5237,27 @@
           "id",
           "text",
           "done"
+        ],
+        "additionalProperties": false
+      },
+      "Wardrobe": {
+        "type": "object",
+        "properties": {
+          "coins": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "owned": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "coins",
+          "owned"
         ],
         "additionalProperties": false
       },

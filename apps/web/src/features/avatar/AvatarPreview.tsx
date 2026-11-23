@@ -18,7 +18,7 @@ function Model({ look }: { look: AvatarLook }) {
 /** Small spinning portrait of a look, for the lobby and profile editor. */
 export function AvatarPreview({ look }: { look: AvatarLook }) {
   return (
-    <Canvas camera={{ fov: 28, position: [0, 1.05, 4.6] }} dpr={[1, 2]} onCreated={({ camera }) => camera.lookAt(0, 0.85, 0)}>
+    <Canvas camera={{ fov: 28, position: [0, 1.15, 5] }} dpr={[1, 2]} onCreated={({ camera }) => camera.lookAt(0, 0.95, 0)}>
       <hemisphereLight args={['#ffffff', '#cbb89d', 1.6]} />
       <directionalLight position={[2, 4, 3]} intensity={2} color="#fff1dc" />
       <Model look={look} />

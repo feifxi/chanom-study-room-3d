@@ -36,6 +36,10 @@
     "./quests": {
       "types": "./dist/quests.d.ts",
       "default": "./dist/quests.js"
+    },
+    "./shop": {
+      "types": "./dist/shop.d.ts",
+      "default": "./dist/shop.js"
     }
   },
   "scripts": {

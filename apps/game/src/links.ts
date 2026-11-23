@@ -28,7 +28,9 @@ interface LiveRoom {
 export const liveRooms = new Map<string, LiveRoom>();
 
 export function dispatch(event: GameRoomEvent) {
-  liveRooms.get(event.roomId)?.apply(event);
+  // '*': every room (a new look shows wherever you are)
+  if (event.roomId === '*') for (const room of liveRooms.values()) room.apply(event);
+  else liveRooms.get(event.roomId)?.apply(event);
 }
 
 /** Every room hears it; each lets the person go unless it's the room they walked into. */

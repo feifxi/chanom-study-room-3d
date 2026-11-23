@@ -194,8 +194,8 @@ export default function RoomView({
   useEffect(() => {
     const me = room.state.players.get('me');
     if (!me || guest || myLook.version === 0) return;
-    if (room instanceof LiveRoom) room.setLook(myLook.look);
-    else me.look = JSON.stringify(myLook.look);
+    // A real room hears it from the API (which checked you own it); a demo room is changed here
+    if (!(room instanceof LiveRoom)) me.look = JSON.stringify(myLook.look);
   }, [room, guest, myLook]);
 
   const driverRef = useRef<LocalPlayerDriver | null>(null);
