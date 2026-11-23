@@ -165,6 +165,40 @@ export const Slave = schema(
 );
 export type Slave = SchemaType<typeof Slave>;
 
+/**
+ * Pick a Side on the open floor (SideView in packages/shared). Only the question being asked is
+ * here, and its right answer only at the reveal, so nobody can read ahead.
+ */
+export const Side = schema(
+  {
+    /** The deck the host picked (shown in the lobby too) */
+    deckId: t.string().default(''),
+    deckName: t.string().default(''),
+    deckEmoji: t.string().default(''),
+    deckCount: t.number().default(0),
+    /** '' when there's no game; ask, reveal or done */
+    stage: t.string().default(''),
+    mode: t.string().default(''),
+    i: t.number().default(0),
+    count: t.number().default(0),
+    until: t.number().default(0),
+    q: t.string().default(''),
+    choices: t.array('string'),
+    /** The right answer at a quiz's reveal; -1 otherwise */
+    right: t.number().default(-1),
+    /** Where each player stood when the timer ended (-1: in no zone); empty while asking */
+    answers: t.map('number'),
+    scores: t.map('number'),
+    /** Each player's answers so far ("0,1,-,0"), so everyone can see who picked like them */
+    picks: t.map('string'),
+    winners: t.array('string'),
+    solo: t.boolean().default(false),
+    rev: t.number().default(0),
+  },
+  'Side',
+);
+export type Side = SchemaType<typeof Side>;
+
 export const RoomState = schema(
   {
     /** The room's map; changing it (Room settings) moves everyone to the new map's door */
@@ -176,6 +210,7 @@ export const RoomState = schema(
     spots: t.map(Spot),
     chess: t.ref(Chess),
     slave: t.ref(Slave),
+    side: t.ref(Side),
   },
   'RoomState',
 );

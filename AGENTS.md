@@ -40,8 +40,8 @@ framework with Watch together and photo mode, party and table games, coins and q
 moderation with Common and open rooms, the admin site and map editor. Agree each feature's details
 with the owner before building. **Focus** is done (the timer on the game server, the to-do list,
 the Focus page and rankings). **Watch together and photo mode** are done. **Party and table games**
-are in progress, one game per part: the round flow, chess, Slave and the whiteboard are on the game
-server; next is Pick a Side, then Draw & Guess.
+are in progress, one game per part: the round flow, chess, Slave, the whiteboard and Pick a Side are
+on the game server; next is Draw & Guess.
 Steps 1–4 are done: the skeleton; accounts and rooms; the gateway
 (friends, chat, pictures, DMs, presence and the 🔔 inbox); walking in a room (the Colyseus game
 server `apps/game` with movement, capacity and live room changes, bubbles, Away, the people list,

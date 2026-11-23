@@ -1,8 +1,8 @@
 # 9. Activity framework
 
 **Status:** decided and built in the demo. On the real backend (2026-11-23) the game server runs the
-round flow for the table games (**chess** and **Slave**); the other spots still run in each
-browser until their games come over
+round flow for the table games (**chess** and **Slave**) and **Pick a Side** on the floor; Draw &
+Guess still runs in each browser until its part
 (step 5's party and table games, one part each). **Try it:**
 http://localhost:3100/servers/chanom/rooms/library
 
@@ -153,6 +153,8 @@ out, awaySince, startsAt, inviteBy, inviteAt, results, resultsUntil }` in the ro
   (`spots`, people as session ids). The server decides who's in from the seats and positions it
   already has; games plug in as a `RoundGame` (`start`, `out`, `standing`, `stop`, `renamed`, and
   `tick` for turn timers).
+  A standing spot (the floor) has no seats: `activity:start { spot }` (E) opens its lobby with you
+  as host, who has 15 s to walk over, and `activity:game { gameId }` is the host's pick of mode.
   Messages: `activity:begin`, `activity:end`, `activity:call` (the host's), `activity:leave`;
   `activity:out { spot, why }` tells someone the round let them go.
 - **Leaving the room is leaving** (out at once); a dropped connection has the 30 s. A **reload**

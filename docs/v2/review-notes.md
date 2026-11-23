@@ -67,10 +67,15 @@ Tick or strike these as they're dealt with.
       link, though the server's title is the one used: one extra request per link.
 - [ ] **Common rooms keep the demo's local TV** until moderation and open rooms; photo mode
       there has no Share (they're text only until feature 14).
-- [ ] **Pick a Side and Draw & Guess still run in each browser** in
-      real rooms (only you see them) until their parts of party and table games.
+- [ ] **Draw & Guess still runs in each browser** in
+      real rooms (only you see it) until its part of party and table games.
 - [ ] **Slave's turn bar runs on the browser's clock** against the server's deadline; a clock that's
       off by seconds shows the bar wrong (the server's timer is what counts).
+- [ ] **Room deck text isn't moderated yet** (waits for the moderation feature, agreed); decks stay
+      inside their room, and the room's owner and mods can delete any.
+- [ ] **A signed-in visitor with a guest pass** can't add decks (members only), and Share to Room
+      chat checks "guest" by the guest-name link, not the room role; worth one check when guests
+      get their pass flow finished.
 - [ ] **The whiteboard has no rate limit** beyond its size caps: someone could flood it with tiny
       strokes until the oldest go. Fine among friends; worth a per-person rate with moderation.
 - [ ] **The invite card shows for 20 s on the browser's clock** against the server's time, like the
@@ -311,3 +316,20 @@ without end. Undo goes by account. **Share to Room chat** now posts the board as
 timed out) would have stayed on the drawer's own screen only; the server now takes it back there
 too. A headless run checked a late arrival getting the drawing (panel and wall), Mai's undo
 disappearing for Jod, and the Share button for a member.
+
+### Party and table games, part 4: Pick a Side and room decks
+
+**Changed:** Pick a Side runs on the game server (`apps/game/src/pickASide.ts`), with the rules
+and built-in decks moved to `@connecta/shared/pick-a-side`. The round flow learned **standing
+spots**: E opens a lobby with you as host while you walk over (`activity:start`), and the host
+picks the mode (`activity:game`). The room state shows only the current question, and a quiz's
+answer only at its reveal. **Custom decks now belong to the room** (the owner's call): a
+`room_decks` table and API (`src/decks`); members write, the writer edits, the owner and mods
+delete, guests play. A room deck reaches the game server as a deck **signed by the API for that
+room**. The Deck picker's "My decks" tab is now "This room" (with who wrote each), and the ✨ AI
+tab is hidden in real rooms until Plus. Room-wide games is in the join ticket and a live event.
+
+**Bugs found and fixed while building:** a game-server test assumed the first player would stay
+ahead when both stood still for the rest of the quiz; it now checks the order by score. A headless
+run checked the "This room" tab with "by Mai", picking a room deck, the room deck's question on
+Jod's phone, and the Would you rather reveal ("Mai picked with you").

@@ -1012,6 +1012,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/rooms/{id}/decks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DecksController_list"];
+        put?: never;
+        post: operations["DecksController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/decks/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["DecksController_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["DecksController_update"];
+        trace?: never;
+    };
+    "/api/decks/{id}/pass": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["DecksController_pass"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/notifications": {
         parameters: {
             query?: never;
@@ -1631,6 +1679,38 @@ export interface components {
         };
         MuteBody: {
             muted: boolean;
+        };
+        RoomDecks: components["schemas"]["RoomDeck"][];
+        RoomDeck: {
+            id: string;
+            name: string;
+            /** @enum {string} */
+            kind: "opinion" | "quiz";
+            questions: {
+                id: string;
+                q: string;
+                answers: string[];
+                right?: number;
+            }[];
+            by: components["schemas"]["Person"] | null;
+            mine: boolean;
+            canDelete: boolean;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        DeckBody: {
+            name: string;
+            /** @enum {string} */
+            kind: "opinion" | "quiz";
+            questions: components["schemas"]["DeckQuestion"][];
+        };
+        DeckQuestion: {
+            q: string;
+            answers: string[];
+            right?: number | null;
+        };
+        DeckPass: {
+            pass: string;
         };
         Inbox: {
             items: components["schemas"]["Notification"][];
@@ -3510,6 +3590,123 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    DecksController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoomDecks"];
+                };
+            };
+        };
+    };
+    DecksController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeckBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoomDeck"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DecksController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DecksController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeckBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoomDeck"];
+                };
+            };
+        };
+    };
+    DecksController_pass: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeckPass"];
+                };
             };
         };
     };

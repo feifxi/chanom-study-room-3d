@@ -20,6 +20,7 @@ import {
   type ChessView,
   type SlaveHand,
   type SlaveView,
+  type SideView,
   type SpotView,
   type WatchRefused,
   type WatchVideo,
@@ -32,6 +33,8 @@ import { decodeJwt } from 'jose';
 import { gameServer } from './server.js';
 import { liveKitVoice, voice } from './voice.js';
 import { youtube } from './watch.js';
+import { sideTiming } from './pickASide.js';
+import { BUILT_IN, DECK_PASS_AUDIENCE } from '@connecta/shared/pick-a-side';
 
 const SECRET = process.env.GAME_SECRET!;
 const PORT = 4092;
@@ -46,6 +49,7 @@ type GameRoom = Room<
     watch: WatchView & { queue: WatchVideo[] };
     spots: Map<string, SpotView & { players: string[]; out: string[]; results: string[]; nextRound: string[] }>;
     chess: ChessView & { moves: string[] };
+    side: SideView & { choices: string[]; winners: string[] };
     slave: SlaveView & { players: string[]; pileCards: number[]; gone: string[]; finished: string[] };
   }
 >;
@@ -788,6 +792,103 @@ describe('the whiteboard', () => {
     b.send('board:clear');
     await until(() => seen.some((x) => x.type === 'board:clear'));
     expect(seen.some((x) => x.type === 'echo')).toBe(true); // Mai saw Jod's stroke
+  });
+});
+
+describe('activities: Pick a Side', () => {
+  const floor = mapDataFor('library').floorArea;
+  const spot = (r: GameRoom) => r.state.spots.get('floor')!;
+  const center = { x: floor.x, z: floor.z };
+  /** The middle of zone A/B (two zones) or A–D (four), from the rug's own halves and quarters */
+  const zone = (i: number, sides: number) => {
+    const k = (floor.kind === 'circle' ? floor.r : Math.min(floor.w, floor.d) / 2) * 0.5;
+    return { x: floor.x + (i % 2 === 0 ? -k : k), z: floor.z + (sides === 2 ? 0 : i < 2 ? -k : k) };
+  };
+  beforeEach(() => Object.assign(sideTiming, { ask: { wyr: 600, quiz: 600 }, reveal: 300 }));
+  afterEach(() => Object.assign(sideTiming, { ask: { wyr: 10_000, quiz: 15_000 }, reveal: 4_000 }));
+
+  it('E opens a lobby; the host picks mode and deck; the right answer shows only at the reveal', { timeout: 30_000 }, async () => {
+    const a = track(await walkIn());
+    const b = track(await walkIn({ sub: 'u-jod', name: 'Jod' }));
+    await walkTo(a, center);
+    a.send('activity:start', { spot: 'floor' });
+    await until(() => spot(a).phase === 'gathering' && spot(a).hostId === a.sessionId);
+    await walkTo(b, { x: center.x + 0.5, z: center.z });
+    await until(() => spot(a).players.length === 2);
+    b.send('activity:game', { gameId: 'quiz' }); // not the host
+    await quietly(200);
+    expect(spot(a).gameId).toBe('wyr');
+    a.send('activity:game', { gameId: 'quiz' });
+    await until(() => spot(a).gameId === 'quiz' && a.state.side.deckId !== 'food');
+    const geo = BUILT_IN.find((d) => d.id === 'geo')!;
+    a.send('side:deck', { builtIn: 'geo' });
+    await until(() => a.state.side.deckId === 'geo');
+    expect(a.state.side).toMatchObject({ deckName: geo.name, deckCount: geo.questions.length });
+
+    a.send('activity:begin');
+    await until(() => a.state.side.stage === 'ask', 6000);
+    expect(a.state.side).toMatchObject({ mode: 'quiz', i: 0, count: 10, right: -1 });
+    expect(a.state.side.choices.length).toBe(4);
+    const q = geo.questions.find((x) => x.q === a.state.side.q)!;
+    await walkTo(a, zone(q.right!, 4));
+    await walkTo(b, zone((q.right! + 1) % 4, 4));
+    await until(() => a.state.side.stage === 'reveal', 5000);
+    expect(a.state.side.right).toBe(q.right);
+    expect(a.state.side.answers.get(a.sessionId)).toBe(q.right);
+    expect(a.state.side.scores.get(a.sessionId)).toBe(1);
+    expect(a.state.side.scores.get(b.sessionId) ?? 0).toBe(0);
+    // It plays through to the results, the best score first
+    await until(() => spot(a).phase === 'results', 20_000);
+    const score = (id: string) => a.state.side.scores.get(id) ?? 0;
+    const [first, second] = [...spot(a).results];
+    expect(score(first!)).toBeGreaterThanOrEqual(score(second!));
+    expect([...a.state.side.winners]).toContain(first);
+  });
+
+  it('a room deck comes only with the API’s pass for this room', { timeout: 20_000 }, async () => {
+    const a = track(await walkIn());
+    await walkTo(a, center);
+    a.send('activity:start', { spot: 'floor' });
+    await until(() => spot(a).phase === 'gathering');
+    const deck = {
+      id: 'd1',
+      name: 'Our group',
+      emoji: '💬',
+      kind: 'opinion',
+      source: 'room',
+      questions: ['Tea or coffee?', 'Beach or hills?', 'Cats or dogs?'].map((q, i) => ({ id: `d1-${i}`, q, answers: ['Yes', 'No'] })),
+    };
+    const sign = (roomId: string) =>
+      new SignJWT({ roomId, deck })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setAudience(DECK_PASS_AUDIENCE)
+        .setExpirationTime('5m')
+        .sign(new TextEncoder().encode(SECRET));
+    a.send('side:deck', { pass: await sign('another-room') });
+    a.send('side:deck', { pass: 'not-a-pass' });
+    await quietly(300);
+    expect(a.state.side.deckId).toBe('food');
+    a.send('side:deck', { pass: await sign(ROOM) });
+    await until(() => a.state.side.deckId === 'd1');
+    expect(a.state.side).toMatchObject({ deckName: 'Our group', deckCount: 3 });
+    // Alone it still plays (no winner, just your picks)
+    a.send('activity:begin');
+    await until(() => a.state.side.stage === 'ask', 6000);
+    expect(a.state.side.solo).toBe(true);
+  });
+
+  it('Room-wide games turned off ends the game and closes the floor', { timeout: 20_000 }, async () => {
+    const a = track(await walkIn());
+    await walkTo(a, center);
+    a.send('activity:start', { spot: 'floor' });
+    await until(() => spot(a).phase === 'gathering');
+    a.send('activity:begin');
+    await until(() => a.state.side.stage === 'ask', 6000);
+    dispatch({ roomId: ROOM, type: 'roomWideGames', on: false });
+    await until(() => spot(a).phase === 'free' && a.state.side.stage === '');
+    a.send('activity:start', { spot: 'floor' });
+    await quietly(300);
+    expect(spot(a).phase).toBe('free');
   });
 });
 

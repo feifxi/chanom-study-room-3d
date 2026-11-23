@@ -397,3 +397,28 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
 - [ ] A timed-out person can't draw (their stroke disappears).
 - [ ] Everyone leaves the room and comes back: the board is empty. Change the room's map: empty too.
 - [ ] Phone width: drawing with a finger works and the page doesn't scroll.
+
+### Party and table games, part 4: Pick a Side and room decks
+
+- [ ] A real room: Activities → Pick a Side → **Go there**, **E**: the lobby opens with you as host
+      while you walk over. Others who walk onto the floor are in.
+- [ ] The host switches **Would you rather / Quiz**; the deck follows the mode. Non-hosts see the
+      deck's name and can't change either.
+- [ ] Deck → **This room** → **New deck**: write 3 questions, Save; it's picked and shows "by you".
+      Another member sees it (with your name), can host with it, but can only edit their own. The
+      owner or a mod can delete anyone's (Delete? to confirm). A guest sees and plays the decks but
+      has no New deck.
+- [ ] Quiz needs 4 answers with one ticked; Would you rather 2; fewer than 3 finished questions
+      can't be saved.
+- [ ] **Start**: everyone sees the same question and timer; walking into a zone moves your live
+      count. When time's up the answers lock; the reveal shows the split, and in a quiz the right
+      one (✓). Nobody can see a quiz's answer before the reveal.
+- [ ] Would you rather's reveal says who picked with you; the results list who stood with you most.
+      A quiz ends with the best score first (ties share it). Alone: no winner, just your picks or
+      score.
+- [ ] Play again draws questions the room hasn't had from that deck yet.
+- [ ] Someone walking onto the floor mid-game plays from the next game; walking off for 30 s, or
+      Leave, takes you out.
+- [ ] Room settings → **Room-wide games** off: a game on the floor ends, and E there does nothing.
+- [ ] The ✨ AI tab isn't there (it comes after Plus).
+- [ ] Phone width: the lobby, the deck picker, the editor and the question card fit.

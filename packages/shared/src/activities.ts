@@ -75,6 +75,33 @@ export interface SlaveView {
   rev: number;
 }
 
+/** Pick a Side as the room state shows it (`side`): the current question only */
+export interface SideView {
+  deckId: string;
+  deckName: string;
+  deckEmoji: string;
+  deckCount: number;
+  /** '' when there's no game */
+  stage: string;
+  mode: string;
+  i: number;
+  count: number;
+  until: number;
+  q: string;
+  choices: Iterable<string>;
+  /** At a quiz's reveal; -1 otherwise */
+  right: number;
+  answers: Map<string, number>;
+  scores: Map<string, number>;
+  picks: Map<string, string>;
+  winners: Iterable<string>;
+  solo: boolean;
+  rev: number;
+}
+
+/** `side:deck`: the host picks a built-in deck by id, or a room deck by the API's signed pass */
+export type SideDeckPick = { builtIn: string } | { pass: string };
+
 /** `slave:hand`: your cards (and, as King or Queen during the swap, what you were given) */
 export interface SlaveHand {
   cards: number[];

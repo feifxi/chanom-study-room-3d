@@ -24,6 +24,10 @@
     "./slave": {
       "types": "./dist/slave.d.ts",
       "default": "./dist/slave.js"
+    },
+    "./pick-a-side": {
+      "types": "./dist/pickASide.d.ts",
+      "default": "./dist/pickASide.js"
     }
   },
   "scripts": {

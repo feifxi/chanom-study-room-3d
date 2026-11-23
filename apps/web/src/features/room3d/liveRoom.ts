@@ -24,6 +24,8 @@ import type { SpotId } from '../activities/spots';
 import type { ChessGame, EndReason } from '../activities/chess/game';
 import type { SlaveGame, Title } from '../activities/slave/game';
 import type { BoardStore } from '../activities/board/board';
+import { BUILT_IN, deckKindFor, type Deck, type SideGame, type SideMode } from '../activities/pickASide/game';
+import { deckPass } from '../activities/pickASide/useRoomDecks';
 import type { PieceSymbol, Square } from 'chess.js';
 import type { GameRoom } from '@/features/game/useGame';
 import type { MapDef } from '../map/types';
@@ -270,6 +272,59 @@ export class LiveRoom extends MockRoom {
     return game;
   }
 
+  private sideCache: { rev: number; game: SideGame | null; deck: Deck | null } = { rev: -1, game: null, deck: null };
+  /** Pick a Side in the rules' shape: only the question being asked is real, the others blanks */
+  private sideView() {
+    const s = this.game.state?.side;
+    if (!s) return this.sideCache;
+    if (s.rev === this.sideCache.rev) return this.sideCache;
+    const key = (id: string) => this.key(id);
+    const builtIn = BUILT_IN.find((d) => d.id === s.deckId);
+    const deck: Deck = builtIn ?? {
+      id: s.deckId,
+      name: s.deckName,
+      emoji: s.deckEmoji,
+      kind: deckKindFor(this.game.state.spots?.get('floor')?.gameId ?? 'wyr'),
+      source: 'room',
+      questions: Array.from({ length: s.deckCount }, (_, i) => ({ id: `${s.deckId}-${i}`, q: '', answers: [] })),
+    };
+    let game: SideGame | null = null;
+    if (s.stage) {
+      const me = this.game.sessionId;
+      const picks = (id: string) => s.picks.get(id)?.split(',') ?? [];
+      const mine = picks(me);
+      const agree: Record<string, number> = {};
+      s.picks.forEach((_, id) => {
+        if (id === me) return;
+        const n = picks(id).filter((a, i) => a !== '-' && a === mine[i]).length;
+        if (n) agree[key(id)] = n;
+      });
+      const answers: Record<string, number | null> = {};
+      s.answers.forEach((a, id) => (answers[key(id)] = a < 0 ? null : a));
+      const scores: Record<string, number> = {};
+      s.scores.forEach((n, id) => (scores[key(id)] = n));
+      game = {
+        mode: s.mode as SideMode,
+        deck,
+        questions: Array.from({ length: s.count }, (_, i) =>
+          i === s.i
+            ? { id: `${s.deckId}-q${i}`, q: s.q, answers: [...s.choices], ...(s.right >= 0 ? { right: s.right } : {}) }
+            : { id: `${s.deckId}-q${i}`, q: '', answers: [] },
+        ),
+        i: s.i,
+        stage: s.stage as SideGame['stage'],
+        until: s.until,
+        answers,
+        scores,
+        agree,
+        winners: [...s.winners].map(key),
+        solo: s.solo,
+      };
+    }
+    this.sideCache = { rev: s.rev, game, deck };
+    return this.sideCache;
+  }
+
   /** The hub's way to the spots the server runs */
   readonly activityRemote: ActivityRemote = {
     spots: () => {
@@ -310,6 +365,15 @@ export class LiveRoom extends MockRoom {
     slavePlay: (cards) => this.game.send('slave:play', { cards }),
     slavePass: () => this.game.send('slave:pass'),
     slaveGiveBack: (cards) => this.game.send('slave:giveBack', { cards }),
+    side: () => this.sideView().game,
+    floorDeck: () => this.sideView().deck,
+    open: (spot) => this.game.send('activity:start', { spot }),
+    pickGame: (gameId) => this.game.send('activity:game', { gameId }),
+    pickDeck: (deck) => {
+      if (deck.source === 'built-in') return this.game.send('side:deck', { builtIn: deck.id });
+      // A room deck: the API signs it for this room's game server
+      void deckPass(deck.id).then((pass) => pass && this.game.send('side:deck', { pass }));
+    },
   };
 
   /**

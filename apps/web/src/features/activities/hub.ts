@@ -127,6 +127,13 @@ export interface ActivityRemote {
   slavePlay(cards: slave.Card[]): void;
   slavePass(): void;
   slaveGiveBack(cards: slave.Card[]): void;
+  /** Pick a Side on the floor: the game (only the question being asked) and the host's deck */
+  side(): SideGame | null;
+  floorDeck(): Deck | null;
+  /** E at a standing spot */
+  open(spotId: SpotId): void;
+  pickGame(gameId: string): void;
+  pickDeck(deck: Deck): void;
 }
 
 /**
@@ -285,6 +292,8 @@ export class ActivityHub {
     if (this.activities) {
       this.chess = this.activities.chess();
       this.slave = this.activities.slave();
+      this.side = this.activities.side();
+      this.floorDeck = this.activities.floorDeck() ?? this.floorDeck;
     }
     for (const spot of SPOTS) {
       if (!spot.built) continue;
@@ -861,7 +870,8 @@ export class ActivityHub {
 
   /** E at a standing spot: open a lobby there, with you as host. */
   start(spotId: SpotId, by: string, now = Date.now()) {
-    if (this.served(spotId)) return; // a table: sitting down starts it
+    // A table: sitting down starts it. A standing spot: the game server opens the lobby
+    if (this.served(spotId)) return void (!spotById(spotId).seats && this.activities!.open(spotId));
     const spot = spotById(spotId);
     const st = this.spots[spotId];
     if (st.phase !== 'free' || (spot.roomWide && !this.roomWideGames)) return;
@@ -871,6 +881,7 @@ export class ActivityHub {
   }
 
   pickGame(spotId: SpotId, gameId: string) {
+    if (this.served(spotId)) return this.activities!.pickGame(gameId);
     const st = this.spots[spotId];
     st.game = spotById(spotId).games.find((g) => g.id === gameId) ?? st.game;
     // Would you rather needs an opinion deck, the quizzes a quiz deck
@@ -881,6 +892,7 @@ export class ActivityHub {
 
   /** The host picks Pick a Side's deck (built in, their own, or AI-made: the host's client sends it). */
   pickDeck(deck: Deck) {
+    if (this.served('floor')) return this.activities!.pickDeck(deck);
     this.floorDeck = deck;
     this.changed();
   }

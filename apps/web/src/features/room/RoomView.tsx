@@ -52,7 +52,8 @@ import { AwayBanner, InviteStack, LobbyCard, NextRoundCard, PlayStrip, ResultsCa
 import type { SideGame } from '../activities/pickASide/game';
 import { BoardPanel } from '../activities/board/BoardPanel';
 import { DeckPicker } from '../activities/pickASide/DeckPicker';
-import { deckKindFor } from '../activities/pickASide/decks';
+import { deckKindFor, useLocalShelf } from '../activities/pickASide/decks';
+import { useRoomDecks } from '../activities/pickASide/useRoomDecks';
 import { sidesFor, zoneAt as sideZoneAt } from '../activities/pickASide/game';
 import { SideHud, list } from '../activities/pickASide/SideHud';
 import { TelephonePanel } from '../activities/telephone/TelephonePanel';
@@ -420,6 +421,9 @@ export default function RoomView({
       : undefined;
   const sharePhoto = shareToChat('📸 Shared to Room chat', 'Couldn’t share that photo. Try again?');
   const shareBoard = shareToChat('🎨 Board shared to Room chat', 'Couldn’t share the board. Try again?');
+  // Pick a Side's decks: the room's own in a real room, this browser's in the demo
+  const roomDecks = useRoomDecks(room instanceof LiveRoom && place ? place.id : null, !!place?.myRole);
+  const localDecks = useLocalShelf();
   // The whiteboard: strokes through the game server
   useEffect(() => (room instanceof LiveRoom ? room.connectBoard(hub.board) : undefined), [room, hub]);
   // A round the game server runs let you go
@@ -1261,7 +1265,12 @@ export default function RoomView({
                       extra={
                         mySpot.id === 'floor' &&
                         (myState.hostId === 'me' ? (
-                          <DeckPicker deck={hub.floorDeck} kind={deckKindFor(myState.game.id)} onPick={(d) => hub.pickDeck(d)} />
+                          <DeckPicker
+                            deck={hub.floorDeck}
+                            kind={deckKindFor(myState.game.id)}
+                            onPick={(d) => hub.pickDeck(d)}
+                            shelf={room instanceof LiveRoom ? roomDecks : localDecks}
+                          />
                         ) : (
                           <p className="truncate px-1 text-xs font-bold">
                             <span className="text-muted-foreground">Deck</span> {hub.floorDeck.emoji} {hub.floorDeck.name}

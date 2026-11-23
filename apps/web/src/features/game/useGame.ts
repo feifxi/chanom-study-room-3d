@@ -9,6 +9,7 @@ import {
   type GameJoinOptions,
   type NpcView,
   type PlayerView,
+  type SideView,
   type SlaveView,
   type SpotView,
   type WatchView,
@@ -26,6 +27,7 @@ export interface GameState {
   spots?: Map<string, SpotView>;
   chess?: ChessView;
   slave?: SlaveView;
+  side?: SideView;
 }
 export type GameRoom = Room<unknown, GameState>;
 

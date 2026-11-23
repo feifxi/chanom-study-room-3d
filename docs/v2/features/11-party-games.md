@@ -1,8 +1,8 @@
 # 11. Pick a Side, whiteboard, Draw & Guess
 
 **Status:** decided and built in the demo. On the real backend: the **whiteboard** is relayed by
-the game server (2026-11-23); Pick a Side and Draw & Guess still run in each browser until their
-parts. **Try it:** http://localhost:3100/servers/chanom/rooms/library
+the game server (2026-11-23), and so is **Pick a Side** with the room's own decks (2026-11-23);
+Draw & Guess still runs in each browser until its part. **Try it:** http://localhost:3100/servers/chanom/rooms/library
 
 - Activities → Pick a Side → **Go there**, press **E**, pick a mode and a deck (try **✨ AI**), 📣
   **Call everyone**, **Start**. Walk into a zone to answer. Or Demo tab → **Someone starts Pick a
@@ -44,10 +44,12 @@ deck that fits.
 
 - **Built in**, by topic. Would you rather: Food, Pets, Love & dating, Study life, Weird. Quiz: General
   knowledge, Movies, Science, Geography. (The content team grows these.)
-- **My decks:** write your own once (a name and at least 3 questions), saved to your account, usable in
-  any room. **Private to you** for now; sharing decks comes later.
+- **This room's decks:** a room's own questions (inside jokes, the class's notes), kept with the
+  room. **Members write them** (a name and 3–50 questions) and change their own; the owner and mods
+  can delete any; **everyone let in can host with them**, guests too. Up to 100 per room. The picker
+  shows who wrote each. (Decided 2026-11-23: decks belong to the group, like its chat.)
 - **✨ AI deck:** type a topic ("Thai history", "chapter 3 biology") and AI writes 15 questions of the
-  right kind. You glance over them, then **Use it** (and can **Save to my decks**). **3 a day on Free, 30
+  right kind. You glance over them, then **Use it** (and can **Save to this room**). **3 a day on Free, 30
   with Plus** (AI calls cost money). This replaces the separate "AI quiz" game.
 - **No repeats:** the room remembers which questions it has played and draws unplayed ones first; when
   a deck runs out, it starts over (Jackbox's trick).
@@ -67,17 +69,26 @@ deck that fits.
   move". Quiz shows the top three scores.
 - **Reveal:** the right answer ticked; the split as bars; your result ("✓ Right! +1", "Not this time · it was
   B", "7 vs 3 · you're with the few 😎 · Mai picked with you").
-- **Lobby:** the mode picker plus a **Deck** button (tabs: Built in · My decks · ✨ AI); non-hosts see
+- **Lobby:** the mode picker plus a **Deck** button (tabs: Built in · This room · ✨ AI; the AI tab waits for Plus); non-hosts see
   the deck's name.
 - **Results card:** Would you rather lists who stood with you; the quizzes list right answers, with
   medals.
 
 ### Backend notes
 
-- Runs as the floor's game in the activity module: `{ mode, deck, questions, i, stage, until,
-answers, scores }`. The server reads zones from positions it already has when the timer ends.
-- Decks: `decks(id, owner_id, name, kind, questions jsonb, source)`; built-in decks ship with the app.
-  The host's client sends the chosen deck's questions when the game starts.
+- Runs on the game server as the floor's game (`apps/game/src/pickASide.ts`, rules and built-in
+  decks in `@connecta/shared/pick-a-side`). The floor is a **standing spot**: E sends
+  `activity:start`, the host picks the mode (`activity:game`) and the deck (`side:deck`). The room
+  state `side` shows **only the question being asked** and a quiz's right answer only at its
+  reveal; answers are read from where people stand when the timer ends. `picks` (each player's
+  answers so far) lets everyone see who picked like them.
+- Room decks: `room_decks(id, room_id, author_id, name, kind, questions jsonb)`, API module
+  `src/decks` (`GET/POST /api/rooms/:id/decks`, `PATCH/DELETE /api/decks/:id`). The host's page
+  asks `POST /api/decks/:id/pass` for the deck **signed with GAME_SECRET for that room** and hands
+  it to the game server, which trusts it like a join ticket (it has no database) and checks it
+  against the rules again. Built-in decks go by id.
+- Room settings → Room-wide games is in the join ticket and a live room event: off, the floor's
+  game ends and E there does nothing.
 - Played questions per room: a small list of question ids per deck (in memory with the room is enough;
   it resets when the room empties).
 - AI decks: one LLM call per deck (15 questions as JSON), a per-user daily counter. Text from users and

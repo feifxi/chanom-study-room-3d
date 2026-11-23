@@ -426,6 +426,14 @@ decision is made or changed: one line, a date, and the reason.
   for, for the 12-hour cap, while rankings use the viewer's time zone. **Guests** show in "This room
   today" from the game server's memory and are never saved. A running round shows 📖 even if you've
   gone quiet: focusing is never Away, for friends too.
+- **Pick a Side's custom decks belong to the room, not the person** (2026-11-23, the owner): a
+  deck of inside jokes or class notes is the group's, like its chat, so anyone in the room can host
+  with a friend's deck, and the room's owner and mods look after them. Members write decks and
+  change their own; guests play with them. We lose using one deck in several rooms; "copy to
+  another room" can come later. This replaces "My decks, private to you".
+- **Room decks reach the game server as a signed pass** (2026-11-23, while building): the game
+  server has no database, so the host's page asks the API for the deck signed for that room (like a
+  join ticket) instead of the host's browser sending questions the server would have to trust.
 - **Whiteboard limits and who draws** (2026-11-23, while building): anyone in front of the board
   draws, guests too (agreed), but **not someone timed out**, like chat. A board past 200,000 points
   lets its oldest strokes go rather than refusing new ones, so it never "fills up"; one stroke stops

@@ -63,6 +63,7 @@ model User {
   requests         JoinRequest[]
   bans             RoomBan[]       @relation("banned")
   guestPasses      GuestVisit[]
+  decks            RoomDeck[]
   friends          Friendship[]    @relation("friendOf")
   friendOf         Friendship[]    @relation("friend")
   sentRequests     FriendRequest[] @relation("sent")
@@ -219,6 +220,7 @@ model Room {
   invites  Invite[]
   guests   GuestVisit[]
   messages Message[]
+  decks    RoomDeck[]
 
   @@index([visibility])
   @@map("rooms")
@@ -518,4 +520,24 @@ model Todo {
   @@index([userId, position])
   @@index([doneAt])
   @@map("todos")
+}
+
+/// Pick a Side's own decks (feature 11): written by a room's members, used by anyone who hosts there
+model RoomDeck {
+  id        String   @id @default(uuid(7))
+  roomId    String   @map("room_id")
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  /// Who wrote it; null once their account is gone (the deck stays with the room)
+  authorId  String?  @map("author_id")
+  author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  name      String
+  /// opinion (Would you rather: 2 answers) or quiz (4 answers, one right)
+  kind      String
+  /// [{ q, answers, right? }], checked against @connecta/shared/pick-a-side's limits
+  questions Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([roomId])
+  @@map("room_decks")
 }

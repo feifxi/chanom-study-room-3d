@@ -2687,6 +2687,173 @@
         ]
       }
     },
+    "/api/rooms/{id}/decks": {
+      "get": {
+        "operationId": "DecksController_list",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomDecks"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "decks"
+        ]
+      },
+      "post": {
+        "operationId": "DecksController_create",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeckBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomDeck"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "decks"
+        ]
+      }
+    },
+    "/api/decks/{id}": {
+      "patch": {
+        "operationId": "DecksController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeckBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomDeck"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "decks"
+        ]
+      },
+      "delete": {
+        "operationId": "DecksController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "decks"
+        ]
+      }
+    },
+    "/api/decks/{id}/pass": {
+      "post": {
+        "operationId": "DecksController_pass",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeckPass"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "decks"
+        ]
+      }
+    },
     "/api/notifications": {
       "get": {
         "operationId": "NotificationsController_list",
@@ -5083,6 +5250,163 @@
         "required": [
           "muted"
         ]
+      },
+      "RoomDecks": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/RoomDeck"
+        }
+      },
+      "RoomDeck": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "opinion",
+              "quiz"
+            ]
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "q": {
+                  "type": "string"
+                },
+                "answers": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "right": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "id",
+                "q",
+                "answers"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "by": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Person"
+              }
+            ]
+          },
+          "mine": {
+            "type": "boolean"
+          },
+          "canDelete": {
+            "type": "boolean"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "questions",
+          "by",
+          "mine",
+          "canDelete",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "DeckBody": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "opinion",
+              "quiz"
+            ]
+          },
+          "questions": {
+            "minItems": 3,
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeckQuestion"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "kind",
+          "questions"
+        ]
+      },
+      "DeckQuestion": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "answers": {
+            "minItems": 2,
+            "maxItems": 4,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            }
+          },
+          "right": {
+            "nullable": true,
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3
+          }
+        },
+        "required": [
+          "q",
+          "answers"
+        ]
+      },
+      "DeckPass": {
+        "type": "object",
+        "properties": {
+          "pass": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "pass"
+        ],
+        "additionalProperties": false
       },
       "Inbox": {
         "type": "object",

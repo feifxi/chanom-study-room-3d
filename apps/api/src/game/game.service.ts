@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 import { SignJWT } from 'jose';
 import { GAME_CHANNELS, TICKET_AUDIENCE, TICKET_SECONDS, type GameRoomEvent, type GameTicket } from '@connecta/shared';
+import { DECK_PASS_AUDIENCE, DECK_PASS_SECONDS, type Deck } from '@connecta/shared/pick-a-side';
 import type { Env } from '../config/env.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 
@@ -52,6 +53,19 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
       .setAudience(TICKET_AUDIENCE)
       .setIssuedAt()
       .setExpirationTime(`${TICKET_SECONDS}s`)
+      .sign(this.secret);
+  }
+
+  /**
+   * A room deck, signed for this room's game server: the host's page hands it over to start Pick a
+   * Side, and the game server trusts it like a join ticket (it has no database).
+   */
+  deckPass(roomId: string, deck: Deck): Promise<string> {
+    return new SignJWT({ roomId, deck })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setAudience(DECK_PASS_AUDIENCE)
+      .setIssuedAt()
+      .setExpirationTime(`${DECK_PASS_SECONDS}s`)
       .sign(this.secret);
   }
 

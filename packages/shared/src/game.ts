@@ -28,6 +28,8 @@ export interface GameTicket {
   timedOutUntil: number;
   /** The room lets guests talk (Room settings → Invites); members always can */
   guestVoice: boolean;
+  /** Room settings → Room-wide games (Pick a Side) */
+  roomWideGames?: boolean;
 }
 export const TICKET_AUDIENCE = 'connecta-game';
 export const TICKET_SECONDS = 60;
@@ -89,6 +91,7 @@ export type GameRoomEvent =
   | { roomId: string; type: 'timeout'; userId: string; until: number }
   | { roomId: string; type: 'map'; mapId: string }
   | { roomId: string; type: 'guestVoice'; on: boolean }
+  | { roomId: string; type: 'roomWideGames'; on: boolean }
   | { roomId: string; type: 'deleted' };
 
 export interface GamePresence {
@@ -114,7 +117,9 @@ export interface GamePresence {
  * activity framework's `activity:begin`, `activity:end`, `activity:leave`, `activity:call` { spot }
  * with chess's `chess:move` { from, to, promotion? }, `chess:resign`, `chess:draw:offer` and
  * `chess:draw:answer` { accept }, and Slave's `slave:play` { cards }, `slave:pass`,
- * `slave:giveBack` { cards } and `slave:hand` (send me my cards again, once the page listens).
+ * `slave:giveBack` { cards } and `slave:hand` (send me my cards again, once the page listens);
+ * the framework's `activity:start` { spot } (E at a standing spot) and `activity:game` { gameId }
+ * (the host's pick), and Pick a Side's `side:deck` (SideDeckPick).
  * What the server sends besides state: `said`, `quiet`, `voice`, `watch:refused` (WatchRefused in watch.ts), `activity:out` (ActivityOut),
  * `slave:hand` (SlaveHand: your own cards, sent only to you), and for the cats and study buddies
  * `npc:summoned` ({@link NpcSummoned}), `npc:said` ({@link Said}, the NPC's id), `npc:react`

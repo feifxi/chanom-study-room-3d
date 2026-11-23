@@ -151,6 +151,9 @@ export class RoomsService {
     // Guests inside can start or stop talking at once
     if (input.guestVoice !== undefined && input.guestVoice !== room.guestVoice)
       this.game.roomEvent({ roomId, type: 'guestVoice', on: input.guestVoice });
+    // Room-wide games off: a Pick a Side game on the floor ends
+    if (input.roomWideGames !== undefined && input.roomWideGames !== room.roomWideGames)
+      this.game.roomEvent({ roomId, type: 'roomWideGames', on: input.roomWideGames });
     return this.get(roomId, userId, now);
   }
 
@@ -380,6 +383,7 @@ export class RoomsService {
       mapId: room.mapId,
       timedOutUntil: member?.timedOutUntil && member.timedOutUntil > now ? member.timedOutUntil.getTime() : 0,
       guestVoice: room.guestVoice,
+      roomWideGames: room.roomWideGames,
     });
     return { ticket, place: roomId };
   }

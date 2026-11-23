@@ -38,12 +38,13 @@ import { log } from './log.js';
 import { NpcDirector } from './npc/director.js';
 import { Player, RoomState } from './state.js';
 import { clamp, refillMoveBudget, spendMove } from './rules.js';
-import { readTicket } from './ticket.js';
+import { readDeckPass, readTicket } from './ticket.js';
 import { voice } from './voice.js';
 import { Tv, youtube } from './watch.js';
 import { Activities, ChessTable } from './activity.js';
 import { SlaveTable } from './slave.js';
 import { Board } from './board.js';
+import { SideFloor } from './pickASide.js';
 
 /** A Slave play: 1–4 cards, each 0–51 */
 const CARDS = z.array(z.number().int().min(0).max(51)).min(1).max(4);
@@ -102,6 +103,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
   private turnedAway = false;
   /** Room settings → Guests can use voice (the newest ticket, then live changes) */
   private guestVoice = false;
+  /** Room settings → Room-wide games (from the ticket, then live) */
+  private roomWideGames = true;
   /** Muted for everyone, by account, so walking out and back in doesn't lift it; gone when the room empties */
   private muted = new Set<string>();
   /** The cats and study buddies (part 5): in memory, so they reset when the room empties */
@@ -119,6 +122,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     },
     send: (sessionId, type, message) => this.clients_.get(sessionId)?.send(type, message),
   });
+  private side = this.makeSide();
   private activities = this.makeActivities();
   /** The whiteboard (feature 11): strokes relayed apart from the state, kept with the room */
   private board = new Board((id) => this.broadcast('board:undo', { id }));
@@ -252,6 +256,24 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       if (this.atBoard(client.sessionId) && this.board.clear()) this.broadcast('board:clear');
     },
     'board:sync': (client: Client) => client.send('board:all', { strokes: this.board.all() }),
+    // The round flow at a standing spot: E opens a lobby; the host picks the game (Pick a Side's mode)
+    'activity:start': validate(z.object({ spot: z.string().max(20) }), (client, msg) =>
+      this.activities.open(client.sessionId, msg.spot, Date.now()),
+    ),
+    'activity:game': validate(z.object({ gameId: z.string().max(20) }), (client, msg) => {
+      if (this.activities.pick(client.sessionId, msg.gameId) && this.activities.hostOf(client.sessionId) === 'floor')
+        this.side.modeChanged(msg.gameId);
+    }),
+    // Pick a Side's deck: the host's, in the lobby. A room deck comes as the API's signed pass
+    'side:deck': validate(
+      z.union([z.object({ builtIn: z.string().max(40) }), z.object({ pass: z.string().max(60_000) })]),
+      async (client, msg) => {
+        if (this.activities.hostOf(client.sessionId) !== 'floor') return;
+        if ('builtIn' in msg) return this.side.pickBuiltIn(msg.builtIn);
+        const pass = await readDeckPass(msg.pass, secrets.ticket);
+        if (pass?.roomId === this.connectaId && this.activities.hostOf(client.sessionId) === 'floor') this.side.pickRoomDeck(pass.deck);
+      },
+    ),
     'slave:play': validate(z.object({ cards: CARDS }), (client, msg) => this.slave.play(client.sessionId, msg.cards)),
     'slave:pass': (client: Client) => this.slave.pass(client.sessionId),
     // The page is listening: your cards again (after a reload mid-game they were sent before it was)
@@ -411,6 +433,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     // A newer ticket carries the latest capacity and guest voice (the owner changed Room settings)
     this.capacity = ticket.capacity;
     this.guestVoice = ticket.guestVoice ?? false;
+    this.roomWideGames = ticket.roomWideGames ?? true;
     const staff = ticket.role === 'owner' || ticket.role === 'mod';
     const others = [...this.priv.values()].filter((s) => s.userId !== ticket.sub).length;
     if (!staff && others >= this.capacity) {
@@ -552,6 +575,10 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       case 'guestVoice':
         this.guestVoice = event.on;
         for (const sessionId of this.priv.keys()) this.refreshVoice(sessionId);
+        break;
+      case 'roomWideGames':
+        this.roomWideGames = event.on;
+        if (!event.on) this.activities.roomWideOff();
         break;
       case 'map':
         if (event.mapId !== this.state.mapId) this.setMap(event.mapId);
@@ -703,6 +730,19 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     return s;
   }
 
+  private makeSide() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- the floor reads the room's current map
+    const room = this;
+    return new SideFloor(this.state.side, {
+      get map() {
+        return room.map;
+      },
+      at: (sessionId) => this.state.players.get(sessionId) ?? null,
+      away: (sessionId) => !!this.state.spots.get('floor')?.awaySince.has(sessionId),
+      roundPlayers: () => [...(this.state.spots.get('floor')?.players ?? [])],
+    });
+  }
+
   private makeActivities() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias -- the host reads the room's current map
     const room = this;
@@ -714,10 +754,14 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
         return room.state.players;
       },
       standUp: (p) => this.standUp(p),
+      get roomWideGames() {
+        return room.roomWideGames;
+      },
       send: (sessionId, type, message) => this.clients_.get(sessionId)?.send(type, message),
     });
     activities.add(ChessTable.spot, this.chess);
     activities.add(SlaveTable.spot, this.slave);
+    activities.add(SideFloor.spot, this.side);
     return activities;
   }
 

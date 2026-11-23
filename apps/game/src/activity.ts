@@ -1,5 +1,5 @@
 import type { MapSchema } from '@colyseus/schema';
-import { COUNTDOWN_MS, GRACE_MS, RESULTS_MS, type ActivityOut, type SpotId } from '@connecta/shared';
+import { ARRIVE_MS, COUNTDOWN_MS, GRACE_MS, RESULTS_MS, type ActivityOut, type SpotId } from '@connecta/shared';
 import { inArea, type Area, type MapData } from '@connecta/shared/maps';
 import { answerDraw, forfeit, newChess, offerDraw, play, resign, type ChessGame } from '@connecta/shared/chess';
 import type { PieceSymbol, Square } from 'chess.js';
@@ -26,12 +26,17 @@ export interface ActivityHost {
   readonly players: MapSchema<Player>;
   standUp(p: Player): void;
   send(sessionId: string, type: string, message: unknown): void;
+  /** Room settings → Room-wide games (Pick a Side takes the whole floor and calls everyone) */
+  readonly roomWideGames: boolean;
 }
 
 /** A game at a spot: started with the round's players, told who's out, asked whether it's over. */
 export interface RoundGame {
   readonly min: number;
-  start(players: string[], now: number): void;
+  /** Plays to its own end even with one player left (Pick a Side), instead of that player winning */
+  readonly playsOut?: boolean;
+  /** `gameId`: the host's pick at a spot with several (Pick a Side's modes) */
+  start(players: string[], now: number, gameId: string): void;
   /** Someone's out mid-round (left, or away too long) */
   out(id: string): void;
   /** Each server tick while it's on (turn timers) */
@@ -49,11 +54,17 @@ export interface SpotDef {
   /** Being in: one of these seats, or (no seats) standing in the area */
   seats(map: MapData): string[] | null;
   area(map: MapData): Area | null;
+  /** The games to pick from, the first by default (one for a table) */
+  games?: readonly string[];
+  /** Needs Room settings → Room-wide games */
+  roomWide?: boolean;
 }
 
 /** Pressed Leave but still standing there: not counted until they step out */
 interface Private {
   optedOut: Set<string>;
+  /** A standing spot's host walking over after pressing Go there + E: until then the lobby waits */
+  arrivingUntil: number;
 }
 
 export class Activities {
@@ -66,7 +77,7 @@ export class Activities {
 
   /** A spot with its game; it shows in the state once the map has it */
   add(def: SpotDef, game: RoundGame) {
-    this.defs.set(def.id, { def, game, priv: { optedOut: new Set() } });
+    this.defs.set(def.id, { def, game, priv: { optedOut: new Set(), arrivingUntil: 0 } });
     this.mapChanged();
   }
 
@@ -75,7 +86,7 @@ export class Activities {
     for (const [id, { def, game, priv }] of this.defs) {
       game.stop();
       priv.optedOut.clear();
-      if (def.area(this.host.map)) this.spots.set(id, new Spot());
+      if (def.area(this.host.map)) this.spots.set(id, new Spot({ gameId: def.games?.[0] ?? '' }));
       else this.spots.delete(id);
     }
   }
@@ -100,19 +111,23 @@ export class Activities {
       const counted = here.filter((x) => !priv.optedOut.has(x));
 
       if (st.phase === 'free') {
-        // Sitting at a free table starts a lobby, with the first to sit as host
-        if (counted.length) this.reset(st, { phase: 'gathering', hostId: counted[0]!, players: counted });
+        // Sitting at a free table starts a lobby, with the first to sit as host (a standing spot
+        // waits for someone to press E there)
+        if (counted.length && def.seats(this.host.map)) this.reset(st, { phase: 'gathering', hostId: counted[0]!, players: counted });
       } else if (st.phase === 'gathering') {
         const players = [...[...st.players].filter((x) => counted.includes(x)), ...counted.filter((x) => !st.players.includes(x))];
         set(st.players, players);
-        if (!players.includes(st.hostId)) st.hostId = players[0] ?? '';
-        if (!players.length) this.reset(st);
+        // The host who pressed E on the way keeps the lobby while they walk over
+        const arriving = now < priv.arrivingUntil && !!this.host.players.get(st.hostId);
+        if (players.includes(st.hostId)) priv.arrivingUntil = 0;
+        else if (!arriving) st.hostId = players[0] ?? '';
+        if (!players.length && !arriving) this.reset(st);
         else if (st.startsAt && now >= st.startsAt) {
           if (players.length >= game.min) {
             Object.assign(st, { phase: 'playing', startsAt: 0, inviteBy: '', inviteAt: 0 });
             st.out.clear();
             st.awaySince.clear();
-            game.start(players, now);
+            game.start(players, now, st.gameId);
           } else st.startsAt = 0;
         }
       } else if (st.phase === 'playing') {
@@ -129,7 +144,7 @@ export class Activities {
         game.tick?.(now);
         const standing = game.standing();
         if (standing) this.finish(st, standing);
-        else if (st.players.length <= 1) this.finish(st, [...st.players]);
+        else if (st.players.length <= (game.playsOut ? 0 : 1)) this.finish(st, [...st.players]);
       } else if (st.phase === 'results' && now >= st.resultsUntil) {
         if (!counted.length) {
           game.stop();
@@ -140,6 +155,46 @@ export class Activities {
         }
       }
     }
+  }
+
+  /** E at a standing spot (Pick a Side's floor): a lobby there with you as host, while you walk over */
+  open(sessionId: string, spotId: string, now: number) {
+    const entry = this.defs.get(spotId as SpotId);
+    const st = this.spots.get(spotId);
+    if (!entry || !st || st.phase !== 'free' || entry.def.seats(this.host.map)) return;
+    if (entry.def.roomWide && !this.host.roomWideGames) return;
+    if (this.hosting(sessionId)) return;
+    const there = this.here(entry.def).includes(sessionId);
+    entry.priv.optedOut.delete(sessionId);
+    entry.priv.arrivingUntil = there ? 0 : now + ARRIVE_MS;
+    this.reset(st, { phase: 'gathering', hostId: sessionId, players: there ? [sessionId] : [] });
+  }
+
+  /** Host, in the lobby: which game (Pick a Side's mode) */
+  pick(sessionId: string, gameId: string) {
+    const st = this.hosting(sessionId);
+    const entry = st && this.entryOf(st);
+    if (!st || !entry || st.phase !== 'gathering' || !entry.def.games?.includes(gameId)) return false;
+    st.gameId = gameId;
+    return true;
+  }
+
+  /** Room settings → Room-wide games turned off: those spots' rounds end and they close */
+  roomWideOff() {
+    for (const [id, { def, game }] of this.defs) {
+      const st = this.spots.get(id);
+      if (!def.roomWide || !st || st.phase === 'free') continue;
+      game.stop();
+      this.reset(st);
+    }
+  }
+
+  /** The spot this person hosts, if any (its id) */
+  hostOf(sessionId: string): SpotId | null {
+    const st = this.hosting(sessionId);
+    if (!st) return null;
+    for (const [id, s] of this.spots) if (s === st) return id as SpotId;
+    return null;
   }
 
   /** Host: Start (a short countdown), or Play again from the results */
@@ -290,7 +345,7 @@ export class ChessTable implements RoundGame {
     area: (map) => map.chessTable?.area ?? null,
   };
 
-  start([a, b]: string[]) {
+  start([a, b]: string[], _now: number, _gameId: string) {
     if (!a || !b) return;
     this.game = newChess(a, b, this.last);
     this.last = { white: this.game.white, black: this.game.black };
