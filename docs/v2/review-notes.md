@@ -247,7 +247,7 @@ double-mounts, so only development was affected. A headless run with two people 
 phone) checked a refused private video, a real video in sync on both, a pause from the phone
 reaching the desktop, and Turn off the TV closing the phone's panel.
 
-### Photo mode
+### Photo mode (`cc75094`)
 
 **Changed:** photo mode's **Share** posts the photo to Room chat as a real picture (the chat's
 picture flow: upload, then a message with no text); guests get Save and Copy only. While it's
