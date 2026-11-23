@@ -404,19 +404,24 @@ export default function RoomView({
     room.setPhoto(true);
     return () => room.setPhoto(false);
   }, [room, photo]);
-  const sharePhoto =
+  // Photos and the whiteboard post to Room chat: members only (guests can't write there)
+  const shareToChat = (done: string, failed: string) =>
     room instanceof LiveRoom && !guest && place
       ? async (blob: Blob) => {
           try {
             await postPhoto(place.id, blob);
-            toast.success('📸 Shared to Room chat');
+            toast.success(done);
             return true;
           } catch (error) {
-            toast.error(problem(error, 'Couldn’t share that photo. Try again?'));
+            toast.error(problem(error, failed));
             return false;
           }
         }
       : undefined;
+  const sharePhoto = shareToChat('📸 Shared to Room chat', 'Couldn’t share that photo. Try again?');
+  const shareBoard = shareToChat('🎨 Board shared to Room chat', 'Couldn’t share the board. Try again?');
+  // The whiteboard: strokes through the game server
+  useEffect(() => (room instanceof LiveRoom ? room.connectBoard(hub.board) : undefined), [room, hub]);
   // A round the game server runs let you go
   useEffect(() => {
     if (!(room instanceof LiveRoom)) return;
@@ -1412,6 +1417,7 @@ export default function RoomView({
                     name={(id) => who(id).name}
                     mini={boardMini}
                     onMini={setBoardMini}
+                    onShare={shareBoard}
                   />
                 </div>
               )}

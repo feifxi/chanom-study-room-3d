@@ -67,10 +67,12 @@ Tick or strike these as they're dealt with.
       link, though the server's title is the one used: one extra request per link.
 - [ ] **Common rooms keep the demo's local TV** until moderation and open rooms; photo mode
       there has no Share (they're text only until feature 14).
-- [ ] **The whiteboard, Pick a Side and Draw & Guess still run in each browser** in
+- [ ] **Pick a Side and Draw & Guess still run in each browser** in
       real rooms (only you see them) until their parts of party and table games.
 - [ ] **Slave's turn bar runs on the browser's clock** against the server's deadline; a clock that's
       off by seconds shows the bar wrong (the server's timer is what counts).
+- [ ] **The whiteboard has no rate limit** beyond its size caps: someone could flood it with tiny
+      strokes until the oldest go. Fine among friends; worth a per-person rate with moderation.
 - [ ] **The invite card shows for 20 s on the browser's clock** against the server's time, like the
       other countdowns (a server time sync would fix them all).
 - [ ] **The photo frames are the three free ones**; the Shop's "Photo frames" come with Plus and
@@ -295,3 +297,17 @@ mid-game) would have been lost, leaving you with no cards on screen; the page no
 A headless run with three people (Mai and Bow on desktop, Jod on a phone) checked the 17/17/18
 deal, the 3♣ holder leading, the play showing on the others' felt, and Jod leaving while the other
 two played on.
+
+### Party and table games, part 3: the whiteboard
+
+**Changed:** the whiteboard is relayed by the game server (`apps/game/src/board.ts`, protocol in
+`packages/shared/src/board.ts`): strokes stream as points apart from the room state, kept in
+memory with the room, so newcomers get the board as it is. The server checks who's drawing (in
+front of the board, not timed out), the pen and the points, and keeps the board from growing
+without end. Undo goes by account. **Share to Room chat** now posts the board as a picture
+(members only; it was a demo toast). Photo mode and the board share one helper in `RoomView`.
+
+**Bugs found and fixed while building:** a stroke the server refused (walked off mid-stroke,
+timed out) would have stayed on the drawer's own screen only; the server now takes it back there
+too. A headless run checked a late arrival getting the drawing (panel and wall), Mai's undo
+disappearing for Jod, and the Share button for a member.

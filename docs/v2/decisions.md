@@ -426,6 +426,10 @@ decision is made or changed: one line, a date, and the reason.
   for, for the 12-hour cap, while rankings use the viewer's time zone. **Guests** show in "This room
   today" from the game server's memory and are never saved. A running round shows 📖 even if you've
   gone quiet: focusing is never Away, for friends too.
+- **Whiteboard limits and who draws** (2026-11-23, while building): anyone in front of the board
+  draws, guests too (agreed), but **not someone timed out**, like chat. A board past 200,000 points
+  lets its oldest strokes go rather than refusing new ones, so it never "fills up"; one stroke stops
+  at 4,000 points. Undo goes by account, so it still finds your stroke after a reload.
 - **Slave's hands go to each player alone** (2026-11-23): the room state is seen by everyone in the
   room, so hands travel as a private `slave:hand` message and the state carries only the counts.
   Colyseus's per-client state views could do the same, but a message is simpler and easy to

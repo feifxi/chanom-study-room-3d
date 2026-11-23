@@ -1,6 +1,8 @@
 # 11. Pick a Side, whiteboard, Draw & Guess
 
-**Status:** decided and built in the demo. **Try it:** http://localhost:3100/servers/chanom/rooms/library
+**Status:** decided and built in the demo. On the real backend: the **whiteboard** is relayed by
+the game server (2026-11-23); Pick a Side and Draw & Guess still run in each browser until their
+parts. **Try it:** http://localhost:3100/servers/chanom/rooms/library
 
 - Activities → Pick a Side → **Go there**, press **E**, pick a mode and a deck (try **✨ AI**), 📣
   **Call everyone**, **Start**. Walk into a zone to answer. Or Demo tab → **Someone starts Pick a
@@ -120,10 +122,21 @@ board, the rooftop's chalk wall), the same flow as the big screen.
 
 ### Backend notes
 
-- Strokes are relayed as a stream of points (`stroke:start`, `stroke:add`, `stroke:undo`,
-  `board:clear`), apart from the room state, and kept in memory with the room so newcomers get the
-  board as it is. Points are 0–1 board coordinates, so every screen and the wall draw the same.
-- The client batches points per animation frame; the 3D wall redraws at most 10 times a second.
+- Strokes are relayed by the game server as a stream of points, apart from the room state
+  (`apps/game/src/board.ts`; the protocol is `packages/shared/src/board.ts`): `board:start`,
+  `board:add`, `board:undo` (your own last stroke, by account, so it works after a reload),
+  `board:clear`, and `board:sync` → `board:all` for whoever arrives. Kept in memory with the room
+  (gone when it empties or the map changes). Points are 0–1 board coordinates, so every screen and
+  the wall draw the same.
+- **Who draws:** whoever stands in the board's area, guests too; not someone timed out. The server
+  checks the pen (the board's colours and sizes, or the eraser) and the points, and takes back a
+  refused stroke on the drawer's screen too.
+- **Limits:** 200 points per message, 4,000 per stroke; past 200,000 points on the board the
+  oldest strokes give way (everyone's copy drops them too), so the wall keeps drawing fast.
+- **Share to Room chat** is for members (a picture message, like photo mode); Save as image is
+  for everyone.
+- Your own strokes draw at once; the pointer's coalesced events go out once per move (about once a
+  frame). The 3D wall redraws at most 10 times a second.
 - Cost: nothing stored; sharing is a normal Room chat image upload.
 
 ## ✏️ Draw & Guess

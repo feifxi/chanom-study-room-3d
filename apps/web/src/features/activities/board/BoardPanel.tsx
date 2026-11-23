@@ -22,6 +22,7 @@ export function BoardPanel({
   name,
   mini,
   onMini,
+  onShare,
 }: {
   board: BoardStore;
   /** Who's at the board right now. */
@@ -29,6 +30,8 @@ export function BoardPanel({
   name: (id: string) => string;
   mini: boolean;
   onMini: (mini: boolean) => void;
+  /** Posts the board to Room chat (members in a real room; unset for guests and the demo) */
+  onShare?: (png: Blob) => Promise<unknown>;
 }) {
   const panel = useDismiss<HTMLElement>(!mini, () => onMini(true));
 
@@ -62,15 +65,18 @@ export function BoardPanel({
             <ToolBtn label="Save as image" onClick={save}>
               <Download className="size-4" />
             </ToolBtn>
-            <ToolBtn
-              label="Share to Room chat"
-              onClick={() => {
-                // The demo has no upload: the real app posts the PNG to Room chat
-                toast.success('🎨 Board shared to Room chat');
-              }}
-            >
-              <MessageCircle className="size-4" />
-            </ToolBtn>
+            {onShare && (
+              <ToolBtn
+                label="Share to Room chat"
+                onClick={async () => {
+                  const png = await boardPng(board.strokes);
+                  if (!png) return toast.error('Couldn’t share the board. Try again?');
+                  await onShare(png);
+                }}
+              >
+                <MessageCircle className="size-4" />
+              </ToolBtn>
+            )}
           </>
         )}
         <ToolBtn label={mini ? 'Make it bigger' : 'Shrink to the corner'} onClick={() => onMini(!mini)}>

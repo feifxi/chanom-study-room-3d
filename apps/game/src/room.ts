@@ -28,6 +28,8 @@ import {
   type PlayerRole,
   type WatchRefused,
   parseYouTube,
+  BOARD_ADD_MAX,
+  type BoardAdd,
 } from '@connecta/shared';
 import { inArea, mapDataFor, zoneAtIn, type MapData } from '@connecta/shared/maps';
 import { idleTimer, startFocus, stopTimer, tickTimer, type EndedRound, type FocusTimer } from './focus.js';
@@ -41,6 +43,7 @@ import { voice } from './voice.js';
 import { Tv, youtube } from './watch.js';
 import { Activities, ChessTable } from './activity.js';
 import { SlaveTable } from './slave.js';
+import { Board } from './board.js';
 
 /** A Slave play: 1–4 cards, each 0–51 */
 const CARDS = z.array(z.number().int().min(0).max(51)).min(1).max(4);
@@ -117,6 +120,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     send: (sessionId, type, message) => this.clients_.get(sessionId)?.send(type, message),
   });
   private activities = this.makeActivities();
+  /** The whiteboard (feature 11): strokes relayed apart from the state, kept with the room */
+  private board = new Board((id) => this.broadcast('board:undo', { id }));
 
   messages = {
     move: validate(
@@ -222,6 +227,31 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     'chess:resign': (client: Client) => this.chess.resign(client.sessionId),
     'chess:draw:offer': (client: Client) => this.chess.offerDraw(client.sessionId),
     'chess:draw:answer': validate(z.object({ accept: z.boolean() }), (client, msg) => this.chess.answerDraw(client.sessionId, msg.accept)),
+    // The whiteboard: whoever stands in front of it draws (guests too); a time-out stops that too
+    'board:start': validate(
+      z.object({ n: z.number().int().min(0), color: z.string().max(16), size: z.number(), pts: z.array(z.number()).max(BOARD_ADD_MAX) }),
+      (client, msg) => {
+        const who = this.atBoard(client.sessionId);
+        const stroke = who && this.board.start(client.sessionId, who.userId, msg.n, msg.color, msg.size, msg.pts);
+        if (stroke) this.broadcast('board:start', stroke, { except: client });
+        // Refused (timed out, walked off, a bad pen): the drawer's screen takes it back too
+        else client.send('board:undo', { id: `${client.sessionId}:${msg.n}` });
+      },
+    ),
+    'board:add': validate(z.object({ n: z.number().int().min(0), pts: z.array(z.number()).max(BOARD_ADD_MAX) }), (client, msg) => {
+      if (!this.atBoard(client.sessionId)) return;
+      const add = this.board.add(client.sessionId, msg.n, msg.pts);
+      if (add) this.broadcast('board:add', add satisfies BoardAdd, { except: client });
+    }),
+    'board:undo': (client: Client) => {
+      const who = this.atBoard(client.sessionId);
+      const id = who && this.board.undo(who.userId);
+      if (id) this.broadcast('board:undo', { id });
+    },
+    'board:clear': (client: Client) => {
+      if (this.atBoard(client.sessionId) && this.board.clear()) this.broadcast('board:clear');
+    },
+    'board:sync': (client: Client) => client.send('board:all', { strokes: this.board.all() }),
     'slave:play': validate(z.object({ cards: CARDS }), (client, msg) => this.slave.play(client.sessionId, msg.cards)),
     'slave:pass': (client: Client) => this.slave.pass(client.sessionId),
     // The page is listening: your cards again (after a reload mid-game they were sent before it was)
@@ -660,9 +690,19 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     this.npc.reset();
     this.tv.off();
     this.activities.mapChanged();
+    // A new wall: the drawing goes with the old map
+    if (this.board?.clear()) this.broadcast('board:clear');
   }
 
   /** The framework's window on this room */
+  /** Someone standing in front of the whiteboard who may draw (not timed out) */
+  private atBoard(sessionId: string) {
+    const p = this.state.players.get(sessionId);
+    const s = this.priv.get(sessionId);
+    if (!p || !s || s.quietUntil > Date.now() || !inArea(this.map.boardArea, p.x, p.z)) return null;
+    return s;
+  }
+
   private makeActivities() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias -- the host reads the room's current map
     const room = this;

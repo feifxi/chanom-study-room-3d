@@ -102,7 +102,8 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
    - **Party and table games**, one per part: ~~the round flow and chess on the game server~~ done
      2026-11-23 (lobby, host, Call everyone, Leave and the 30 s rule, results, Play again; invites
      setting on the account); ~~Slave~~ done 2026-11-23 (hands private to each player, turn
-     timers and the swap on the server); the whiteboard; Pick a Side (built-in decks and My decks; AI
+     timers and the swap on the server); ~~the whiteboard~~ done 2026-11-23 (strokes relayed by the
+     game server, kept with the room; Share to Room chat for members); Pick a Side (built-in decks and My decks; AI
      decks after Plus); Draw & Guess.
 6. **The seed:** one fill of all the data (people, rooms, members, friends, DMs…) for testing the
    whole app ([why at the end](v2/decisions.md#engineering-and-infra)).

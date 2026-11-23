@@ -3,9 +3,23 @@
  * (0–1 across, 0–1 down), so the panel, the 3D wall and a saved PNG all draw the same picture.
  *
  * It has its own little store, apart from the activity hub: strokes change on every pointer move,
- * and only the board's canvases need to redraw, not the whole room's UI. (The server relays strokes
- * the same way: a stream of points, apart from the room state.)
+ * and only the board's canvases need to redraw, not the whole room's UI. In a real room the game
+ * server relays strokes the same way, a stream of points apart from the room state: your strokes
+ * draw at once and go out through {@link BoardSink}; everyone else's come in through `put`,
+ * `extend`, `remove`, `wipe` and `replace`.
  */
+
+import { BOARD_BG, BOARD_COLORS, BOARD_ERASER, BOARD_SIZES, BOARD_STROKE_MAX, type BoardStroke } from '@connecta/shared';
+
+/** A real room's way to the game server's board (`LiveRoom.connectBoard`) */
+export interface BoardSink {
+  /** Your session id: your strokes are `<sessionId>:<n>` on every screen */
+  sessionId: string;
+  start(n: number, color: string, size: number, pts: number[]): void;
+  add(n: number, pts: number[]): void;
+  undo(): void;
+  clear(): void;
+}
 
 export interface Stroke {
   id: string;
@@ -17,16 +31,21 @@ export interface Stroke {
   pts: number[];
 }
 
-export const BOARD_BG = '#fbfaf6';
-export const COLORS = ['#2b2140', '#ff5f8f', '#3d8bfd', '#12a37f', '#ef8a3c', '#7c5cff'];
-export const SIZES = [0.004, 0.009, 0.022];
+export { BOARD_BG };
+export const COLORS = BOARD_COLORS;
+export const SIZES = BOARD_SIZES;
 /** The eraser paints the board's own colour, a bit wider. */
-export const ERASER = { color: BOARD_BG, size: 0.03 };
+export const ERASER = BOARD_ERASER;
 export const ASPECT = 16 / 9;
 
 export class BoardStore {
   strokes: Stroke[] = [];
   rev = 0;
+  /** Set in a real room: the game server's board */
+  remote: BoardSink | null = null;
+  /** Your strokes' numbers for the server, by the panel's stroke id */
+  private mine = new Map<string, number>();
+  private count = 0;
   private listeners = new Set<() => void>();
 
   subscribe = (l: () => void) => {
@@ -41,19 +60,31 @@ export class BoardStore {
   }
 
   start(s: Stroke) {
+    if (this.remote) {
+      const n = ++this.count;
+      this.mine.set(s.id, n);
+      this.remote.start(n, s.color, s.size, s.pts);
+      s = { ...s, id: `${this.remote.sessionId}:${n}` };
+    }
     this.strokes.push(s);
     this.bump();
   }
 
   add(id: string, pts: number[]) {
+    const n = this.mine.get(id);
+    if (this.remote && n) id = `${this.remote.sessionId}:${n}`;
     const s = this.strokes.findLast((x) => x.id === id);
-    if (!s) return;
+    // A very long scribble ends there (the server takes no more of it either)
+    if (!s || s.pts.length + pts.length > BOARD_STROKE_MAX) return;
     s.pts.push(...pts);
+    if (this.remote && n) this.remote.add(n, pts);
     this.bump();
   }
 
   /** Undo takes back your own last stroke, never someone else's. */
   undo(by: string) {
+    // The server knows which is yours (even from before a reload) and tells everyone
+    if (this.remote) return (this.remote.undo(), true);
     const i = this.strokes.findLastIndex((s) => s.by === by);
     if (i < 0) return false;
     this.strokes.splice(i, 1);
@@ -62,8 +93,42 @@ export class BoardStore {
   }
 
   clear() {
+    if (this.remote) return this.remote.clear();
+    this.wipe();
+  }
+
+  // --- From the game server ---
+
+  /** Someone else's new stroke */
+  put(s: BoardStroke) {
+    this.strokes.push({ ...s, by: s.id.split(':')[0]! });
+    this.bump();
+  }
+
+  /** More of someone else's stroke */
+  extend(id: string, pts: number[]) {
+    const s = this.strokes.findLast((x) => x.id === id);
+    if (!s) return;
+    s.pts.push(...pts);
+    this.bump();
+  }
+
+  remove(id: string) {
+    const i = this.strokes.findIndex((s) => s.id === id);
+    if (i < 0) return;
+    this.strokes.splice(i, 1);
+    this.bump();
+  }
+
+  wipe() {
     if (!this.strokes.length) return;
     this.strokes = [];
+    this.bump();
+  }
+
+  /** The whole board, when you arrive */
+  replace(strokes: BoardStroke[]) {
+    this.strokes = strokes.map((s) => ({ ...s, by: s.id.split(':')[0]! }));
     this.bump();
   }
 }

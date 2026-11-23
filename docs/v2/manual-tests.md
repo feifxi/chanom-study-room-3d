@@ -379,3 +379,21 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
 - [ ] Someone standing on the card table's rug sees the small view (turn, pile, counts) and never
       anyone's cards.
 - [ ] Phone width: the hand overlaps but every card can be tapped; the buttons fit.
+
+### Party and table games, part 3: the whiteboard
+
+- [ ] Two people in a real room walk up to the whiteboard: the small board opens for both. One
+      draws; the other sees each stroke appear as it's drawn, on the panel and on the wall. People
+      elsewhere in the room see the wall fill up.
+- [ ] Both draw at once: neither's strokes get mixed up or lost. Colours, sizes and the eraser all
+      show the same for everyone.
+- [ ] **Undo** (button or Ctrl/Cmd+Z) takes back only your own last stroke, for everyone; after a
+      reload you can still undo what you drew before.
+- [ ] **Clear** asks first, then empties the board for everyone.
+- [ ] Someone who walks up later (or reloads) sees the board as it is.
+- [ ] Walk away from the board: you can't draw (the small board closes).
+- [ ] A guest can draw; **Share to Room chat** shows only for members and posts the board as a
+      picture; **Save as image** downloads a PNG for anyone.
+- [ ] A timed-out person can't draw (their stroke disappears).
+- [ ] Everyone leaves the room and comes back: the board is empty. Change the room's map: empty too.
+- [ ] Phone width: drawing with a finger works and the page doesn't scroll.

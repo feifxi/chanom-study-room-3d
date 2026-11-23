@@ -16,11 +16,14 @@ import type {
   WatchVideo,
   ActivityOut,
   SlaveHand,
+  BoardAdd,
+  BoardStroke,
 } from '@connecta/shared';
 import type { ActivityRemote, SpotState, Video, WatchRemote, WatchState } from '../activities/hub';
 import type { SpotId } from '../activities/spots';
 import type { ChessGame, EndReason } from '../activities/chess/game';
 import type { SlaveGame, Title } from '../activities/slave/game';
+import type { BoardStore } from '../activities/board/board';
 import type { PieceSymbol, Square } from 'chess.js';
 import type { GameRoom } from '@/features/game/useGame';
 import type { MapDef } from '../map/types';
@@ -308,6 +311,33 @@ export class LiveRoom extends MockRoom {
     slavePass: () => this.game.send('slave:pass'),
     slaveGiveBack: (cards) => this.game.send('slave:giveBack', { cards }),
   };
+
+  /**
+   * The whiteboard (feature 11): your strokes go to the game server, everyone else's come into the
+   * board's store. Returns the way to disconnect.
+   */
+  connectBoard(board: BoardStore) {
+    const game = this.game;
+    board.remote = {
+      sessionId: game.sessionId,
+      start: (n, color, size, pts) => game.send('board:start', { n, color, size, pts }),
+      add: (n, pts) => game.send('board:add', { n, pts }),
+      undo: () => game.send('board:undo'),
+      clear: () => game.send('board:clear'),
+    };
+    const offs = [
+      game.onMessage('board:start', (s: BoardStroke) => board.put(s)),
+      game.onMessage('board:add', (m: BoardAdd) => board.extend(m.id, m.pts)),
+      game.onMessage('board:undo', (m: { id: string }) => board.remove(m.id)),
+      game.onMessage('board:clear', () => board.wipe()),
+      game.onMessage('board:all', (m: { strokes: BoardStroke[] }) => board.replace(m.strokes)),
+    ];
+    game.send('board:sync');
+    return () => {
+      offs.forEach((off) => off());
+      board.remote = null;
+    };
+  }
 
   /** A round let you go (you pressed Leave, or were away from it for 30 s) */
   onActivityOut(fn: (out: ActivityOut) => void) {

@@ -744,6 +744,53 @@ describe('activities: Slave', () => {
   });
 });
 
+describe('the whiteboard', () => {
+  const area = mapDataFor('library').boardArea;
+  const front = { x: area.x, z: area.z };
+  const PEN = { color: '#2b2140', size: 0.009 };
+
+  it('relays strokes live to the others; newcomers get the board; undo is only your own', { timeout: 20_000 }, async () => {
+    const a = track(await walkIn());
+    const b = track(await walkIn({ sub: 'u-jod', name: 'Jod' }));
+    const seen: { type: string; msg: unknown }[] = [];
+    for (const type of ['board:start', 'board:add', 'board:undo', 'board:clear'])
+      b.onMessage(type, (msg: unknown) => seen.push({ type, msg }));
+    a.onMessage('board:start', () => seen.push({ type: 'echo', msg: null }));
+    await walkTo(a, front);
+    await walkTo(b, { x: front.x + 0.4, z: front.z });
+    a.send('board:start', { n: 1, ...PEN, pts: [0.1, 0.1] });
+    a.send('board:add', { n: 1, pts: [0.2, 0.2, 0.3, 0.3] });
+    await until(() => seen.length === 2);
+    expect(seen[0]).toEqual({ type: 'board:start', msg: { id: `${a.sessionId}:1`, ...PEN, pts: [0.1, 0.1] } });
+    expect(seen[1]).toEqual({ type: 'board:add', msg: { id: `${a.sessionId}:1`, pts: [0.2, 0.2, 0.3, 0.3] } });
+
+    // A pen the board doesn't have, points off the board, or adding to someone else's stroke: refused
+    a.send('board:start', { n: 2, color: '#ff0000', size: 0.009, pts: [0.5, 0.5] });
+    a.send('board:start', { n: 3, ...PEN, pts: [1.5, 0.5] });
+    b.send('board:add', { n: 1, pts: [0.9, 0.9] });
+    // Away from the board you can't draw
+    const c = track(await walkIn({ sub: 'u-ploy', name: 'Ploy' }));
+    c.send('board:start', { n: 1, ...PEN, pts: [0.5, 0.5] });
+    await quietly(300);
+    expect(seen.length).toBe(2);
+
+    let all: { strokes: { id: string; pts: number[] }[] } | null = null;
+    c.onMessage('board:all', (m: typeof all) => (all = m));
+    c.send('board:sync');
+    await until(() => all !== null);
+    expect(all!.strokes).toEqual([{ id: `${a.sessionId}:1`, ...PEN, pts: [0.1, 0.1, 0.2, 0.2, 0.3, 0.3] }]);
+
+    b.send('board:undo'); // nothing of Jod's
+    a.send('board:undo');
+    await until(() => seen.some((x) => x.type === 'board:undo'));
+    expect(seen.filter((x) => x.type === 'board:undo')).toEqual([{ type: 'board:undo', msg: { id: `${a.sessionId}:1` } }]);
+    b.send('board:start', { n: 1, ...PEN, pts: [0.4, 0.4] });
+    b.send('board:clear');
+    await until(() => seen.some((x) => x.type === 'board:clear'));
+    expect(seen.some((x) => x.type === 'echo')).toBe(true); // Mai saw Jod's stroke
+  });
+});
+
 describe('photo mode', () => {
   it('shows 📸 to everyone while it is open', async () => {
     const a = track(await walkIn());
