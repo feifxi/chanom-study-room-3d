@@ -14,7 +14,7 @@ what each feature is, and what's left. The details are in one spec per feature
 - **The real app is being built fresh** in `apps/` and `packages/` (V1 was removed from `main`;
   it's at tag `v1.0.0`). Steps 1 and 2 (the skeleton; accounts and rooms) are done; step 3, the
   gateway, is done too; so is step 4, walking in a room (all five parts). Step 5, the rest of the
-  features one at a time, has started with focus (part 1 of 3 done). Nothing is deployed.
+  features one at a time, has started with focus (parts 1 and 2 of 3 done). Nothing is deployed.
 
 | #   | Feature                                 | Status  | Spec                                                                   |
 | --- | --------------------------------------- | ------- | ---------------------------------------------------------------------- |
@@ -92,7 +92,8 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
    and quests; Plus; moderation with Common and open rooms; the admin site and map editor.
    - **Focus**, three parts: ~~the timer on the game server~~ done 2026-11-23 (rounds timed and
      saved by the server, "This room today", "Focusing" for friends, one timer per account, your
-     own time zone); the to-do list; the Focus page and rankings.
+     own time zone); ~~the to-do list~~ done 2026-11-23 (on the API, changes show at once); the
+     Focus page and rankings.
 6. **The seed:** one fill of all the data (people, rooms, members, friends, DMs…) for testing the
    whole app ([why at the end](v2/decisions.md#engineering-and-infra)).
 7. **Infra** on AWS ([spec 15](v2/features/15-business-infra.md#architecture)), then a playtest, then launch.

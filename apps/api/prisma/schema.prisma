@@ -71,6 +71,7 @@ model User {
   dmMembers        DmMember[]
   notifications    Notification[]
   focusSessions    FocusSession[]
+  todos            Todo[]
 
   @@index([deleteAt])
   @@map("users")
@@ -493,4 +494,23 @@ model FocusSession {
   @@index([roomId, endedAt])
   @@index([endedAt])
   @@map("focus_sessions")
+}
+
+/// The to-do list (feature 8): one per account, private, the same in every room. Up to 50 items;
+/// done ones clear themselves after 7 days.
+model Todo {
+  id        String    @id @default(uuid(7))
+  userId    String    @map("user_id")
+  text      String
+  done      Boolean   @default(false)
+  doneAt    DateTime? @map("done_at")
+  /// Order in the list: new items go last
+  position  Int
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, position])
+  @@index([doneAt])
+  @@map("todos")
 }

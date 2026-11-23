@@ -266,3 +266,17 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
       kept (Today after the room empties and fills again doesn't list them). The To-do tab still
       says "Sign up to keep…".
 - [ ] Phone width, light and dark: the Study session panel and its Today list fit.
+
+### Focus, part 2: the to-do list
+
+- [ ] Study session → To-do: add a few tasks (Enter or ➕); they appear at once, in order, and the
+      tab shows how many are left. Tick one: it's crossed out and the count drops.
+- [ ] Reload, or walk into a different room: the same list, ticks and all. Sign in as the same
+      person in another browser: the same list there too.
+- [ ] Delete one (the ✕ on hover, or always there on a phone); **Clear done** removes the ticked
+      ones and only shows while something is ticked.
+- [ ] Another person never sees your list.
+- [ ] At 50 items the box says "Full (50). Clear some done ones" and won't take more.
+- [ ] As a guest: "Sign up to keep a to-do list…" with the sign-up button (it asks "Leave …?").
+- [ ] With the API stopped, ticking or adding shows a toast and puts the list back as it was.
+- [ ] Phone width, light and dark: long tasks wrap, the panel fits.

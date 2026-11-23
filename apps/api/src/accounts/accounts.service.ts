@@ -228,6 +228,7 @@ export class AccountsService {
         this.prisma.account.deleteMany({ where: { userId: user.id } }),
         // Focus history is personal too (rankings skip deleted people anyway)
         this.prisma.focusSession.deleteMany({ where: { userId: user.id } }),
+        this.prisma.todo.deleteMany({ where: { userId: user.id } }),
         ...(user.handle
           ? [
               this.prisma.handleHold.upsert({

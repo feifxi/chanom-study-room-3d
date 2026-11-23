@@ -4,12 +4,15 @@ import { FOCUS_QUEUE } from '@connecta/shared';
 import { FocusController } from './focus.controller.js';
 import { FocusProcessor } from './focus.processor.js';
 import { FocusService } from './focus.service.js';
+import { TodosCleanup } from './todos-cleanup.js';
+import { TodosController } from './todos.controller.js';
+import { TodosService } from './todos.service.js';
 
-/** Focus minutes (feature 8): the game server's rounds saved, and the rankings read. */
+/** Study tools (feature 8): the game server's focus rounds saved, the rankings, and the to-do list. */
 @Module({
   imports: [BullModule.registerQueue({ name: FOCUS_QUEUE })],
-  controllers: [FocusController],
-  providers: [FocusService, FocusProcessor],
+  controllers: [FocusController, TodosController],
+  providers: [FocusService, FocusProcessor, TodosService, TodosCleanup],
   exports: [FocusService],
 })
 export class FocusModule {}

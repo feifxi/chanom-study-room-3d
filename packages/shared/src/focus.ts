@@ -15,6 +15,12 @@ export const MIN_COUNTED_FOCUS_MIN = 1;
 /** The most a day counts towards rankings, so a timer left running all day doesn't win */
 export const DAILY_RANK_CAP_MIN = 12 * 60;
 
+/** The to-do list (one per account, private): at most this many items, each this long */
+export const TODO_LIMIT = 50;
+export const TODO_MAX = 120;
+/** Done items clear themselves after this many days */
+export const TODO_DONE_DAYS = 7;
+
 /** Game → API, on a BullMQ queue: a focus round that ended or was stopped (1+ minute, members only). */
 export const FOCUS_QUEUE = 'focus-rounds';
 export interface FocusRound {

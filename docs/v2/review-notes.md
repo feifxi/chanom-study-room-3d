@@ -61,6 +61,11 @@ Tick or strike these as they're dealt with.
       from this browser (`logFocus`), and the focus quests stay local until coins and quests.
 - [ ] **A label says "0m" for the first minute** of a round ("📖 Mai · 0m · Calculus"), as it did
       before; "<1m" or hiding it might read better.
+- [ ] **To-dos don't update live in other tabs or devices**: another open tab sees a change when
+      it next refetches (on focus or reopening the panel), not instantly. Fine for one person's
+      list; the gateway could push it if it matters.
+- [ ] **No reordering of to-dos**: new items go last; the `position` column is ready if dragging
+      is wanted later (the spec doesn't ask for it).
 - [ ] **Away during a break hides the ☕ on your label** (💤 wins, as the spec orders them); the
       Study panel still shows the break counting down.
 
@@ -167,3 +172,14 @@ own timer. Decisions: [decision log](decisions.md), 2026-11-23.
 fixing (a start and stop slower than the 40 ms test "minute", state arriving a patch later). A
 headless run on the dev stack walked in, ran a real round for a minute, stopped it, and saw it
 saved (on the Bangkok day) and listed in Today.
+
+### Focus, part 2: the to-do list
+
+**Changed:** the to-do list is on the API (`todos` table, `/api/todos`, full accounts only, 50
+items of 120 characters) with a 3 am job removing done items older than 7 days (the list hides
+them at once). The Study panel's To-do tab uses it with changes shown at once and rolled back with
+a toast if the API refuses; the mock to-dos left `lib/focus.ts`. Deleting an account deletes its
+list.
+
+**Bugs found and fixed while building:** none in the app. A headless run at phone width in dark mode
+added, ticked, reloaded, cleared done and deleted, and the API held the result.

@@ -1,8 +1,8 @@
 # 8. Study tools
 
 **Status:** decided and built in the demo. On the real backend: part 1 of 3 (the server-run
-timer, "This room today", "Focusing" for friends) done 2026-11-23; the to-do list and the Focus page
-are next ([why three parts](../decisions.md#engineering-and-infra)). **Try it:** http://localhost:3100/servers/chanom/rooms/library
+timer, "This room today", "Focusing" for friends) and part 2 (the to-do list) done 2026-11-23; the
+Focus page is next ([why three parts](../decisions.md#engineering-and-infra)). **Try it:** http://localhost:3100/servers/chanom/rooms/library
 → My tools → 📖 Study session, and http://localhost:3100/home/focus
 
 A personal focus timer, a private to-do list, and rankings that count real focus minutes. Kept
@@ -82,8 +82,10 @@ subject }`, `focus:stop`, `focus:subject`; it shows the status on your player an
   the API's focus worker: the id is the game server's round id (a retried job saves once), `day` is
   the start's date in the person's `users.time_zone` (`PUT /api/me/time-zone`), and `room_id` is
   cleared if the room is deleted, so the minutes stay yours. Deleting an account deletes them.
-- `todos (user_id, id, text, done, done_at, position)`, REST CRUD; a nightly job removes done items
-  older than 7 days.
+- `todos (id, user_id, text, done, done_at, position)`: `GET/POST /api/todos`, `PATCH/DELETE
+/api/todos/:id`, `DELETE /api/todos/done` (Clear done); full accounts only, 409 `full` at 50. The
+  list hides done items older than 7 days at once, and a job at 3 am removes them. Deleting an
+  account deletes its list.
 - Rankings are `SUM(minutes)` per user over the window, capped per day. Today and This week depend on
   the viewer's time zone, so compute per request for Friends (small) and cache Everyone per time zone
   offset for ~5 minutes (top 10 + the viewer's rank via a window function).

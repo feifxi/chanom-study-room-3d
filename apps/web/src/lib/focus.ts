@@ -5,17 +5,10 @@ import { ME, USERS, type User } from './mock';
 
 /**
  * Study tools' data, shaped like the API will return it:
- * - the to-do list belongs to your account and follows you into every room (only you see it)
  * - focus minutes come from finished or stopped focus rounds of 1+ minute, timed by the server
  * - rankings: this room today, friends, everyone (only people who opted in)
  * The demo keeps your own changes in sessionStorage so they survive moving between pages.
  */
-
-export interface Todo {
-  id: string;
-  text: string;
-  done: boolean;
-}
 
 export interface FocusDay {
   /** yyyy-mm-dd in your own time zone. */
@@ -31,13 +24,10 @@ export interface RankRow {
 export type RankScope = 'friends' | 'everyone';
 export type RankPeriod = 'today' | 'week';
 
-/** Most to-dos you can keep; done ones clear after 7 days. */
-export const TODO_LIMIT = 50;
 /** The most a day counts towards rankings, so a timer left running all day doesn't win. */
 export const DAILY_RANK_CAP_MIN = 12 * 60;
 
 interface State {
-  todos: Todo[];
   /** Minutes you focused today in this demo session, on top of the mock base. */
   todayExtra: number;
   /** Subject → minutes added in this demo session. */
@@ -47,11 +37,6 @@ interface State {
 }
 
 const INITIAL: State = {
-  todos: [
-    { id: 't1', text: 'Read chapter 7', done: true },
-    { id: 't2', text: 'Calculus exercises 1–10', done: false },
-    { id: 't3', text: 'OS flashcards', done: false },
-  ],
   todayExtra: 0,
   subjectsExtra: {},
   onGlobal: true,
@@ -90,25 +75,6 @@ function subscribe(onChange: () => void) {
 }
 
 const useFocusState = () => useSyncExternalStore(subscribe, read, () => INITIAL);
-
-// --- To-do ---
-
-export function useTodos() {
-  const { todos } = useFocusState();
-  return {
-    todos,
-    left: todos.filter((t) => !t.done).length,
-    full: todos.length >= TODO_LIMIT,
-    add: (text: string) => {
-      const t = text.trim().slice(0, 120);
-      if (!t || read().todos.length >= TODO_LIMIT) return;
-      write({ todos: [...read().todos, { id: `t${Date.now()}`, text: t, done: false }] });
-    },
-    toggle: (id: string) => write({ todos: read().todos.map((t) => (t.id === id ? { ...t, done: !t.done } : t)) }),
-    remove: (id: string) => write({ todos: read().todos.filter((t) => t.id !== id) }),
-    clearDone: () => write({ todos: read().todos.filter((t) => !t.done) }),
-  };
-}
 
 // --- Focus minutes ---
 

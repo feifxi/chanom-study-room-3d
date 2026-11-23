@@ -5,7 +5,9 @@ import { ListChecks, Plus, Timer, Trophy, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { formatMinutes, TODO_LIMIT, useRoomToday, useTodos } from '@/lib/focus';
+import { TODO_LIMIT, TODO_MAX } from '@connecta/shared';
+import { formatMinutes, useRoomToday } from '@/lib/focus';
+import { useTodos } from '../focus/useTodos';
 import { ME } from '@/lib/mock';
 import type { TodayRow } from '../focus/useRoomToday';
 import { formatLeft, type usePomodoro } from './usePomodoro';
@@ -37,7 +39,7 @@ export function StudyPanel({
   className?: string;
 }) {
   const [tab, setTab] = useState<Tab>('focus');
-  const { todos, left, full, add, toggle, remove, clearDone } = useTodos();
+  const { todos, left, full, add, toggle, remove, clearDone } = useTodos(!guest);
   const mockRanks = useRoomToday(roomId);
   const ranks: TodayRow[] =
     today ?? mockRanks.map((r) => ({ key: r.user.id, name: r.user.name, minutes: r.minutes, me: r.user.id === ME.id }));
@@ -174,7 +176,7 @@ export function StudyPanel({
               <Input
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                maxLength={120}
+                maxLength={TODO_MAX}
                 disabled={full}
                 placeholder={full ? `Full (${TODO_LIMIT}). Clear some done ones` : 'Add a task'}
                 className="h-9 rounded-xl"
