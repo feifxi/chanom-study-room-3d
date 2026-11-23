@@ -1,7 +1,7 @@
 # 14. Common rooms, open rooms and moderation
 
 **Status:** decided and built in the demo; in `apps/` in four parts (2026-11-24): Common rooms
-(done), the word filter (done), reports (done), team accounts in Common rooms. Suspensions, bans and the admin
+(done), the word filter, reports, team accounts in Common rooms (all done). Suspensions, bans and the admin
 site come after. **Try it:** http://localhost:3100 with the Demo tab's
 **View as**:
 
@@ -161,6 +161,15 @@ counts are Redis sorted sets of reporters per window (`reports:room:<room>:<user
 server a `timeout`; the Common step sets `common:out:<user>` for an hour, which the Common ticket
 refuses (403 `common_out`), and sends the copy a `ban` so they're out at once. Reasons and limits
 are in `@connecta/shared` (`PERSON_REASONS`, `ROOM_REASONS`, `REPORT_STEPS`).
+
+**Built so far (team accounts):** `users.team`, set only by `pnpm --filter @connecta/api team <handle>
+[off]` and shown in `/api/me`. A team account's Common ticket carries `team`, so the game server's
+player shows the "Connecta team" chip by their name and in the people list. In a Common room their
+"…" on anyone not on the team has Time out (`PUT /api/common/people/:id/timeout`: no bubbles for 10
+minutes, an hour or a day, in whichever copy they walk into, `common:quiet:<user>`) and Remove from
+Common rooms (`POST /api/common/people/:id/remove`: sent out now, out for an hour,
+`common:out:<user>` with `by: 'team'`, so the walk-in screen says the team did it). The automatic
+report steps never act on team accounts. "Open in the admin site" still opens the mock admin site.
 
 **Built so far (the word filter):** `maskWords` and `hasBlockedWord` in `@connecta/shared/moderate`
 (its own entry, so the web bundle doesn't carry the word lists): `obscenity`'s English set plus

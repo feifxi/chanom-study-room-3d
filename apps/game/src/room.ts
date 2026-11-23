@@ -549,6 +549,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
         subject: carried?.subject ?? '',
         todayMin: this.focusDone.get(ticket.sub) ?? 0,
         plus: ticket.plus ?? false,
+        team: ticket.team ?? false,
       }),
     );
     this.priv.set(client.sessionId, {

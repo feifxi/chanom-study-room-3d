@@ -57,6 +57,8 @@ export const MeSchema = z
     /** Connecta Plus right now, and until when (null: never had it) */
     plus: z.boolean(),
     plusUntil: z.string().nullable(),
+    /** On the Connecta team: their actions in Common rooms (and later the admin site) */
+    team: z.boolean(),
   })
   .meta({ id: 'Me' });
 export type Me = z.infer<typeof MeSchema>;

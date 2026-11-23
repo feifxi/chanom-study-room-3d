@@ -115,6 +115,15 @@ describe('reports', () => {
     await jod.post(`/api/rooms/${id}/messages`, { text: 'fine' }).expect(201);
   });
 
+  it('never takes an automatic step against a team account', async () => {
+    const crowdIds = await crowd(3, 'm');
+    const { jod, id } = await room(crowdIds);
+    await prisma.user.update({ where: { id: jod.id }, data: { team: true } });
+    for (const r of crowdIds) await reports.report(r, { kind: 'person', userId: jod.id, place: id, reason: 'spam' });
+    await jod.post(`/api/rooms/${id}/messages`, { text: 'still here' }).expect(201);
+    expect(await prisma.report.count({ where: { step: { not: null } } })).toBe(0);
+  });
+
   it('5 accounts in a Common copy put someone out of Common rooms for an hour', async () => {
     const presence = app.get(PresenceService);
     const [target, ...others] = await crowd(7, 'c');

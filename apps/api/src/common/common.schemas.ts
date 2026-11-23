@@ -1,4 +1,4 @@
-import { COMMON_TYPE_IDS } from '@connecta/shared';
+import { COMMON_TYPE_IDS, TIMEOUTS } from '@connecta/shared';
 import { z } from 'zod';
 import { PersonSchema } from '../rooms/rooms.schemas.js';
 
@@ -40,3 +40,5 @@ export const CommonTicketSchema = z
   })
   .meta({ id: 'CommonTicket' });
 export type CommonTicket = z.infer<typeof CommonTicketSchema>;
+
+export const CommonTimeoutBodySchema = z.object({ duration: z.enum(TIMEOUTS) }).meta({ id: 'CommonTimeoutBody' });

@@ -43,9 +43,9 @@ the Focus page and rankings). **Watch together and photo mode** are done. **Part
 are done (the round flow, chess, Slave, the whiteboard, Pick a Side and Draw & Guess on the game
 server). **Coins and quests** are done (quests, coins, the Shop's first set and pets). **Plus** is done
 (Plus on the account and limits, paying with Stripe or a local stand-in until the owner adds test
-keys, Gift Plus, and when Plus ends). **Moderation with Common and open rooms** is in progress in
-four parts: Common rooms, the word filter and reports are done; next is team accounts in Common
-rooms.
+keys, Gift Plus, and when Plus ends). **Moderation with Common and open rooms** is done (Common
+rooms, the word filter, reports, team accounts in Common rooms). Next is **the admin site and map
+editor**, the last feature of step 5.
 Steps 1–4 are done: the skeleton; accounts and rooms; the gateway
 (friends, chat, pictures, DMs, presence and the 🔔 inbox); walking in a room (the Colyseus game
 server `apps/game` with movement, capacity and live room changes, bubbles, Away, the people list,
@@ -154,6 +154,7 @@ pnpm db:migrate                      # create and apply a migration after a sche
 pnpm db:seed                         # safe to rerun; also after restarting the AWS Emulator
 pnpm db:reset                        # drop the local database, migrate, seed
 pnpm db:studio                       # browse the local database
+pnpm --filter @connecta/api team <handle> [off]   # put someone on the Connecta team (or off)
 pnpm api:client                      # after an API change: OpenAPI document → web types
 pnpm --filter @connecta/web screens 390 dark guest   # screenshots; needs the web app running
 pnpm --filter @connecta/web perf                     # 3D budget check; needs the web app running

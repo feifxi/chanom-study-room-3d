@@ -100,4 +100,33 @@ describe('Common rooms', () => {
     expect(t.n).toBe(1);
     expect(decodeJwt(t.ticket)).toMatchObject({ role: 'guest', name: 'Mint', handle: null });
   });
+
+  it('the Connecta team can time someone out or remove them for an hour; nobody else can', async () => {
+    const team = await person('teamtam');
+    await prisma.user.update({ where: { id: team.id }, data: { team: true } });
+    const ploy = await person('ployy');
+    const [them, otherTeam] = await crowd(2, 'x');
+    await prisma.user.update({ where: { id: otherTeam! }, data: { team: true } });
+    const presence = app.get(PresenceService);
+    for (const id of [them!, otherTeam!]) {
+      await presence.openTab(id, 'tab');
+      await presence.tab(id, 'tab', { roomId: 'common-cafe-1' });
+    }
+    // The team chip rides on the team's ticket
+    expect(decodeJwt((await team.post('/api/common/cafe/ticket', {}).expect(200)).body.ticket)).toMatchObject({ team: true });
+    expect((await team.get('/api/me').expect(200)).body.team).toBe(true);
+
+    await ploy.put(`/api/common/people/${them}/timeout`, { duration: '10m' }).expect(403);
+    await team.put(`/api/common/people/${otherTeam}/timeout`, { duration: '10m' }).expect(403);
+    await team.put(`/api/common/people/${them}/timeout`, { duration: '10m' }).expect(204);
+    const quiet = decodeJwt((await common.ticket(them!, 'cafe', {})).ticket).timedOutUntil as number;
+    expect(quiet).toBeGreaterThan(Date.now() + 9 * 60_000);
+
+    await ploy.post(`/api/common/people/${them}/remove`).expect(403);
+    await team.post(`/api/common/people/${them}/remove`).expect(204);
+    await expect(common.ticket(them!, 'library', {})).rejects.toMatchObject({ response: { code: 'common_out', by: 'team' } });
+    expect(await redis.pttl(`common:out:${them}`)).toBeGreaterThan(59 * 60_000);
+    // Someone not in a Common room now
+    await team.post(`/api/common/people/${ploy.id}/remove`).expect(404);
+  });
 });

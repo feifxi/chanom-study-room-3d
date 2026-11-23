@@ -4,7 +4,7 @@ import { Redis } from 'ioredis';
 import { PERSON_REASONS, REPORT_STEPS, ROOM_REASONS, parseCommonCopy } from '@connecta/shared';
 import type { Prisma, Message, User } from '../generated/prisma/client.js';
 import type { Env } from '../config/env.js';
-import { commonOutKey } from '../common/common.service.js';
+import { CommonService } from '../common/common.service.js';
 import { FriendsService } from '../friends/friends.service.js';
 import { GameService } from '../game/game.service.js';
 import { PresenceService } from '../presence/presence.service.js';
@@ -33,6 +33,7 @@ export class ReportsService implements OnModuleDestroy {
     private readonly presence: PresenceService,
     private readonly game: GameService,
     private readonly friends: FriendsService,
+    private readonly common: CommonService,
   ) {
     this.redis = new Redis(config.get('REDIS_URL', { infer: true }), { maxRetriesPerRequest: 2 });
     this.redis.on('error', (error) => this.log.warn(`Redis: ${error.message}`));
@@ -152,9 +153,11 @@ export class ReportsService implements OnModuleDestroy {
     await this.prisma.report.update({ where: { id: reportId }, data: { counted: true } });
     if ((await this.redis.zcard(key)) < rule.reports) return;
     await this.redis.del(key);
+    // The team's own accounts go to the team, never to an automatic step
+    if ((await this.prisma.user.findUnique({ where: { id: userId }, select: { team: true } }))?.team) return;
     const until = now + rule.minutes * MINUTE;
     if (common) {
-      await this.redis.set(commonOutKey(userId), String(until), 'PX', rule.minutes * MINUTE);
+      await this.common.putOut(userId, { until, by: 'reports' }, now);
       const at = await this.presence.roomOf(userId, now);
       if (at && parseCommonCopy(at)) this.game.roomEvent({ roomId: at, type: 'ban', userId });
     } else {

@@ -442,6 +442,12 @@ decision is made or changed: one line, a date, and the reason.
   as `****` rather than refusing the message; OpenAI's free picture check built but off until a key);
   reports with their automatic steps; team accounts in Common rooms. Suspensions and bans wait for
   the admin site, since only the team gives them.
+- **The team flag is set by a script, never by the app** (2026-11-24, the owner): no screen can make
+  someone staff, so a bug or a stolen session can't either. The team acts only in Common rooms until
+  the admin site; their actions aren't in an audit log yet (the admin site adds it).
+- **A team Time out in Common rooms follows the person, not the copy** (2026-11-24): copies have no
+  members to hold a timeout, so it's kept per person and every Common ticket carries it, or walking
+  into another copy would undo it.
 - **Reports: only accounts that are there count, once each** (2026-11-24, the owner): guests can
   report (the team reads it) but a guest is free to make, so five guests can't push someone out; a
   report counts only from someone in that room or Common copy, and an account counts once in a

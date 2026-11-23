@@ -39,6 +39,7 @@ import { friendsApi } from '@/features/friends/useFriends';
 import { TIMEOUTS } from '@/features/place/membership';
 import { problem, roomsApi } from '@/features/rooms/useRooms';
 import { setMutedForMe as rememberMutedForMe } from '@/features/voice/mutedForMe';
+import { commonApi } from '@/features/common/useCommon';
 import { ReportDialog } from '@/features/moderation/ReportDialog';
 import { cn } from '@/lib/utils';
 import type { RoomPerson, RoomRole } from './RoomPeople';
@@ -163,7 +164,7 @@ export function PersonMenu({
             )}
           </DropdownMenuGroup>
 
-          {myRole === 'Team' && (
+          {myRole === 'Team' && theirRole !== 'Team' && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuLabel className="px-2 text-[11px] font-black tracking-wider text-muted-foreground uppercase">
@@ -176,7 +177,14 @@ export function PersonMenu({
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
                     {TIMEOUTS.map(([id, label]) => (
-                      <DropdownMenuItem key={id} onSelect={() => toast(`${p.name} can’t type for ${label}`)}>
+                      <DropdownMenuItem
+                        key={id}
+                        onSelect={() =>
+                          p.userId
+                            ? void act(commonApi.timeOut(p.userId, id), `${p.name} can’t type in Common rooms for ${label}`)
+                            : toast(`${p.name} can’t type for ${label}`)
+                        }
+                      >
                         {label}
                       </DropdownMenuItem>
                     ))}
@@ -185,8 +193,9 @@ export function PersonMenu({
                 <DropdownMenuItem
                   variant="destructive"
                   onSelect={() => {
-                    onRemove();
-                    toast(`${p.name} is out of Common rooms for 1 hour. It’s in the audit log.`);
+                    const done = `${p.name} is out of Common rooms for 1 hour`;
+                    if (!p.userId) return toast(done);
+                    void act(commonApi.remove(p.userId), done).then(onRemove);
                   }}
                 >
                   <UserMinus /> Remove from Common rooms (1 h)

@@ -11,6 +11,8 @@ import {
   parseCommonCopy,
   type CommonType,
   type CommonTypeId,
+  TIMEOUT_MINUTES,
+  type Timeout,
 } from '@connecta/shared';
 import type { Env } from '../config/env.js';
 import { GameService } from '../game/game.service.js';
@@ -23,10 +25,19 @@ import type { CommonRoomView, CommonTicket } from './common.schemas.js';
 /** A ticket holds a seat this long before its person is inside (two people never get the 20th seat) */
 const HOLD_MS = 30_000;
 
-/** Out of Common rooms after enough reports (feature 14): the reports module sets it, walking in reads it */
+/**
+ * Out of Common rooms for a while (feature 14): after enough reports, or the team's Remove. Holds
+ * `{ until, by }`; walking in reads it.
+ */
 export const commonOutKey = (userId: string) => `common:out:${userId}`;
+export type CommonOut = { until: number; by: 'reports' | 'team' };
+
+/** How long the team's Remove from Common rooms lasts */
+const TEAM_REMOVE_MINUTES = 60;
 
 const key = {
+  /** Timed out by the team: no bubbles until then, wherever in Common rooms they walk */
+  quiet: (userId: string) => `common:quiet:${userId}`,
   /** The copy numbers open for a type */
   copies: (type: string) => `common:copies:${type}`,
   /** Seats held by fresh tickets in a copy: userId → when */
@@ -96,12 +107,15 @@ export class CommonService implements OnModuleDestroy {
     if (!user.isAnonymous && !user.handle) throw new ForbiddenException('Finish signing up first');
     const out = await this.redis.get(commonOutKey(userId));
     if (out) {
+      const { until, by } = JSON.parse(out) as CommonOut;
       throw new ForbiddenException({
         message: 'You can’t come into Common rooms for now',
         code: 'common_out',
-        until: new Date(Number(out)).toISOString(),
+        by,
+        until: new Date(until).toISOString(),
       });
     }
+    const quiet = Number(await this.redis.get(key.quiet(userId))) || 0;
     const { n, note } = await this.pick(userId, type, ask, now);
     const place = commonCopyId(type.id, n);
     await this.redis.sadd(key.copies(type.id), String(n));
@@ -118,14 +132,53 @@ export class CommonService implements OnModuleDestroy {
       role: user.isAnonymous ? 'guest' : 'member',
       capacity: COMMON_CAPACITY,
       mapId: type.mapId,
-      timedOutUntil: 0,
+      timedOutUntil: quiet,
       guestVoice: false,
       roomWideGames: type.roomWideGames,
       plus: hasPlus(user, new Date(now)),
       common: true,
+      team: user.team,
       filterWords: true,
     });
     return { ticket, place, n, name: commonCopyName(type, n), note };
+  }
+
+  /**
+   * The Connecta team's Time out in a Common room: no bubbles for a while, in whichever copy they
+   * walk into. Only team accounts, never on another team member.
+   */
+  async timeOut(teamId: string, userId: string, duration: Timeout, now = Date.now()): Promise<void> {
+    const at = await this.teamOn(teamId, userId, now);
+    const until = now + TIMEOUT_MINUTES[duration] * 60_000;
+    await this.redis.set(key.quiet(userId), String(until), 'PX', until - now);
+    this.game.roomEvent({ roomId: at, type: 'timeout', userId, until });
+    this.log.log(`Team ${teamId} timed out ${userId} in Common rooms for ${duration}`);
+  }
+
+  /** The Connecta team's Remove from Common rooms: out now, and can't walk back in for an hour */
+  async remove(teamId: string, userId: string, now = Date.now()): Promise<void> {
+    const at = await this.teamOn(teamId, userId, now);
+    await this.putOut(userId, { until: now + TEAM_REMOVE_MINUTES * 60_000, by: 'team' }, now);
+    this.game.roomEvent({ roomId: at, type: 'kick', userId });
+    this.log.log(`Team ${teamId} removed ${userId} from Common rooms`);
+  }
+
+  async putOut(userId: string, out: CommonOut, now = Date.now()) {
+    await this.redis.set(commonOutKey(userId), JSON.stringify(out), 'PX', Math.max(1, out.until - now));
+  }
+
+  /** The Common copy the person is in, if the one asking is on the team and they aren't */
+  private async teamOn(teamId: string, userId: string, now: number): Promise<string> {
+    const [team, them] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: teamId }, select: { team: true } }),
+      this.prisma.user.findUnique({ where: { id: userId }, select: { team: true } }),
+    ]);
+    if (!team?.team) throw new ForbiddenException('Only the Connecta team can do that');
+    if (!them) throw new NotFoundException();
+    if (them.team) throw new ForbiddenException('They’re on the Connecta team too');
+    const at = await this.presence.roomOf(userId, now);
+    if (!at || !parseCommonCopy(at)) throw new NotFoundException('They’re not in a Common room now');
+    return at;
   }
 
   private async pick(userId: string, type: CommonType, ask: { with?: string; copy?: number }, now: number) {

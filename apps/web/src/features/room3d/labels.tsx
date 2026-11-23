@@ -182,6 +182,8 @@ export function LabelLayer({
               {/* Plus: a shimmering name (feature 15) */}
               {player.plus ? <span className="shimmer">✨{player.name}</span> : player.name}
               {isLocal && ' (you)'}
+              {/* The Connecta team in a Common room (feature 14) */}
+              {player.team && <span className="ml-1 rounded-full bg-mint px-1.5 text-[10px] font-black text-mint-ink">Connecta team</span>}
               {/* How long they've been focusing, so others know not to interrupt */}
               {player.status === 'focus' && (
                 <span className="ml-1 font-semibold opacity-75">

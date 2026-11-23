@@ -52,6 +52,8 @@ model User {
   /// The last "Plus is ending" step done for this plus_until (soon, ended, graceSoon, over), as
   /// "<step>@<plus_until>": each step happens once, and a new date starts over
   plusNotice               String?   @map("plus_notice")
+  /// On the Connecta team (feature 14): set by `pnpm --filter @connecta/api team <handle>`, never by the app
+  team                     Boolean   @default(false)
   /// Listed on the Everyone focus ranking; null = the default for your age (on 18+, off under 18)
   showOnEveryone           Boolean?  @map("show_on_everyone")
   /// Settings → Notifications: no game invite cards while your focus timer runs

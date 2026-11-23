@@ -124,7 +124,8 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
      welcome); ~~the word filter~~ done 2026-11-24 (masks messages and bubbles, refuses names;
      OpenAI's picture check built, off until a key); ~~reports~~ done 2026-11-24 (people, messages
      and rooms, for the team only; muted 15 minutes in a room or out of Common rooms for an hour);
-     team accounts in Common rooms. Suspensions and bans come with the admin site.
+     ~~team accounts in Common rooms~~ done 2026-11-24 (set by a script; the chip, Time out and
+     Remove for an hour). **Moderation is done.** Suspensions and bans come with the admin site.
 6. **The seed:** one fill of all the data (people, rooms, members, friends, DMs…) for testing the
    whole app ([why at the end](v2/decisions.md#engineering-and-infra)).
 7. **Infra** on AWS ([spec 15](v2/features/15-business-infra.md#architecture)), then a playtest, then launch.

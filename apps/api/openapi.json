@@ -3169,6 +3169,64 @@
         ]
       }
     },
+    "/api/common/people/{userId}/timeout": {
+      "put": {
+        "operationId": "CommonController_timeOut",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommonTimeoutBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "common"
+        ]
+      }
+    },
+    "/api/common/people/{userId}/remove": {
+      "post": {
+        "operationId": "CommonController_remove",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "common"
+        ]
+      }
+    },
     "/api/common/{type}/ticket": {
       "post": {
         "operationId": "CommonController_ticket",
@@ -3467,6 +3525,9 @@
           "plusUntil": {
             "nullable": true,
             "type": "string"
+          },
+          "team": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -3486,7 +3547,8 @@
           "showOnEveryone",
           "hideInvitesWhileFocusing",
           "plus",
-          "plusUntil"
+          "plusUntil",
+          "team"
         ],
         "additionalProperties": false
       },
@@ -6231,6 +6293,22 @@
           "friendsInside"
         ],
         "additionalProperties": false
+      },
+      "CommonTimeoutBody": {
+        "type": "object",
+        "properties": {
+          "duration": {
+            "type": "string",
+            "enum": [
+              "10m",
+              "1h",
+              "1d"
+            ]
+          }
+        },
+        "required": [
+          "duration"
+        ]
       },
       "CommonTicketBody": {
         "type": "object",

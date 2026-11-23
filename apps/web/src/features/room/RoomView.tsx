@@ -12,7 +12,7 @@ import { SettingsDialog, type SettingsTab } from '@/components/app/SettingsDialo
 import { setConnection } from '@/lib/connection';
 import { DMS, ME, USERS, type Server } from '@/lib/mock';
 import type { PlaceRoom } from '@/features/place/model';
-import { useMeAsUser } from '@/features/account/useMe';
+import { useMe, useMeAsUser } from '@/features/account/useMe';
 import { useWardrobe } from '@/features/shop/useWardrobe';
 import { AWAY_EVENT, crowdPeople, useCrowd } from '@/lib/demoCrowd';
 import { GUEST_LOOK, loadGuest } from '@/lib/guest';
@@ -148,6 +148,7 @@ export default function RoomView({
   );
   // Your own name from your account; the people around you are still mock until walking in is ported (step 4)
   const account = useMeAsUser();
+  const { data: meAccount } = useMe();
   // Your Shop pets, for the Buddy Machine
   const { pets } = useWardrobe();
   const myName = guest ? guestAs || 'Guest' : account.name;
@@ -191,7 +192,18 @@ export default function RoomView({
   }, [game, lookId]);
 
   const serverRole = game ? room.state.players.get('me')?.role : undefined;
-  const myRole: RoomRole | undefined = !game ? demoRole : serverRole === 'owner' ? 'Owner' : serverRole === 'mod' ? 'Mod' : undefined;
+  // In a Common room the Connecta team gets its own actions (feature 14); nobody else runs one
+  const myRole: RoomRole | undefined = !game
+    ? demoRole
+    : common
+      ? meAccount?.team
+        ? 'Team'
+        : undefined
+      : serverRole === 'owner'
+        ? 'Owner'
+        : serverRole === 'mod'
+          ? 'Mod'
+          : undefined;
   // Friends get their own group in the people list
   const friendIds = useFriendIds();
 
@@ -680,7 +692,7 @@ export default function RoomView({
         userId: p.userId,
         handle: p.handle,
         // Literals, not the value from server.roles: React Compiler would treat the list as aliasing the server
-        role: role === 'owner' ? 'Owner' : role === 'mod' ? 'Mod' : undefined,
+        role: game && common && p.team ? 'Team' : role === 'owner' ? 'Owner' : role === 'mod' ? 'Mod' : undefined,
         micOn: id === 'me' ? mic && !deaf && !hushed : game ? voice.micOn.has(id) : id === 'mai' || speaking.has(id),
         deafened: id === 'me' ? deaf : game ? p.deaf : id === 'jod',
         speaking: talking.has(id),

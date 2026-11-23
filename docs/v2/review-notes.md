@@ -637,3 +637,28 @@ everyone" → the report was stored with the message, the room's name and counte
       site can show who reports too much.
 - [ ] **The muted person isn't told why**: they see the usual "You're timed out", like a mod's
       timeout.
+
+### Moderation, part 4: team accounts in Common rooms
+
+**Changed:** a `team` flag on users, set by `pnpm --filter @connecta/api team <handle> [off]` and in
+`/api/me`. Team accounts get a "Connecta team" chip in Common rooms (the ticket and the game
+server's player carry it; the web client now copies the field). The demo's team menu in a person's
+"…" is real: Time out (kept per person, so it holds in any copy) and Remove from Common rooms for an
+hour (the walk-in screen says the team did it, not reports). Automatic report steps skip team
+accounts. Moderation (feature 14) is done apart from what waits for the admin site.
+
+**Bugs found and fixed while building:**
+
+- The chip wouldn't have shown: the web client copies only listed fields from the game state, and
+  `team` wasn't on the list.
+
+A headless run: Mai was put on the team, both walked into the Cat Café (Jod saw Mai's chip), Mai
+opened Jod's "…" → Remove from Common rooms → Jod got "You were taken out". Mai was taken off the
+team and Jod's hour cleared afterwards.
+
+**Open:**
+
+- [ ] **No audit log of team actions** (only the API's log), until the admin site.
+- [ ] **"Open in the admin site"** still opens the mock admin site.
+- [ ] **A team account has no powers in people's own rooms** (by design for now); suspensions and
+      bans come with the admin site.

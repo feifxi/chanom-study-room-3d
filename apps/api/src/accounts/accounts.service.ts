@@ -47,6 +47,7 @@ export function toMe(user: User): Me {
     hideInvitesWhileFocusing: user.hideInvitesWhileFocusing,
     plus: hasPlus(user),
     plusUntil: user.plusUntil?.toISOString() ?? null,
+    team: user.team,
   };
 }
 

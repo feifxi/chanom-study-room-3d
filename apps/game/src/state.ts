@@ -23,6 +23,8 @@ export const Player = schema(
     todayMin: t.number().default(0),
     /** Has Connecta Plus: an animated name tag */
     plus: t.boolean().default(false),
+    /** On the Connecta team: a chip by their name (only Common rooms' tickets say so) */
+    team: t.boolean().default(false),
     typing: t.boolean().default(false),
     /** Talk to everyone (owner and mods) */
     stage: t.boolean().default(false),

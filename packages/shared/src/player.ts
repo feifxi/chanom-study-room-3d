@@ -33,6 +33,8 @@ export interface PlayerView {
   todayMin: number;
   /** Has Connecta Plus: an animated name tag (optional for the demo's mock players) */
   plus?: boolean;
+  /** On the Connecta team (Common rooms): a chip by their name */
+  team?: boolean;
   typing: boolean;
   /** Talk to everyone (owner and mods): heard everywhere, and bubbles reach private zones */
   stage: boolean;

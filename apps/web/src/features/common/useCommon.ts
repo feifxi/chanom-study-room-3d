@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import type { Timeout } from '@connecta/shared';
 import { api, type Schemas } from '@/lib/api/client';
 
 export type CommonRoom = Schemas['CommonRoom'];
@@ -21,3 +22,15 @@ export function useCommonRooms() {
 
 /** Where a friend in a Common copy is joined from (Home, Friends) */
 export const joinCommonHref = (type: string, friendId: string) => `/common/${type}?with=${encodeURIComponent(friendId)}`;
+
+/** The Connecta team's actions in Common rooms (feature 14); they throw the API's error body */
+export const commonApi = {
+  timeOut: async (userId: string, duration: Timeout) => {
+    const { error, response } = await api.PUT('/api/common/people/{userId}/timeout', { params: { path: { userId } }, body: { duration } });
+    if (!response.ok) throw error ?? new Error(`${response.status}`);
+  },
+  remove: async (userId: string) => {
+    const { error, response } = await api.POST('/api/common/people/{userId}/remove', { params: { path: { userId } } });
+    if (!response.ok) throw error ?? new Error(`${response.status}`);
+  },
+};

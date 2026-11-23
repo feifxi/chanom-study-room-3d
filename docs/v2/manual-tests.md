@@ -596,3 +596,15 @@ Use the Demo tab → Your Plus (it runs the reminders at once); check the 🔔 i
       "You can't come into Common rooms for now", and Walk in shows it for an hour.
 - [ ] `pnpm db:studio` → `reports`: each report with its reason, details and context (the message,
       messages around it, bubbles seen, the room's name).
+
+### Moderation, part 4: team accounts in Common rooms
+
+- [ ] `pnpm --filter @connecta/api team maimai` → "@maimai is on the Connecta team"; `… team maimai off`
+      takes it away; an unknown handle says "No one has @…".
+- [ ] As a team account in a Common room: a mint "Connecta team" chip by your name, for everyone
+      (name tag and people list). In a normal room there's no chip.
+- [ ] A person's "…" → "Connecta team · Common room": **Time out** 10 minutes → they can't send
+      bubbles, even after walking out and into another copy. Not shown on another team member.
+- [ ] **Remove from Common rooms (1 h)** → they're sent out with "You were taken out · The Connecta
+      team took you out of Common rooms for an hour", and Walk in shows the same for an hour.
+- [ ] Reports against a team account never mute them or put them out.

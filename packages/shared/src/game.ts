@@ -37,6 +37,8 @@ export interface GameTicket {
   plus?: boolean;
   /** A Common room copy: text only for everyone, slow mode, no big screen (feature 14) */
   common?: boolean;
+  /** On the Connecta team: a chip by their name in Common rooms */
+  team?: boolean;
   /** Room settings → Filter words: blocked words in bubbles become asterisks (always in Common rooms) */
   filterWords?: boolean;
 }

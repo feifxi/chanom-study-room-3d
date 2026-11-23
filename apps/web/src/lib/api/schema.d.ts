@@ -1252,6 +1252,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/common/people/{userId}/timeout': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put: operations['CommonController_timeOut'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/common/people/{userId}/remove': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['CommonController_remove'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/common/{type}/ticket': {
     parameters: {
       query?: never;
@@ -1390,6 +1422,7 @@ export interface components {
       hideInvitesWhileFocusing: boolean;
       plus: boolean;
       plusUntil: string | null;
+      team: boolean;
     };
     Look: {
       hair: string;
@@ -2042,6 +2075,10 @@ export interface components {
       here: number;
       copies: number;
       friendsInside: components['schemas']['Person'][];
+    };
+    CommonTimeoutBody: {
+      /** @enum {string} */
+      duration: '10m' | '1h' | '1d';
     };
     CommonTicketBody: {
       with?: string;
@@ -4324,6 +4361,48 @@ export interface operations {
         content: {
           'application/json': components['schemas']['CommonRoom'][];
         };
+      };
+    };
+  };
+  CommonController_timeOut: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CommonTimeoutBody'];
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  CommonController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };
