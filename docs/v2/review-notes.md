@@ -550,7 +550,7 @@ Big at 80.
 - [ ] **PromptPay renewal uses our payment page,** not a Stripe PromptPay invoice; with Stripe on it
       pays as a one-off checkout, which is fine, but Stripe's own reminders aren't used.
 
-### Moderation, part 1: Common rooms
+### Moderation, part 1: Common rooms (`10b2d3e`)
 
 **Changed:** Common rooms are real. Their three types live in `@connecta/shared/common`; the API's
 `common` module picks your copy (friends first, then the busiest copy under 20, else a new one; up to
