@@ -180,6 +180,19 @@ the room's setting by the ticket and live by a `filterWords` room event. The pic
 `PictureCheck` (`src/chat/picture-check.ts`) before a picture can show; without a key it lets every
 picture through. The admin site will edit the word list (it's in code until then).
 
+**Built so far (admin site, part 1):** `/admin` answers "page not found" unless `/api/me` says
+`team` (the layout checks on the server; the API's `/api/admin/*` answers 404 the same way). The
+Users page lists accounts (not guests), newest 50, by name or @handle and a filter (reported,
+suspended or banned, under 18, Plus), with each account's sign-in methods, age group, rooms owned,
+reports and earlier actions. `POST /api/admin/users/:id/actions { kind, reason }`: warn, suspend 1
+or 7 days (`users.suspended_until`), ban (`banned_at`), lift, reset name (to their @handle). Each is
+a row in `account_actions`, an `audit_log` entry and an email with the reason (reply to appeal); a
+suspension or ban deletes every session, tells open tabs (`account` live event → sign-in) and sends
+them out of any room. Better Auth's `session.create.before` hook refuses a restricted account with
+"Your account is suspended until … UTC. Reason: … Reply to our email to appeal.", shown under the
+code on the sign-in page. Team accounts can't be acted on. The audit log also gets the Common
+room team actions and the report steps.
+
 - Common rooms: a `common_room_types` table (template, name, vibe) and copies as ordinary Colyseus
   rooms with `kind = 'common'`; the room sets the rules (no LiveKit publish grant for anyone, no
   picture uploads, slow mode, the big screen off). Matchmaking: friends' copy, else the

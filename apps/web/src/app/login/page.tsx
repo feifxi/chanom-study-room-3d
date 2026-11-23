@@ -89,6 +89,10 @@ function LoginFlow() {
 
   // Signed in already, or back from Google/Discord: pick up where this account is
   useEffect(() => {
+    // Google or Discord refused: Better Auth sends back only a code. The team's email has the details
+    if (search.get('error')?.toLowerCase().includes('restricted')) {
+      toast.error('This account can’t sign in right now. The Connecta team emailed you why.', { duration: 10_000 });
+    }
     fetchMe()
       .then(continueAs)
       .catch(() => setStep('method'));
@@ -133,7 +137,14 @@ function LoginFlow() {
     const { error } = await authClient.signIn.emailOtp({ email, otp: code });
     if (error) {
       setBusy(false);
-      setCodeError(error.status === 429 ? 'Too many tries. Wait a minute.' : "That code doesn't match. Check the newest email?");
+      setCodeError(
+        error.status === 429
+          ? 'Too many tries. Wait a minute.'
+          : // Suspended or banned by the Connecta team: until when, why, and how to appeal
+            error.status === 403 && error.message
+            ? error.message
+            : "That code doesn't match. Check the newest email?",
+      );
       return;
     }
     continueAs(await fetchMe());

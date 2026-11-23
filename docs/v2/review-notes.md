@@ -662,3 +662,34 @@ team and Jod's hour cleared afterwards.
 - [ ] **"Open in the admin site"** still opens the mock admin site.
 - [ ] **A team account has no powers in people's own rooms** (by design for now); suspensions and
       bans come with the admin site.
+
+### Admin site, part 1: the gate, Users and account actions
+
+**Changed:** `users.suspended_until` and `banned_at`, `account_actions` and `audit_log` tables; the
+API's `admin` module (team only, 404 otherwise) with the Users list, one account and its actions;
+a global `AuditService` that the account actions, the Common room team actions and the report steps
+write to; account emails (`mail/account-mail.ts`); a Better Auth hook refusing new sessions for
+suspended and banned accounts, with the reason. The web app's `/admin` checks the team flag on the
+server (the demo's "View as" wall is gone from `apps/web`), the avatar menu's Admin site follows the
+account, the Users page is real (with a reason box: every action is emailed), sign-in shows why an
+account can't sign in, and open tabs of a suspended account go to sign-in.
+
+**Bugs found and fixed while building:**
+
+- The sign-in message ran the reason into "Reply to our email…" when the reason had no full stop.
+- The Users page said "1 accounts".
+
+A headless run: Jod got 404 on `/admin`; Mai (on the team) suspended Jod for a day from the Users
+page while Jod had Home open, and Jod's tab went to sign-in; Jod's next sign-in showed the
+suspension, its end and the reason; the email arrived. Undone afterwards.
+
+**Open:**
+
+- [ ] **The other admin pages are still mock** (Overview, Reports with its badge, Rooms, Common rooms,
+      Money, Moderation, Maps, Audit log), parts 2–4.
+- [ ] **Google or Discord sign-in while suspended** shows only "This account can't sign in right
+      now. The Connecta team emailed you why." (Better Auth passes back a code, not the message).
+- [ ] **The Users list shows the newest 50** with search, no paging.
+- [ ] **The gateway doesn't close a suspended person's live socket itself**: the tab closes it when
+      it goes to sign-in. A tab that ignores the event keeps its socket until it reconnects (the
+      handshake then fails, as the session is gone). Not tested.

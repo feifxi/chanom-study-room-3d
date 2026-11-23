@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Banknote, Flag, Gauge, Home, LayoutTemplate, Lock, Map as MapIcon, ScrollText, ShieldAlert, Users, Warehouse } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { setViewer, useViewer } from '@/lib/viewer';
 import { REPORTS } from './adminData';
 
 const NAV = [
@@ -21,12 +20,10 @@ const NAV = [
 
 /**
  * The admin site's frame: a side list of sections over the plain app background. Only Connecta team
- * accounts get in; everyone else sees a wall (the real app answers 404 so it isn't advertised).
+ * accounts get in (the layout answers 404 to everyone else, so it isn't advertised).
  */
 export function AdminFrame({ children }: { children: React.ReactNode }) {
   const path = usePathname();
-  const viewer = useViewer();
-  if (viewer !== 'admin') return <TeamOnly />;
   return (
     <div className="flex h-dvh bg-background max-md:flex-col">
       <aside className="flex flex-none flex-col gap-1 border-r bg-card p-3 max-md:flex-row max-md:overflow-x-auto max-md:border-r-0 max-md:border-b md:w-56">
@@ -61,26 +58,6 @@ export function AdminFrame({ children }: { children: React.ReactNode }) {
         </Link>
       </aside>
       <main className="min-h-0 min-w-0 flex-1 overflow-y-auto">{children}</main>
-    </div>
-  );
-}
-
-function TeamOnly() {
-  return (
-    <div className="grid h-dvh place-items-center p-4">
-      <div className="panel flex max-w-sm flex-col items-center gap-3 p-6 text-center">
-        <Lock className="size-8 text-muted-foreground" />
-        <h1 className="text-xl font-black">Connecta team only</h1>
-        <p className="text-sm text-muted-foreground">
-          The admin site is for team accounts. In the real app this address shows “page not found” to everyone else.
-        </p>
-        <button
-          onClick={() => setViewer('admin')}
-          className="rounded-full border border-dashed border-primary px-4 py-2 text-sm font-extrabold"
-        >
-          Demo: view as the Connecta team
-        </button>
-      </div>
     </div>
   );
 }

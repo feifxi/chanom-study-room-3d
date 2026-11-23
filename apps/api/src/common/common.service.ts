@@ -14,6 +14,7 @@ import {
   TIMEOUT_MINUTES,
   type Timeout,
 } from '@connecta/shared';
+import { AuditService } from '../audit/audit.service.js';
 import type { Env } from '../config/env.js';
 import { GameService } from '../game/game.service.js';
 import { hasPlus } from '../plus/plus.js';
@@ -63,6 +64,7 @@ export class CommonService implements OnModuleDestroy {
     private readonly prisma: PrismaService,
     private readonly presence: PresenceService,
     private readonly game: GameService,
+    private readonly audit: AuditService,
   ) {
     this.redis = new Redis(config.get('REDIS_URL', { infer: true }), { maxRetriesPerRequest: 2 });
     this.redis.on('error', (error) => this.log.warn(`Redis: ${error.message}`));
@@ -152,7 +154,7 @@ export class CommonService implements OnModuleDestroy {
     const until = now + TIMEOUT_MINUTES[duration] * 60_000;
     await this.redis.set(key.quiet(userId), String(until), 'PX', until - now);
     this.game.roomEvent({ roomId: at, type: 'timeout', userId, until });
-    this.log.log(`Team ${teamId} timed out ${userId} in Common rooms for ${duration}`);
+    await this.audit.record({ by: teamId, action: 'common.timeout', targetKind: 'user', targetId: userId, details: { duration, at } });
   }
 
   /** The Connecta team's Remove from Common rooms: out now, and can't walk back in for an hour */
@@ -160,7 +162,13 @@ export class CommonService implements OnModuleDestroy {
     const at = await this.teamOn(teamId, userId, now);
     await this.putOut(userId, { until: now + TEAM_REMOVE_MINUTES * 60_000, by: 'team' }, now);
     this.game.roomEvent({ roomId: at, type: 'kick', userId });
-    this.log.log(`Team ${teamId} removed ${userId} from Common rooms`);
+    await this.audit.record({
+      by: teamId,
+      action: 'common.remove',
+      targetKind: 'user',
+      targetId: userId,
+      details: { minutes: TEAM_REMOVE_MINUTES, at },
+    });
   }
 
   async putOut(userId: string, out: CommonOut, now = Date.now()) {

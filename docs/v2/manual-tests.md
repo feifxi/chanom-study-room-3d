@@ -608,3 +608,19 @@ Use the Demo tab → Your Plus (it runs the reminders at once); check the 🔔 i
 - [ ] **Remove from Common rooms (1 h)** → they're sent out with "You were taken out · The Connecta
       team took you out of Common rooms for an hour", and Walk in shows the same for an hour.
 - [ ] Reports against a team account never mute them or put them out.
+
+### Admin site, part 1: the gate, Users and account actions
+
+- [ ] Signed in as anyone off the team, `/admin` (and `/admin/users`) is "page not found", and the
+      avatar menu has no Admin site. `pnpm --filter @connecta/api team maimai`, reload: the avatar
+      menu shows **Admin site** and `/admin` opens.
+- [ ] Users: accounts newest first (no guests), search by name or @handle, the filters (Reported,
+      Suspended or banned, Under 18, Plus). Pick one: email, sign-in methods, age, rooms owned,
+      reports, earlier actions.
+- [ ] The action buttons stay off until there's a reason. **Suspend 1 day** with Jod signed in on
+      another browser: Jod's tab goes to sign-in at once (and leaves a 3D room); signing in again
+      shows "Your account is suspended until … UTC. Reason: … Reply to our email to appeal." Mailpit
+      has the email with the reason.
+- [ ] **Lift suspension**: Jod can sign in again (and gets a "back" email). **Ban** reads "Your account
+      is banned…". **Warn** shows "warned" for 30 days. **Reset name** sets the name to their @handle.
+- [ ] A team account shows "On the Connecta team" with no actions.

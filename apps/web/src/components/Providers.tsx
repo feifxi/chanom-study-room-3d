@@ -6,6 +6,7 @@ import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { InboxListener } from '@/features/inbox/useInbox';
+import { AccountListener } from '@/features/account/AccountListener';
 import { PlusListener } from '@/features/plus/PlusListener';
 import { QuestsListener } from '@/features/quests/useQuests';
 import { PresenceReporter } from '@/features/presence/usePresence';
@@ -28,6 +29,7 @@ export function Providers({ children }: { children: ReactNode }) {
           <InboxListener />
           <QuestsListener />
           <PlusListener />
+          <AccountListener />
           <Toaster position="top-center" />
         </TooltipProvider>
       </ThemeProvider>

@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { useMeAsUser, useSignOut } from '@/features/account/useMe';
+import { useMe, useMeAsUser, useSignOut } from '@/features/account/useMe';
 import { FriendFace } from '@/features/presence/FriendFace';
 import { dmUnread, lastLine, useDms } from '@/features/dms/useDms';
 import { useFriendRequests } from '@/features/friends/useFriends';
@@ -88,7 +88,7 @@ export function PlaceHeader() {
           <>
             <Inbox />
             <Messages />
-            <Me team={viewer === 'admin'} />
+            <Me />
           </>
         )}
       </div>
@@ -195,9 +195,11 @@ function Messages() {
   );
 }
 
-function Me({ team }: { team: boolean }) {
+function Me() {
   const [settings, setSettings] = useState(false);
   const me = useMeAsUser();
+  // The admin site's link only for the Connecta team (set by a script, feature 14)
+  const team = !!useMe().data?.team;
   const signOut = useSignOut();
   const router = useRouter();
   const { coins } = useQuests();

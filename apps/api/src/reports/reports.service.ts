@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 import { PERSON_REASONS, REPORT_STEPS, ROOM_REASONS, parseCommonCopy } from '@connecta/shared';
 import type { Prisma, Message, User } from '../generated/prisma/client.js';
+import { AuditService } from '../audit/audit.service.js';
 import type { Env } from '../config/env.js';
 import { CommonService } from '../common/common.service.js';
 import { FriendsService } from '../friends/friends.service.js';
@@ -34,6 +35,7 @@ export class ReportsService implements OnModuleDestroy {
     private readonly game: GameService,
     private readonly friends: FriendsService,
     private readonly common: CommonService,
+    private readonly audit: AuditService,
   ) {
     this.redis = new Redis(config.get('REDIS_URL', { infer: true }), { maxRetriesPerRequest: 2 });
     this.redis.on('error', (error) => this.log.warn(`Redis: ${error.message}`));
@@ -171,7 +173,13 @@ export class ReportsService implements OnModuleDestroy {
       this.game.roomEvent({ roomId: place, type: 'timeout', userId, until });
     }
     await this.prisma.report.update({ where: { id: reportId }, data: { step: common ? 'common_out' : 'muted' } });
-    this.log.log(`Report step: ${userId} ${common ? 'out of Common rooms' : `muted in ${place}`}`);
+    await this.audit.record({
+      by: null,
+      action: common ? 'report.common_out' : 'report.muted',
+      targetKind: 'user',
+      targetId: userId,
+      details: { place, minutes: rule.minutes, reportId },
+    });
   }
 
   private async isOwner(userId: string, roomId: string) {

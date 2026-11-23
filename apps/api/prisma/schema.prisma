@@ -54,6 +54,10 @@ model User {
   plusNotice               String?   @map("plus_notice")
   /// On the Connecta team (feature 14): set by `pnpm --filter @connecta/api team <handle>`, never by the app
   team                     Boolean   @default(false)
+  /// Suspended by the Connecta team until then: can't sign in (admin site)
+  suspendedUntil           DateTime? @map("suspended_until")
+  /// Banned by the Connecta team: can't sign in, no end
+  bannedAt                 DateTime? @map("banned_at")
   /// Listed on the Everyone focus ranking; null = the default for your age (on 18+, off under 18)
   showOnEveryone           Boolean?  @map("show_on_everyone")
   /// Settings → Notifications: no game invite cards while your focus timer runs
@@ -72,6 +76,7 @@ model User {
   requests         JoinRequest[]
   bans             RoomBan[]         @relation("banned")
   guestPasses      GuestVisit[]
+  accountActions   AccountAction[]   @relation("actionsOn")
   decks            RoomDeck[]
   friends          Friendship[]      @relation("friendOf")
   friendOf         Friendship[]      @relation("friend")
@@ -700,4 +705,40 @@ model Report {
   @@index([status, createdAt])
   @@index([userId])
   @@map("reports")
+}
+
+/// What the Connecta team did to an account (admin site): warn, suspend, ban, lift, reset_name. Each
+/// is emailed to the account with its reason; they reply to appeal.
+model AccountAction {
+  id        String    @id @default(uuid(7))
+  userId    String    @map("user_id")
+  user      User      @relation("actionsOn", fields: [userId], references: [id], onDelete: Cascade)
+  kind      String
+  /// A suspension's end
+  until     DateTime?
+  reason    String
+  byId      String    @map("by_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("account_actions")
+}
+
+/// Every team action and automatic step, kept a year, read-only (admin site). Plain ids, so it
+/// outlives what it names.
+model AuditEntry {
+  id         String   @id @default(uuid(7))
+  /// The team member, or null for an automatic step
+  byId       String?  @map("by_id")
+  /// e.g. account.suspend, common.remove, report.step
+  action     String
+  targetKind String   @map("target_kind")
+  targetId   String   @map("target_id")
+  reason     String   @default("")
+  details    Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([targetKind, targetId])
+  @@map("audit_log")
 }

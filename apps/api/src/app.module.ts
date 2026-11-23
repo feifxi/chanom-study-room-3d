@@ -11,6 +11,8 @@ import { QuestsModule } from './quests/quests.module.js';
 import { BillingModule } from './billing/billing.module.js';
 import { CommonModule } from './common/common.module.js';
 import { ReportsModule } from './reports/reports.module.js';
+import { AdminModule } from './admin/admin.module.js';
+import { AuditModule } from './audit/audit.service.js';
 import { PlusModule } from './plus/plus.module.js';
 import { ShopModule } from './shop/shop.module.js';
 import { FocusModule } from './focus/focus.module.js';
@@ -73,6 +75,8 @@ import { PrismaService } from './prisma/prisma.service.js';
     BillingModule,
     CommonModule,
     ReportsModule,
+    AuditModule,
+    AdminModule,
     LiveModule,
     PresenceModule,
     NotificationsModule,

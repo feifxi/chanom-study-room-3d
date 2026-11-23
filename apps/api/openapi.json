@@ -3299,6 +3299,124 @@
         ]
       }
     },
+    "/api/admin/users": {
+      "get": {
+        "operationId": "AdminController_users",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          },
+          {
+            "name": "filter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "reported",
+                "restricted",
+                "under18",
+                "plus"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAccountList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/users/{id}": {
+      "get": {
+        "operationId": "AdminController_user",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAccountDetail"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/users/{id}/actions": {
+      "post": {
+        "operationId": "AdminController_act",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountActionBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAccountDetail"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/notifications": {
       "get": {
         "operationId": "NotificationsController_list",
@@ -6428,6 +6546,239 @@
           "id"
         ],
         "additionalProperties": false
+      },
+      "AdminAccountList": {
+        "type": "object",
+        "properties": {
+          "accounts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminAccount"
+            }
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "accounts",
+          "total"
+        ],
+        "additionalProperties": false
+      },
+      "AdminAccount": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "handle": {
+            "nullable": true,
+            "type": "string"
+          },
+          "look": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Look"
+              }
+            ]
+          },
+          "plus": {
+            "type": "boolean"
+          },
+          "team": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "warned",
+              "suspended",
+              "banned"
+            ]
+          },
+          "until": {
+            "nullable": true,
+            "type": "string"
+          },
+          "reports": {
+            "type": "number"
+          },
+          "joinedAt": {
+            "type": "string"
+          },
+          "lastSeenAt": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "handle",
+          "look",
+          "plus",
+          "team",
+          "status",
+          "until",
+          "reports",
+          "joinedAt",
+          "lastSeenAt"
+        ],
+        "additionalProperties": false
+      },
+      "AdminAccountDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "handle": {
+            "nullable": true,
+            "type": "string"
+          },
+          "look": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Look"
+              }
+            ]
+          },
+          "plus": {
+            "type": "boolean"
+          },
+          "team": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "warned",
+              "suspended",
+              "banned"
+            ]
+          },
+          "until": {
+            "nullable": true,
+            "type": "string"
+          },
+          "reports": {
+            "type": "number"
+          },
+          "joinedAt": {
+            "type": "string"
+          },
+          "lastSeenAt": {
+            "nullable": true,
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "signIn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "age": {
+            "type": "string",
+            "enum": [
+              "18+",
+              "under 18",
+              "unknown"
+            ]
+          },
+          "roomsOwned": {
+            "type": "number"
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "until": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "by": {
+                  "type": "string"
+                },
+                "at": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "reason",
+                "until",
+                "by",
+                "at"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "handle",
+          "look",
+          "plus",
+          "team",
+          "status",
+          "until",
+          "reports",
+          "joinedAt",
+          "lastSeenAt",
+          "email",
+          "signIn",
+          "age",
+          "roomsOwned",
+          "actions"
+        ],
+        "additionalProperties": false
+      },
+      "AccountActionBody": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "warn",
+              "suspend_1d",
+              "suspend_7d",
+              "ban",
+              "lift",
+              "reset_name"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "kind",
+          "reason"
+        ]
       },
       "Inbox": {
         "type": "object",

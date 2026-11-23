@@ -1,10 +1,12 @@
 import type { ConfigService } from '@nestjs/config';
 import { betterAuth } from 'better-auth';
+import { APIError } from 'better-auth/api';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { anonymous, emailOTP } from 'better-auth/plugins';
 import type { Env } from '../config/env.js';
 import type { PrismaClient } from '../generated/prisma/client.js';
 import type { MailService } from '../mail/mail.service.js';
+import { whenUtc } from '../mail/account-mail.js';
 import { signInCodeMail } from '../mail/sign-in-code.js';
 
 export interface AuthDeps {
@@ -42,6 +44,17 @@ export function createAuth({ env, prisma, mail }: AuthDeps) {
       // it's only trusted locally, where the Next rewrite sets it
       ipAddress: {
         ipAddressHeaders: env.NODE_ENV === 'production' ? ['x-real-ip'] : ['x-real-ip', 'x-forwarded-for'],
+      },
+    },
+    // Suspended or banned by the Connecta team (admin site): no new session, whichever way in
+    databaseHooks: {
+      session: {
+        create: {
+          before: async (session) => {
+            const why = await restriction(prisma, session.userId);
+            if (why) throw new APIError('FORBIDDEN', { message: why, code: 'ACCOUNT_RESTRICTED' });
+          },
+        },
       },
     },
     session: {
@@ -106,6 +119,22 @@ export function createAuth({ env, prisma, mail }: AuthDeps) {
 }
 
 export type Auth = ReturnType<typeof createAuth>;
+
+/** Why this account can't sign in now, in the words the sign-in page shows; null when it can */
+export async function restriction(prisma: PrismaClient, userId: string, now = new Date()): Promise<string | null> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { suspendedUntil: true, bannedAt: true } });
+  if (!user) return null;
+  const suspended = user.suspendedUntil && user.suspendedUntil > now;
+  if (!user.bannedAt && !suspended) return null;
+  const last = await prisma.accountAction.findFirst({
+    where: { userId, kind: user.bannedAt ? 'ban' : 'suspend' },
+    orderBy: { createdAt: 'desc' },
+    select: { reason: true },
+  });
+  const head = user.bannedAt ? 'Your account is banned.' : `Your account is suspended until ${whenUtc(user.suspendedUntil!)}.`;
+  const reason = last?.reason && `Reason: ${last.reason}${/[.!?]$/.test(last.reason) ? '' : '.'}`;
+  return [head, reason, 'Reply to our email to appeal.'].filter(Boolean).join(' ');
+}
 
 /** Better Auth from the app's config: the API serves it; the gateway uses it to read sessions. */
 export function authFromConfig(config: ConfigService<Env, true>, prisma: PrismaClient, mail: AuthDeps['mail']) {

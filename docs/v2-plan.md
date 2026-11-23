@@ -126,6 +126,10 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
      and rooms, for the team only; muted 15 minutes in a room or out of Common rooms for an hour);
      ~~team accounts in Common rooms~~ done 2026-11-24 (set by a script; the chip, Time out and
      Remove for an hour). **Moderation is done.** Suspensions and bans come with the admin site.
+   - **The admin site**, in parts (agreed 2026-11-24): ~~the gate, Users, account actions (warn,
+     suspend, ban, lift, reset name) and the audit log~~ done 2026-11-24; Reports; Rooms, Common rooms and Moderation
+     (the word list moves into the database); Overview, Money and the Audit log page. **The map editor
+     waits for the Blender work** ([why](v2/decisions.md#in-the-3d-room)).
 6. **The seed:** one fill of all the data (people, rooms, members, friends, DMs…) for testing the
    whole app ([why at the end](v2/decisions.md#engineering-and-infra)).
 7. **Infra** on AWS ([spec 15](v2/features/15-business-infra.md#architecture)), then a playtest, then launch.
@@ -135,15 +139,16 @@ Deferred on purpose, no date yet:
 - **Small watch views hide the "Press E" hint on phones:** chess and Slave watchers get a small
   view in the bottom-right corner, over the hint above the joystick. Noticed 2026-11-21, not fixed.
 
-- **Café and Rooftop catch up with the Library:** they stay selectable for variety but are behind
-  (zone tags, card tables, square open floor, the 6-stool card table and chess table). Then the rest
-  of the map polish: odd furniture, overlapping rugs, more café cats, overlapping name labels
+- **Café and Rooftop are temporary demo maps** (the owner, 2026-11-24): the Library is the one main
+  map. They stay selectable but aren't polished; what happens to them comes with the Blender work.
+  The Library's map polish: odd furniture, overlapping rugs, overlapping name labels
   ([07-maps.md](v2/features/07-maps.md#map-polish-backlog)).
 - **Cheaper cats:** merge each resident cat into skinned meshes before adding more
   ([06-3d-room.md](v2/features/06-3d-room.md#performance)).
 - **Pictures:** the team will provide thumbnails and images for the maps and web pages.
-- **Blender models** for maps and characters, with baked lighting
-  ([07-maps.md](v2/features/07-maps.md#art-pipeline-code-now-blender-later)).
+- **Blender models** for maps and characters, with baked lighting, **starting with the Library**
+  ([07-maps.md](v2/features/07-maps.md#art-pipeline-code-now-blender-later)). The **map editor** is
+  built with it, on the Blender map format.
 - **Real-app performance:** lower detail for far-away people, the editor's budget check, a test on a
   mid-range Android phone.
 

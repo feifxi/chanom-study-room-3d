@@ -1316,6 +1316,54 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/admin/users': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AdminController_users'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/users/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AdminController_user'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/users/{id}/actions': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AdminController_act'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/notifications': {
     parameters: {
       query?: never;
@@ -2117,6 +2165,55 @@ export interface components {
     };
     ReportSent: {
       id: string;
+    };
+    AdminAccountList: {
+      accounts: components['schemas']['AdminAccount'][];
+      total: number;
+    };
+    AdminAccount: {
+      id: string;
+      name: string;
+      handle: string | null;
+      look: components['schemas']['Look'] | null;
+      plus: boolean;
+      team: boolean;
+      /** @enum {string} */
+      status: 'active' | 'warned' | 'suspended' | 'banned';
+      until: string | null;
+      reports: number;
+      joinedAt: string;
+      lastSeenAt: string | null;
+    };
+    AdminAccountDetail: {
+      id: string;
+      name: string;
+      handle: string | null;
+      look: components['schemas']['Look'] | null;
+      plus: boolean;
+      team: boolean;
+      /** @enum {string} */
+      status: 'active' | 'warned' | 'suspended' | 'banned';
+      until: string | null;
+      reports: number;
+      joinedAt: string;
+      lastSeenAt: string | null;
+      email: string;
+      signIn: string[];
+      /** @enum {string} */
+      age: '18+' | 'under 18' | 'unknown';
+      roomsOwned: number;
+      actions: {
+        kind: string;
+        reason: string;
+        until: string | null;
+        by: string;
+        at: string;
+      }[];
+    };
+    AccountActionBody: {
+      /** @enum {string} */
+      kind: 'warn' | 'suspend_1d' | 'suspend_7d' | 'ban' | 'lift' | 'reset_name';
+      reason: string;
     };
     Inbox: {
       items: components['schemas']['Notification'][];
@@ -4450,6 +4547,74 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ReportSent'];
+        };
+      };
+    };
+  };
+  AdminController_users: {
+    parameters: {
+      query?: {
+        q?: string;
+        filter?: 'all' | 'reported' | 'restricted' | 'under18' | 'plus';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminAccountList'];
+        };
+      };
+    };
+  };
+  AdminController_user: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminAccountDetail'];
+        };
+      };
+    };
+  };
+  AdminController_act: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AccountActionBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminAccountDetail'];
         };
       };
     };

@@ -1,8 +1,9 @@
 # 7. Map templates and the editor
 
-**Status:** decided; all three launch maps built in the demo; the editor is a mock. **The Library is
-the finished reference; the Café and Rooftop are behind it** (kept selectable for variety, finished
-later: see the [backlog](#map-polish-backlog)). **Try it:**
+**Status:** decided; all three maps built in the demo; the editor is a mock. **The Library is the one
+main map; the Café and Rooftop are temporary demo maps** (the owner, 2026-11-24: kept selectable,
+not polished). The move to Blender starts with the Library, and the editor is built with it, on
+that map format (not now). **Try it:**
 
 - http://localhost:3100/servers/chanom/rooms/library, `/cafe` and `/rooftop`: the three maps.
 - In a room: Room card → Room settings → Map & look; change the map and it switches live.
