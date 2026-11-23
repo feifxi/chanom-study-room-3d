@@ -2,7 +2,7 @@
   "name": "@connecta/game",
   "version": "0.0.0",
   "private": true,
-  "description": "Connecta's game server (Colyseus): one room per Connecta room, movement, seats; voice tokens and NPCs later in step 4.",
+  "description": "Connecta's game server (Colyseus): one room per Connecta room, movement, seats, voice passes, cats and study buddies, the focus timer.",
   "type": "module",
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/main.ts",
@@ -15,6 +15,7 @@
   "dependencies": {
     "@colyseus/schema": "^5",
     "@connecta/shared": "workspace:*",
+    "bullmq": "^6.7.8",
     "colyseus": "^0.18",
     "dotenv": "^17",
     "ioredis": "^6",

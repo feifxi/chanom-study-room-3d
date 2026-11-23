@@ -4,9 +4,9 @@ import {
   BUBBLE_MAX,
   DEFAULT_LOOK,
   GAME_CLOSE,
+  MIN_COUNTED_FOCUS_MIN,
   LOOK_EVERY_MS,
   PATCH_RATE_MS,
-  PLAYER_STATUSES,
   RECONNECT_SECONDS,
   SAY_COOLDOWN_MS,
   SIT_REACH,
@@ -20,12 +20,15 @@ import {
   type NpcSummoned,
   type Quiet,
   type Said,
+  type FocusPreset,
+  type GameFocusStarted,
   type GameJoinOptions,
   type GameRoomEvent,
   type GameTicket,
   type PlayerRole,
 } from '@connecta/shared';
 import { inArea, mapDataFor, zoneAtIn, type MapData } from '@connecta/shared/maps';
+import { idleTimer, startFocus, stopTimer, tickTimer, type EndedRound, type FocusTimer } from './focus.js';
 import { links, liveRooms } from './links.js';
 import { log } from './log.js';
 import { NpcDirector } from './npc/director.js';
@@ -42,6 +45,8 @@ type JoinOptions = GameJoinOptions;
 
 /** The cats and study buddies move ten times a second */
 const NPC_TICK_MS = 100;
+/** Focus timers run out to within this */
+const TIMER_TICK_MS = 250;
 
 /** Owners and mods always fit (spec 01: "the owner and mods always fit"), so the hard cap sits well above capacity. */
 const HARD_CAP = 250;
@@ -59,6 +64,10 @@ interface Private {
   lookAt: number;
   /** Timed out until then (epoch ms): no bubbles, no typing */
   quietUntil: number;
+  /** No input for 10 minutes (the client decides; a running focus round still shows as focus) */
+  away: boolean;
+  /** The focus timer, run here so the minutes are real */
+  timer: FocusTimer;
 }
 
 type Auth = GameTicket;
@@ -86,6 +95,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
   private muted = new Set<string>();
   /** The cats and study buddies (part 5): in memory, so they reset when the room empties */
   private npc = this.makeNpcs();
+  /** Focus minutes finished here since the room opened, by account (guests too): "This room today" adds the saved ones */
+  private focusDone = new Map<string, number>();
 
   messages = {
     move: validate(
@@ -180,26 +191,47 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       s.typingAt = Date.now();
     }),
 
-    /** Focus, break, away or nothing, decided by the client (a timer, no input for 10 minutes) */
-    status: validate(
-      z.object({ status: z.enum(PLAYER_STATUSES), subject: z.string().optional(), endsAt: finite.optional() }),
-      (client, msg) => {
-        const p = this.state.players.get(client.sessionId);
-        if (!p) return;
-        // A focus round ended: study buddies nearby cheer
-        if (p.status === 'focus' && msg.status !== 'focus' && p.focusSince) this.npc.focusEnded(p, (Date.now() - p.focusSince) / 60_000);
-        if (msg.status === 'focus' && p.status !== 'focus') p.focusSince = Date.now();
-        if (msg.status !== 'focus') p.focusSince = 0;
-        p.status = msg.status;
-        p.subject = (msg.subject ?? '').trim().slice(0, SUBJECT_MAX);
-        p.statusEndsAt = msg.endsAt && msg.endsAt > Date.now() ? msg.endsAt : 0;
-        if (msg.status === 'away') {
-          p.stage = false;
-          // A forgotten tab shouldn't broadcast the room: the mic goes off in LiveKit too
-          voice.current?.muteMic(this.connectaId, client.sessionId);
-        }
-      },
-    ),
+    /** No input for 10 minutes (the client decides): 💤 and the mic off, unless a focus round is running */
+    away: validate(z.object({ on: z.boolean() }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      const s = this.priv.get(client.sessionId);
+      if (!p || !s) return;
+      s.away = msg.on;
+      this.showStatus(p, s);
+      if (p.status === 'away') {
+        p.stage = false;
+        // A forgotten tab shouldn't broadcast the room: the mic goes off in LiveKit too
+        voice.current?.muteMic(this.connectaId, client.sessionId);
+      }
+    }),
+
+    /**
+     * The focus timer (feature 8): personal, 25/5 or 50/10, each round started by a press. One timer
+     * per account: starting here ends one running in any other room.
+     */
+    'focus:start': validate(z.object({ preset: z.union([z.literal(0), z.literal(1)]), subject: z.string().optional() }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      const s = this.priv.get(client.sessionId);
+      if (!p || !s || s.timer.phase === 'focus') return;
+      if (msg.subject !== undefined) p.subject = cleanSubject(msg.subject);
+      s.timer = startFocus(msg.preset as FocusPreset, Date.now());
+      this.showStatus(p, s);
+      this.tellPresence(client.sessionId);
+      links.focusStarted({ userId: s.userId, roomId: this.connectaId });
+    }),
+
+    'focus:stop': (client: Client) => this.stopFocus(client.sessionId),
+
+    /** What you're studying, shown with 📖 by your name (and to friends, if they may see it) */
+    'focus:subject': validate(z.object({ subject: z.string() }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      const s = this.priv.get(client.sessionId);
+      if (!p || !s) return;
+      const subject = cleanSubject(msg.subject);
+      if (subject === p.subject) return;
+      p.subject = subject;
+      if (s.timer.phase === 'focus') this.tellPresence(client.sessionId);
+    }),
 
     /** A pass to the room's voice, listening only when you can't talk */
     voice: async (client: Client) => {
@@ -292,7 +324,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     liveRooms.set(this.connectaId, this);
     // Presence expires unless refreshed (the gateway's STALE_MS), so say who's still here every minute
     this.clock.setInterval(() => {
-      for (const [sessionId, s] of this.priv) links.presence({ userId: s.userId, tabId: tabId(sessionId), roomId: this.connectaId });
+      for (const sessionId of this.priv.keys()) this.tellPresence(sessionId);
     }, 60_000);
     // Typing dots from a tab that went quiet, and voice back when a time out ends
     this.clock.setInterval(() => {
@@ -304,14 +336,19 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       }
     }, 1000);
     this.clock.setInterval(() => this.npc.tick(NPC_TICK_MS / 1000), NPC_TICK_MS);
+    this.clock.setInterval(() => this.tickTimers(), TIMER_TICK_MS);
   }
 
   onJoin(client: Client, _options: JoinOptions, ticket: Auth) {
     if (!this.state.mapId) this.setMap(ticket.mapId);
-    // One of you per room: the newest tab wins, the old one is told why it closed
+    // One of you per room: the newest tab wins, the old one is told why it closed. A running timer
+    // comes along, so a reload (the old connection still waiting to reconnect) keeps your round
+    let carried: { timer: FocusTimer; subject: string } | null = null;
     for (const [sessionId, s] of this.priv) {
       if (s.userId !== ticket.sub) continue;
       const old = this.clients_.get(sessionId);
+      if (s.timer.phase !== 'idle') carried = { timer: s.timer, subject: this.state.players.get(sessionId)?.subject ?? '' };
+      s.timer = idleTimer();
       this.remove(sessionId);
       old?.leave(GAME_CLOSE.elsewhere);
     }
@@ -328,6 +365,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
         z: spot.z,
         yaw: Math.PI,
         moving: false,
+        subject: carried?.subject ?? '',
+        todayMin: this.focusDone.get(ticket.sub) ?? 0,
       }),
     );
     this.priv.set(client.sessionId, {
@@ -338,11 +377,14 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       typingAt: 0,
       lookAt: 0,
       quietUntil: ticket.timedOutUntil ?? 0,
+      away: false,
+      timer: carried?.timer ?? idleTimer(),
     });
+    this.showStatus(this.state.players.get(client.sessionId)!, this.priv.get(client.sessionId)!);
     this.clients_.set(client.sessionId, client);
     for (const sessionId of this.priv.keys()) this.refreshVoice(sessionId);
     this.npc.joined(this.state.players.get(client.sessionId)!, (fn, ms) => this.clock.setTimeout(fn, ms));
-    links.presence({ userId: ticket.sub, tabId: tabId(client.sessionId), roomId: this.connectaId });
+    this.tellPresence(client.sessionId);
     log.info({ roomId: this.connectaId, userId: ticket.sub, role: ticket.role }, 'walked in');
   }
 
@@ -415,7 +457,75 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     }
   }
 
+  /** Someone started a timer, maybe in another room: theirs here ends (and counts). */
+  focusStarted(event: GameFocusStarted) {
+    if (event.roomId === this.connectaId) return;
+    for (const sessionId of this.sessionsOf(event.userId)) this.stopFocus(sessionId);
+  }
+
   // ── Helpers ───────────────────────────────────────────────────────────────────────────────────
+
+  /** Stop pressed, or ended elsewhere: a focus round counts what you did. */
+  private stopFocus(sessionId: string) {
+    const s = this.priv.get(sessionId);
+    const p = this.state.players.get(sessionId);
+    if (!p || !s || s.timer.phase === 'idle') return;
+    const { timer, ended } = stopTimer(s.timer, Date.now());
+    s.timer = timer;
+    if (ended) this.roundEnded(sessionId, ended);
+    this.showStatus(p, s);
+    this.tellPresence(sessionId);
+  }
+
+  /** Rounds run out into breaks, breaks into idle; the client chimes when it sees the change. */
+  private tickTimers() {
+    const now = Date.now();
+    for (const [sessionId, s] of this.priv) {
+      if (s.timer.phase === 'idle' || now < s.timer.endsAt) continue;
+      const p = this.state.players.get(sessionId);
+      const { timer, ended } = tickTimer(s.timer, now);
+      s.timer = timer;
+      if (ended) this.roundEnded(sessionId, ended);
+      if (p) this.showStatus(p, s);
+      if (ended) this.tellPresence(sessionId);
+    }
+  }
+
+  /** A focus round ended: study buddies nearby cheer, and 1+ minute counts (saved for members). */
+  private roundEnded(sessionId: string, round: EndedRound) {
+    const s = this.priv.get(sessionId);
+    const p = this.state.players.get(sessionId);
+    if (!s || !p) return;
+    this.npc.focusEnded(p, round.minutes);
+    if (round.minutes < MIN_COUNTED_FOCUS_MIN) return;
+    const done = (this.focusDone.get(s.userId) ?? 0) + round.minutes;
+    this.focusDone.set(s.userId, done);
+    p.todayMin = done;
+    // Guests get the timer, but nothing is saved for them (spec 08)
+    if (p.role !== 'guest') links.focusRound({ ...round, userId: s.userId, roomId: this.connectaId, subject: p.subject });
+  }
+
+  /** What shows by your name: a running focus round wins (focusing is never away), then away, then a break. */
+  private showStatus(p: Player, s: Private) {
+    const t = s.timer;
+    p.status = t.phase === 'focus' ? 'focus' : s.away ? 'away' : t.phase;
+    p.focusPreset = t.preset;
+    p.statusEndsAt = p.status === 'focus' || p.status === 'break' ? t.endsAt : 0;
+    p.focusSince = t.phase === 'focus' ? t.startedAt : 0;
+  }
+
+  /** The gateway hears where you are and whether you're focusing (friends see "Focusing · Calculus"). */
+  private tellPresence(sessionId: string) {
+    const s = this.priv.get(sessionId);
+    if (!s) return;
+    const focusing = s.timer.phase === 'focus';
+    links.presence({
+      userId: s.userId,
+      tabId: tabId(sessionId),
+      roomId: this.connectaId,
+      focus: focusing ? (this.state.players.get(sessionId)?.subject ?? '') : null,
+    });
+  }
 
   /** Whether they may talk right now; LiveKit is told when it changes. */
   private refreshVoice(sessionId: string) {
@@ -438,6 +548,11 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
   private remove(sessionId: string) {
     const s = this.priv.get(sessionId);
     if (!s) return;
+    // Leaving ends a focus round and counts what you did
+    if (s.timer.phase === 'focus') {
+      const { ended } = stopTimer(s.timer, Date.now());
+      if (ended) this.roundEnded(sessionId, ended);
+    }
     const wasFull = this.priv.size >= this.capacity;
     this.priv.delete(sessionId);
     this.clients_.delete(sessionId);
@@ -525,5 +640,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
 
 /** Presence counts each connection as a tab of its own. */
 const tabId = (sessionId: string) => `game:${sessionId}`;
+
+const cleanSubject = (subject: string) => subject.trim().slice(0, SUBJECT_MAX);
 
 export type { PlayerRole };

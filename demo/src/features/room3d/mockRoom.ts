@@ -49,6 +49,7 @@ const player = (p: Partial<PlayerView> & Pick<PlayerView, 'name' | 'look' | 'x' 
   moving: false,
   seatId: '',
   status: 'idle',
+  focusPreset: 0,
   statusEndsAt: 0,
   subject: '',
   focusSince: 0,

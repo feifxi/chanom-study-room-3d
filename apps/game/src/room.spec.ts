@@ -3,6 +3,7 @@ import { listen } from 'colyseus';
 import { SignJWT } from 'jose';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
+  type FocusRound,
   GAME_CLOSE,
   GAME_ROOM,
   TICKET_AUDIENCE,
@@ -17,7 +18,8 @@ import {
   type Said,
 } from '@connecta/shared';
 import { mapDataFor } from '@connecta/shared/maps';
-import { dispatch, links } from './links.js';
+import { timing } from './focus.js';
+import { dispatch, dispatchFocus, links } from './links.js';
 import { decodeJwt } from 'jose';
 import { gameServer } from './server.js';
 import { liveKitVoice, voice } from './voice.js';
@@ -33,6 +35,9 @@ const presence: GamePresence[] = [];
 let ROOM = '';
 let rooms = 0;
 const spaces: string[] = [];
+const rounds: FocusRound[] = [];
+/** A timer minute lasts this long here, so a 25-minute round takes a second */
+const MINUTE = 40;
 
 function ticket(over: Partial<GameTicket> = {}, opts: { secret?: string; expires?: string } = {}) {
   const t = {
@@ -87,6 +92,9 @@ beforeAll(async () => {
   };
   links.presence = (p) => presence.push(p);
   links.space = (id) => spaces.push(id);
+  links.focusRound = (r) => rounds.push(r);
+  links.focusStarted = dispatchFocus;
+  timing.minuteMs = MINUTE;
   server = gameServer(SECRET);
   await listen(server, PORT);
 });
@@ -97,6 +105,7 @@ afterEach(async () => {
   await Promise.allSettled(open.splice(0).map((r) => r.leave()));
   presence.length = 0;
   spaces.length = 0;
+  rounds.length = 0;
   lk.length = 0;
   await new Promise((r) => setTimeout(r, 50));
 });
@@ -294,12 +303,8 @@ describe('bubbles and status', () => {
     await until(() => jodQuiet === until1);
   });
 
-  it('status: focus with a subject, then away; only the owner and mods talk to everyone', async () => {
+  it('away shows 💤; only the owner and mods talk to everyone, and away ends it', async () => {
     const a = track(await walkIn());
-    a.send('status', { status: 'focus', subject: 'Calculus but a very long subject name' });
-    await until(() => me(a).status === 'focus');
-    expect(me(a).subject).toBe('Calculus but a very long'.slice(0, 24));
-    expect(me(a).focusSince).toBeGreaterThan(0);
     a.send('stage', { on: true });
     await quietly();
     expect(me(a).stage).toBe(false);
@@ -307,10 +312,11 @@ describe('bubbles and status', () => {
     await until(() => me(a).role === 'mod');
     a.send('stage', { on: true });
     await until(() => me(a).stage);
-    a.send('status', { status: 'away' });
+    a.send('away', { on: true });
     await until(() => me(a).status === 'away');
     expect(me(a).stage).toBe(false);
-    expect(me(a).focusSince).toBe(0);
+    a.send('away', { on: false });
+    await until(() => me(a).status === 'idle');
   });
 
   it('a new look shows for everyone, at most once every 5 seconds; guests keep theirs', async () => {
@@ -400,7 +406,7 @@ describe('bubbles and status', () => {
 
     it('away turns the mic off; deafened shows; leaving takes you out of voice', async () => {
       const a = track(await walkIn());
-      a.send('status', { status: 'away' });
+      a.send('away', { on: true });
       await until(() => lk.includes(`mic off ${a.sessionId}`));
       a.send('deaf', { on: true });
       await until(() => me(a).deaf);
@@ -454,6 +460,101 @@ describe('bubbles and status', () => {
       await quietly();
       expect(me(g).share).toBe('');
     });
+  });
+});
+
+describe('the focus timer', () => {
+  const focusOf = (userId: string) => presence.filter((u) => u.userId === userId).at(-1)?.focus;
+
+  it('runs a round on the server: focus, then a break, then idle; the round is saved', async () => {
+    const a = track(await walkIn());
+    a.send('focus:start', { preset: 0, subject: '  Calculus but a very long subject name ' });
+    await until(() => me(a).status === 'focus');
+    expect(me(a)).toMatchObject({ subject: 'Calculus but a very long', focusPreset: 0 });
+    expect(me(a).statusEndsAt - me(a).focusSince).toBe(25 * MINUTE);
+    await until(() => focusOf('u-mai') === 'Calculus but a very long');
+
+    await until(() => me(a).status === 'break', 3000);
+    expect(me(a).statusEndsAt).toBeGreaterThan(0);
+    expect(me(a).focusSince).toBe(0);
+    expect(me(a).todayMin).toBe(25);
+    expect(rounds).toEqual([expect.objectContaining({ userId: 'u-mai', roomId: ROOM, subject: 'Calculus but a very long', minutes: 25 })]);
+    expect(focusOf('u-mai')).toBeNull();
+    await until(() => me(a).status === 'idle', 1000);
+    expect(me(a).statusEndsAt).toBe(0);
+  });
+
+  it('Stop counts what you did; under a minute counts nothing', async () => {
+    const a = track(await walkIn());
+    // Back to back: well under a (test) minute
+    a.send('focus:start', { preset: 1 });
+    a.send('focus:stop');
+    await quietly();
+    expect(me(a).status).toBe('idle');
+    expect(rounds).toEqual([]);
+
+    a.send('focus:start', { preset: 1 });
+    await until(() => me(a).status === 'focus');
+    expect(me(a).focusPreset).toBe(1);
+    await quietly(3 * MINUTE + 20);
+    a.send('focus:stop');
+    await until(() => rounds.length === 1);
+    expect(rounds[0]!.minutes).toBeGreaterThanOrEqual(3);
+    await until(() => me(a).todayMin === rounds[0]!.minutes);
+  });
+
+  it('a running round is never away; away shows again once it stops', async () => {
+    const a = track(await walkIn());
+    a.send('focus:start', { preset: 0 });
+    await until(() => me(a).status === 'focus');
+    a.send('away', { on: true });
+    await quietly();
+    expect(me(a).status).toBe('focus');
+    expect(lk).not.toContain(`mic off ${a.sessionId}`);
+    a.send('focus:stop');
+    await until(() => me(a).status === 'away');
+  });
+
+  it('guests get the timer, but nothing is saved for them', async () => {
+    const g = track(await walkIn({ sub: 'u-guest', role: 'guest', name: 'Mint', handle: null }));
+    g.send('focus:start', { preset: 0 });
+    await until(() => me(g).status === 'break', 3000);
+    expect(me(g).todayMin).toBe(25);
+    expect(rounds).toEqual([]);
+  });
+
+  it('leaving counts the round; walking back in keeps today’s minutes while the room is open', async () => {
+    const stay = track(await walkIn({ sub: 'u-jod', name: 'Jod' }));
+    const a = await walkIn();
+    a.send('focus:start', { preset: 1 });
+    await until(() => me(a).status === 'focus');
+    await quietly(2 * MINUTE + 20);
+    await a.leave();
+    await until(() => rounds.length === 1);
+    expect(rounds[0]!.minutes).toBeGreaterThanOrEqual(2);
+    const back = track(await walkIn());
+    expect(me(back).todayMin).toBe(rounds[0]!.minutes);
+    expect(stay.state.players.size).toBe(2);
+  });
+
+  it('a reload keeps your round; one timer per account across rooms', async () => {
+    const a = await walkIn();
+    a.send('focus:start', { preset: 0, subject: 'Physics' });
+    await until(() => me(a).status === 'focus');
+    const since = me(a).focusSince;
+    // The same account opens the room again (a reload): the newest connection wins and keeps the timer
+    const again = track(await walkIn());
+    await until(() => me(again).status === 'focus');
+    expect(me(again)).toMatchObject({ focusSince: since, subject: 'Physics' });
+    expect(rounds).toEqual([]);
+
+    // Starting a timer in another room ends this one (and counts it)
+    await quietly(MINUTE + 20);
+    const other = track(await walkIn({ roomId: `${ROOM}-b` }));
+    other.send('focus:start', { preset: 0 });
+    await until(() => me(again).status === 'idle');
+    await until(() => me(other).status === 'focus');
+    expect(rounds).toEqual([expect.objectContaining({ roomId: ROOM, subject: 'Physics' })]);
   });
 });
 

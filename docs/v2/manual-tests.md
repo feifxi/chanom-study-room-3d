@@ -236,3 +236,33 @@ Two people in a room on the Cosy Library.
       a few seconds after someone walks in.
 - [ ] Everyone leaves, then walks back in: the summoned ones are gone, Mochi and Tofu are back. The
       owner switches the map live: the new map starts with its own two resident cats.
+
+## Step 5: the rest
+
+### Focus, part 1: the timer
+
+Two people (Mai and Jod, friends) in a room; a third browser as a guest with a pass.
+
+- [ ] My tools → 📖 Study session → **▶ 25 / 5 min**: the ring and the countdown run, the tool
+      button shows the time left, and the other person sees "📖 Mai · 0m · Calculus" over your head
+      (type a subject first, or while it runs) and "📖 Focusing · Calculus · …m" in the people list.
+- [ ] Let a round run out (or check with a short wait and **Stop**): a chime at the end of focus,
+      ☕ Break time with its own countdown, another chime at the end of the break, then "Not
+      started". Stop doesn't chime.
+- [ ] **Today** tab: you're listed with your minutes (1+ minute rounds only), the running round's
+      minutes count up live, the other person's minutes show too, most first. Leave and walk back
+      in: your minutes are still there. Next day (after your midnight) the list starts empty.
+- [ ] Stop after less than a minute: nothing is added to Today.
+- [ ] Leave mid-round: the round ends and what you did counts (Today shows it when you're back).
+- [ ] **Reload** the page mid-round: you walk back in still focusing, same countdown and subject.
+- [ ] Open a second room in another tab and start a timer there: the first room's timer stops
+      (and its minutes count).
+- [ ] Leave the keyboard alone for 10+ minutes while focusing: no 💤, your mic isn't turned off.
+      After stopping, 10 quiet minutes make you Away as before.
+- [ ] Jod's Friends page: Mai shows "Focusing · Calculus" while her round runs and never "Away".
+      Mai turns off Settings → Privacy & safety → "Show what I'm doing": Jod sees just Online and
+      the room.
+- [ ] The guest gets the timer and shows in Today while they're in the room; their minutes aren't
+      kept (Today after the room empties and fills again doesn't list them). The To-do tab still
+      says "Sign up to keep…".
+- [ ] Phone width, light and dark: the Study session panel and its Today list fit.

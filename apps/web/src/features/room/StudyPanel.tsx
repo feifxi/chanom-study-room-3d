@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { formatMinutes, TODO_LIMIT, useRoomToday, useTodos } from '@/lib/focus';
 import { ME } from '@/lib/mock';
+import type { TodayRow } from '../focus/useRoomToday';
 import { formatLeft, type usePomodoro } from './usePomodoro';
 import { LeaveRoomLink } from './LeaveRoom';
 
@@ -21,6 +22,7 @@ export function StudyPanel({
   roomId,
   guest = false,
   pomo,
+  today,
   subject,
   onSubject,
   className,
@@ -28,13 +30,17 @@ export function StudyPanel({
   roomId: string;
   guest?: boolean;
   pomo: ReturnType<typeof usePomodoro>;
+  /** A real room's "today" (useRoomToday); null in the demo's mock rooms */
+  today: TodayRow[] | null;
   subject: string;
   onSubject: (s: string) => void;
   className?: string;
 }) {
   const [tab, setTab] = useState<Tab>('focus');
   const { todos, left, full, add, toggle, remove, clearDone } = useTodos();
-  const ranks = useRoomToday(roomId);
+  const mockRanks = useRoomToday(roomId);
+  const ranks: TodayRow[] =
+    today ?? mockRanks.map((r) => ({ key: r.user.id, name: r.user.name, minutes: r.minutes, me: r.user.id === ME.id }));
   const [draft, setDraft] = useState('');
 
   return (
@@ -195,14 +201,11 @@ export function StudyPanel({
           ) : (
             <ol className="flex flex-col gap-1">
               {ranks.map((r, i) => (
-                <li
-                  key={r.user.id}
-                  className={cn('flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm', r.user.id === ME.id && 'bg-secondary font-bold')}
-                >
+                <li key={r.key} className={cn('flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm', r.me && 'bg-secondary font-bold')}>
                   <span className="w-5 text-center">{['🥇', '🥈', '🥉'][i] ?? i + 1}</span>
                   <span className="flex-1 truncate">
-                    {r.user.name}
-                    {r.user.id === ME.id && ' (you)'}
+                    {r.name}
+                    {r.me && ' (you)'}
                   </span>
                   <span className="font-mono text-xs text-muted-foreground">{formatMinutes(r.minutes)}</span>
                 </li>

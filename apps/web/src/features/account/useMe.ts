@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, type Me } from '@/lib/api/client';
 import { authClient } from '@/lib/auth-client';
 import { closeLive } from '@/features/chat/live';
+import { syncTimeZone } from '@/features/focus/useRoomToday';
 import { ME as MOCK_ME, type User } from '@/lib/mock';
 
 export const ME_KEY = ['me'] as const;
@@ -13,6 +14,8 @@ export async function fetchMe(): Promise<Me | null> {
   const { data, response } = await api.GET('/api/me');
   if (response.status === 401) return null;
   if (!data) throw new Error(`Couldn't load your account (${response.status})`);
+  // Quietly, in the background: focus days follow the time zone you're in now
+  if (!data.isGuest && typeof window !== 'undefined') void syncTimeZone(data.timeZone).catch(() => {});
   return data;
 }
 

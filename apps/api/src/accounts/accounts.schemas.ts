@@ -38,6 +38,8 @@ export const MeSchema = z
     appearOffline: z.boolean(),
     /** Friends see what you're doing, not only where */
     showActivity: z.boolean(),
+    /** The time zone your focus days follow (the web app keeps it in step with your browser) */
+    timeZone: z.string(),
   })
   .meta({ id: 'Me' });
 export type Me = z.infer<typeof MeSchema>;

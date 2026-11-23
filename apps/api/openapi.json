@@ -2346,6 +2346,80 @@
         ]
       }
     },
+    "/api/rooms/{id}/focus/today": {
+      "get": {
+        "operationId": "FocusController_today",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          },
+          {
+            "name": "tz",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "UTC",
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomToday"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "focus"
+        ]
+      }
+    },
+    "/api/me/time-zone": {
+      "put": {
+        "operationId": "FocusController_timeZone",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "timeZone": {
+                    "type": "string",
+                    "maxLength": 64
+                  }
+                },
+                "required": [
+                  "timeZone"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "focus"
+        ]
+      }
+    },
     "/api/notifications": {
       "get": {
         "operationId": "NotificationsController_list",
@@ -2556,6 +2630,9 @@
           },
           "showActivity": {
             "type": "boolean"
+          },
+          "timeZone": {
+            "type": "string"
           }
         },
         "required": [
@@ -2570,7 +2647,8 @@
           "deleteAt",
           "requestsFrom",
           "appearOffline",
-          "showActivity"
+          "showActivity",
+          "timeZone"
         ],
         "additionalProperties": false
       },
@@ -4516,6 +4594,39 @@
         "required": [
           "muted"
         ]
+      },
+      "RoomToday": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FocusRow"
+            }
+          }
+        },
+        "required": [
+          "rows"
+        ],
+        "additionalProperties": false
+      },
+      "FocusRow": {
+        "type": "object",
+        "properties": {
+          "person": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "minutes": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "person",
+          "minutes"
+        ],
+        "additionalProperties": false
       },
       "Inbox": {
         "type": "object",

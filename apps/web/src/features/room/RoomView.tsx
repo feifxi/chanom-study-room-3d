@@ -73,7 +73,9 @@ import { StudyPanel } from './StudyPanel';
 import { useClickToWalk, useHideInvitesWhileFocusing } from '@/lib/controls';
 import { LeaveRoomGuard, LeaveRoomLink } from './LeaveRoom';
 import { logFocus } from '@/lib/focus';
-import { usePomodoro, type Phase } from './usePomodoro';
+import { type Phase } from './usePomodoro';
+import { useFocusTimer } from '../focus/useFocusTimer';
+import { useRoomToday } from '../focus/useRoomToday';
 import { RoomCard } from './RoomCard';
 import { MoreMenu } from './MoreMenu';
 import { isGuestViewer, isTeam, roleIn } from '@/lib/viewer';
@@ -288,15 +290,25 @@ export default function RoomView({
 
   const onPhase = useCallback(
     (phase: Phase, focusedMin: number) => {
+      // The mock rooms keep your status here; a real room's game server runs the timer itself
       room.setStatus(phase === 'idle' ? 'idle' : phase, subjectRef.current);
-      // The server counts a focus round when it ends or is stopped (1+ minute)
+      // The Focus page's numbers are still the demo's until part 3 of Focus (the server saves the real ones)
       logFocus(focusedMin, subjectRef.current);
       // A focus block ran to its end (focus → break): one finished session
       if (phase === 'break') questProgress('pomo-2');
     },
     [room],
   );
-  const pomo = usePomodoro(onPhase);
+  const pomo = useFocusTimer(room, () => subjectRef.current, onPhase);
+  // "This room today" in a real room: saved minutes from the API plus the game server's live ones
+  const liveToday = useRoomToday(room instanceof LiveRoom ? room : null, place?.id, now);
+  // A reload that kept your running round brings its subject back into the box too
+  const serverSubject = room instanceof LiveRoom ? (room.state.players.get('me')?.subject ?? '') : '';
+  useEffect(() => {
+    if (!serverSubject || subjectRef.current) return;
+    subjectRef.current = serverSubject;
+    setSubject(serverSubject);
+  }, [serverSubject]);
   // While a focus timer runs you're studying, maybe in another tab: never away, and quest minutes count
   const focusing = useRef(false);
   useEffect(() => {
@@ -507,10 +519,9 @@ export default function RoomView({
       refused: (reason) => setMachineError(reason),
     });
   }, [room]);
-  // Away and Talk to everyone show for everyone (💤 and 📢 by your name); focus and breaks go with the timer
+  // Away and Talk to everyone show for everyone (💤 and 📢 by your name); the server lets a focus round win over away
   useEffect(() => {
-    if (room instanceof LiveRoom && (away || pomo.phase === 'idle')) room.setStatus(away ? 'away' : 'idle', subjectRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when away changes; the timer reports its own phases
+    if (room instanceof LiveRoom) room.setAway(away);
   }, [room, away]);
   useEffect(() => {
     if (room instanceof LiveRoom) room.setStage(stage);
@@ -719,8 +730,14 @@ export default function RoomView({
       roomId={server.id}
       guest={guest}
       pomo={pomo}
+      today={room instanceof LiveRoom ? liveToday : null}
       subject={subject}
-      onSubject={(s) => ((subjectRef.current = s), setSubject(s), pomo.phase === 'focus' && room.setStatus('focus', s))}
+      onSubject={(s) => {
+        subjectRef.current = s;
+        setSubject(s);
+        if (room instanceof LiveRoom) room.focusSubject(s);
+        else if (pomo.phase === 'focus') room.setStatus('focus', s);
+      }}
     />
   );
   const find = (id: string | null) => {

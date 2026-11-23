@@ -2,6 +2,7 @@ export * from './account.js';
 export * from './avatar.js';
 export * from './chat.js';
 export * from './collision.js';
+export * from './focus.js';
 export * from './friends.js';
 export * from './game.js';
 export * from './movement.js';

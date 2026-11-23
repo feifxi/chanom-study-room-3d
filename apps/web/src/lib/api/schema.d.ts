@@ -884,6 +884,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/rooms/{id}/focus/today": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FocusController_today"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/time-zone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["FocusController_timeZone"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/notifications": {
         parameters: {
             query?: never;
@@ -985,6 +1017,7 @@ export interface components {
             requestsFrom: "anyone" | "rooms" | "nobody";
             appearOffline: boolean;
             showActivity: boolean;
+            timeZone: string;
         };
         Look: {
             hair: string;
@@ -1456,6 +1489,13 @@ export interface components {
         };
         MuteBody: {
             muted: boolean;
+        };
+        RoomToday: {
+            rows: components["schemas"]["FocusRow"][];
+        };
+        FocusRow: {
+            person: components["schemas"]["Person"];
+            minutes: number;
         };
         Inbox: {
             items: components["schemas"]["Notification"][];
@@ -3100,6 +3140,52 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ReadBody"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FocusController_today: {
+        parameters: {
+            query?: {
+                tz?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoomToday"];
+                };
+            };
+        };
+    };
+    FocusController_timeZone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    timeZone: string;
+                };
             };
         };
         responses: {

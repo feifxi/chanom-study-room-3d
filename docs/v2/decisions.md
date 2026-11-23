@@ -402,6 +402,23 @@ decision is made or changed: one line, a date, and the reason.
   which room through Redis for the gateway to write, so the gateway stays presence's one writer.
   Rejected: the game server reading Postgres or cookies (a second copy of the rules, and of the auth
   setup).
+- **Step 5's order** (2026-11-23, the owner): focus; the activity framework with Watch together
+  and photo mode; party and table games; coins and quests (earned from focus and activities, so
+  after both); Plus (needs a payment provider, and its limits wait on the playtest); moderation with
+  Common and open rooms (Common rooms need the moderation); the admin site and map editor. Moving
+  Plus up was considered and turned down: its limits would be guesses until the playtest.
+- **Focus in three parts, the timer on the game server** (2026-11-23, the owner): 1. the timer, "This
+  room today" and "Focusing" for friends; 2. the to-do list; 3. the Focus page and rankings. The
+  game server times every round, so no browser can claim minutes it didn't spend; the API saves
+  members' rounds from a BullMQ queue (a job, not pub/sub, so a round survives an API restart).
+  The four open points, agreed: the timer is **3D only** (the room's chat page has none: the game
+  server is what times it); a **reload or a dropped connection keeps the round** if you're back
+  within the reconnect window, otherwise it ends and counts like Leave; **one running timer per
+  account**, so starting one in another room ends (and counts) the first and nothing counts twice;
+  each person's **own time zone** (saved quietly from their browser) sets which day a round counts
+  for, for the 12-hour cap, while rankings use the viewer's time zone. **Guests** show in "This room
+  today" from the game server's memory and are never saved. A running round shows 📖 even if you've
+  gone quiet: focusing is never Away, for friends too.
 - **Step 4 part 5: cats and study buddies** (2026-11-23, the owner): the game server runs them (V1's
   NpcDirector, made map-aware). The Buddy Machine had no V2 design, so its panel was designed in
   the demo first and approved (rather than porting V1's panel straight, or making the machine

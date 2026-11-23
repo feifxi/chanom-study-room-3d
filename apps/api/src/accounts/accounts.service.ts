@@ -28,6 +28,7 @@ export function toMe(user: User): Me {
     requestsFrom: user.requestsFrom as RequestsFrom,
     appearOffline: user.appearOffline,
     showActivity: user.showActivity,
+    timeZone: user.timeZone,
   };
 }
 
@@ -225,6 +226,8 @@ export class AccountsService {
       await this.prisma.$transaction([
         this.prisma.session.deleteMany({ where: { userId: user.id } }),
         this.prisma.account.deleteMany({ where: { userId: user.id } }),
+        // Focus history is personal too (rankings skip deleted people anyway)
+        this.prisma.focusSession.deleteMany({ where: { userId: user.id } }),
         ...(user.handle
           ? [
               this.prisma.handleHold.upsert({

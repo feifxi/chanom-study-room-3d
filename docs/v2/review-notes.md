@@ -53,6 +53,16 @@ Tick or strike these as they're dealt with.
       Fine by design, worth a look when you review.
 - [ ] **Petting quests still count in this browser only** (the "pet a cat" and "use the Buddy
       Machine" quests), until coins and quests move to the API in step 5.
+- [ ] **The countdown uses the browser's clock** against the server's end time: a computer clock
+      that's off by a minute shows the countdown off by a minute (the minutes saved are the
+      server's, so rankings are right). The labels' `clockOffset` is 0 everywhere; a server time
+      sync would fix both.
+- [ ] **The Focus page is still the demo's numbers** until focus part 3; the room still feeds it
+      from this browser (`logFocus`), and the focus quests stay local until coins and quests.
+- [ ] **A label says "0m" for the first minute** of a round ("📖 Mai · 0m · Calculus"), as it did
+      before; "<1m" or hiding it might read better.
+- [ ] **Away during a break hides the ☕ on your label** (💤 wins, as the spec orders them); the
+      Study panel still shows the break counting down.
 
 **From the demo's design passes**
 
@@ -137,3 +147,23 @@ night" (Bangkok time) was left out. Decisions: [decision log](decisions.md), 202
 
 The browser test needed fixing twice (a person standing on another's spot, a spot next to a chess
 stool where E sat Jod down); neither was an app bug.
+
+## Step 5: the rest, a feature at a time
+
+### Focus, part 1: the timer on the game server
+
+**Changed:** the focus timer runs on the game server (`apps/game/src/focus.ts`): `focus:start`,
+`focus:stop` and `focus:subject` replace the client's old `status` message, and `away { on }` is
+its own message, with a running round winning over away. Ended rounds of 1+ minute go to a BullMQ
+queue (`focus-rounds`) that the API's new focus module saves into `focus_sessions` on the person's
+own day (`users.time_zone`, synced quietly from the browser through `PUT /api/me/time-zone`).
+`GET /api/rooms/:id/focus/today` plus the game server's `todayMin` and running rounds fill the
+Study panel's Today tab in real rooms. One timer per account across rooms (`game:focus`), a reload
+carries a running round over, and presence shows "Focusing · Calculus" to friends (never Away).
+Guests get the timer, never saved. Mock rooms (Common rooms until feature 14) keep the browser's
+own timer. Decisions: [decision log](decisions.md), 2026-11-23.
+
+**Bugs found and fixed while building:** none in the app. The game server tests' timing needed
+fixing (a start and stop slower than the 40 ms test "minute", state arriving a patch later). A
+headless run on the dev stack walked in, ran a real round for a minute, stopped it, and saw it
+saved (on the Bangkok day) and listed in Today.

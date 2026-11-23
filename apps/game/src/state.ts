@@ -16,6 +16,7 @@ export const Player = schema(
     /** Seat id from the map, or '' when standing */
     seatId: t.string().default(''),
     status: t.string().default('idle'),
+    focusPreset: t.uint8().default(0),
     statusEndsAt: t.number().default(0),
     subject: t.string().default(''),
     focusSince: t.number().default(0),

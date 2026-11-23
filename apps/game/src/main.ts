@@ -11,7 +11,7 @@ import { liveKitVoice, voice } from './voice.js';
  * Next rewrite locally), with a join ticket from the API.
  */
 const env = loadEnv();
-const close = await connectRedis(env.REDIS_URL);
+const close = await connectRedis(env.REDIS_URL, env.NODE_ENV);
 voice.current = liveKitVoice({
   url: env.LIVEKIT_URL,
   publicUrl: env.LIVEKIT_PUBLIC_URL,

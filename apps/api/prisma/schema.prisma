@@ -43,6 +43,8 @@ model User {
   showActivity    Boolean   @default(true) @map("show_activity")
   /// When you last went offline; the live state itself is in Redis (PresenceService)
   lastSeenAt      DateTime? @map("last_seen_at")
+  /// Your browser's time zone (IANA), kept up to date by the web app: your focus days start at your midnight
+  timeZone        String    @default("UTC") @map("time_zone")
   /// Asked to be deleted: goes at this time unless they sign in and keep it (7 days)
   deleteAt        DateTime? @map("delete_at")
   /// Deleted: the row stays as "Deleted user" so their messages still read; everything personal is gone
@@ -68,6 +70,7 @@ model User {
   pictures         Picture[]
   dmMembers        DmMember[]
   notifications    Notification[]
+  focusSessions    FocusSession[]
 
   @@index([deleteAt])
   @@map("users")
@@ -207,6 +210,7 @@ model Room {
   members  Membership[]
   requests JoinRequest[]
   bans     RoomBan[]
+  focus    FocusSession[]
   invites  Invite[]
   guests   GuestVisit[]
   messages Message[]
@@ -465,4 +469,28 @@ model Notification {
   @@index([userId, groupKey])
   @@index([createdAt])
   @@map("notifications")
+}
+
+/// A finished focus round (feature 8): timed by the game server, saved by the API's focus worker.
+/// Members only; guests' rounds are never saved.
+model FocusSession {
+  /// The game server's round id, so a retried job saves it once
+  id        String   @id
+  userId    String   @map("user_id")
+  /// Null once the room is deleted: your minutes stay yours
+  roomId    String?  @map("room_id")
+  subject   String   @default("")
+  startedAt DateTime @map("started_at")
+  endedAt   DateTime @map("ended_at")
+  minutes   Int
+  /// The day it counts for, in your own time zone when it started (the 12-hour cap is per day)
+  day       DateTime @db.Date
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room Room? @relation(fields: [roomId], references: [id], onDelete: SetNull)
+
+  @@index([userId, endedAt])
+  @@index([roomId, endedAt])
+  @@index([endedAt])
+  @@map("focus_sessions")
 }

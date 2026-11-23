@@ -1,6 +1,7 @@
 import { Callbacks } from '@colyseus/sdk';
 import type {
   AvatarLook,
+  FocusPreset,
   NpcKind,
   NpcNote,
   NpcReact,
@@ -29,6 +30,7 @@ const FIELDS = [
   'moving',
   'seatId',
   'status',
+  'focusPreset',
   'statusEndsAt',
   'subject',
   'focusSince',
@@ -47,6 +49,8 @@ const FIELDS = [
 const SHOWN = [
   'role',
   'status',
+  'subject',
+  'todayMin',
   'stage',
   'hushed',
   'mutedByMod',
@@ -134,6 +138,7 @@ export class LiveRoom extends MockRoom {
   }
 
   dispose() {
+    clearTimeout(this.subjectTimer);
     this.unsubscribe();
   }
 
@@ -175,8 +180,28 @@ export class LiveRoom extends MockRoom {
     this.game.send('typing', { typing });
   }
 
-  override setStatus(status: PlayerView['status'], subject = '') {
-    this.game.send('status', { status, subject });
+  // Your status is the server's now: away from `setAway`, focus and breaks from the timer it runs
+  override setStatus() {}
+
+  /** No input for 10 minutes: 💤 and the mic off (a running focus round still shows as focus) */
+  setAway(on: boolean) {
+    this.game.send('away', { on });
+  }
+
+  /** Start a focus round on the server (25/5 or 50/10); one running elsewhere ends */
+  focusStart(preset: FocusPreset, subject: string) {
+    this.game.send('focus:start', { preset, subject });
+  }
+
+  focusStop() {
+    this.game.send('focus:stop', {});
+  }
+
+  private subjectTimer: ReturnType<typeof setTimeout> | undefined;
+  /** What you're studying; sent once you pause typing */
+  focusSubject(subject: string) {
+    clearTimeout(this.subjectTimer);
+    this.subjectTimer = setTimeout(() => this.game.send('focus:subject', { subject }), 400);
   }
 
   /** Talk to everyone (the server checks you're the owner or a mod). */

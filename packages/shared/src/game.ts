@@ -71,7 +71,15 @@ export const GAME_CHANNELS = {
   presence: 'game:presence',
   /** Game → API: a full room has space again ("Full · notify me") */
   space: 'game:space',
+  /** Game → game: someone started a focus timer ({@link GameFocusStarted}); their timer in any other room ends */
+  focus: 'game:focus',
 } as const;
+
+/** One running timer per account: starting one in a room ends the one in any other. */
+export interface GameFocusStarted {
+  userId: string;
+  roomId: string;
+}
 
 export type GameRoomEvent =
   | { roomId: string; type: 'kick' | 'ban' | 'left'; userId: string }
@@ -87,11 +95,14 @@ export interface GamePresence {
   tabId: string;
   /** null: gone */
   roomId: string | null;
+  /** Focusing right now, on this subject ('' for none); null when not. Focusing is never Away */
+  focus?: string | null;
 }
 
 /**
  * What a client sends: `move`, `sit`, `stand` (movement), `say` { text }, `typing` { typing },
- * `status` { status, subject?, endsAt? } (focus, break, away), `stage` { on }, `look` { look },
+ * `away` { on } (no input for 10 minutes), `focus:start` { preset, subject } and `focus:stop` (the
+ * timer, run by the server), `focus:subject` { subject }, `stage` { on }, `look` { look },
  * `voice` (asks for a {@link VoicePass}), `deaf` { on }, `mute` { id, on } (owner and mods: Mute
  * for everyone, by session id), `share` { where: 'tv' | 'table' | '', audio } (a screen share at
  * the TV or the desk you sit at; '' stops it), `npc:summon` { kind } (at the Buddy Machine),

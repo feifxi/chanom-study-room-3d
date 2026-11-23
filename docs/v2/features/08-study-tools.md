@@ -1,6 +1,8 @@
 # 8. Study tools
 
-**Status:** decided and built in the demo. **Try it:** http://localhost:3100/servers/chanom/rooms/library
+**Status:** decided and built in the demo. On the real backend: part 1 of 3 (the server-run
+timer, "This room today", "Focusing" for friends) done 2026-11-23; the to-do list and the Focus page
+are next ([why three parts](../decisions.md#engineering-and-infra)). **Try it:** http://localhost:3100/servers/chanom/rooms/library
 → My tools → 📖 Study session, and http://localhost:3100/home/focus
 
 A personal focus timer, a private to-do list, and rankings that count real focus minutes. Kept
@@ -24,8 +26,13 @@ minimal on purpose: two presets, no streaks, no shared sessions.
 - **Minimal.** Two presets, 25/5 and 50/10. Focus → chime → break → chime → done. Each round needs a
   press to start (no auto-repeat, no custom length, no stopwatch).
 - **Subject** (24 chars, optional) is shown above your head and feeds "By subject" on the Focus page.
-- While the timer runs you're never away (feature 6).
+- While the timer runs you're never away (feature 6), and friends see "Focusing · Calculus" (unless
+  you turned "Show what I'm doing" off).
 - Guests get the timer too; nothing is saved for them.
+- **Inside the 3D room only:** the room's chat page has no timer (the game server times it).
+- **One at a time:** starting a timer in another room ends the first one, counting what you did.
+- **A reload keeps your round** if you're back within 20 seconds (the game server's reconnect
+  window); a longer drop ends it like leaving.
 
 ## To-do list
 
@@ -41,7 +48,9 @@ minimal on purpose: two presets, no streaks, no shared sessions.
   1+ minute. Breaks don't count.
 - You must be connected to a room while the timer runs (other tabs are fine). Leaving the room ends
   the round and counts what you did.
-- At most **12 hours a day** count towards rankings (your own numbers show everything).
+- At most **12 hours a day** count towards rankings (your own numbers show everything). The day is
+  yours: a round counts for the day it started in your own time zone, which the web app keeps in
+  step with your browser.
 - No streaks, on purpose: a missed day shouldn't feel like losing something.
 
 ## The Focus page (`/home/focus`)
@@ -65,15 +74,23 @@ minimal on purpose: two presets, no streaks, no shared sessions.
 
 ## Backend notes
 
-- `focus_sessions (user_id, room_id, subject, started_at, ended_at, minutes)`, written by the game
-  server when a round ends or stops (V1 already does this).
+- The **game server** runs each person's timer (`apps/game/src/focus.ts`): `focus:start { preset,
+subject }`, `focus:stop`, `focus:subject`; it shows the status on your player and tells the
+  gateway you're focusing (presence). When a member's round of 1+ minute ends, it adds a job to the
+  `focus-rounds` BullMQ queue; "a timer started" goes to other game servers on `game:focus`.
+- `focus_sessions (id, user_id, room_id, subject, started_at, ended_at, minutes, day)`, written by
+  the API's focus worker: the id is the game server's round id (a retried job saves once), `day` is
+  the start's date in the person's `users.time_zone` (`PUT /api/me/time-zone`), and `room_id` is
+  cleared if the room is deleted, so the minutes stay yours. Deleting an account deletes them.
 - `todos (user_id, id, text, done, done_at, position)`, REST CRUD; a nightly job removes done items
   older than 7 days.
 - Rankings are `SUM(minutes)` per user over the window, capped per day. Today and This week depend on
   the viewer's time zone, so compute per request for Friends (small) and cache Everyone per time zone
   offset for ~5 minutes (top 10 + the viewer's rank via a window function).
-- Room "today" is in memory on the game server (like the rest of the room) plus that day's
-  `focus_sessions` for the room when it reopens.
+- Room "today": `GET /api/rooms/:id/focus/today?tz=` gives members' saved minutes since the
+  viewer's midnight (for members and guests with a pass); each person in the room also carries
+  `todayMin` (rounds finished there since the room opened, guests too) and their running round. The
+  web app shows the larger of saved and `todayMin`, plus the running minutes, capped at 12 hours.
 - Cost: small. A few writes per round and one cached query; no realtime beyond the existing status.
 
 ## Not now

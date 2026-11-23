@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
+import { focusActivity } from '@connecta/shared';
 import type { Env } from '../config/env.js';
 import { LiveService } from '../live/live.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -32,11 +33,15 @@ interface Tab {
   roomId: string | null;
   activeAt: number;
   seenAt: number;
+  /** A game tab with a focus round running: its subject ('' for none) */
+  focus?: string | null;
 }
 /** The truth, before privacy: what the person's tabs add up to */
 export interface RawPresence {
   status: PresenceStatus;
   roomId: string | null;
+  /** "Focusing · Calculus" while a focus round runs */
+  activity: string | null;
 }
 
 /**
@@ -66,11 +71,12 @@ export class PresenceService implements OnModuleDestroy {
   // ── What the gateway reports ──────────────────────────────────────────────────────────────────
 
   /** A tab is open (or still there): in a room or not, idle for this long. */
-  async tab(userId: string, tabId: string, update: { roomId?: string | null; idleMs?: number }, now = Date.now()) {
+  async tab(userId: string, tabId: string, update: { roomId?: string | null; idleMs?: number; focus?: string | null }, now = Date.now()) {
     const before = await this.redis.hget(key.tabs(userId), tabId);
     const tab: Tab = before ? (JSON.parse(before) as Tab) : { roomId: null, activeAt: now, seenAt: now };
     if (update.roomId !== undefined) tab.roomId = update.roomId;
     if (update.idleMs !== undefined) tab.activeAt = now - Math.max(0, update.idleMs);
+    if (update.focus !== undefined) tab.focus = update.focus;
     tab.seenAt = now;
     await this.redis.hset(key.tabs(userId), tabId, JSON.stringify(tab));
     await this.settle(userId, now);
@@ -98,8 +104,8 @@ export class PresenceService implements OnModuleDestroy {
   async settle(userId: string, now = Date.now(), force = false) {
     const state = await this.raw(userId, now);
     const lastJson = await this.redis.get(key.last(userId));
-    const last: RawPresence = lastJson ? (JSON.parse(lastJson) as RawPresence) : { status: 'offline', roomId: null };
-    if (!force && last.status === state.status && last.roomId === state.roomId) return;
+    const last: RawPresence = lastJson ? (JSON.parse(lastJson) as RawPresence) : { status: 'offline', roomId: null, activity: null };
+    if (!force && last.status === state.status && last.roomId === state.roomId && (last.activity ?? null) === state.activity) return;
     await this.redis.set(key.last(userId), JSON.stringify(state));
 
     if (last.roomId !== state.roomId) {
@@ -173,11 +179,17 @@ export class PresenceService implements OnModuleDestroy {
       else tabs.push(tab);
     }
     if (stale.length) await this.redis.hdel(key.tabs(userId), ...stale);
-    if (!tabs.length) return { status: 'offline', roomId: null };
+    if (!tabs.length) return { status: 'offline', roomId: null, activity: null };
     const activeAt = Math.max(...tabs.map((t) => t.activeAt));
     // The room of the most recently active tab that's in one
     const inRoom = tabs.filter((t) => t.roomId).sort((a, b) => b.activeAt - a.activeAt)[0];
-    return { status: now - activeAt > AWAY_MS ? 'idle' : 'online', roomId: inRoom?.roomId ?? null };
+    // Focusing is never Away: people study in other tabs, or with their hands off the keyboard
+    const focusing = tabs.find((t) => typeof t.focus === 'string');
+    return {
+      status: focusing || now - activeAt <= AWAY_MS ? 'online' : 'idle',
+      roomId: inRoom?.roomId ?? null,
+      activity: focusing ? focusActivity(focusing.focus!) : null,
+    };
   }
 
   private view(
@@ -193,7 +205,12 @@ export class PresenceService implements OnModuleDestroy {
         room: null,
       };
     }
-    return { status: state.status, lastSeenAt: null, activity: null, room: (state.roomId && rooms.get(state.roomId)) || null };
+    return {
+      status: state.status,
+      lastSeenAt: null,
+      activity: user.showActivity ? state.activity : null,
+      room: (state.roomId && rooms.get(state.roomId)) || null,
+    };
   }
 
   /** Rooms as `viewerId` may see them: named if listed or if they're a member. */

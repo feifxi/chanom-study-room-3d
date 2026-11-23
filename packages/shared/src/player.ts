@@ -20,12 +20,16 @@ export interface PlayerView {
   yaw: number;
   moving: boolean;
   seatId: string;
+  /** What shows by your name: focus wins over away (focusing is never away), then away, then a break */
   status: PlayerStatus;
+  /** The running timer's preset (FOCUS_PRESETS index), for its ring; the last one used when idle */
+  focusPreset: number;
   /** Server epoch ms when the current focus or break ends (0 = no countdown). */
   statusEndsAt: number;
   subject: string;
   /** Server epoch ms when the current focus stretch began (0 = not focusing). */
   focusSince: number;
+  /** Minutes of focus rounds they finished in this room since it opened (in memory; guests too) */
   todayMin: number;
   typing: boolean;
   /** Talk to everyone (owner and mods): heard everywhere, and bubbles reach private zones */

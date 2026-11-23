@@ -35,14 +35,16 @@ log. Keep them current in the same change that makes them stale.
 
 ## What's next
 
-Step 5 of the plan, **the rest, a feature at a time** (activities and table games, Plus, coins and
-quests, focus, Common and open rooms, moderation, the editor and admin site): agree the order and
-each feature's details with the owner before building. Steps 1–4 are done: the skeleton; accounts
-and rooms; the gateway (friends, chat, pictures, DMs, presence and the 🔔 inbox); walking in a room
-(the Colyseus game server `apps/game` with movement, capacity and live room changes, bubbles, Away,
-the people list, LiveKit proximity voice, screen share, and server-run cats, study buddies and the
-Buddy Machine). The plan's
-[What's left](docs/v2-plan.md#whats-left) is the source of truth.
+Step 5 of the plan, **the rest, a feature at a time**, in the agreed order: focus, the activity
+framework with Watch together and photo mode, party and table games, coins and quests, Plus,
+moderation with Common and open rooms, the admin site and map editor. Agree each feature's details
+with the owner before building. **Focus** is in progress: part 1 (the timer on the game server,
+"This room today", "Focusing" for friends) is done; next are part 2, the to-do list, then part 3,
+the Focus page and rankings. Steps 1–4 are done: the skeleton; accounts and rooms; the gateway
+(friends, chat, pictures, DMs, presence and the 🔔 inbox); walking in a room (the Colyseus game
+server `apps/game` with movement, capacity and live room changes, bubbles, Away, the people list,
+LiveKit proximity voice, screen share, and server-run cats, study buddies and the Buddy Machine).
+The plan's [What's left](docs/v2-plan.md#whats-left) is the source of truth.
 
 ## Working agreements
 
