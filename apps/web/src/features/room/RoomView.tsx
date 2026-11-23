@@ -78,6 +78,8 @@ import { useRoomToday } from '../focus/useRoomToday';
 import { RoomCard } from './RoomCard';
 import { MoreMenu } from './MoreMenu';
 import { isGuestViewer, isTeam, roleIn } from '@/lib/viewer';
+import { postPhoto } from '@/features/chat/useRoomChat';
+import { problem } from '@/features/rooms/useRooms';
 
 /** Scripted crowd: where each mock person sits or walks. */
 const PRESETS: Record<string, Omit<MockPerson, 'id' | 'name' | 'look'>> = {
@@ -391,6 +393,25 @@ export default function RoomView({
       toast('Someone else is sharing here right now');
     }, 3000);
   };
+  // Photo mode: 📸 by your name while it's open; Share posts to Room chat (members: guests can't post there)
+  useEffect(() => {
+    if (!(room instanceof LiveRoom) || !photo) return;
+    room.setPhoto(true);
+    return () => room.setPhoto(false);
+  }, [room, photo]);
+  const sharePhoto =
+    room instanceof LiveRoom && !guest && place
+      ? async (blob: Blob) => {
+          try {
+            await postPhoto(place.id, blob);
+            toast.success('📸 Shared to Room chat');
+            return true;
+          } catch (error) {
+            toast.error(problem(error, 'Couldn’t share that photo. Try again?'));
+            return false;
+          }
+        }
+      : undefined;
   // A link the game server wouldn't put on the big screen
   useEffect(() => {
     if (!(room instanceof LiveRoom)) return;
@@ -1069,7 +1090,7 @@ export default function RoomView({
           </div>
 
           {photo ? (
-            <PhotoMode roomName={roomDef.name} onClose={() => setPhoto(false)} />
+            <PhotoMode roomName={roomDef.name} onClose={() => setPhoto(false)} onShare={sharePhoto} />
           ) : (
             <div>
               {/* Room card, top left: the room itself (invite, room settings, Leave) */}

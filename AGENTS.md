@@ -39,8 +39,8 @@ Step 5 of the plan, **the rest, a feature at a time**, in the agreed order: focu
 framework with Watch together and photo mode, party and table games, coins and quests, Plus,
 moderation with Common and open rooms, the admin site and map editor. Agree each feature's details
 with the owner before building. **Focus** is done (the timer on the game server, the to-do list,
-the Focus page and rankings). **Watch together** is on the game server; next is photo mode, then
-party and table games, which bring the round-based activity framework with them.
+the Focus page and rankings). **Watch together and photo mode** are done; next is party and table
+games, which bring the round-based activity framework with them.
 Steps 1–4 are done: the skeleton; accounts and rooms; the gateway
 (friends, chat, pictures, DMs, presence and the 🔔 inbox); walking in a room (the Colyseus game
 server `apps/game` with movement, capacity and live room changes, bubbles, Away, the people list,

@@ -176,6 +176,8 @@ export function LabelLayer({
                 <span className={`mr-1 ${voice.speaking.has(id) ? '' : 'opacity-50'}`}>🎙️</span>
               )}
               {voice.sharing.has(id) && <span className="mr-1">🖥️</span>}
+              {/* Taking a photo (feature 10), so people can pose */}
+              {player.photo && <span className="mr-1">📸</span>}
               {STATUS_ICON[player.status] && <span className="mr-1">{STATUS_ICON[player.status]}</span>}
               {player.name}
               {isLocal && ' (you)'}

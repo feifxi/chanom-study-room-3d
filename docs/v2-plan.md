@@ -97,8 +97,8 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
      Everyone opt-in as an account setting, "Back to" your last room).
    - **The activity framework, Watch together and photo mode**, in parts: ~~Watch together on the
      game server~~ done 2026-11-23 (one screen and Up next for everyone on the rug, links checked
-     with YouTube, Turn off the TV for owners and mods); photo mode (Share posts to Room chat, 📸
-     over your head). The round-based framework (lobby, host, Call everyone, Leave, results) comes
+     with YouTube, Turn off the TV for owners and mods); ~~photo mode~~ done 2026-11-23 (Share
+     posts to Room chat, 📸 by your name). The round-based framework (lobby, host, Call everyone, Leave, results) comes
      with the first party game.
 6. **The seed:** one fill of all the data (people, rooms, members, friends, DMs…) for testing the
    whole app ([why at the end](v2/decisions.md#engineering-and-infra)).

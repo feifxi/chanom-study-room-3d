@@ -65,7 +65,10 @@ Tick or strike these as they're dealt with.
       link means opening it again. The card could stay open until the server answers.
 - [ ] **The browser still looks the title up too** (the panel's old oEmbed call) before sending the
       link, though the server's title is the one used: one extra request per link.
-- [ ] **Common rooms keep the demo's local TV** until moderation and open rooms.
+- [ ] **Common rooms keep the demo's local TV** until moderation and open rooms; photo mode
+      there has no Share (they're text only until feature 14).
+- [ ] **The photo frames are the three free ones**; the Shop's "Photo frames" come with Plus and
+      the Shop.
 - [ ] **The Everyone cache lives in each API process:** with several API processes, turning "Show
       me on Everyone" off clears only one of them, so another could list you for up to 5 minutes.
       Fine for one process; Redis would fix it when there are more.
@@ -243,3 +246,14 @@ rebuilt soon after. The room now subscribes in an effect (`LiveRoom.attach`). Pr
 double-mounts, so only development was affected. A headless run with two people (desktop and
 phone) checked a refused private video, a real video in sync on both, a pause from the phone
 reaching the desktop, and Turn off the TV closing the phone's panel.
+
+### Photo mode
+
+**Changed:** photo mode's **Share** posts the photo to Room chat as a real picture (the chat's
+picture flow: upload, then a message with no text); guests get Save and Copy only. While it's
+open the game server shows 📸 by your name (`photo { on }`, the player's `photo` flag) so others
+can pose. Decision: [decision log](decisions.md), 2026-11-23 (Watch together and photo mode, in parts).
+
+**Bugs found and fixed while building:** none. A headless run with two people saw 📸 by Mai's name
+on the phone, Share post the photo to Room chat (processed, 1248×716), and the 📸 go when she
+closed photo mode.

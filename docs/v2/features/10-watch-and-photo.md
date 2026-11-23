@@ -1,9 +1,8 @@
 # 10. Watch together and photo mode
 
-**Status:** decided and built in the demo. In the real app a screen share on the TV is real (over
-LiveKit, to the people on the rug, 2026-11-22), and Watch together runs on the game server
-(2026-11-23): one screen and one Up next for everyone on the rug, a share pausing the video and it
-carrying on after. Photo mode is next ([how it's split](../decisions.md#engineering-and-infra)). **Try it:** http://localhost:3100/servers/chanom/rooms/library
+**Status:** decided and built in the demo, and on the real backend: a screen share on the TV
+(over LiveKit, to the people on the rug, 2026-11-22), Watch together on the game server and photo
+mode's 📸 and Share (2026-11-23). **Try it:** http://localhost:3100/servers/chanom/rooms/library
 
 - Activities → Watch together → **Go there**, click the orange **Put something on**, paste a YouTube link (e.g.
   `https://youtu.be/lTRiuFIWV54`). Click outside the panel to shrink it; click the small player to
@@ -120,7 +119,8 @@ Under the dock's **⋯ More**, from anywhere, any time.
 - **Snap now**, or turn on the **3 s timer** to get into the shot. Others see 📸 over your head so they
   can pose.
 - Frames: White, Strawberry, Cocoa; more from the Shop's "Photo frames".
-- After the snap: **Save** (PNG download), **Share** (posts it to Room chat), **Copy** (clipboard).
+- After the snap: **Save** (PNG download), **Share** (posts it to Room chat as a picture), **Copy**
+  (clipboard). Guests get Save and Copy only: Room chat is for members.
 - **Connecta keeps nothing.** No gallery, no album; you keep your own photos. Sharing to Room chat keeps
   it there, like any picture (feature 4's limits).
 
@@ -128,7 +128,9 @@ Under the dock's **⋯ More**, from anywhere, any time.
 
 - Watch together runs in the Colyseus room as a drop-in activity (feature 9): the small sync state
   above, broadcast on change. No video goes through our servers.
-- Photo mode is client-only; sharing is a normal Room chat image upload.
+- Photo mode is client-only, apart from 📸: the client sends `photo { on }` to the game server
+  while it's open and the player's `photo` flag shows it by their name. Share is a normal Room chat
+  picture (`POST /api/pictures`, upload, then a message with the picture and no text).
 - Cost: nothing new beyond Room chat images.
 
 ## Not now

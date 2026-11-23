@@ -44,6 +44,8 @@ export interface PlayerView {
   share: string;
   /** Their share carries its sound */
   shareAudio: boolean;
+  /** In photo mode (📸 by their name, so others can pose) */
+  photo: boolean;
   /** seq of the last move the server applied, for reconciling the client's prediction. */
   moveSeq: number;
 }

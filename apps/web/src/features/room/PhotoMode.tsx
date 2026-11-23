@@ -23,7 +23,17 @@ const BORDER = 12;
  * Others see 📸 over your head so they can pose. Nothing is kept by Connecta: you save it, share it to
  * Room chat, or copy it.
  */
-export function PhotoMode({ roomName, onClose }: { roomName: string; onClose: () => void }) {
+export function PhotoMode({
+  roomName,
+  onClose,
+  onShare,
+}: {
+  roomName: string;
+  onClose: () => void;
+  /** Posts the photo to Room chat; none for guests (Room chat is for members) */
+  onShare?: (photo: Blob) => Promise<boolean>;
+}) {
+  const [sharing, setSharing] = useState(false);
   const [frame, setFrame] = useState<FrameId>('white');
   const [flash, setFlash] = useState(0);
   const [timer, setTimer] = useState(false);
@@ -125,7 +135,7 @@ export function PhotoMode({ roomName, onClose }: { roomName: string; onClose: ()
           <div className="panel flex w-[520px] max-w-full flex-col gap-3 p-3">
             {/* eslint-disable-next-line @next/next/no-img-element -- a local blob, nothing to optimise */}
             <img src={shot.url} alt={`Photo in ${roomName}`} className="w-full rounded-xl" />
-            <div className="grid grid-cols-3 gap-2">
+            <div className={cn('grid gap-2', onShare ? 'grid-cols-3' : 'grid-cols-2')}>
               <a
                 href={shot.url}
                 download={`connecta-${roomName.toLowerCase().replace(/\s+/g, '-')}.png`}
@@ -133,16 +143,20 @@ export function PhotoMode({ roomName, onClose }: { roomName: string; onClose: ()
               >
                 <Download className="size-4" /> Save
               </a>
-              <button
-                onClick={() => {
-                  // The demo has no upload: the real app posts it to the room's saved chat
-                  toast.success('📸 Shared to Room chat');
-                  setShot(null);
-                }}
-                className="flex items-center justify-center gap-1.5 rounded-full border py-2 text-sm font-extrabold hover:bg-muted"
-              >
-                <MessageCircle className="size-4" /> Share
-              </button>
+              {onShare && (
+                <button
+                  disabled={sharing}
+                  onClick={async () => {
+                    setSharing(true);
+                    const ok = await onShare(shot.blob);
+                    setSharing(false);
+                    if (ok) setShot(null);
+                  }}
+                  className="flex items-center justify-center gap-1.5 rounded-full border py-2 text-sm font-extrabold hover:bg-muted disabled:opacity-60"
+                >
+                  <MessageCircle className="size-4" /> {sharing ? 'Sharing…' : 'Share'}
+                </button>
+              )}
               <button
                 onClick={async () => {
                   try {

@@ -324,3 +324,13 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
       what's on and how many are watching.
 - [ ] Phone width: the panel works, and walking onto the rug opens it (this broke on phones in
       development until this change, see the review notes).
+
+### Photo mode
+
+- [ ] Two people in a real room. One opens ⋯ More → Photo mode: the other sees 📸 by their name
+      (not in the photo itself: names never show in photos); closing it takes the 📸 away.
+- [ ] Snap (now, and with the 3 s timer), pick each frame, then **Share**: "📸 Shared to Room
+      chat", and the photo shows in Room chat for everyone (chat page and the room's chat panel).
+- [ ] **Save** downloads the PNG; **Copy** puts it on the clipboard (or says the browser won't).
+- [ ] As a guest: Save and Copy only, no Share.
+- [ ] With the API stopped, Share says it couldn't and keeps the photo on screen to try again.

@@ -45,6 +45,7 @@ export const player = (p: Partial<PlayerView> & Pick<PlayerView, 'name' | 'look'
   deaf: false,
   share: '',
   shareAudio: false,
+  photo: false,
   yaw: 0,
   moving: false,
   seatId: '',

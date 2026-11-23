@@ -551,6 +551,17 @@ describe('watch together', () => {
   });
 });
 
+describe('photo mode', () => {
+  it('shows 📸 to everyone while it is open', async () => {
+    const a = track(await walkIn());
+    const b = track(await walkIn({ sub: 'u-jod', name: 'Jod' }));
+    a.send('photo', { on: true });
+    await until(() => b.state.players.get(a.sessionId)?.photo === true);
+    a.send('photo', { on: false });
+    await until(() => b.state.players.get(a.sessionId)?.photo === false);
+  });
+});
+
 describe('the focus timer', () => {
   const focusOf = (userId: string) => presence.filter((u) => u.userId === userId).at(-1)?.focus;
 

@@ -45,6 +45,7 @@ const FIELDS = [
   'deaf',
   'share',
   'shareAudio',
+  'photo',
   'moveSeq',
 ] as const satisfies readonly (keyof PlayerView)[];
 
@@ -179,6 +180,11 @@ export class LiveRoom extends MockRoom {
     next: (key) => this.game.send('watch:next', { key }),
     remove: (key) => this.game.send('watch:remove', { key }),
   };
+
+  /** Photo mode open or closed: others see 📸 by your name */
+  setPhoto(on: boolean) {
+    this.game.send('photo', { on });
+  }
 
   /** Owners and mods: everything off the big screen */
   watchOff() {

@@ -32,6 +32,8 @@ export const Player = schema(
     /** Sharing their screen: 'tv', 'table:<tableId>', or '' */
     share: t.string().default(''),
     shareAudio: t.boolean().default(false),
+    /** In photo mode: others see 📸 by their name, so they can pose */
+    photo: t.boolean().default(false),
     /** The last move applied (its client sequence number), so the client can reconcile its prediction */
     moveSeq: t.number().default(0),
   },

@@ -190,6 +190,12 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       if (p && (p.role === 'owner' || p.role === 'mod')) this.tv.off();
     },
 
+    /** Photo mode (feature 10): 📸 by your name while it's open, so people can pose */
+    photo: validate(z.object({ on: z.boolean() }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (p) p.photo = msg.on;
+    }),
+
     /** A bubble: to the whole room, or only to the private zone you're standing in */
     say: validate(z.object({ text: z.string() }), (client, msg) => {
       const p = this.state.players.get(client.sessionId);
