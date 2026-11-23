@@ -422,3 +422,25 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
 - [ ] Room settings → **Room-wide games** off: a game on the floor ends, and E there does nothing.
 - [ ] The ✨ AI tab isn't there (it comes after Plus).
 - [ ] Phone width: the lobby, the deck picker, the editor and the question card fit.
+
+### Party and table games, part 5: Draw & Guess
+
+- [ ] A real room with 3 people: Activities → Draw & Guess → **Go there**, sit at the art table (in
+      the Café and Rooftop, stand at the easels and press **E**). The host picks Draw & Guess or
+      Copycat and **Start**s.
+- [ ] Write a prompt (🎲 gives one); after Done you see "Sent. Waiting for the others…" and the
+      count of who's done. When everyone's done the next step starts at once.
+- [ ] Each person draws the prompt written by the one before them, then describes the drawing
+      they got. Nobody sees another chain before the album.
+- [ ] Draw something and don't press Done: when the time runs out your half drawing is still sent
+      (it shows in the album).
+- [ ] Copycat: the drawing shows for 8 s, hides, and you redraw it from memory.
+- [ ] Miss two turns in a row: "You missed two turns, so you're out"; the chains carry on and you
+      still see the album.
+- [ ] Reload mid-game: you're back on your turn with what you were working from.
+- [ ] The album plays the same entry for everyone. The host's **Pause** stops it for all, **Next
+      chain** skips, and **Finish** on the last chain ends it (also while paused). Reactions show
+      for everyone, one of each per person.
+- [ ] Save a chain (one tall picture). A member's 💬 posts it to Room chat; a guest has no 💬.
+- [ ] "That's a wrap!" then **Again** starts a new game with whoever's there; no old album flashes.
+- [ ] Phone width: writing, the drawing pad and the album fit.

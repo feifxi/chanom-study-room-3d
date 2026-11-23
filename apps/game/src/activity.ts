@@ -41,6 +41,8 @@ export interface RoundGame {
   out(id: string): void;
   /** Each server tick while it's on (turn timers) */
   tick?(now: number): void;
+  /** Players the game let go since it was last asked (Draw & Guess: two empty turns) */
+  dropouts?(): string[];
   /** The round is over: the places, winner first (everyone still in). Null while it's on. */
   standing(): string[] | null;
   /** End pressed, or the spot emptied: no result */
@@ -142,6 +144,7 @@ export class Activities {
         );
         if (!st.players.includes(st.hostId)) st.hostId = st.players[0] ?? '';
         game.tick?.(now);
+        for (const x of game.dropouts?.() ?? []) if (st.players.includes(x)) this.knockOut(id, st, x, 'idle');
         const standing = game.standing();
         if (standing) this.finish(st, standing);
         else if (st.players.length <= (game.playsOut ? 0 : 1)) this.finish(st, [...st.players]);

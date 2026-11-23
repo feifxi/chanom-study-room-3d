@@ -67,8 +67,11 @@ Tick or strike these as they're dealt with.
       link, though the server's title is the one used: one extra request per link.
 - [ ] **Common rooms keep the demo's local TV** until moderation and open rooms; photo mode
       there has no Share (they're text only until feature 14).
-- [ ] **Draw & Guess still runs in each browser** in
-      real rooms (only you see it) until its part of party and table games.
+- [ ] **Draw & Guess's timers and Copycat's 8 s look use the browser's clock** against the
+      server's deadlines, like Slave's turn bar; the server's timer is what counts.
+- [ ] **Draw & Guess text isn't moderated yet** (prompts and descriptions; waits for the
+      moderation feature, agreed). The album's reactions count once per person per emoji, but
+      aren't shown as who reacted.
 - [ ] **Slave's turn bar runs on the browser's clock** against the server's deadline; a clock that's
       off by seconds shows the bar wrong (the server's timer is what counts).
 - [ ] **Room deck text isn't moderated yet** (waits for the moderation feature, agreed); decks stay
@@ -333,3 +336,27 @@ tab is hidden in real rooms until Plus. Room-wide games is in the join ticket an
 ahead when both stood still for the rest of the quiz; it now checks the order by score. A headless
 run checked the "This room" tab with "by Mai", picking a room deck, the room deck's question on
 Jod's phone, and the Would you rather reveal ("Mai picked with you").
+
+### Party and table games, part 5: Draw & Guess
+
+**Changed:** Draw & Guess runs on the game server (`apps/game/src/drawGuess.ts`), with its rules
+moved to `@connecta/shared/draw-guess`. The room state carries only the flow; each player gets only
+what they work from (`tel:turn`), and the chains go to everyone when the album starts (`tel:album`).
+The album, its host controls and its reactions are the server's, so everyone sees the same entry.
+When time runs out the server asks each page for what it has (`tel:collect`). A drawing goes up in
+pieces (`tel:part`) under the 4 KB message limit. The round flow learned to let a game knock someone
+out (`dropouts`, why `idle`: two empty turns). Share to Room chat posts the chain as a picture
+(members only); Save names the file `connecta-draw-and-guess.png`.
+
+**Bugs found and fixed while building:**
+
+- The host's **Finish** on the last chain did nothing while the album was paused (in the demo too);
+  it now ends the album.
+- A whole drawing in one message would have gone over Colyseus's 4 KB limit (closing the player's
+  connection). It now goes in pieces, like the whiteboard's strokes.
+- An old album could flash for a moment when a new game started; it's cleared on a new game's first
+  turn.
+
+A headless run with three people (one on a phone) played a whole game: prompts, drawings (one
+collected by the timer without Done), descriptions, then the album in step with the host's Pause
+and Finish.

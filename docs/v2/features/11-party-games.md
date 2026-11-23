@@ -1,8 +1,8 @@
 # 11. Pick a Side, whiteboard, Draw & Guess
 
 **Status:** decided and built in the demo. On the real backend: the **whiteboard** is relayed by
-the game server (2026-11-23), and so is **Pick a Side** with the room's own decks (2026-11-23);
-Draw & Guess still runs in each browser until its part. **Try it:** http://localhost:3100/servers/chanom/rooms/library
+the game server (2026-11-23), and so are **Pick a Side** with the room's own decks (2026-11-23)
+and **Draw & Guess** (2026-11-23). **Try it:** http://localhost:3100/servers/chanom/rooms/library
 
 - Activities → Pick a Side → **Go there**, press **E**, pick a mode and a deck (try **✨ AI**), 📣
   **Call everyone**, **Start**. Walk into a zone to answer. Or Demo tab → **Someone starts Pick a
@@ -199,12 +199,26 @@ name is **Copycat**. Never use Gartic Phone, Telestrations or their mode names (
 
 ### Backend notes
 
-- The server owns the game: order, step, timers, who sent, chains. A turn is sent once (text, or the
-  drawing's strokes in 0–1 coordinates); in-progress strokes stay on the player's device, and when
-  the time runs out the client sends what it has (the server skips anyone silent).
-- The other players' entries are only sent at reveal time, so nobody can peek at the chains.
-- Cost: nothing stored; a saved chain is drawn on the device, sharing is a normal Room chat image
-  upload.
+- The server owns the game (`DrawGuess` in `apps/game/src/drawGuess.ts`, the rules in
+  `@connecta/shared/draw-guess`): order (by stool), step, timers, who sent, chains, the album and
+  its reactions. The room state `tel` is the flow only: `{ stage, mode, order, steps, step, until,
+lookUntil, sent, revealChain, revealShown, revealPaused, reactions, rev }`, never an entry.
+- **Nobody can peek:** each player gets only what they work from in a private `tel:turn { step,
+source }`; the whole chains go to everyone as `tel:album` when the album starts. A page asks for
+  either again with `tel:sync` (a reload mid-game keeps your place).
+- **A turn is sent once:** text with `tel:send { step, text }`; a drawing first goes up in pieces,
+  `tel:part { step, s, color, size, pts }` (strokes in 0–1 coordinates, under the server's 4 KB
+  message limit like the whiteboard's), then `tel:send { step }`. In-progress strokes stay on the
+  device; **when the time runs out the server sends `tel:collect`** and waits 2 s for each page to
+  send what it has, so half a drawing still makes it. Anyone silent is skipped.
+- **Limits:** a prompt or description up to 80 characters, a drawing up to 20,000 points (more
+  is dropped), the whiteboard's pens only. Text isn't moderated until the moderation feature.
+- The album runs on the server so everyone sees the same entry; the host's `tel:pause` and
+  `tel:next` (Finish on the last chain ends it, even paused) work for the room; `tel:react` counts
+  one of each emoji per person per entry. Two empty turns in a row knocks you out (`activity:out`
+  with why `idle`); you still get the album.
+- Cost: nothing stored; a saved chain is drawn on the device, Share is a normal Room chat picture
+  (members only).
 
 ### Not now
 

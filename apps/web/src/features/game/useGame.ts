@@ -11,6 +11,7 @@ import {
   type PlayerView,
   type SideView,
   type SlaveView,
+  type TelView,
   type SpotView,
   type WatchView,
 } from '@connecta/shared';
@@ -28,6 +29,7 @@ export interface GameState {
   chess?: ChessView;
   slave?: SlaveView;
   side?: SideView;
+  tel?: TelView;
 }
 export type GameRoom = Room<unknown, GameState>;
 

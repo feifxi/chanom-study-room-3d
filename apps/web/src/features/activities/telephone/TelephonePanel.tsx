@@ -22,8 +22,11 @@ export function TelephonePanel({
   now,
   width,
   shift = 0,
+  onShare,
 }: {
   hub: ActivityHub;
+  /** Posts a chain to Room chat (members in a real room; unset for guests and the demo) */
+  onShare?: (png: Blob) => Promise<unknown>;
   game: TelGame;
   st: SpotState;
   name: (id: string) => string;
@@ -42,7 +45,7 @@ export function TelephonePanel({
       {game.stage === 'turn' ? (
         <Turn key={game.step} hub={hub} game={game} st={st} now={now} />
       ) : (
-        <Album hub={hub} game={game} isHost={st.hostId === 'me'} name={name} />
+        <Album hub={hub} game={game} isHost={st.hostId === 'me'} name={name} onShare={onShare} />
       )}
     </section>
   );
@@ -214,7 +217,7 @@ function Note({ children }: { children: React.ReactNode }) {
 function Picture({ entry, className }: { entry?: Entry; className?: string }) {
   const store = useMemo(() => {
     const s = new BoardStore();
-    s.strokes = entry?.strokes ?? [];
+    s.strokes = (entry?.strokes ?? []).map((x, i) => ({ ...x, id: `${i}`, by: entry!.by }));
     return s;
   }, [entry]);
   return (
@@ -228,7 +231,19 @@ function Picture({ entry, className }: { entry?: Entry; className?: string }) {
 }
 
 /** The album: each chain, step by step, on its own. The host can pause or skip; everyone reacts. */
-function Album({ hub, game, isHost, name }: { hub: ActivityHub; game: TelGame; isHost: boolean; name: (id: string) => string }) {
+function Album({
+  hub,
+  game,
+  isHost,
+  name,
+  onShare,
+}: {
+  hub: ActivityHub;
+  game: TelGame;
+  isHost: boolean;
+  name: (id: string) => string;
+  onShare?: (png: Blob) => Promise<unknown>;
+}) {
   const { chain, shown, paused } = game.reveal;
   const entries = game.chains[chain]!.slice(0, shown);
   const end = useRef<HTMLDivElement>(null);
@@ -247,21 +262,31 @@ function Album({ hub, game, isHost, name }: { hub: ActivityHub; game: TelGame; i
         </span>
         <span className="ml-auto" />
         <button
-          onClick={() => saveChain(game.chains[chain]!, who).catch(() => toast.error('Couldn’t save it. Try again?'))}
+          onClick={() =>
+            chainPng(game.chains[chain]!, who)
+              .then((png) => downloadPng(png, 'connecta-draw-and-guess.png'))
+              .catch(() => toast.error('Couldn’t save it. Try again?'))
+          }
           aria-label="Save this chain as an image"
           title="Save this chain as an image"
           className="grid size-8 place-items-center rounded-full hover:bg-muted"
         >
           <Download className="size-4" />
         </button>
-        <button
-          onClick={() => toast.success('📖 Chain shared to Room chat')}
-          aria-label="Share this chain to Room chat"
-          title="Share to Room chat"
-          className="grid size-8 place-items-center rounded-full hover:bg-muted"
-        >
-          <MessageCircle className="size-4" />
-        </button>
+        {onShare && (
+          <button
+            onClick={() =>
+              chainPng(game.chains[chain]!, who)
+                .then(onShare)
+                .catch(() => toast.error('Couldn’t share it. Try again?'))
+            }
+            aria-label="Share this chain to Room chat"
+            title="Share to Room chat"
+            className="grid size-8 place-items-center rounded-full hover:bg-muted"
+          >
+            <MessageCircle className="size-4" />
+          </button>
+        )}
         {isHost && (
           <>
             <button
@@ -317,7 +342,8 @@ function Album({ hub, game, isHost, name }: { hub: ActivityHub; game: TelGame; i
 }
 
 /** One chain as a tall image: who did what, the words and the drawings. */
-async function saveChain(chain: Entry[], who: (id: string) => string) {
+/** A chain as one tall picture, for Save and Share */
+async function chainPng(chain: Entry[], who: (id: string) => string): Promise<Blob> {
   const W = 800;
   const DH = 450;
   const heights = chain.map((e) => 34 + (e.kind === 'text' ? 70 : DH) + 16);
@@ -353,5 +379,5 @@ async function saveChain(chain: Entry[], who: (id: string) => string) {
   });
   const png = await new Promise<Blob | null>((r) => c.toBlob(r, 'image/png'));
   if (!png) throw new Error('no image');
-  downloadPng(png, 'connecta-telephone.png');
+  return png;
 }

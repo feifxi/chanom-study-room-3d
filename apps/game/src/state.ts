@@ -199,6 +199,33 @@ export const Side = schema(
 );
 export type Side = SchemaType<typeof Side>;
 
+/**
+ * Draw & Guess at the art corner (TelView in packages/shared): the flow only. Entries never ride in
+ * the state: each player gets what they work from (`tel:turn`), and the chains go out at the album.
+ */
+export const Tel = schema(
+  {
+    /** '' when there's no game; turn, reveal or done */
+    stage: t.string().default(''),
+    mode: t.string().default(''),
+    order: t.array('string'),
+    steps: t.number().default(0),
+    step: t.number().default(0),
+    until: t.number().default(0),
+    lookUntil: t.number().default(0),
+    /** Who has sent this step */
+    sent: t.array('string'),
+    revealChain: t.number().default(0),
+    revealShown: t.number().default(0),
+    revealPaused: t.boolean().default(false),
+    /** `chain:entry:emoji` → how many */
+    reactions: t.map('number'),
+    rev: t.number().default(0),
+  },
+  'Tel',
+);
+export type Tel = SchemaType<typeof Tel>;
+
 export const RoomState = schema(
   {
     /** The room's map; changing it (Room settings) moves everyone to the new map's door */
@@ -211,6 +238,7 @@ export const RoomState = schema(
     chess: t.ref(Chess),
     slave: t.ref(Slave),
     side: t.ref(Side),
+    tel: t.ref(Tel),
   },
   'RoomState',
 );

@@ -431,6 +431,14 @@ decision is made or changed: one line, a date, and the reason.
   with a friend's deck, and the room's owner and mods look after them. Members write decks and
   change their own; guests play with them. We lose using one deck in several rooms; "copy to
   another room" can come later. This replaces "My decks, private to you".
+- **Draw & Guess on the game server** (2026-11-23, the owner): the album plays in step for
+  everyone (the host's Pause and Next chain work for the room; reactions live); each player gets
+  only what they work from, and the chains go out at the album, so nobody can peek; a prompt or
+  description up to 80 characters and a drawing up to 20,000 points; guests play, Share to Room
+  chat is for members. While building: when a turn's time runs out **the server asks each page for
+  what it has** and waits 2 s, rather than trusting each browser's clock to send in time; a
+  drawing goes up in pieces under Colyseus's 4 KB message limit, like the whiteboard; and the
+  host's **Finish** on the last chain ends the album even while it's paused (the demo didn't).
 - **Room decks reach the game server as a signed pass** (2026-11-23, while building): the game
   server has no database, so the host's page asks the API for the deck signed for that room (like a
   join ticket) instead of the host's browser sending questions the server would have to trust.

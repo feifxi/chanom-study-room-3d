@@ -50,7 +50,8 @@ export interface SpotView {
 /** Sent to someone the round let go (`activity:out`) */
 export interface ActivityOut {
   spot: SpotId;
-  why: 'left' | 'away';
+  /** idle: Draw & Guess's two empty turns in a row */
+  why: 'left' | 'away' | 'idle';
 }
 
 /**
@@ -97,6 +98,29 @@ export interface SideView {
   winners: Iterable<string>;
   solo: boolean;
   rev: number;
+}
+
+/** Draw & Guess as the room state shows it (`tel`): the flow, never the entries */
+export interface TelView {
+  stage: string;
+  mode: string;
+  order: Iterable<string>;
+  steps: number;
+  step: number;
+  until: number;
+  lookUntil: number;
+  sent: Iterable<string>;
+  revealChain: number;
+  revealShown: number;
+  revealPaused: boolean;
+  reactions: Map<string, number>;
+  rev: number;
+}
+
+/** `tel:turn`, to you alone: the step you're on and what you work from (nothing on the first) */
+export interface TelTurn {
+  step: number;
+  source: { by: string; kind: 'text' | 'drawing'; text?: string; strokes?: { color: string; size: number; pts: number[] }[] } | null;
 }
 
 /** `side:deck`: the host picks a built-in deck by id, or a room deck by the API's signed pass */

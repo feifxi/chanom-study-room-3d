@@ -1,4 +1,5 @@
 import { Callbacks } from '@colyseus/sdk';
+import { BOARD_ADD_MAX } from '@connecta/shared';
 import type {
   AvatarLook,
   FocusPreset,
@@ -18,6 +19,7 @@ import type {
   SlaveHand,
   BoardAdd,
   BoardStroke,
+  TelTurn,
 } from '@connecta/shared';
 import type { ActivityRemote, SpotState, Video, WatchRemote, WatchState } from '../activities/hub';
 import type { SpotId } from '../activities/spots';
@@ -26,6 +28,8 @@ import type { SlaveGame, Title } from '../activities/slave/game';
 import type { BoardStore } from '../activities/board/board';
 import { BUILT_IN, deckKindFor, type Deck, type SideGame, type SideMode } from '../activities/pickASide/game';
 import { deckPass } from '../activities/pickASide/useRoomDecks';
+import type { Stroke } from '../activities/board/board';
+import type { Entry, TelGame, TelMode } from '../activities/telephone/game';
 import type { PieceSymbol, Square } from 'chess.js';
 import type { GameRoom } from '@/features/game/useGame';
 import type { MapDef } from '../map/types';
@@ -147,9 +151,23 @@ export class LiveRoom extends MockRoom {
       game.onMessage('said', (m: Said) => this.saidListeners.forEach((fn) => fn(m.id === game.sessionId ? 'me' : m.id, m.text))),
       game.onMessage('quiet', (m: Quiet) => this.quietListeners.forEach((fn) => fn(m.until))),
       game.onMessage('slave:hand', (m: SlaveHand) => (this.slaveHand = m)),
+      // Draw & Guess: what you work from, the album, and "time's up, send what you have"
+      game.onMessage('tel:turn', (m: TelTurn) => {
+        this.telTurn = m;
+        this.telSent = -1;
+        // A new game: last game's album goes
+        if (m.step === 0) this.telAlbum = null;
+        this.telVersion++;
+      }),
+      game.onMessage('tel:album', (m: { chains: Entry[][] }) => {
+        this.telAlbum = m.chains;
+        this.telVersion++;
+      }),
+      game.onMessage('tel:collect', (m: { step: number }) => this.sendTel(m.step, this.telDraftNow)),
     ];
     // Slave: your cards, in case a game is on (they only come when they change)
     game.send('slave:hand');
+    game.send('tel:sync');
     this.sync();
     return () => {
       clearTimeout(this.subjectTimer);
@@ -325,6 +343,69 @@ export class LiveRoom extends MockRoom {
     return this.sideCache;
   }
 
+  // --- Draw & Guess: only what you may see (your turn's source, then the album) ---
+  private telTurn: TelTurn | null = null;
+  private telAlbum: Entry[][] | null = null;
+  private telVersion = 0;
+  private telSent = -1;
+  private telDraftNow: { text: string; strokes: Stroke[] } = { text: '', strokes: [] };
+  private telCache: { key: string; game: TelGame | null } = { key: '', game: null };
+
+  private sendTel(step: number, entry: { text?: string; strokes?: { color: string; size: number; pts: number[] }[] }) {
+    if (this.telSent === step) return;
+    this.telSent = step;
+    // A drawing goes in pieces: a WebSocket message stays under the server's 4 KB, like the whiteboard's
+    entry.strokes?.forEach(({ color, size, pts }, s) => {
+      for (let i = 0; i < pts.length || i === 0; i += BOARD_ADD_MAX)
+        this.game.send('tel:part', { step, s, color, size, pts: pts.slice(i, i + BOARD_ADD_MAX) });
+    });
+    this.game.send('tel:send', { step, text: entry.text });
+  }
+
+  private telView(): TelGame | null {
+    const s = this.game.state?.tel;
+    if (!s || !s.stage || s.stage === 'done') {
+      if (s?.stage === '' && this.telAlbum) this.telAlbum = null;
+      return null;
+    }
+    const cacheKey = `${s.rev}/${this.telVersion}`;
+    if (cacheKey === this.telCache.key) return this.telCache.game;
+    const key = (id: string) => this.key(id);
+    const order = [...s.order];
+    const chains: Entry[][] =
+      s.stage === 'reveal' && this.telAlbum
+        ? this.telAlbum.map((chain) => chain.map((e) => ({ ...e, by: key(e.by) })))
+        : order.map(() => []);
+    if (s.stage === 'turn' && this.telTurn?.source && this.telTurn.step === s.step) {
+      // Your chain's latest entry, where the rules look for it
+      const n = order.length;
+      const c = (((order.indexOf(this.game.sessionId) - s.step) % n) + n) % n;
+      chains[c]![s.step - 1] = { ...this.telTurn.source, by: key(this.telTurn.source.by) };
+    }
+    const reactions: Record<string, Record<string, number>> = {};
+    s.reactions.forEach((n, k) => {
+      const [chain, entry, emoji] = k.split(':');
+      (reactions[`${chain}:${entry}`] ??= {})[emoji!] = n;
+    });
+    const game: TelGame = {
+      mode: s.mode as TelMode,
+      order: order.map(key),
+      steps: s.steps,
+      step: s.step,
+      stage: s.stage as TelGame['stage'],
+      until: s.until,
+      lookUntil: s.lookUntil,
+      chains,
+      sent: Object.fromEntries([...s.sent].map((id) => [key(id), true])),
+      empty: {},
+      reveal: { chain: s.revealChain, shown: s.revealShown, paused: s.revealPaused, nextAt: 0 },
+      reactions,
+      rev: s.rev + this.telVersion,
+    };
+    this.telCache = { key: cacheKey, game };
+    return game;
+  }
+
   /** The hub's way to the spots the server runs */
   readonly activityRemote: ActivityRemote = {
     spots: () => {
@@ -368,6 +449,12 @@ export class LiveRoom extends MockRoom {
     side: () => this.sideView().game,
     floorDeck: () => this.sideView().deck,
     open: (spot) => this.game.send('activity:start', { spot }),
+    tel: () => this.telView(),
+    telSend: (entry) => this.sendTel(this.game.state.tel?.step ?? 0, entry),
+    telDraft: (text, strokes) => (this.telDraftNow = { text, strokes }),
+    telReact: (chain, entry, emoji) => this.game.send('tel:react', { chain, entry, emoji }),
+    telPause: (paused) => this.game.send('tel:pause', { paused }),
+    telNext: () => this.game.send('tel:next'),
     pickGame: (gameId) => this.game.send('activity:game', { gameId }),
     pickDeck: (deck) => {
       if (deck.source === 'built-in') return this.game.send('side:deck', { builtIn: deck.id });

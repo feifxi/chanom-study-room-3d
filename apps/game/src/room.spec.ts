@@ -21,12 +21,14 @@ import {
   type SlaveHand,
   type SlaveView,
   type SideView,
+  type TelView,
+  type TelTurn,
   type SpotView,
   type WatchRefused,
   type WatchVideo,
   type WatchView,
 } from '@connecta/shared';
-import { cardSeats, mapDataFor } from '@connecta/shared/maps';
+import { artSeats, cardSeats, mapDataFor } from '@connecta/shared/maps';
 import { timing } from './focus.js';
 import { dispatch, dispatchWalkedIn, links } from './links.js';
 import { decodeJwt } from 'jose';
@@ -34,6 +36,7 @@ import { gameServer } from './server.js';
 import { liveKitVoice, voice } from './voice.js';
 import { youtube } from './watch.js';
 import { sideTiming } from './pickASide.js';
+import { telTiming } from './drawGuess.js';
 import { BUILT_IN, DECK_PASS_AUDIENCE } from '@connecta/shared/pick-a-side';
 
 const SECRET = process.env.GAME_SECRET!;
@@ -50,6 +53,7 @@ type GameRoom = Room<
     spots: Map<string, SpotView & { players: string[]; out: string[]; results: string[]; nextRound: string[] }>;
     chess: ChessView & { moves: string[] };
     side: SideView & { choices: string[]; winners: string[] };
+    tel: TelView & { order: string[]; sent: string[] };
     slave: SlaveView & { players: string[]; pileCards: number[]; gone: string[]; finished: string[] };
   }
 >;
@@ -889,6 +893,127 @@ describe('activities: Pick a Side', () => {
     a.send('activity:start', { spot: 'floor' });
     await quietly(300);
     expect(spot(a).phase).toBe('free');
+  });
+});
+
+describe('activities: Draw & Guess', () => {
+  const spot = (r: GameRoom) => r.state.spots.get('art')!;
+  const seats = artSeats(mapDataFor('library').artTable!);
+  const PEN = { color: '#2b2140', size: 0.009 };
+  const saved = JSON.parse(JSON.stringify(telTiming));
+  beforeEach(() =>
+    Object.assign(telTiming, { turn: { write: 1500, draw: 1500, describe: 1500, copy: 1500 }, look: 300, collect: 600, gapScale: 0.05 }),
+  );
+  afterEach(() => Object.assign(telTiming, JSON.parse(JSON.stringify(saved))));
+
+  /** A drawing goes up in pieces, then Done */
+  const draw = (r: GameRoom, step: number, strokes: { color: string; size: number; pts: number[] }[]) => {
+    strokes.forEach((st, s) => r.send('tel:part', { step, s, ...st }));
+    r.send('tel:send', { step });
+  };
+
+  async function table() {
+    const rooms = (await Promise.all([walkIn(), walkIn({ sub: 'u-jod', name: 'Jod' }), walkIn({ sub: 'u-ploy', name: 'Ploy' })])).map(
+      track,
+    );
+    const turns = new Map<GameRoom, TelTurn>();
+    const albums = new Map<GameRoom, { chains: { by: string; kind: string; text?: string; skipped?: boolean }[][] }>();
+    const collects: GameRoom[] = [];
+    for (const r of rooms) {
+      r.onMessage('tel:turn', (t: TelTurn) => turns.set(r, t));
+      r.onMessage('tel:album', (m: { chains: { by: string; kind: string }[][] }) => albums.set(r, m));
+      r.onMessage('tel:collect', () => collects.push(r));
+    }
+    for (const [i, r] of rooms.entries()) {
+      await walkTo(r, seats[i * 3]!.out);
+      r.send('sit', { seatId: seats[i * 3]!.id });
+      await until(() => me(r).seatId === seats[i * 3]!.id);
+    }
+    await until(() => spot(rooms[0]!).players.length === 3);
+    rooms[0]!.send('activity:begin');
+    await until(() => rooms[0]!.state.tel.stage === 'turn', 5000);
+    await until(() => turns.size === 3);
+    return { rooms, turns, albums, collects };
+  }
+
+  it(
+    'passes each chain along; you see only what you work from; time up collects what you have; the album goes to everyone',
+    { timeout: 30_000 },
+    async () => {
+      const { rooms, turns, albums, collects } = await table();
+      const [a] = rooms as [GameRoom, GameRoom, GameRoom];
+      const order = [...a.state.tel.order];
+      const byId = (id: string) => rooms.find((r) => r.sessionId === id)!;
+      expect(a.state.tel).toMatchObject({ mode: 'tel', steps: 3, step: 0 });
+      for (const r of rooms) expect(turns.get(r)).toEqual({ step: 0, source: null });
+      for (const r of rooms) r.send('tel:send', { step: 0, text: `prompt by ${r.sessionId}` });
+      // Everyone done: the next step at once, each with the prompt from the one before them in the order
+      await until(() => a.state.tel.step === 1);
+      await until(() => rooms.every((r) => turns.get(r)!.step === 1));
+      for (const [p, id] of order.entries()) {
+        const before = order[(p - 1 + order.length) % order.length]!;
+        expect(turns.get(byId(id))!.source).toMatchObject({ by: before, kind: 'text', text: `prompt by ${before}` });
+      }
+      // A drawing: two send, the third is asked for what it has when the time runs out
+      const [d1, d2, slow] = order.map(byId) as [GameRoom, GameRoom, GameRoom];
+      // A long stroke in two pieces
+      d1.send('tel:part', { step: 1, s: 0, ...PEN, pts: [0.1, 0.1] });
+      d1.send('tel:part', { step: 1, s: 0, ...PEN, pts: [0.2, 0.2] });
+      d1.send('tel:send', { step: 1 });
+      draw(d2, 1, [{ color: '#ff0000', size: 0.009, pts: [0.5, 0.5] }]); // a pen the board doesn't have
+      await until(() => collects.includes(slow), 5000);
+      expect(albums.size).toBe(0);
+      draw(slow, 1, [{ ...PEN, pts: [0.3, 0.3] }]);
+      await until(() => a.state.tel.step === 2);
+      for (const r of rooms) r.send('tel:send', { step: 2, text: 'a sad potato' });
+      await until(() => a.state.tel.stage === 'reveal', 5000);
+      await until(() => albums.size === 3);
+      const chains = albums.get(a)!.chains;
+      expect(chains).toHaveLength(3);
+      expect(chains.every((c) => c.length === 3)).toBe(true);
+      // d2's drawing had only an unknown pen: it counts as nothing; d1's two pieces made one stroke
+      expect(chains.flat().filter((e) => e.by === d2.sessionId && e.skipped)).toHaveLength(1);
+      expect(chains.flat().find((e) => e.by === d1.sessionId && e.kind === 'drawing')).toMatchObject({
+        strokes: [{ pts: [0.1, 0.1, 0.2, 0.2] }],
+      });
+
+      a.send('tel:react', { chain: 0, entry: 0, emoji: '😂' });
+      a.send('tel:react', { chain: 0, entry: 0, emoji: '😂' }); // once each
+      rooms[1]!.send('tel:react', { chain: 0, entry: 0, emoji: '😂' });
+      await until(() => a.state.tel.reactions.get('0:0:😂') === 2);
+      // The host's Next chain runs it to the end, then the results
+      const host = byId(spot(a).hostId);
+      host.send('tel:pause', { paused: true });
+      await until(() => a.state.tel.revealPaused);
+      for (let i = 0; i < 3; i++) {
+        host.send('tel:next');
+        await quietly(150);
+      }
+      await until(() => spot(a).phase === 'results', 10_000);
+      expect([...spot(a).results].sort()).toEqual(order.sort());
+    },
+  );
+
+  it('two empty turns in a row and you’re out (you still get the album); a reload gets your turn back', { timeout: 30_000 }, async () => {
+    const { rooms, turns } = await table();
+    const [a, b, c] = rooms as [GameRoom, GameRoom, GameRoom];
+    const told: ActivityOut[] = [];
+    c.onMessage('activity:out', (m: ActivityOut) => told.push(m));
+    // A reload mid-turn: the page asks and gets its turn again
+    let again: TelTurn | null = null;
+    const b2 = track(await walkIn({ sub: 'u-jod', name: 'Jod' }));
+    b2.onMessage('tel:turn', (t: TelTurn) => (again = t));
+    b2.send('tel:sync');
+    await until(() => again !== null);
+    expect(again).toEqual(turns.get(b));
+    a.send('tel:send', { step: 0, text: 'a frog' });
+    b2.send('tel:send', { step: 0, text: 'a duck' });
+    await until(() => a.state.tel.step === 1, 6000);
+    draw(a, 1, [{ ...PEN, pts: [0.5, 0.5] }]);
+    draw(b2, 1, [{ ...PEN, pts: [0.5, 0.5] }]);
+    await until(() => told.length === 1, 8000);
+    expect(told[0]).toEqual({ spot: 'art', why: 'idle' });
+    expect([...spot(a).players]).not.toContain(c.sessionId);
   });
 });
 

@@ -45,6 +45,7 @@ import { Activities, ChessTable } from './activity.js';
 import { SlaveTable } from './slave.js';
 import { Board } from './board.js';
 import { SideFloor } from './pickASide.js';
+import { DrawGuess } from './drawGuess.js';
 
 /** A Slave play: 1–4 cards, each 0–51 */
 const CARDS = z.array(z.number().int().min(0).max(51)).min(1).max(4);
@@ -123,6 +124,12 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     send: (sessionId, type, message) => this.clients_.get(sessionId)?.send(type, message),
   });
   private side = this.makeSide();
+  private tel = new DrawGuess(this.state.tel, {
+    seatIndex: (sessionId) => (DrawGuess.spot.seats(this.map) ?? []).indexOf(this.state.players.get(sessionId)?.seatId ?? ''),
+    roundPlayers: () => [...(this.state.spots.get('art')?.players ?? [])],
+    send: (sessionId, type, message) => this.clients_.get(sessionId)?.send(type, message),
+    broadcast: (type, message) => this.broadcast(type, message),
+  });
   private activities = this.makeActivities();
   /** The whiteboard (feature 11): strokes relayed apart from the state, kept with the room */
   private board = new Board((id) => this.broadcast('board:undo', { id }));
@@ -274,6 +281,32 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
         if (pass?.roomId === this.connectaId && this.activities.hostOf(client.sessionId) === 'floor') this.side.pickRoomDeck(pass.deck);
       },
     ),
+    // Draw & Guess: your turn, reactions in the album, and the host's pause and next chain
+    'tel:part': validate(
+      z.object({
+        step: z.number().int().min(0),
+        s: z.number().int().min(0),
+        color: z.string().max(16),
+        size: z.number(),
+        pts: z.array(z.number()).max(BOARD_ADD_MAX),
+      }),
+      (client, msg) => this.tel.part(client.sessionId, msg.step, msg.s, msg.color, msg.size, msg.pts),
+    ),
+    'tel:send': validate(z.object({ step: z.number().int().min(0), text: z.string().max(400).optional() }), (client, msg) =>
+      this.tel.send(client.sessionId, msg.step, msg.text),
+    ),
+    'tel:react': validate(
+      z.object({ chain: z.number().int().min(0), entry: z.number().int().min(0), emoji: z.string().max(8) }),
+      (client, msg) => this.tel.react(client.sessionId, msg.chain, msg.entry, msg.emoji),
+    ),
+    'tel:pause': validate(z.object({ paused: z.boolean() }), (client, msg) => {
+      if (this.activities.hostOf(client.sessionId) === 'art') this.tel.pause(msg.paused, Date.now());
+    }),
+    'tel:next': (client: Client) => {
+      if (this.activities.hostOf(client.sessionId) === 'art') this.tel.next(Date.now());
+    },
+    // The page is listening: what you work from, or the album (after a reload they were sent too early)
+    'tel:sync': (client: Client) => this.tel.joined(client.sessionId),
     'slave:play': validate(z.object({ cards: CARDS }), (client, msg) => this.slave.play(client.sessionId, msg.cards)),
     'slave:pass': (client: Client) => this.slave.pass(client.sessionId),
     // The page is listening: your cards again (after a reload mid-game they were sent before it was)
@@ -532,6 +565,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     if (!this.priv.has(client.sessionId)) return void client.leave(GAME_CLOSE.elsewhere);
     this.clients_.set(client.sessionId, client);
     this.slave.joined(client.sessionId);
+    this.tel.joined(client.sessionId);
   }
 
   onLeave(client: Client) {
@@ -762,6 +796,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     activities.add(ChessTable.spot, this.chess);
     activities.add(SlaveTable.spot, this.slave);
     activities.add(SideFloor.spot, this.side);
+    activities.add(DrawGuess.spot, this.tel);
     return activities;
   }
 

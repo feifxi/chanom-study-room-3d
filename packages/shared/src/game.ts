@@ -119,7 +119,11 @@ export interface GamePresence {
  * `chess:draw:answer` { accept }, and Slave's `slave:play` { cards }, `slave:pass`,
  * `slave:giveBack` { cards } and `slave:hand` (send me my cards again, once the page listens);
  * the framework's `activity:start` { spot } (E at a standing spot) and `activity:game` { gameId }
- * (the host's pick), and Pick a Side's `side:deck` (SideDeckPick).
+ * (the host's pick), Pick a Side's `side:deck` (SideDeckPick), and Draw & Guess's `tel:part`
+ * { step, s, color, size, pts } (a drawing in pieces under 4 KB, like the whiteboard's), `tel:send`
+ * { step, text? } (done), `tel:react` { chain, entry, emoji }, `tel:pause` { paused },
+ * `tel:next` and `tel:sync`. The server sends Draw & Guess's `tel:turn` (TelTurn, to you alone),
+ * `tel:collect` { step } (time's up: send what you have) and `tel:album` { chains }.
  * What the server sends besides state: `said`, `quiet`, `voice`, `watch:refused` (WatchRefused in watch.ts), `activity:out` (ActivityOut),
  * `slave:hand` (SlaveHand: your own cards, sent only to you), and for the cats and study buddies
  * `npc:summoned` ({@link NpcSummoned}), `npc:said` ({@link Said}, the NPC's id), `npc:react`

@@ -28,6 +28,10 @@
     "./pick-a-side": {
       "types": "./dist/pickASide.d.ts",
       "default": "./dist/pickASide.js"
+    },
+    "./draw-guess": {
+      "types": "./dist/drawGuess.d.ts",
+      "default": "./dist/drawGuess.js"
     }
   },
   "scripts": {

@@ -421,6 +421,7 @@ export default function RoomView({
       : undefined;
   const sharePhoto = shareToChat('📸 Shared to Room chat', 'Couldn’t share that photo. Try again?');
   const shareBoard = shareToChat('🎨 Board shared to Room chat', 'Couldn’t share the board. Try again?');
+  const shareChain = shareToChat('📖 Chain shared to Room chat', 'Couldn’t share that chain. Try again?');
   // Pick a Side's decks: the room's own in a real room, this browser's in the demo
   const roomDecks = useRoomDecks(room instanceof LiveRoom && place ? place.id : null, !!place?.myRole);
   const localDecks = useLocalShelf();
@@ -430,7 +431,13 @@ export default function RoomView({
   useEffect(() => {
     if (!(room instanceof LiveRoom)) return;
     return room.onActivityOut(({ why }) =>
-      toast(why === 'away' ? 'You were away from the game for 30 s, so you’re out' : 'You left the game'),
+      toast(
+        why === 'away'
+          ? 'You were away from the game for 30 s, so you’re out'
+          : why === 'idle'
+            ? 'You missed two turns, so you’re out. You can still watch the album'
+            : 'You left the game',
+      ),
     );
   }, [room]);
   // A link the game server wouldn't put on the big screen
@@ -1223,6 +1230,7 @@ export default function RoomView({
                           hub={hub}
                           game={hub.tel}
                           st={myState}
+                          onShare={shareChain}
                           name={(id) => who(id).name}
                           now={sideNow}
                           // As big as the stage allows (height-limited on laptops: the stage less the panel's

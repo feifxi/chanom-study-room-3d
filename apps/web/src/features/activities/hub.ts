@@ -134,6 +134,14 @@ export interface ActivityRemote {
   open(spotId: SpotId): void;
   pickGame(gameId: string): void;
   pickDeck(deck: Deck): void;
+  /** Draw & Guess: your turn's source, then the album (only what you may see) */
+  tel(): TelGame | null;
+  telSend(entry: Omit<Entry, 'by'>): void;
+  /** What you have so far: the server asks for it when the time runs out */
+  telDraft(text: string, strokes: Stroke[]): void;
+  telReact(chain: number, entry: number, emoji: string): void;
+  telPause(paused: boolean): void;
+  telNext(): void;
 }
 
 /**
@@ -294,6 +302,7 @@ export class ActivityHub {
       this.slave = this.activities.slave();
       this.side = this.activities.side();
       this.floorDeck = this.activities.floorDeck() ?? this.floorDeck;
+      this.tel = this.activities.tel();
     }
     for (const spot of SPOTS) {
       if (!spot.built) continue;
@@ -475,11 +484,13 @@ export class ActivityHub {
 
   /** What you have so far this turn: sent as it is when the time runs out. */
   setTelDraft(text: string, strokes: Stroke[]) {
+    if (this.served('art')) this.activities!.telDraft(text, strokes);
     this.telDraft = { text, strokes };
   }
 
   /** Send your turn (Done, or the timer ran out). Empty counts towards being out. */
   telSend(id: string, entry: Omit<Entry, 'by'>) {
+    if (this.served('art')) return void (id === 'me' && this.activities!.telSend(entry));
     const g = this.tel;
     if (!g || g.stage !== 'turn' || g.sent[id]) return;
     const c = chainOf(g, id);
@@ -540,6 +551,7 @@ export class ActivityHub {
 
   /** Host: pause or carry on the album. */
   telPause(paused: boolean, now = Date.now()) {
+    if (this.served('art')) return this.activities!.telPause(paused);
     const g = this.tel;
     if (!g || g.stage !== 'reveal') return;
     g.reveal.paused = paused;
@@ -549,6 +561,7 @@ export class ActivityHub {
 
   /** Host: skip to the next chain (or end the album after the last one). */
   telNextChain(now = Date.now()) {
+    if (this.served('art')) return this.activities!.telNext();
     const g = this.tel;
     if (!g || g.stage !== 'reveal') return;
     if (g.reveal.chain + 1 >= g.chains.length) {
@@ -564,6 +577,7 @@ export class ActivityHub {
   }
 
   telReact(chain: number, entry: number, emoji: string) {
+    if (this.served('art')) return this.activities!.telReact(chain, entry, emoji);
     const g = this.tel;
     if (!g) return;
     const key = `${chain}:${entry}`;
