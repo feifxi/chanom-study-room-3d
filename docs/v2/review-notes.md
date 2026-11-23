@@ -520,7 +520,7 @@ A headless run: Mai gifted Jod 3 months with a note from Friends; Mai landed in 
 card and "Gift sent to Jod"; Jod had Plus until 23 Feb 2027, the card with the note, the 🔔 notice,
 and no receipt; Mai had the ฿249 receipt and "Gifts you sent".
 
-### Plus, part 4: when Plus ends
+### Plus, part 4: when Plus ends (`fb3119a`)
 
 **Changed:** rooms read their owner's Plus through `roomPlus` (Plus plus 7 days of grace), while
 personal perks keep `hasPlus`. A 10-minute sweep (`PlusEndingService`) sends each step once per
