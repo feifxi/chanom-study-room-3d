@@ -449,7 +449,7 @@ out with Jod in the room (Jod sees the tag and note, and no Goodbye), and Puff g
 20 s after Mai closed her tab. `demo:perf` passed on every map (one café battery-saver row went
 over on JS time once and passed on the rerun).
 
-### Plus, part 1: Plus on the account
+### Plus, part 1: Plus on the account (`f15cb82`)
 
 **Changed:** `users.plus_until` and a `plus` module on the API (`GET /api/plus`, `plus` and
 `plusUntil` on `/api/me`, a dev-only `POST /api/plus/dev`). The "nobody has Plus" constant in rooms
