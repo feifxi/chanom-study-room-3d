@@ -369,7 +369,7 @@ A headless run with three people (one on a phone) played a whole game: prompts, 
 collected by the timer without Done), descriptions, then the album in step with the host's Pause
 and Finish.
 
-### Coins and quests, part 1: quests and coins
+### Coins and quests, part 1: quests and coins (`c403553`)
 
 **Changed:** daily quests and coins are real. The rules and the day's pick moved to
 `@connecta/shared/quests`; the API's new `src/quests` module counts and pays (`quest_progress`,
