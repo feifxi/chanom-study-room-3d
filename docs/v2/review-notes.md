@@ -694,7 +694,7 @@ suspension, its end and the reason; the email arrived. Undone afterwards.
       it goes to sign-in. A tab that ignores the event keeps its socket until it reconnects (the
       handshake then fails, as the session is gone). Not tested.
 
-### Admin site, part 2: Reports
+### Admin site, part 2: Reports (`bbba969`)
 
 **Changed:** the API's reports queue (`ReportsAdminService`: cases, decisions), `rooms.delisted_at` and
 `closed_at` (Discover skips both; a closed room refuses tickets and chat with `code: 'closed'` and
