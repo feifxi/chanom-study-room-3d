@@ -391,7 +391,7 @@ reached a break; a refused Buddy Machine summon no longer counts). A headless ru
 with others counted through the queue, and the Buddy Machine paying 15 coins with the toast,
 shown live in My tools and the Shop.
 
-### Coins and quests, part 2: the Shop's first set
+### Coins and quests, part 2: the Shop's first set (`a12d0a6`)
 
 **Changed:** the Shop sells 10 items that really show on your character: 6 accessories and 4 outfit
 shapes (in your outfit colour), built in code (`features/avatar/character.ts`, the same in the demo
