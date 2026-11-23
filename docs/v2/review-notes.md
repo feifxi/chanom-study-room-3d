@@ -281,7 +281,7 @@ moves to the new connection (like the focus timer), with the 30 s to sit back do
 with Mai (desktop) and Jod (phone) checked the invite card, the lobby, Start, colours on both
 boards, a move seen by the other, and Resign ending it with the results card.
 
-### Party and table games, part 2: Slave
+### Party and table games, part 2: Slave (`307c590`)
 
 **Changed:** Slave runs on the game server (`apps/game/src/slave.ts`, `SlaveTable`) with the rules
 moved to `@connecta/shared/slave`: the deal, the 3♣ leading, every play checked, the 20 s / 15 s
