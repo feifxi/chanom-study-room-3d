@@ -20,6 +20,10 @@
     "./chess": {
       "types": "./dist/chess.d.ts",
       "default": "./dist/chess.js"
+    },
+    "./slave": {
+      "types": "./dist/slave.d.ts",
+      "default": "./dist/slave.js"
     }
   },
   "scripts": {

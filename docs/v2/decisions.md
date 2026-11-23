@@ -426,6 +426,10 @@ decision is made or changed: one line, a date, and the reason.
   for, for the 12-hour cap, while rankings use the viewer's time zone. **Guests** show in "This room
   today" from the game server's memory and are never saved. A running round shows 📖 even if you've
   gone quiet: focusing is never Away, for friends too.
+- **Slave's hands go to each player alone** (2026-11-23): the room state is seen by everyone in the
+  room, so hands travel as a private `slave:hand` message and the state carries only the counts.
+  Colyseus's per-client state views could do the same, but a message is simpler and easy to
+  resend after a reload.
 - **Party and table games, one game per part** (2026-11-23, the owner): 1. the round flow and chess
   (the smallest real game proves the whole flow, Call everyone included); 2. Slave (hidden hands,
   turn timers); 3. the whiteboard; 4. Pick a Side; 5. Draw & Guess. Also agreed: Pick a Side gets

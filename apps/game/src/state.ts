@@ -134,6 +134,37 @@ export const Chess = schema(
 );
 export type Chess = SchemaType<typeof Chess>;
 
+/** One pair in Slave's swap: the King (or Queen) gives `count` cards back to `to` */
+export const SlaveSwap = schema(
+  {
+    giver: t.string().default(''),
+    to: t.string().default(''),
+    count: t.number().default(0),
+  },
+  'SlaveSwap',
+);
+
+/** Slave at the card table (SlaveView in packages/shared): the public part only, never a hand */
+export const Slave = schema(
+  {
+    stage: t.string().default(''),
+    players: t.array('string'),
+    counts: t.map('number'),
+    pileBy: t.string().default(''),
+    pileCards: t.array('number'),
+    passed: t.array('string'),
+    turn: t.string().default(''),
+    until: t.number().default(0),
+    finished: t.array('string'),
+    gone: t.array('string'),
+    titles: t.map('string'),
+    swap: t.array(SlaveSwap),
+    rev: t.number().default(0),
+  },
+  'Slave',
+);
+export type Slave = SchemaType<typeof Slave>;
+
 export const RoomState = schema(
   {
     /** The room's map; changing it (Room settings) moves everyone to the new map's door */
@@ -141,9 +172,10 @@ export const RoomState = schema(
     players: t.map(Player),
     npcs: t.map(Npc),
     watch: t.ref(Watch),
-    /** The activity spots the game server runs (chess for now; the others still run in each browser) */
+    /** The activity spots the game server runs (the table games; the others still run in each browser) */
     spots: t.map(Spot),
     chess: t.ref(Chess),
+    slave: t.ref(Slave),
   },
   'RoomState',
 );

@@ -40,6 +40,10 @@ import { readTicket } from './ticket.js';
 import { voice } from './voice.js';
 import { Tv, youtube } from './watch.js';
 import { Activities, ChessTable } from './activity.js';
+import { SlaveTable } from './slave.js';
+
+/** A Slave play: 1–4 cards, each 0–51 */
+const CARDS = z.array(z.number().int().min(0).max(51)).min(1).max(4);
 
 /** Set by the entry point from GAME_SECRET. */
 export const secrets = { ticket: '' };
@@ -103,8 +107,15 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
   private focusDone = new Map<string, number>();
   /** Watch together's big screen (feature 10): in memory, gone when the room empties */
   private tv = new Tv(this.state.watch);
-  /** The activity spots this server runs (feature 9): chess for now */
+  /** The activity spots this server runs (feature 9): the table games so far */
   private chess = new ChessTable(this.state.chess);
+  private slave = new SlaveTable(this.state.slave, {
+    seatIndex: (sessionId) => {
+      const seats = SlaveTable.spot.seats(this.map) ?? [];
+      return seats.indexOf(this.state.players.get(sessionId)?.seatId ?? '');
+    },
+    send: (sessionId, type, message) => this.clients_.get(sessionId)?.send(type, message),
+  });
   private activities = this.makeActivities();
 
   messages = {
@@ -211,6 +222,11 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     'chess:resign': (client: Client) => this.chess.resign(client.sessionId),
     'chess:draw:offer': (client: Client) => this.chess.offerDraw(client.sessionId),
     'chess:draw:answer': validate(z.object({ accept: z.boolean() }), (client, msg) => this.chess.answerDraw(client.sessionId, msg.accept)),
+    'slave:play': validate(z.object({ cards: CARDS }), (client, msg) => this.slave.play(client.sessionId, msg.cards)),
+    'slave:pass': (client: Client) => this.slave.pass(client.sessionId),
+    // The page is listening: your cards again (after a reload mid-game they were sent before it was)
+    'slave:hand': (client: Client) => this.slave.joined(client.sessionId),
+    'slave:giveBack': validate(z.object({ cards: CARDS }), (client, msg) => this.slave.giveBack(client.sessionId, msg.cards)),
 
     /** Photo mode (feature 10): 📸 by your name while it's open, so people can pose */
     photo: validate(z.object({ on: z.boolean() }), (client, msg) => {
@@ -462,6 +478,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     // Replaced by a newer tab while away
     if (!this.priv.has(client.sessionId)) return void client.leave(GAME_CLOSE.elsewhere);
     this.clients_.set(client.sessionId, client);
+    this.slave.joined(client.sessionId);
   }
 
   onLeave(client: Client) {
@@ -660,6 +677,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       send: (sessionId, type, message) => this.clients_.get(sessionId)?.send(type, message),
     });
     activities.add(ChessTable.spot, this.chess);
+    activities.add(SlaveTable.spot, this.slave);
     return activities;
   }
 

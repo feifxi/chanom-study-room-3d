@@ -1,7 +1,8 @@
 # 9. Activity framework
 
 **Status:** decided and built in the demo. On the real backend (2026-11-23) the game server runs the
-round flow for **chess**; the other spots still run in each browser until their games come over
+round flow for the table games (**chess** and **Slave**); the other spots still run in each
+browser until their games come over
 (step 5's party and table games, one part each). **Try it:**
 http://localhost:3100/servers/chanom/rooms/library
 
@@ -150,7 +151,8 @@ walking onto a colour, never dims the room.
 - `apps/game/src/activity.ts` runs the flow: per spot `{ phase, gameId, hostId, players, nextRound,
 out, awaySince, startsAt, inviteBy, inviteAt, results, resultsUntil }` in the room state
   (`spots`, people as session ids). The server decides who's in from the seats and positions it
-  already has; games plug in as a `RoundGame` (`start`, `out`, `standing`, `stop`, `renamed`).
+  already has; games plug in as a `RoundGame` (`start`, `out`, `standing`, `stop`, `renamed`, and
+  `tick` for turn timers).
   Messages: `activity:begin`, `activity:end`, `activity:call` (the host's), `activity:leave`;
   `activity:out { spot, why }` tells someone the round let them go.
 - **Leaving the room is leaving** (out at once); a dropped connection has the 30 s. A **reload**

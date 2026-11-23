@@ -113,8 +113,10 @@ export interface GamePresence {
  * `watch:remove` { key } and `watch:off` (owners and mods), `photo` { on } (photo mode's 📸), and the
  * activity framework's `activity:begin`, `activity:end`, `activity:leave`, `activity:call` { spot }
  * with chess's `chess:move` { from, to, promotion? }, `chess:resign`, `chess:draw:offer` and
- * `chess:draw:answer` { accept }.
- * What the server sends besides state: `said`, `quiet`, `voice`, `watch:refused` (WatchRefused in watch.ts), `activity:out` (ActivityOut), and for the cats and study buddies
+ * `chess:draw:answer` { accept }, and Slave's `slave:play` { cards }, `slave:pass`,
+ * `slave:giveBack` { cards } and `slave:hand` (send me my cards again, once the page listens).
+ * What the server sends besides state: `said`, `quiet`, `voice`, `watch:refused` (WatchRefused in watch.ts), `activity:out` (ActivityOut),
+ * `slave:hand` (SlaveHand: your own cards, sent only to you), and for the cats and study buddies
  * `npc:summoned` ({@link NpcSummoned}), `npc:said` ({@link Said}, the NPC's id), `npc:react`
  * ({@link NpcReact}), `npc:note` ({@link NpcNote}) and `npc:refused` ({@link NpcRefused}).
  */

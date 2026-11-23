@@ -122,6 +122,11 @@ export interface ActivityRemote {
   chessResign(): void;
   chessOfferDraw(): void;
   chessAnswerDraw(accept: boolean): void;
+  /** Slave with your own hand (the others' are blanks, one per card they hold) */
+  slave(): slave.SlaveGame | null;
+  slavePlay(cards: slave.Card[]): void;
+  slavePass(): void;
+  slaveGiveBack(cards: slave.Card[]): void;
 }
 
 /**
@@ -277,7 +282,10 @@ export class ActivityHub {
 
   tick(now: number) {
     const served = this.activities?.spots() ?? {};
-    if (this.activities) this.chess = this.activities.chess();
+    if (this.activities) {
+      this.chess = this.activities.chess();
+      this.slave = this.activities.slave();
+    }
     for (const spot of SPOTS) {
       if (!spot.built) continue;
       const st = this.spots[spot.id];
@@ -742,6 +750,7 @@ export class ActivityHub {
   }
 
   slavePlay(id: string, cards: slave.Card[]) {
+    if (this.served('cards')) return (this.activities!.slavePlay(cards), true);
     const g = this.slave;
     if (!g || !slave.play(g, id, cards, Date.now())) return false;
     this.slaveAfter();
@@ -749,12 +758,14 @@ export class ActivityHub {
   }
 
   slavePass(id: string) {
+    if (this.served('cards')) return this.activities!.slavePass();
     const g = this.slave;
     if (!g || !slave.pass(g, id, Date.now())) return;
     this.slaveAfter();
   }
 
   slaveGiveBack(id: string, cards: slave.Card[]) {
+    if (this.served('cards')) return this.activities!.slaveGiveBack(cards);
     const g = this.slave;
     if (!g || !slave.giveBack(g, id, cards, Date.now())) return;
     this.slaveAfter();

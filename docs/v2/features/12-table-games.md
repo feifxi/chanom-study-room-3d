@@ -3,7 +3,7 @@
 **Status:** **done in the demo** (chess and Slave, 2026-11-21). Werewolf was dropped on 2026-11-20
 and Color Cards on 2026-11-21 (see [the decision log](../decisions.md)). On the real backend:
 **chess** runs on the game server (2026-11-23, Library only until the other maps get a chess
-table); Slave is next.
+table); **Slave** too (2026-11-23).
 
 **Try chess:** http://localhost:3100/servers/chanom/rooms/library → Activities → Chess → **Go
 there**, **E** to sit, 📣 **Call everyone** (a friend takes the other stool), **Start**. To watch,
@@ -84,7 +84,8 @@ castling, en passant, promotion and the automatic draws.
 ## Slave
 
 At the **card table** (6 stools), **3–6 players**, Thai rules kept simple. Code:
-`demo/src/features/activities/slave/` (`game.ts` the rules, `SlavePanel.tsx` the screen).
+the rules are `@connecta/shared/slave` (`packages/shared/src/slave.ts`), the screen
+`apps/web/src/features/activities/slave/SlavePanel.tsx`.
 
 ### Rules
 
@@ -136,11 +137,13 @@ At the **card table** (6 stools), **3–6 players**, Thai rules kept simple. Cod
 
 ### Backend notes
 
-- The server owns the game: `{ players, hands, pile, passed, turn, until, finished, gone, titles,
-swap, stage }`. **Each client receives only its own hand** and the others' card counts. Clients
-  send `slave:play {cards}`, `slave:pass`, `slave:giveBack {cards}`; the server checks them with
-  the same rules (`canPlay`) and runs the turn timer. Watchers get the public part only (pile,
-  counts, turn, titles).
+- The server owns the game (`SlaveTable` in `apps/game/src/slave.ts`). The room state `slave` is
+  the public part only: `{ stage, players, counts, pileBy, pileCards, passed, turn, until,
+finished, gone, titles, swap }`. **Each player gets only their own hand** in a `slave:hand
+{ cards, got, rev }` message (`got`: what the King or Queen was given in the swap); a page asks
+  for it again with `slave:hand` once it listens (a reload mid-game). Clients send `slave:play
+{cards}`, `slave:pass`, `slave:giveBack {cards}`; the server checks them with the same rules
+  (`canPlay`) and runs the turn and swap timers. Watchers see the public part only.
 - Titles live with the table's group between games; nothing is stored.
 
 ### Not now

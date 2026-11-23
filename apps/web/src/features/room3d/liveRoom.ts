@@ -15,10 +15,12 @@ import type {
   WatchRefused,
   WatchVideo,
   ActivityOut,
+  SlaveHand,
 } from '@connecta/shared';
 import type { ActivityRemote, SpotState, Video, WatchRemote, WatchState } from '../activities/hub';
 import type { SpotId } from '../activities/spots';
 import type { ChessGame, EndReason } from '../activities/chess/game';
+import type { SlaveGame, Title } from '../activities/slave/game';
 import type { PieceSymbol, Square } from 'chess.js';
 import type { GameRoom } from '@/features/game/useGame';
 import type { MapDef } from '../map/types';
@@ -139,7 +141,10 @@ export class LiveRoom extends MockRoom {
       game.onMessage('npc:refused', (m: NpcRefused) => this.npcListeners.forEach((l) => l.refused(m.reason))),
       game.onMessage('said', (m: Said) => this.saidListeners.forEach((fn) => fn(m.id === game.sessionId ? 'me' : m.id, m.text))),
       game.onMessage('quiet', (m: Quiet) => this.quietListeners.forEach((fn) => fn(m.until))),
+      game.onMessage('slave:hand', (m: SlaveHand) => (this.slaveHand = m)),
     ];
+    // Slave: your cards, in case a game is on (they only come when they change)
+    game.send('slave:hand');
     this.sync();
     return () => {
       clearTimeout(this.subjectTimer);
@@ -220,6 +225,48 @@ export class LiveRoom extends MockRoom {
     return game;
   }
 
+  /** Your own Slave cards: only you get them */
+  private slaveHand: SlaveHand | null = null;
+  private slaveCache: { key: string; game: SlaveGame | null } = { key: '', game: null };
+  /** Slave in the rules' shape: your hand, blanks for the others' (rebuilt only when it changes) */
+  private slaveView(): SlaveGame | null {
+    const s = this.game.state?.slave;
+    const hand = this.slaveHand;
+    if (!s) return null;
+    const cacheKey = `${s.rev}/${hand?.rev ?? -1}/${hand?.cards.length ?? -1}`;
+    if (cacheKey === this.slaveCache.key) return this.slaveCache.game;
+    const key = (id: string) => this.key(id);
+    const players = [...s.players];
+    const game: SlaveGame | null = s.stage
+      ? {
+          players: players.map(key),
+          hands: Object.fromEntries(
+            players.map((id) => [
+              key(id),
+              id === this.game.sessionId && hand ? [...hand.cards] : Array<number>(s.counts.get(id) ?? 0).fill(-1),
+            ]),
+          ),
+          pile: s.pileBy ? { by: key(s.pileBy), cards: [...s.pileCards] } : null,
+          passed: [...s.passed].map(key),
+          turn: key(s.turn),
+          until: s.until,
+          finished: [...s.finished].map(key),
+          gone: [...s.gone].map(key),
+          titles: Object.fromEntries([...s.titles.entries()].map(([id, t]) => [key(id), t as Title])),
+          swap: [...s.swap].map((x) => ({
+            giver: key(x.giver),
+            to: key(x.to),
+            count: x.count,
+            got: x.giver === this.game.sessionId ? [...(hand?.got ?? [])] : [],
+          })),
+          stage: s.stage as SlaveGame['stage'],
+          rev: s.rev,
+        }
+      : null;
+    this.slaveCache = { key: cacheKey, game };
+    return game;
+  }
+
   /** The hub's way to the spots the server runs */
   readonly activityRemote: ActivityRemote = {
     spots: () => {
@@ -256,6 +303,10 @@ export class LiveRoom extends MockRoom {
     chessResign: () => this.game.send('chess:resign'),
     chessOfferDraw: () => this.game.send('chess:draw:offer'),
     chessAnswerDraw: (accept) => this.game.send('chess:draw:answer', { accept }),
+    slave: () => this.slaveView(),
+    slavePlay: (cards) => this.game.send('slave:play', { cards }),
+    slavePass: () => this.game.send('slave:pass'),
+    slaveGiveBack: (cards) => this.game.send('slave:giveBack', { cards }),
   };
 
   /** A round let you go (you pressed Leave, or were away from it for 30 s) */

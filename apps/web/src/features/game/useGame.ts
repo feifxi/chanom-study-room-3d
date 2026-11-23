@@ -9,6 +9,7 @@ import {
   type GameJoinOptions,
   type NpcView,
   type PlayerView,
+  type SlaveView,
   type SpotView,
   type WatchView,
 } from '@connecta/shared';
@@ -24,6 +25,7 @@ export interface GameState {
   /** The activity spots the game server runs (feature 9): chess for now */
   spots?: Map<string, SpotView>;
   chess?: ChessView;
+  slave?: SlaveView;
 }
 export type GameRoom = Room<unknown, GameState>;
 

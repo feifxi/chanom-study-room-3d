@@ -16,8 +16,8 @@ import { Spot, type Chess, type Player } from './state.js';
  * - **Host:** whoever started it (the first to sit); when they go, the next in arrival order.
  * - **📣 Call everyone:** the host's one invite card to the whole room.
  *
- * Games plug in with {@link RoundGame}. Chess is the first; the other spots still run in each browser
- * until their games come over (step 5's party and table games).
+ * Games plug in with {@link RoundGame}: chess (below) and Slave (`slave.ts`) so far; the other spots
+ * still run in each browser until their games come over (step 5's party and table games).
  */
 
 /** What the room lends the framework */
@@ -34,6 +34,8 @@ export interface RoundGame {
   start(players: string[], now: number): void;
   /** Someone's out mid-round (left, or away too long) */
   out(id: string): void;
+  /** Each server tick while it's on (turn timers) */
+  tick?(now: number): void;
   /** The round is over: the places, winner first (everyone still in). Null while it's on. */
   standing(): string[] | null;
   /** End pressed, or the spot emptied: no result */
@@ -42,7 +44,7 @@ export interface RoundGame {
   renamed(from: string, to: string): void;
 }
 
-interface SpotDef {
+export interface SpotDef {
   id: SpotId;
   /** Being in: one of these seats, or (no seats) standing in the area */
   seats(map: MapData): string[] | null;
@@ -124,6 +126,7 @@ export class Activities {
           counted.filter((x) => !st.players.includes(x) && !st.out.includes(x)),
         );
         if (!st.players.includes(st.hostId)) st.hostId = st.players[0] ?? '';
+        game.tick?.(now);
         const standing = game.standing();
         if (standing) this.finish(st, standing);
         else if (st.players.length <= 1) this.finish(st, [...st.players]);

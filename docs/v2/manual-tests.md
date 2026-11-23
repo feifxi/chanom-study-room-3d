@@ -357,3 +357,25 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
       running, no invite card; it stays on after a reload and on another device. Off: cards show.
 - [ ] In the Café or Rooftop, the Activities list has no chess.
 - [ ] Phone width: the lobby card, the board and the results card fit.
+
+### Party and table games, part 2: Slave
+
+- [ ] Three people in a real Library room sit at the card table (Activities → Card games → Go
+      there, **E**). The host's **Start** deals: 18/17/17 (with 4: 13 each); each sees only their
+      own hand, the others as chips with their card counts.
+- [ ] Whoever holds the **3♣** leads; only the player whose turn it is can pick cards, **Play**
+      lights up only for a legal play, and the pile shows on everyone's felt ("Mai played a pair").
+- [ ] **Pass** sits you out of that trick; when everyone else has passed, the last player leads
+      anything. You can't pass when leading.
+- [ ] Let the turn bar run out: you pass, or when leading, your lowest card is played.
+- [ ] Play to the end: the results card shows 👑 King, (💎 Queen with 4+), 🧹 Slave; the King's and
+      Slave's name labels show 👑 and 🧹 while the group stays at the table.
+- [ ] **Play again** with the same group: the swap. The Slave's 2 best go to the King, who picks 2
+      to give back (Give back 2/2); with a Queen, the same with 1. Let 20 s run out: the lowest cards
+      go back. Then the Slave leads. Someone new at the table: a fresh deal, no swap.
+- [ ] Mid-game **Leave** (or walk away 30 s): "Jod left" on the chips, the others play on; with
+      one left holding cards, it ends.
+- [ ] Mid-game reload: back at the door with your same cards; sit back within 30 s and play on.
+- [ ] Someone standing on the card table's rug sees the small view (turn, pile, counts) and never
+      anyone's cards.
+- [ ] Phone width: the hand overlaps but every card can be tapped; the buttons fit.

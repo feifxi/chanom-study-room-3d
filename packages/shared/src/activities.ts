@@ -53,6 +53,36 @@ export interface ActivityOut {
   why: 'left' | 'away';
 }
 
+/**
+ * Slave as the room state shows it (`slave`): everything public. Hands are private: each player
+ * gets only their own in a {@link SlaveHand} message, and everyone sees the counts.
+ */
+export interface SlaveView {
+  /** '' when there's no game */
+  stage: string;
+  players: Iterable<string>;
+  counts: Map<string, number>;
+  pileBy: string;
+  pileCards: Iterable<number>;
+  passed: Iterable<string>;
+  turn: string;
+  until: number;
+  finished: Iterable<string>;
+  gone: Iterable<string>;
+  /** In finishing order of the game that gave them */
+  titles: Map<string, string>;
+  swap: Iterable<{ giver: string; to: string; count: number }>;
+  rev: number;
+}
+
+/** `slave:hand`: your cards (and, as King or Queen during the swap, what you were given) */
+export interface SlaveHand {
+  cards: number[];
+  got: number[];
+  /** The game's rev it goes with */
+  rev: number;
+}
+
 /** Chess as the room state shows it (`chess`); the rules are `@connecta/shared/chess` */
 export interface ChessView {
   white: string;

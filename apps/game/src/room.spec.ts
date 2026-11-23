@@ -18,12 +18,14 @@ import {
   type Said,
   type ActivityOut,
   type ChessView,
+  type SlaveHand,
+  type SlaveView,
   type SpotView,
   type WatchRefused,
   type WatchVideo,
   type WatchView,
 } from '@connecta/shared';
-import { mapDataFor } from '@connecta/shared/maps';
+import { cardSeats, mapDataFor } from '@connecta/shared/maps';
 import { timing } from './focus.js';
 import { dispatch, dispatchWalkedIn, links } from './links.js';
 import { decodeJwt } from 'jose';
@@ -44,6 +46,7 @@ type GameRoom = Room<
     watch: WatchView & { queue: WatchVideo[] };
     spots: Map<string, SpotView & { players: string[]; out: string[]; results: string[]; nextRound: string[] }>;
     chess: ChessView & { moves: string[] };
+    slave: SlaveView & { players: string[]; pileCards: number[]; gone: string[]; finished: string[] };
   }
 >;
 
@@ -664,6 +667,80 @@ describe('activities: chess', () => {
     await until(() => spot(a).phase === 'gathering');
     expect(a.state.chess.fen).toBe('');
     expect([...spot(a).results]).toEqual([]);
+  });
+});
+
+describe('activities: Slave', () => {
+  const spot = (r: GameRoom) => r.state.spots.get('cards')!;
+  const seats = cardSeats(mapDataFor('library').cardTables[0]!);
+  /** Walk up to a card table stool and sit; remember the cards the server sends only to you */
+  async function sitDown(r: GameRoom, i: number) {
+    const seat = seats[i]!;
+    await walkTo(r, seat.out);
+    r.send('sit', { seatId: seat.id });
+    await until(() => me(r).seatId === seat.id);
+  }
+  async function table() {
+    const people = [walkIn(), walkIn({ sub: 'u-jod', name: 'Jod' }), walkIn({ sub: 'u-ploy', name: 'Ploy' })];
+    const rooms = (await Promise.all(people)).map(track);
+    const hands = new Map<GameRoom, SlaveHand>();
+    for (const r of rooms) r.onMessage('slave:hand', (h: SlaveHand) => hands.set(r, h));
+    for (const [i, r] of rooms.entries()) await sitDown(r, i * 2);
+    await until(() => spot(rooms[0]!).players.length === 3);
+    rooms[0]!.send('activity:begin');
+    await until(() => rooms[0]!.state.slave.stage === 'play', 5000);
+    await until(() => hands.size === 3);
+    return { rooms, hands };
+  }
+
+  it('deals hidden hands: each player gets only their own; the 3♣ leads; plays are checked', { timeout: 30_000 }, async () => {
+    const { rooms, hands } = await table();
+    const [a] = rooms as [GameRoom, GameRoom, GameRoom];
+    const all = rooms.flatMap((r) => hands.get(r)!.cards);
+    expect(all.sort((x, y) => x - y)).toEqual(Array.from({ length: 52 }, (_, i) => i));
+    expect([...a.state.slave.counts.values()].reduce((x, y) => x + y)).toBe(52);
+    const leader = rooms.find((r) => hands.get(r)!.cards.includes(0))!;
+    expect(a.state.slave.turn).toBe(leader.sessionId);
+    // Someone else can't play, and the leader can't play a card they don't hold or a mixed pair
+    const other = rooms.find((r) => r !== leader)!;
+    other.send('slave:play', { cards: [hands.get(other)!.cards[0]!] });
+    leader.send('slave:play', { cards: [hands.get(other)!.cards[0]!] });
+    leader.send('slave:pass');
+    await quietly(300);
+    expect(a.state.slave.pileCards.length).toBe(0);
+    leader.send('slave:play', { cards: [0] });
+    await until(() => a.state.slave.pileBy === leader.sessionId);
+    expect([...a.state.slave.pileCards]).toEqual([0]);
+    await until(() => !hands.get(leader)!.cards.includes(0));
+    expect(a.state.slave.counts.get(leader.sessionId)).toBe(hands.get(leader)!.cards.length);
+    expect(a.state.slave.turn).not.toBe(leader.sessionId);
+  });
+
+  it('a reload mid-game keeps your cards: the page asks and they come back to you alone', { timeout: 30_000 }, async () => {
+    const { rooms, hands } = await table();
+    const [a, b] = rooms as [GameRoom, GameRoom, GameRoom];
+    const mine = hands.get(b)!.cards;
+    const b2 = track(await walkIn({ sub: 'u-jod', name: 'Jod' }));
+    let again: SlaveHand | null = null;
+    b2.onMessage('slave:hand', (h: SlaveHand) => (again = h));
+    b2.send('slave:hand');
+    await until(() => again !== null);
+    expect(again!.cards).toEqual(mine);
+    expect([...a.state.slave.players]).toContain(b2.sessionId);
+  });
+
+  it('someone who leaves is out as last and the others play on', { timeout: 30_000 }, async () => {
+    const { rooms } = await table();
+    const [a, b, c] = rooms as [GameRoom, GameRoom, GameRoom];
+    c.send('activity:leave');
+    await until(() => [...a.state.slave.gone].includes(c.sessionId));
+    expect(spot(a).phase).toBe('playing');
+    expect(a.state.slave.counts.get(c.sessionId)).toBe(0);
+    // A second leaver ends it: the last one holding cards wins
+    b.send('activity:leave');
+    await until(() => spot(a).phase === 'results');
+    expect([...spot(a).results]).toEqual([a.sessionId, b.sessionId, c.sessionId]);
+    expect(a.state.slave.titles.get(a.sessionId)).toBe('king');
   });
 });
 

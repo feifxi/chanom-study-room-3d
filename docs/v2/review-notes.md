@@ -67,8 +67,10 @@ Tick or strike these as they're dealt with.
       link, though the server's title is the one used: one extra request per link.
 - [ ] **Common rooms keep the demo's local TV** until moderation and open rooms; photo mode
       there has no Share (they're text only until feature 14).
-- [ ] **Card games, the whiteboard, Pick a Side and Draw & Guess still run in each browser** in
+- [ ] **The whiteboard, Pick a Side and Draw & Guess still run in each browser** in
       real rooms (only you see them) until their parts of party and table games.
+- [ ] **Slave's turn bar runs on the browser's clock** against the server's deadline; a clock that's
+      off by seconds shows the bar wrong (the server's timer is what counts).
 - [ ] **The invite card shows for 20 s on the browser's clock** against the server's time, like the
       other countdowns (a server time sync would fix them all).
 - [ ] **The photo frames are the three free ones**; the Shop's "Photo frames" come with Plus and
@@ -278,3 +280,18 @@ connection replaces the old session, which counted as leaving the room. Your pla
 moves to the new connection (like the focus timer), with the 30 s to sit back down. A headless run
 with Mai (desktop) and Jod (phone) checked the invite card, the lobby, Start, colours on both
 boards, a move seen by the other, and Resign ending it with the results card.
+
+### Party and table games, part 2: Slave
+
+**Changed:** Slave runs on the game server (`apps/game/src/slave.ts`, `SlaveTable`) with the rules
+moved to `@connecta/shared/slave`: the deal, the 3♣ leading, every play checked, the 20 s / 15 s
+turn timer and the swap's 20 s run there, and the same group's Play again starts with the swap.
+The room state carries only the public part (pile, counts, turn, titles); **each hand goes only to
+its player** (`slave:hand`), so nobody's browser holds anyone else's cards. A page asks for its
+hand when it starts listening (`slave:hand` from the client), which covers a reload mid-game.
+
+**Bugs found and fixed while building:** a hand sent while the page was still loading (a reload
+mid-game) would have been lost, leaving you with no cards on screen; the page now asks for it.
+A headless run with three people (Mai and Bow on desktop, Jod on a phone) checked the 17/17/18
+deal, the 3♣ holder leading, the play showing on the others' felt, and Jod leaving while the other
+two played on.
