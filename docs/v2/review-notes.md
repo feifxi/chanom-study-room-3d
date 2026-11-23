@@ -117,7 +117,7 @@ desk shares use the TV's share panel, one per table. YouTube stays each browser'
 **Bugs found and fixed while building:** none in the app (the browser test's own timing needed
 fixing).
 
-### Part 5: cats, study buddies and the Buddy Machine
+### Part 5: cats, study buddies and the Buddy Machine (`848eafb`)
 
 **Changed:** the Buddy Machine's panel was designed in the demo first and approved (summon a cat or
 a study buddy, the "In the room" list with Goodbye, limits and the cooldown, beside the machine so
