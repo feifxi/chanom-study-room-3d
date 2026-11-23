@@ -298,7 +298,7 @@ A headless run with three people (Mai and Bow on desktop, Jod on a phone) checke
 deal, the 3♣ holder leading, the play showing on the others' felt, and Jod leaving while the other
 two played on.
 
-### Party and table games, part 3: the whiteboard
+### Party and table games, part 3: the whiteboard (`c4be535`)
 
 **Changed:** the whiteboard is relayed by the game server (`apps/game/src/board.ts`, protocol in
 `packages/shared/src/board.ts`): strokes stream as points apart from the room state, kept in
