@@ -150,7 +150,7 @@ stool where E sat Jod down); neither was an app bug.
 
 ## Step 5: the rest, a feature at a time
 
-### Focus, part 1: the timer on the game server
+### Focus, part 1: the timer on the game server (`bb0830a`)
 
 **Changed:** the focus timer runs on the game server (`apps/game/src/focus.ts`): `focus:start`,
 `focus:stop` and `focus:subject` replace the client's old `status` message, and `away { on }` is
