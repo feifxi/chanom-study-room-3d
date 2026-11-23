@@ -200,7 +200,7 @@ covers it. Decision: [decision log](decisions.md), 2026-11-23.
 **Bugs found and fixed while building:** none. A headless run with two tabs in two rooms saw the
 first tab let go, Walk back in work, and the second tab let go in turn.
 
-### Focus, part 3: the Focus page and rankings
+### Focus, part 3: the Focus page and rankings (`d471d13`)
 
 **Changed:** `GET /api/focus/me` (my numbers) and `GET /api/focus/rankings` (Friends or Everyone,
 today or this week, in the viewer's time zone, 12 hours a day at most) replace the page's mock
