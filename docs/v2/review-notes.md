@@ -608,7 +608,7 @@ as "Mint" and "this is shit lol" popped up as "this is **** lol".
 - [ ] **Links aren't clickable in Common rooms** (spec 14) was already true for bubbles (bubbles
       never make links); nothing else changed there.
 
-### Moderation, part 3: reports
+### Moderation, part 3: reports (`b6876fb`)
 
 **Changed:** a `reports` table and the API's `reports` module (`POST /api/reports`) for people,
 messages and rooms, with the context the team needs. The automatic steps count accounts that are
