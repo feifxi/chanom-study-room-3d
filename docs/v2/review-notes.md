@@ -173,7 +173,7 @@ fixing (a start and stop slower than the 40 ms test "minute", state arriving a p
 headless run on the dev stack walked in, ran a real round for a minute, stopped it, and saw it
 saved (on the Bangkok day) and listed in Today.
 
-### Focus, part 2: the to-do list
+### Focus, part 2: the to-do list (`433889e`)
 
 **Changed:** the to-do list is on the API (`todos` table, `/api/todos`, full accounts only, 50
 items of 120 characters) with a 3 am job removing done items older than 7 days (the list hides
