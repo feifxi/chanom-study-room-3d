@@ -450,6 +450,14 @@ decision is made or changed: one line, a date, and the reason.
   stops sign-in and signs the person out everywhere at once; signing in shows until when, the reason,
   and "reply to our email to appeal" (a ban has no end). The word list moves into the database, with
   the API and the game server each keeping a copy refreshed when the team edits it.
+- **Platform settings in the database, shared through Redis** (2026-11-24): the word list, the
+  moderation switches and the Common room seats are edited on the admin site, so they left the
+  code. The API holds the truth and hands the whole set to Redis on every change; each API process
+  and game server applies it at once, and a game server reads it at start. Switching the word
+  filter off turns off masking and refusing everywhere (rooms can still turn it off for
+  themselves). Limits get no switch (slow mode is a room's own choice, and always on in Common
+  rooms); the smarter text check waits until it's needed. Reopening a closed room relists it too:
+  a close is the bigger step, and the team can delist again.
 - **Reports become cases, decided once** (2026-11-24): the queue groups every open report about the
   same person, message or room into one case (how many different accounts reported is the signal,
   as there's no voice recording). Urgent first: sexual content, danger, anything an automatic step

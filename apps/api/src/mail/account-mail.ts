@@ -39,3 +39,33 @@ export function accountMail(to: string, kind: AccountActionKind, reason: string,
 </div>`,
   };
 }
+
+export type RoomActionKind = 'delist' | 'relist' | 'close' | 'reopen';
+
+/** What the Connecta team did to a room, to its owner (admin site): the reason, and how to appeal. */
+export function roomMail(to: string, kind: RoomActionKind, roomName: string, reason: string): Mail {
+  const line = {
+    delist: `The Connecta team took ${roomName} off Discover. Members and invite links still work.`,
+    relist: `${roomName} is back on Discover.`,
+    close: `The Connecta team closed ${roomName}. Nobody can walk in or chat there for now.`,
+    reopen: `The Connecta team reopened ${roomName}. Everyone can walk in again.`,
+  }[kind];
+  const subject = {
+    delist: `${roomName} was taken off Discover`,
+    relist: `${roomName} is back on Discover`,
+    close: `${roomName} was closed`,
+    reopen: `${roomName} is open again`,
+  }[kind];
+  const appeal =
+    kind === 'delist' || kind === 'close' ? 'If you think we got this wrong, reply to this email and a person will look again.' : '';
+  return {
+    to,
+    subject,
+    text: [line, reason && `Reason: ${reason}`, appeal].filter(Boolean).join('\n\n'),
+    html: `<div style="font-family:system-ui,sans-serif;max-width:460px;margin:auto;padding:24px">
+  <p style="font-size:16px">${esc(line)}</p>
+  ${reason ? `<p style="font-size:15px"><b>Reason:</b> ${esc(reason)}</p>` : ''}
+  ${appeal ? `<p style="color:#666;font-size:13px">${esc(appeal)}</p>` : ''}
+</div>`,
+  };
+}

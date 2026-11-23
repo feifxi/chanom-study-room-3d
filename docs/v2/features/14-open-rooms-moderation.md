@@ -173,12 +173,12 @@ report steps never act on team accounts. "Open in the admin site" still opens th
 
 **Built so far (the word filter):** `maskWords` and `hasBlockedWord` in `@connecta/shared/moderate`
 (its own entry, so the web bundle doesn't carry the word lists): `obscenity`'s English set plus
-`OWN_WORDS`, Thai matched inside text with a short list of ordinary words that contain a listed one
+our own list (in the database since admin part 3, given to each process by `setWordFilter`), Thai matched inside text with a short list of ordinary words that contain a listed one
 (`เหี้ยม`). The API masks room chat (unless the room turned Filter words off), DMs and edits, and
 refuses names, @handles and room text through the Zod schemas; the game server masks bubbles, told
 the room's setting by the ticket and live by a `filterWords` room event. The pictures worker asks
 `PictureCheck` (`src/chat/picture-check.ts`) before a picture can show; without a key it lets every
-picture through. The admin site will edit the word list (it's in code until then).
+picture through. The team edits the word list on the admin site (part 3).
 
 **Built so far (admin site, part 1):** `/admin` answers "page not found" unless `/api/me` says
 `team` (the layout checks on the server; the API's `/api/admin/*` answers 404 the same way). The
@@ -203,6 +203,25 @@ close, close + suspend the owner 7 days), or dismiss. Account actions go through
 the Users page (emailed, logged). Every report in the case becomes done with the outcome, who and
 when. `rooms.delisted_at` takes a room off Discover; `rooms.closed_at` also refuses tickets and
 chat (`code: 'closed'`) and sends everyone inside out. The nav badge counts open cases.
+
+**Built so far (admin site, part 3):** platform settings live in the database (`settings`, one
+`platform` row of switches and numbers; `blocked_words`, which the migration started with the Thai
+list that was in code). `SettingsService` keeps them in memory, applies the word filter to its
+process, writes the whole set to Redis (`connecta:<env>:settings`) and publishes it on the same
+channel, so every API process and game server applies a change at once (the game server reads the
+key at start). Rooms page: `GET /api/admin/rooms?q&filter` (all, listed, reported, closed) with
+owner, members, people inside, capacity, open reports and state; `POST /api/admin/rooms/:id/actions
+{ kind: delist | relist | close | reopen, reason }`, each emailed to the owner and logged (report
+decisions on rooms go through it too). Reopening also relists. Common rooms page: `GET
+/api/admin/common` (each type's open copies and how many are in each, the seats, the notice), `PUT
+/api/admin/common/seats { capacity, friendSeats }` (walking in uses them; the Common ticket now says
+`capacity`), `POST /api/admin/common/notice { text }`: a banner "From the Connecta team" at the top of
+every Common room for 10 minutes, live through a `notice` room event and on the ticket for copies
+opened later (each person can close it). Moderation page: `GET/PATCH /api/admin/moderation`
+switches the word filter (everywhere: masking and refusing), the report steps (reports still reach
+the team) and the picture check (and says whether `OPENAI_API_KEY` is set); `POST
+/api/admin/moderation/words` and `DELETE …/words/:word` edit our list. Limits (slow mode) have no
+switch, and the smarter text check isn't built.
 
 - Common rooms: a `common_room_types` table (template, name, vibe) and copies as ordinary Colyseus
   rooms with `kind = 'common'`; the room sets the rules (no LiveKit publish grant for anyone, no

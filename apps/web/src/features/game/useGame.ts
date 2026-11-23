@@ -30,6 +30,9 @@ export interface GameState {
   slave?: SlaveView;
   side?: SideView;
   tel?: TelView;
+  /** The Connecta team's notice in Common rooms ('' for none), until noticeUntil (ms) */
+  notice?: string;
+  noticeUntil?: number;
 }
 export type GameRoom = Room<unknown, GameState>;
 

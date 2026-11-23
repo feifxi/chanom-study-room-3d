@@ -720,3 +720,42 @@ reason, and the case moved to Done with the badge at 1. Checked at phone width. 
 - [ ] **The Done tab shows the latest 300 reports' decisions**, no paging.
 - [ ] **People inside when a room is closed see "isn't there any more"** (the game server's room-gone
       close), not why; the closed message shows when they try to walk in again.
+
+### Admin site, part 3: Rooms, Common rooms, Moderation
+
+**Changed:** `settings` and `blocked_words` tables (the migration carries the Thai list that was in
+`@connecta/shared/moderate`, which now takes its list through `setWordFilter`); `SettingsService`
+(database → memory → Redis key and channel per environment); the game server applies the settings
+from Redis at start and on change; the report steps, the picture check and Common room seats read
+them. The API's Rooms (list, delist, relist, close, reopen with the owner emailed), Common rooms
+(copies, seats, notice) and Moderation (switches, word list) admin routes; report decisions on rooms
+go through the Rooms action. The game state has `notice` and `noticeUntil` for Common rooms; the
+web shows the banner. The web Rooms, Common rooms and Moderation pages are real.
+
+**Bugs found and fixed while building:**
+
+- The API wouldn't start without its database (loading settings at boot threw); it now starts and
+  tries again every 30 s.
+- A Common copy opened after a notice didn't show it: the game state's unset `noticeUntil` made the
+  comparison false.
+- A room action's dialog title replaced "it" inside the room's name ("Sit & Study").
+- The test notice would have stayed in a running dev server's Common rooms for 10 minutes (Common
+  room keys aren't per environment); the test now clears it.
+- Not a code bug: stopping `pnpm dev` mid-write left an empty `packages/shared/dist/plus.js`, and
+  turbo cached it, so `pnpm check` failed on every API suite until it ran once with `--force`.
+
+A headless run with Mai on the team: added a word on Moderation (the list shows the Thai words),
+posted a notice on Common rooms, opened the Close dialog on Rooms, and walked into the Cat Café
+Common room, where the banner showed. Checked at phone width. Undone afterwards.
+
+**Open:**
+
+- [ ] **The Common rooms page shows copies within 15 s** (it looks again), not live.
+- [ ] **Changing the seats doesn't move anyone**: people already in a copy stay, even above a lower
+      number.
+- [ ] **Room and Common room keys in Redis aren't per environment** (`common:*`, the game channels),
+      unlike the settings: tests and a running dev server share them.
+- [ ] **The Rooms list shows the newest 50** with search, no paging; "people inside" counts only
+      those shown.
+- [ ] **The mock lists the new pages replaced** (`ADMIN_ROOMS`, `WORDS`, the Common copies in
+      `lib/mock.ts`) are still in the web app; part 4 can clear `adminData.ts`.

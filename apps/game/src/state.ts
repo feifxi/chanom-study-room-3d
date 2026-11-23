@@ -246,6 +246,9 @@ export const RoomState = schema(
     slave: t.ref(Slave),
     side: t.ref(Side),
     tel: t.ref(Tel),
+    /** The Connecta team's notice in Common rooms ('' for none), shown until noticeUntil (ms) */
+    notice: t.string(),
+    noticeUntil: t.number(),
   },
   'RoomState',
 );

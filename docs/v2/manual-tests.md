@@ -641,3 +641,23 @@ Use the Demo tab → Your Plus (it runs the reminders at once); check the 🔔 i
       room** sends everyone inside out; walking in says "… is closed" and chat refuses new messages.
 - [ ] **Dismiss** closes the case and does nothing to them. The Done tab lists decisions, newest
       first.
+
+### Admin site, part 3: Rooms, Common rooms, Moderation
+
+- [ ] Rooms: every room with its owner, who can join, people inside, members and open reports;
+      search by room or owner and the filters (Listed in Discover, Reported, Closed).
+- [ ] **Delist** an Open room (a reason is needed): it leaves Discover, members still walk in, and
+      the owner gets an email with the reason. **Relist** puts it back.
+- [ ] **Close** a room with someone inside: they're moved out, walking in says it's closed, chat
+      refuses new messages; the owner is emailed. **Reopen**: everything works again and it's back
+      on Discover.
+- [ ] Common rooms: each type's open copies with how many are in each (walk into one in another
+      browser and wait up to 15 s). Change **Seats in a copy** and **Kept for people joining a
+      friend**, Save: the next person walking in gets the new numbers.
+- [ ] **Post notice** with someone in a Common room: a "From the Connecta team" banner shows at the
+      top at once, for 10 minutes, and for someone walking in later too. The × closes it for you.
+- [ ] Moderation: add a word: it's masked in room chat and bubbles at once, and a room or display
+      name with it is refused. Remove it: allowed again. The Thai words from before are on the list.
+- [ ] Switch **Word filter** off: rude words show as typed everywhere (switch it back on). Switch
+      **Report steps** off: 3 reports in 10 minutes no longer mute anyone, but the case shows in
+      Reports. **Picture check** says whether the OpenAI key is set.

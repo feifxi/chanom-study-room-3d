@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import { z } from 'zod';
@@ -7,6 +7,20 @@ import {
   AdminAccountDetailSchema,
   AdminAccountListSchema,
   AdminAccountQuerySchema,
+  AdminCommonSchema,
+  AdminRoomListSchema,
+  AdminRoomQuerySchema,
+  AdminRoomSchema,
+  CommonNoticeBodySchema,
+  CommonSeatsBodySchema,
+  ModerationBodySchema,
+  ModerationSchema,
+  RoomActionBodySchema,
+  WordBodySchema,
+  type AdminCommon,
+  type AdminRoom,
+  type AdminRoomList,
+  type Moderation,
   ReportCaseListSchema,
   ReportCaseQuerySchema,
   ReportDecideBodySchema,
@@ -15,7 +29,9 @@ import {
   type ReportCaseList,
 } from './admin.schemas.js';
 import { AccountsAdminService } from './accounts-admin.service.js';
+import { PlatformAdminService } from './platform-admin.service.js';
 import { ReportsAdminService } from './reports-admin.service.js';
+import { RoomsAdminService } from './rooms-admin.service.js';
 
 /** The admin site (feature 14): Connecta team only; everyone else gets 404. */
 @ApiTags('admin')
@@ -24,6 +40,8 @@ export class AdminController {
   constructor(
     private readonly accounts: AccountsAdminService,
     private readonly reports: ReportsAdminService,
+    private readonly rooms: RoomsAdminService,
+    private readonly platform: PlatformAdminService,
   ) {}
 
   /** Accounts, newest first (50), by name or @handle and a filter. */
@@ -73,5 +91,83 @@ export class AdminController {
     @Body({ schema: ReportDecideBodySchema }) body: z.infer<typeof ReportDecideBodySchema>,
   ): Promise<void> {
     return this.reports.decide(session.user.id, key, body);
+  }
+
+  /** Rooms, newest first (50), by name or owner and a filter. */
+  @Get('rooms')
+  @ApiOkResponse({ standardSchema: AdminRoomListSchema })
+  roomList(
+    @Session() session: UserSession,
+    @Query({ schema: AdminRoomQuerySchema }) query: z.infer<typeof AdminRoomQuerySchema>,
+  ): Promise<AdminRoomList> {
+    return this.rooms.list(session.user.id, query);
+  }
+
+  /** Delist, relist, close, reopen: the owner is emailed the reason. */
+  @Post('rooms/:id/actions')
+  @HttpCode(200)
+  @ApiOkResponse({ standardSchema: AdminRoomSchema })
+  roomAction(
+    @Session() session: UserSession,
+    @Param('id', { schema: z.string().max(64) }) id: string,
+    @Body({ schema: RoomActionBodySchema }) body: z.infer<typeof RoomActionBodySchema>,
+  ): Promise<AdminRoom> {
+    return this.rooms.act(session.user.id, id, body);
+  }
+
+  /** Common rooms: the copies open now, how full they get, the notice. */
+  @Get('common')
+  @ApiOkResponse({ standardSchema: AdminCommonSchema })
+  commonRooms(@Session() session: UserSession): Promise<AdminCommon> {
+    return this.platform.commonRooms(session.user.id);
+  }
+
+  @Put('common/seats')
+  @ApiOkResponse({ standardSchema: AdminCommonSchema })
+  commonSeats(
+    @Session() session: UserSession,
+    @Body({ schema: CommonSeatsBodySchema }) body: z.infer<typeof CommonSeatsBodySchema>,
+  ): Promise<AdminCommon> {
+    return this.platform.seats(session.user.id, body);
+  }
+
+  /** A banner in every Common room for 10 minutes. */
+  @Post('common/notice')
+  @HttpCode(200)
+  @ApiOkResponse({ standardSchema: AdminCommonSchema })
+  commonNotice(
+    @Session() session: UserSession,
+    @Body({ schema: CommonNoticeBodySchema }) body: z.infer<typeof CommonNoticeBodySchema>,
+  ): Promise<AdminCommon> {
+    return this.platform.notice(session.user.id, body.text);
+  }
+
+  /** The moderation switches and our word list. */
+  @Get('moderation')
+  @ApiOkResponse({ standardSchema: ModerationSchema })
+  moderation(@Session() session: UserSession): Promise<Moderation> {
+    return this.platform.moderation(session.user.id);
+  }
+
+  @Patch('moderation')
+  @ApiOkResponse({ standardSchema: ModerationSchema })
+  moderationSwitches(
+    @Session() session: UserSession,
+    @Body({ schema: ModerationBodySchema }) body: z.infer<typeof ModerationBodySchema>,
+  ): Promise<Moderation> {
+    return this.platform.switches(session.user.id, body);
+  }
+
+  @Post('moderation/words')
+  @HttpCode(200)
+  @ApiOkResponse({ standardSchema: ModerationSchema })
+  addWord(@Session() session: UserSession, @Body({ schema: WordBodySchema }) body: z.infer<typeof WordBodySchema>): Promise<Moderation> {
+    return this.platform.addWord(session.user.id, body.word);
+  }
+
+  @Delete('moderation/words/:word')
+  @ApiOkResponse({ standardSchema: ModerationSchema })
+  removeWord(@Session() session: UserSession, @Param('word', { schema: z.string().max(60) }) word: string): Promise<Moderation> {
+    return this.platform.removeWord(session.user.id, word);
   }
 }

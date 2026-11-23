@@ -3,9 +3,9 @@ import { PERSON_REASONS, ROOM_REASONS } from '@connecta/shared';
 import type { Report } from '../generated/prisma/client.js';
 import { AuditService } from '../audit/audit.service.js';
 import { ChatService } from '../chat/chat.service.js';
-import { GameService } from '../game/game.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AccountsAdminService } from './accounts-admin.service.js';
+import { RoomsAdminService } from './rooms-admin.service.js';
 import { REPORT_DECISIONS, type ReportCase, type ReportCaseList, type ReportDecision } from './admin.schemas.js';
 import { requireTeam } from './team.js';
 
@@ -48,8 +48,8 @@ export class ReportsAdminService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly accounts: AccountsAdminService,
+    private readonly rooms: RoomsAdminService,
     private readonly chat: ChatService,
-    private readonly game: GameService,
     private readonly audit: AuditService,
   ) {}
 
@@ -114,23 +114,13 @@ export class ReportsAdminService {
     }
     if (kind === 'room' && action !== 'dismiss') {
       const roomId = first.place!;
-      const room = await this.prisma.room.findUnique({ where: { id: roomId } });
+      const room = await this.prisma.room.findUnique({ where: { id: roomId }, select: { closedAt: true, delistedAt: true } });
       if (room) {
         const close = action !== 'delist';
-        await this.prisma.room.update({
-          where: { id: roomId },
-          data: close ? { closedAt: now, delistedAt: room.delistedAt ?? now } : { delistedAt: now },
-        });
-        // Closed: everyone inside goes, as when a room is deleted
-        if (close) this.game.roomEvent({ roomId, type: 'deleted' });
-        await this.audit.record({
-          by: teamId,
-          action: close ? 'room.close' : 'room.delist',
-          targetKind: 'room',
-          targetId: roomId,
-          reason,
-          details: { name: room.name },
-        });
+        // The same as the Rooms page (the owner is emailed why); already done is fine
+        if (close ? !room.closedAt : !room.delistedAt && !room.closedAt) {
+          await this.rooms.act(teamId, roomId, { kind: close ? 'close' : 'delist', reason }, now);
+        }
         if (action === 'close_suspend_owner') {
           const owner = await this.prisma.membership.findFirst({ where: { roomId, role: 'owner' }, select: { userId: true } });
           if (owner) await this.accounts.act(teamId, owner.userId, { kind: 'suspend_7d', reason }, now);

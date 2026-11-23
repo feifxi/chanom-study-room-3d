@@ -3485,6 +3485,287 @@
         ]
       }
     },
+    "/api/admin/rooms": {
+      "get": {
+        "operationId": "AdminController_roomList",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 60
+            }
+          },
+          {
+            "name": "filter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "listed",
+                "reported",
+                "closed"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRoomList"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/rooms/{id}/actions": {
+      "post": {
+        "operationId": "AdminController_roomAction",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoomActionBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRoom"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/common": {
+      "get": {
+        "operationId": "AdminController_commonRooms",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCommon"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/common/seats": {
+      "put": {
+        "operationId": "AdminController_commonSeats",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommonSeatsBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCommon"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/common/notice": {
+      "post": {
+        "operationId": "AdminController_commonNotice",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommonNoticeBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCommon"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/moderation": {
+      "get": {
+        "operationId": "AdminController_moderation",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Moderation"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminController_moderationSwitches",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModerationBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Moderation"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/moderation/words": {
+      "post": {
+        "operationId": "AdminController_addWord",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WordBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Moderation"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/moderation/words/{word}": {
+      "delete": {
+        "operationId": "AdminController_removeWord",
+        "parameters": [
+          {
+            "name": "word",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 60
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Moderation"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/notifications": {
       "get": {
         "operationId": "NotificationsController_list",
@@ -6531,6 +6812,11 @@
           "note": {
             "nullable": true,
             "type": "string"
+          },
+          "capacity": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           }
         },
         "required": [
@@ -6538,7 +6824,8 @@
           "place",
           "n",
           "name",
-          "note"
+          "note",
+          "capacity"
         ],
         "additionalProperties": false
       },
@@ -7049,6 +7336,313 @@
         },
         "required": [
           "action"
+        ]
+      },
+      "AdminRoomList": {
+        "type": "object",
+        "properties": {
+          "rooms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminRoom"
+            }
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "rooms",
+          "total"
+        ],
+        "additionalProperties": false
+      },
+      "AdminRoom": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "emoji": {
+            "type": "string"
+          },
+          "mapId": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "private",
+              "request",
+              "open"
+            ]
+          },
+          "owner": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "handle": {
+                "nullable": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "handle"
+            ],
+            "additionalProperties": false
+          },
+          "plus": {
+            "type": "boolean"
+          },
+          "members": {
+            "type": "number"
+          },
+          "inside": {
+            "type": "number"
+          },
+          "capacity": {
+            "type": "number"
+          },
+          "reports": {
+            "type": "number"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "delisted",
+              "closed"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "emoji",
+          "mapId",
+          "visibility",
+          "owner",
+          "plus",
+          "members",
+          "inside",
+          "capacity",
+          "reports",
+          "state",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "RoomActionBody": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "delist",
+              "relist",
+              "close",
+              "reopen"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "kind",
+          "reason"
+        ]
+      },
+      "AdminCommon": {
+        "type": "object",
+        "properties": {
+          "types": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "mapId": {
+                  "type": "string"
+                },
+                "here": {
+                  "type": "number"
+                },
+                "copies": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "n": {
+                        "type": "number"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "people": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "n",
+                      "name",
+                      "people"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "mapId",
+                "here",
+                "copies"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "capacity": {
+            "type": "number"
+          },
+          "friendSeats": {
+            "type": "number"
+          },
+          "notice": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "until": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "text",
+              "until"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "types",
+          "capacity",
+          "friendSeats",
+          "notice"
+        ],
+        "additionalProperties": false
+      },
+      "CommonSeatsBody": {
+        "type": "object",
+        "properties": {
+          "capacity": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 50
+          },
+          "friendSeats": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20
+          }
+        },
+        "required": [
+          "capacity",
+          "friendSeats"
+        ]
+      },
+      "CommonNoticeBody": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "Moderation": {
+        "type": "object",
+        "properties": {
+          "wordFilter": {
+            "type": "boolean"
+          },
+          "reportSteps": {
+            "type": "boolean"
+          },
+          "pictureCheck": {
+            "type": "boolean"
+          },
+          "pictureCheckReady": {
+            "type": "boolean"
+          },
+          "words": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "wordFilter",
+          "reportSteps",
+          "pictureCheck",
+          "pictureCheckReady",
+          "words"
+        ],
+        "additionalProperties": false
+      },
+      "ModerationBody": {
+        "type": "object",
+        "properties": {
+          "wordFilter": {
+            "type": "boolean"
+          },
+          "reportSteps": {
+            "type": "boolean"
+          },
+          "pictureCheck": {
+            "type": "boolean"
+          }
+        }
+      },
+      "WordBody": {
+        "type": "object",
+        "properties": {
+          "word": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          }
+        },
+        "required": [
+          "word"
         ]
       },
       "Inbox": {

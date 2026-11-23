@@ -49,6 +49,7 @@ import { BuddyMachinePanel, type MachineSummon } from '../npc/BuddyMachinePanel'
 import { RoomAdmin } from './RoomAdmin';
 import { ActivityHub, type SpotState } from '../activities/hub';
 import { ActivityLayer3D } from '../activities/Activity3D';
+import { CommonNoticeBanner } from '../common/CommonNoticeBanner';
 import { AwayBanner, InviteStack, LobbyCard, NextRoundCard, PlayStrip, ResultsCard, type Who } from '../activities/ActivityHud';
 import type { SideGame } from '../activities/pickASide/game';
 import { BoardPanel } from '../activities/board/BoardPanel';
@@ -1069,6 +1070,7 @@ export default function RoomView({
       >
         {/* The 3D view */}
         <div className="relative min-w-0 flex-1 overflow-hidden">
+          {game && common && <CommonNoticeBanner game={game} />}
           <RoomCanvas
             key={look.mapId}
             room={room}

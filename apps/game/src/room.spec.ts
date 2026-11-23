@@ -56,6 +56,8 @@ type GameRoom = Room<
     side: SideView & { choices: string[]; winners: string[] };
     tel: TelView & { order: string[]; sent: string[] };
     slave: SlaveView & { players: string[]; pileCards: number[]; gone: string[]; finished: string[] };
+    notice?: string;
+    noticeUntil?: number;
   }
 >;
 
@@ -322,6 +324,20 @@ describe('bubbles and status', () => {
     await new Promise((r) => setTimeout(r, 300));
     expect(heard.map((h) => h.text)).toEqual(['hi']);
     expect(passed).toBe(false);
+  });
+
+  it('the team’s notice shows in Common rooms only, and a copy opened later gets it from the ticket', async () => {
+    const roomId = `common-cafe-${rooms}`;
+    const a = track(await walkIn({ roomId, common: true }));
+    const own = track(await walkIn({ sub: 'u-jod', name: 'Jod', handle: 'jod' }));
+    const notice = { text: 'Quick restart at 03:00 🌙', until: Date.now() + 600_000 };
+    dispatch({ roomId: '*', type: 'notice', notice });
+    await until(() => a.state.notice === notice.text);
+    expect(a.state.noticeUntil).toBe(notice.until);
+    await new Promise((r) => setTimeout(r, 200));
+    expect(own.state.notice ?? '').toBe('');
+    const later = track(await walkIn({ roomId: `common-rooftop-${rooms}`, common: true, sub: 'u-ploy', notice }));
+    await until(() => later.state.notice === notice.text);
   });
 
   it('blocked words in bubbles become asterisks, unless the room turned Filter words off', async () => {

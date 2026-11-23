@@ -747,3 +747,24 @@ model AuditEntry {
   @@index([targetKind, targetId])
   @@map("audit_log")
 }
+
+// ── Platform settings (admin site, feature 14) ───────────────────────────────────────────────
+
+/// What the Connecta team sets on the admin site, one row per group ('platform'): switches and numbers
+model Setting {
+  key         String   @id
+  value       Json
+  updatedById String?  @map("updated_by_id")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
+
+/// Our own blocked words on top of the English list (Thai included); the team edits them
+model BlockedWord {
+  word      String   @id
+  addedById String?  @map("added_by_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("blocked_words")
+}

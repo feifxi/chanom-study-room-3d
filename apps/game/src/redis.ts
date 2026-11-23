@@ -4,11 +4,15 @@ import {
   FOCUS_QUEUE,
   GAME_CHANNELS,
   QUESTS_QUEUE,
+  settingsChannel,
+  settingsKey,
+  type PlatformSettings,
   type FocusRound,
   type GameRoomEvent,
   type GameWalkedIn,
   type QuestEvent,
 } from '@connecta/shared';
+import { setWordFilter } from '@connecta/shared/moderate';
 import { dispatch, dispatchWalkedIn, links } from './links.js';
 import { log } from './log.js';
 
@@ -45,15 +49,24 @@ export async function connectRedis(url: string, env: string) {
   links.focusRound = (round) =>
     void rounds.add('round', round, { jobId: round.id }).catch((err: unknown) => log.warn({ err, round }, 'focus round not queued'));
 
-  await sub.subscribe(GAME_CHANNELS.rooms, GAME_CHANNELS.walkedIn);
+  // The word list and the filter switch (admin site): the API keeps them in Redis and says when they change
+  const useSettings = (raw: string | null) => {
+    if (!raw) return;
+    const s = JSON.parse(raw) as PlatformSettings;
+    setWordFilter({ on: s.wordFilter, words: s.words });
+  };
+  await sub.subscribe(GAME_CHANNELS.rooms, GAME_CHANNELS.walkedIn, settingsChannel(env));
   sub.on('message', (channel, raw) => {
     try {
-      if (channel === GAME_CHANNELS.walkedIn) dispatchWalkedIn(JSON.parse(raw) as GameWalkedIn);
+      if (channel === settingsChannel(env)) useSettings(raw);
+      else if (channel === GAME_CHANNELS.walkedIn) dispatchWalkedIn(JSON.parse(raw) as GameWalkedIn);
       else dispatch(JSON.parse(raw) as GameRoomEvent);
     } catch (err) {
       log.warn({ err }, 'bad room event');
     }
   });
+  // Until the API has started once, only the English list applies
+  useSettings(await pub.get(settingsKey(env)).catch(() => null));
   return async () => {
     await Promise.allSettled([pub.quit(), sub.quit(), Promise.all([rounds.close(), quests.close()]).then(() => queueRedis.quit())]);
   };

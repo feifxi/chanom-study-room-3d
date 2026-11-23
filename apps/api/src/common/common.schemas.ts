@@ -37,6 +37,8 @@ export const CommonTicketSchema = z
     name: z.string(),
     /** "Mai's copy is full, so you're in #3." */
     note: z.string().nullable(),
+    /** Seats in a copy (the team sets it) */
+    capacity: z.number().int(),
   })
   .meta({ id: 'CommonTicket' });
 export type CommonTicket = z.infer<typeof CommonTicketSchema>;

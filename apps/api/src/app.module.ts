@@ -13,6 +13,7 @@ import { CommonModule } from './common/common.module.js';
 import { ReportsModule } from './reports/reports.module.js';
 import { AdminModule } from './admin/admin.module.js';
 import { AuditModule } from './audit/audit.service.js';
+import { SettingsModule } from './settings/settings.service.js';
 import { PlusModule } from './plus/plus.module.js';
 import { ShopModule } from './shop/shop.module.js';
 import { FocusModule } from './focus/focus.module.js';
@@ -76,6 +77,7 @@ import { PrismaService } from './prisma/prisma.service.js';
     CommonModule,
     ReportsModule,
     AuditModule,
+    SettingsModule,
     AdminModule,
     LiveModule,
     PresenceModule,

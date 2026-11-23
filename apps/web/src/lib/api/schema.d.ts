@@ -1396,6 +1396,134 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/admin/rooms': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AdminController_roomList'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/rooms/{id}/actions': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AdminController_roomAction'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/common': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AdminController_commonRooms'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/common/seats': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put: operations['AdminController_commonSeats'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/common/notice': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AdminController_commonNotice'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/moderation': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AdminController_moderation'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch: operations['AdminController_moderationSwitches'];
+    trace?: never;
+  };
+  '/api/admin/moderation/words': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AdminController_addWord'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/moderation/words/{word}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete: operations['AdminController_removeWord'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/notifications': {
     parameters: {
       query?: never;
@@ -2170,6 +2298,7 @@ export interface components {
       n: number;
       name: string;
       note: string | null;
+      capacity: number;
     };
     ReportBody: {
       /** @enum {string} */
@@ -2299,6 +2428,77 @@ export interface components {
         | 'close'
         | 'close_suspend_owner';
       reason?: string;
+    };
+    AdminRoomList: {
+      rooms: components['schemas']['AdminRoom'][];
+      total: number;
+    };
+    AdminRoom: {
+      id: string;
+      name: string;
+      emoji: string;
+      mapId: string;
+      /** @enum {string} */
+      visibility: 'private' | 'request' | 'open';
+      owner: {
+        id: string;
+        name: string;
+        handle: string | null;
+      } | null;
+      plus: boolean;
+      members: number;
+      inside: number;
+      capacity: number;
+      reports: number;
+      /** @enum {string} */
+      state: 'ok' | 'delisted' | 'closed';
+      createdAt: string;
+    };
+    RoomActionBody: {
+      /** @enum {string} */
+      kind: 'delist' | 'relist' | 'close' | 'reopen';
+      reason: string;
+    };
+    AdminCommon: {
+      types: {
+        id: string;
+        name: string;
+        mapId: string;
+        here: number;
+        copies: {
+          n: number;
+          name: string;
+          people: number;
+        }[];
+      }[];
+      capacity: number;
+      friendSeats: number;
+      notice: {
+        text: string;
+        until: string;
+      } | null;
+    };
+    CommonSeatsBody: {
+      capacity: number;
+      friendSeats: number;
+    };
+    CommonNoticeBody: {
+      text: string;
+    };
+    Moderation: {
+      wordFilter: boolean;
+      reportSteps: boolean;
+      pictureCheck: boolean;
+      pictureCheckReady: boolean;
+      words: string[];
+    };
+    ModerationBody: {
+      wordFilter?: boolean;
+      reportSteps?: boolean;
+      pictureCheck?: boolean;
+    };
+    WordBody: {
+      word: string;
     };
     Inbox: {
       items: components['schemas']['Notification'][];
@@ -4745,6 +4945,204 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  AdminController_roomList: {
+    parameters: {
+      query?: {
+        q?: string;
+        filter?: 'all' | 'listed' | 'reported' | 'closed';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminRoomList'];
+        };
+      };
+    };
+  };
+  AdminController_roomAction: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RoomActionBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminRoom'];
+        };
+      };
+    };
+  };
+  AdminController_commonRooms: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminCommon'];
+        };
+      };
+    };
+  };
+  AdminController_commonSeats: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CommonSeatsBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminCommon'];
+        };
+      };
+    };
+  };
+  AdminController_commonNotice: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CommonNoticeBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminCommon'];
+        };
+      };
+    };
+  };
+  AdminController_moderation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Moderation'];
+        };
+      };
+    };
+  };
+  AdminController_moderationSwitches: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ModerationBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Moderation'];
+        };
+      };
+    };
+  };
+  AdminController_addWord: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['WordBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Moderation'];
+        };
+      };
+    };
+  };
+  AdminController_removeWord: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        word: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Moderation'];
+        };
       };
     };
   };

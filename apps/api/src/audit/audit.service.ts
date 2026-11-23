@@ -7,7 +7,7 @@ export interface AuditInput {
   by: string | null;
   /** e.g. account.suspend, common.remove, report.step */
   action: string;
-  targetKind: 'user' | 'room' | 'message' | 'report';
+  targetKind: 'user' | 'room' | 'message' | 'report' | 'setting';
   targetId: string;
   reason?: string;
   details?: Record<string, unknown>;

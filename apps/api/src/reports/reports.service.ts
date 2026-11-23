@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 import { PERSON_REASONS, REPORT_STEPS, ROOM_REASONS, parseCommonCopy } from '@connecta/shared';
 import type { Prisma, Message, User } from '../generated/prisma/client.js';
+import { SettingsService } from '../settings/settings.service.js';
 import { AuditService } from '../audit/audit.service.js';
 import type { Env } from '../config/env.js';
 import { CommonService } from '../common/common.service.js';
@@ -36,6 +37,7 @@ export class ReportsService implements OnModuleDestroy {
     private readonly friends: FriendsService,
     private readonly common: CommonService,
     private readonly audit: AuditService,
+    private readonly settings: SettingsService,
   ) {
     this.redis = new Redis(config.get('REDIS_URL', { infer: true }), { maxRetriesPerRequest: 2 });
     this.redis.on('error', (error) => this.log.warn(`Redis: ${error.message}`));
@@ -142,6 +144,8 @@ export class ReportsService implements OnModuleDestroy {
 
   /** Counts toward the automatic step, and takes it when enough different accounts reported */
   private async count(reportId: string, reporterId: string, userId: string, place: string, now: number) {
+    // Switched off on the admin site: reports still reach the team, nothing happens by itself
+    if (!this.settings.get().reportSteps) return;
     const common = parseCommonCopy(place);
     // Only reports from someone who's there count
     if (common ? (await this.presence.roomOf(reporterId, now)) !== place : !(await this.inRoom(reporterId, place, new Date(now)))) return;

@@ -77,3 +77,79 @@ export function useDecideReport() {
     },
   });
 }
+
+// ── Rooms, Common rooms, Moderation (part 3) ─────────────────────────────────────────────────
+
+export type AdminRoom = Schemas['AdminRoom'];
+export type RoomFilter = 'all' | 'listed' | 'reported' | 'closed';
+export type RoomActionKind = Schemas['RoomActionBody']['kind'];
+export type AdminCommon = Schemas['AdminCommon'];
+export type Moderation = Schemas['Moderation'];
+
+const ROOMS_KEY = ['admin', 'rooms'] as const;
+
+export function useAdminRooms(q: string, filter: RoomFilter) {
+  return useQuery({
+    queryKey: [...ROOMS_KEY, q, filter],
+    queryFn: async () => ok(await api.GET('/api/admin/rooms', { params: { query: { q: q || undefined, filter } } })),
+    placeholderData: (previous) => previous,
+  });
+}
+
+/** Delist, relist, close, reopen: the owner is emailed the reason */
+export function useRoomAction() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (v: { id: string; kind: RoomActionKind; reason: string }) =>
+      ok(await api.POST('/api/admin/rooms/{id}/actions', { params: { path: { id: v.id } }, body: { kind: v.kind, reason: v.reason } })),
+    onSuccess: () => void client.invalidateQueries({ queryKey: ROOMS_KEY }),
+  });
+}
+
+const COMMON_KEY = ['admin', 'common'] as const;
+
+export function useAdminCommon() {
+  return useQuery({
+    queryKey: COMMON_KEY,
+    queryFn: async () => ok(await api.GET('/api/admin/common')),
+    // Copies open and close as people come and go
+    refetchInterval: 15_000,
+  });
+}
+
+export function useCommonSeats() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: { capacity: number; friendSeats: number }) => ok(await api.PUT('/api/admin/common/seats', { body })),
+    onSuccess: (data) => client.setQueryData(COMMON_KEY, data),
+  });
+}
+
+export function useCommonNotice() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (text: string) => ok(await api.POST('/api/admin/common/notice', { body: { text } })),
+    onSuccess: (data) => client.setQueryData(COMMON_KEY, data),
+  });
+}
+
+const MODERATION_KEY = ['admin', 'moderation'] as const;
+
+export function useModeration() {
+  return useQuery({ queryKey: MODERATION_KEY, queryFn: async () => ok(await api.GET('/api/admin/moderation')) });
+}
+
+export function useModerationChange() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (
+      v: { switches: { wordFilter?: boolean; reportSteps?: boolean; pictureCheck?: boolean } } | { add: string } | { remove: string },
+    ) =>
+      'switches' in v
+        ? ok(await api.PATCH('/api/admin/moderation', { body: v.switches }))
+        : 'add' in v
+          ? ok(await api.POST('/api/admin/moderation/words', { body: { word: v.add } }))
+          : ok(await api.DELETE('/api/admin/moderation/words/{word}', { params: { path: { word: v.remove } } })),
+    onSuccess: (data) => client.setQueryData(MODERATION_KEY, data),
+  });
+}

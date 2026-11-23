@@ -109,3 +109,79 @@ export const ReportDecideBodySchema = z
     reason: z.string().trim().max(500).optional(),
   })
   .meta({ id: 'ReportDecideBody' });
+
+// ── Rooms ────────────────────────────────────────────────────────────────────────────────────
+
+export const ROOM_FILTERS = ['all', 'listed', 'reported', 'closed'] as const;
+export const ROOM_ACTIONS = ['delist', 'relist', 'close', 'reopen'] as const;
+
+export const AdminRoomSchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    emoji: z.string(),
+    mapId: z.string(),
+    visibility: z.enum(['private', 'request', 'open']),
+    owner: z.object({ id: z.string(), name: z.string(), handle: z.string().nullable() }).nullable(),
+    plus: z.boolean(),
+    members: z.number(),
+    inside: z.number(),
+    capacity: z.number(),
+    /** Open reports about the room itself */
+    reports: z.number(),
+    state: z.enum(['ok', 'delisted', 'closed']),
+    createdAt: z.string(),
+  })
+  .meta({ id: 'AdminRoom' });
+export type AdminRoom = z.infer<typeof AdminRoomSchema>;
+export const AdminRoomListSchema = z.object({ rooms: z.array(AdminRoomSchema), total: z.number() }).meta({ id: 'AdminRoomList' });
+export type AdminRoomList = z.infer<typeof AdminRoomListSchema>;
+export const AdminRoomQuerySchema = z.object({ q: z.string().trim().max(60).optional(), filter: z.enum(ROOM_FILTERS).optional() });
+export const RoomActionBodySchema = z
+  .object({ kind: z.enum(ROOM_ACTIONS), reason: z.string().trim().min(3, 'Say why (it’s emailed to the owner)').max(500) })
+  .meta({ id: 'RoomActionBody' });
+
+// ── Common rooms and Moderation ──────────────────────────────────────────────────────────────
+
+export const AdminCommonSchema = z
+  .object({
+    types: z.array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        mapId: z.string(),
+        here: z.number(),
+        copies: z.array(z.object({ n: z.number(), name: z.string(), people: z.number() })),
+      }),
+    ),
+    capacity: z.number(),
+    friendSeats: z.number(),
+    /** The notice showing in every Common room now, if any */
+    notice: z.object({ text: z.string(), until: z.string() }).nullable(),
+  })
+  .meta({ id: 'AdminCommon' });
+export type AdminCommon = z.infer<typeof AdminCommonSchema>;
+
+export const CommonSeatsBodySchema = z
+  .object({ capacity: z.number().int().min(5).max(50), friendSeats: z.number().int().min(0).max(20) })
+  .refine((b) => b.friendSeats < b.capacity, { message: 'Keep at least one seat for strangers', path: ['friendSeats'] })
+  .meta({ id: 'CommonSeatsBody' });
+export const CommonNoticeBodySchema = z.object({ text: z.string().trim().min(1).max(120) }).meta({ id: 'CommonNoticeBody' });
+
+export const ModerationSchema = z
+  .object({
+    wordFilter: z.boolean(),
+    reportSteps: z.boolean(),
+    pictureCheck: z.boolean(),
+    /** Whether OPENAI_API_KEY is set: without it the picture check can't run, switch or not */
+    pictureCheckReady: z.boolean(),
+    words: z.array(z.string()),
+  })
+  .meta({ id: 'Moderation' });
+export type Moderation = z.infer<typeof ModerationSchema>;
+export const ModerationBodySchema = z
+  .object({ wordFilter: z.boolean().optional(), reportSteps: z.boolean().optional(), pictureCheck: z.boolean().optional() })
+  .meta({ id: 'ModerationBody' });
+export const WordBodySchema = z
+  .object({ word: z.string().trim().toLowerCase().min(2, 'At least 2 characters').max(60) })
+  .meta({ id: 'WordBody' });

@@ -1,5 +1,8 @@
-import { describe, expect, it } from 'vitest';
-import { hasBlockedWord, maskWords } from './moderate.js';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { hasBlockedWord, maskWords, setWordFilter } from './moderate.js';
+
+// The database holds the real list; a few of its words are enough here
+beforeEach(() => setWordFilter({ on: true, words: ['เหี้ย', 'สัส'] }));
 
 describe('the word filter', () => {
   it('masks English, tricks included, and leaves innocent words', () => {
@@ -15,5 +18,13 @@ describe('the word filter', () => {
     expect(hasBlockedWord('Fuckboy')).toBe(true);
     expect(hasBlockedWord('สัสเอ้ย')).toBe(true);
     expect(hasBlockedWord('Mai')).toBe(false);
+  });
+  it('can be switched off, and the list changes at once', () => {
+    setWordFilter({ on: true, words: ['badlink.example'] });
+    expect(maskWords('see badlink.example')).toBe('see ***************');
+    expect(maskWords('ไอ้เหี้ยนี่')).toBe('ไอ้เหี้ยนี่');
+    setWordFilter({ on: false, words: ['badlink.example'] });
+    expect(maskWords('what the fuck')).toBe('what the fuck');
+    expect(hasBlockedWord('Fuckboy')).toBe(false);
   });
 });

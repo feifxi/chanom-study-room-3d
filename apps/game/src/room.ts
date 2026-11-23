@@ -14,6 +14,7 @@ import {
   TYPING_TIMEOUT_MS,
   NPC_KINDS,
   sanitizeLook,
+  type CommonNotice,
   type NpcNote,
   type NpcReact,
   type NpcRefused,
@@ -485,6 +486,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     this.common = ticket.common ?? false;
     this.filterWords = this.common || (ticket.filterWords ?? true);
     this.roomWideGames = ticket.roomWideGames ?? true;
+    // The team's notice, for a copy opened after it was posted
+    if (this.common && ticket.notice && ticket.notice.until > (this.state.noticeUntil ?? 0)) this.showNotice(ticket.notice);
     const staff = ticket.role === 'owner' || ticket.role === 'mod';
     const others = [...this.priv.values()].filter((s) => s.userId !== ticket.sub).length;
     if (!staff && others >= this.capacity) {
@@ -661,6 +664,9 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       case 'map':
         if (event.mapId !== this.state.mapId) this.setMap(event.mapId);
         break;
+      case 'notice':
+        if (this.common) this.showNotice(event.notice);
+        break;
       case 'deleted':
         for (const [sessionId, client] of this.clients_) {
           this.remove(sessionId);
@@ -681,6 +687,12 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────────────────────────
+
+  /** A banner in this Common room until it runs out (each browser hides it on time) */
+  private showNotice(notice: CommonNotice) {
+    this.state.notice = notice.text.slice(0, 120);
+    this.state.noticeUntil = notice.until;
+  }
 
   /** Stop pressed: a focus round counts what you did. */
   private stopFocus(sessionId: string) {

@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { Compass, RotateCw } from 'lucide-react';
-import { COMMON_CAPACITY, type CommonType } from '@connecta/shared';
+import type { CommonType } from '@connecta/shared';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useGame, type GameEnd, type TicketFor } from '@/features/game/useGame';
@@ -17,6 +17,8 @@ interface Copy {
   place: string;
   n: number;
   name: string;
+  /** Seats in a copy: the team sets it on the admin site */
+  capacity: number;
 }
 
 /**
@@ -38,7 +40,7 @@ export function CommonWalkIn({ type, withId, guestName }: { type: CommonType; wi
     if (response.status === 403) return { why: (error as { by?: string } | undefined)?.by === 'team' ? 'kicked' : 'banned' };
     if (!data) return { why: 'unreachable' };
     last.current = data.n;
-    setCopy({ place: data.place, n: data.n, name: data.name });
+    setCopy({ place: data.place, n: data.n, name: data.name, capacity: data.capacity });
     if (data.note) toast(data.note);
     return { place: data.place, ticket: data.ticket };
   };
@@ -61,7 +63,7 @@ export function CommonWalkIn({ type, withId, guestName }: { type: CommonType; wi
         id: copy!.place,
         name: copy!.name,
         mapId: type.mapId,
-        capacity: COMMON_CAPACITY,
+        capacity: copy!.capacity,
         allowGuests: true,
         roomWideGames: type.roomWideGames,
         people: [],

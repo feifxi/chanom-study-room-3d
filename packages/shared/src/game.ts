@@ -41,6 +41,8 @@ export interface GameTicket {
   team?: boolean;
   /** Room settings → Filter words: blocked words in bubbles become asterisks (always in Common rooms) */
   filterWords?: boolean;
+  /** The team's notice showing in every Common room now (admin site), for someone walking in */
+  notice?: CommonNotice;
 }
 export const TICKET_AUDIENCE = 'connecta-game';
 export const TICKET_SECONDS = 60;
@@ -108,7 +110,16 @@ export type GameRoomEvent =
   /** You bought a pet: the Buddy Machine in every room you're in offers it */
   | { roomId: '*'; type: 'pets'; userId: string; pets: PetOut[] }
   /** Your Plus started or ended: your name tag changes in every room you're in */
-  | { roomId: '*'; type: 'plus'; userId: string; plus: boolean };
+  | { roomId: '*'; type: 'plus'; userId: string; plus: boolean }
+  /** The team's notice in every Common room (admin site): a banner until `until` */
+  | { roomId: '*'; type: 'notice'; notice: CommonNotice };
+
+/** A banner the Connecta team posts in every Common room, e.g. maintenance or an event */
+export interface CommonNotice {
+  text: string;
+  /** ms */
+  until: number;
+}
 
 export interface GamePresence {
   userId: string;
