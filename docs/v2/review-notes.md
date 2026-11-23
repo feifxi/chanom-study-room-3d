@@ -663,7 +663,7 @@ team and Jod's hour cleared afterwards.
 - [ ] **A team account has no powers in people's own rooms** (by design for now); suspensions and
       bans come with the admin site.
 
-### Admin site, part 1: the gate, Users and account actions
+### Admin site, part 1: the gate, Users and account actions (`7a55952`)
 
 **Changed:** `users.suspended_until` and `banned_at`, `account_actions` and `audit_log` tables; the
 API's `admin` module (team only, 404 otherwise) with the Users list, one account and its actions;
