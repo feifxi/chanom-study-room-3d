@@ -26,6 +26,8 @@ import {
   type GameTicket,
   type GameWalkedIn,
   type PlayerRole,
+  type WatchRefused,
+  parseYouTube,
 } from '@connecta/shared';
 import { inArea, mapDataFor, zoneAtIn, type MapData } from '@connecta/shared/maps';
 import { idleTimer, startFocus, stopTimer, tickTimer, type EndedRound, type FocusTimer } from './focus.js';
@@ -36,6 +38,7 @@ import { Player, RoomState } from './state.js';
 import { clamp, refillMoveBudget, spendMove } from './rules.js';
 import { readTicket } from './ticket.js';
 import { voice } from './voice.js';
+import { Tv, youtube } from './watch.js';
 
 /** Set by the entry point from GAME_SECRET. */
 export const secrets = { ticket: '' };
@@ -97,6 +100,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
   private npc = this.makeNpcs();
   /** Focus minutes finished here since the room opened, by account (guests too): "This room today" adds the saved ones */
   private focusDone = new Map<string, number>();
+  /** Watch together's big screen (feature 10): in memory, gone when the room empties */
+  private tv = new Tv(this.state.watch);
 
   messages = {
     move: validate(
@@ -161,6 +166,29 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       p.share = where;
       p.shareAudio = msg.audio;
     }),
+
+    /**
+     * Watch together (feature 10): anyone on the TV's rug, guests too, puts videos on and controls
+     * them; owners and mods can turn the screen off from anywhere. Skip and "ended" name the video
+     * they mean, so two people at once move Up next on by one.
+     */
+    'watch:add': validate(z.object({ link: z.string().max(300) }), (client, msg) => void this.addVideo(client, msg.link)),
+    'watch:pause': validate(z.object({ paused: z.boolean() }), (client, msg) => {
+      if (this.atTv(client)) this.tv.pause(msg.paused, Date.now());
+    }),
+    'watch:seek': validate(z.object({ seconds: finite }), (client, msg) => {
+      if (this.atTv(client)) this.tv.seek(msg.seconds, Date.now());
+    }),
+    'watch:next': validate(z.object({ key: z.string() }), (client, msg) => {
+      if (this.atTv(client)) this.tv.next(msg.key, Date.now());
+    }),
+    'watch:remove': validate(z.object({ key: z.string() }), (client, msg) => {
+      if (this.atTv(client)) this.tv.remove(msg.key);
+    }),
+    'watch:off': (client: Client) => {
+      const p = this.state.players.get(client.sessionId);
+      if (p && (p.role === 'owner' || p.role === 'mod')) this.tv.off();
+    },
 
     /** A bubble: to the whole room, or only to the private zone you're standing in */
     say: validate(z.object({ text: z.string() }), (client, msg) => {
@@ -336,6 +364,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     }, 1000);
     this.clock.setInterval(() => this.npc.tick(NPC_TICK_MS / 1000), NPC_TICK_MS);
     this.clock.setInterval(() => this.tickTimers(), TIMER_TICK_MS);
+    this.clock.setInterval(() => this.tickTv(), TIMER_TICK_MS);
   }
 
   onJoin(client: Client, _options: JoinOptions, ticket: Auth) {
@@ -580,6 +609,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     }
     // The new map's resident cats; summoned friends don't come along
     this.npc.reset();
+    this.tv.off();
   }
 
   /** The NPC code's window on this room */
@@ -614,6 +644,34 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       const o = this.state.players.get(sessionId);
       if (o && zoneAtIn(this.map, o.x, o.z)?.id === zone.id) c.send(type, message);
     }
+  }
+
+  private atTv(client: Client) {
+    const p = this.state.players.get(client.sessionId);
+    return !!p && inArea(this.map.tvArea, p.x, p.z);
+  }
+
+  /** A pasted link: checked with YouTube first, then on now or into Up next */
+  private async addVideo(client: Client, link: string) {
+    const refuse = (reason: WatchRefused['reason']) => client.send('watch:refused', { reason } satisfies WatchRefused);
+    const videoId = parseYouTube(link);
+    if (!videoId) return refuse('link');
+    if (!this.atTv(client)) return refuse('away');
+    const found = await youtube.lookup(videoId);
+    const p = this.state.players.get(client.sessionId);
+    if (!p) return;
+    if (!found) return refuse('unavailable');
+    if (!this.tv.add({ videoId, title: found.title, by: client.sessionId, byName: p.name }, Date.now())) refuse('full');
+  }
+
+  private tickTv() {
+    let watchers = 0;
+    let sharing = false;
+    for (const p of this.state.players.values()) {
+      if (inArea(this.map.tvArea, p.x, p.z)) watchers++;
+      if (p.share === 'tv') sharing = true;
+    }
+    this.tv.tick(Date.now(), watchers, sharing);
   }
 
   /** Walking off the TV rug or standing up from your desk ends your share */

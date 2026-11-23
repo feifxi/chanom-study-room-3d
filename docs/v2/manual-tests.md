@@ -302,3 +302,25 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
       Privacy & safety follows it, both ways.
 - [ ] A new account aged under 18 starts with it off; 18+ starts with it on.
 - [ ] Phone and desktop, light and dark: the hero button doesn't overflow with a long room name.
+
+### Watch together on the game server
+
+- [ ] Two people in a real room, both on the TV rug. One clicks **Put something on** and pastes a
+      YouTube link: it plays for both, within a couple of seconds of each other, "put on by …
+      · 2 watching", with YouTube's title.
+- [ ] Pause, seek and skip from either one: the other follows. Add a few to Up next from both;
+      remove one; a video that ends plays the next for everyone (once, not two skips).
+- [ ] A guest on the rug can do all of that too.
+- [ ] Paste a private or deleted video, or a non-YouTube link: a toast says why, nothing plays.
+      With 20 in Up next, a 21st says it's full.
+- [ ] Walk off the rug: the panel closes; walk back on: it opens at the right moment of the video.
+      Everyone off for 30 s: the screen turns off and Up next is empty.
+- [ ] Someone shares their screen on the TV while a video plays: it pauses for everyone and carries
+      on from the same moment when the sharer walks off (or presses Stop sharing). A video added
+      during the share waits in Up next.
+- [ ] As owner or mod: **Turn off the TV** in the panel and in Activities (from across the room)
+      clears it for everyone. A member or guest doesn't see the button.
+- [ ] From across the room the 3D screen shows the video's thumbnail; the Activities list says
+      what's on and how many are watching.
+- [ ] Phone width: the panel works, and walking onto the rug opens it (this broke on phones in
+      development until this change, see the review notes).

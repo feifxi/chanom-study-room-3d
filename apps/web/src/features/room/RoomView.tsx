@@ -167,7 +167,7 @@ export default function RoomView({
     const extra = crowd ? crowdPeople(Math.max(0, crowd - people.length - 1)) : [];
     return new MockRoom(map, { name: myName, look: guest ? (loadGuest()?.look ?? GUEST_LOOK) : getMyLook() }, people, extra);
   }, [roomDef, guest, myName, crowd, look.mapId, game]);
-  useEffect(() => () => (room instanceof LiveRoom ? room.dispose() : undefined), [room]);
+  useEffect(() => (room instanceof LiveRoom ? room.attach() : undefined), [room]);
   // People coming and going (a real room's are live; the mock's never change)
   const peopleVersion = useSyncExternalStore(room.subscribe, room.getVersion, room.getVersion);
   // The owner switched maps (Room settings): the game server moved everyone; follow it here too
@@ -220,7 +220,12 @@ export default function RoomView({
   const now = useNow(1000);
 
   // Activities (feature 9): one framework for every game; the demo's hub plays the server
-  const hub = useMemo(() => new ActivityHub(room, roomDef.roomWideGames, (text) => toast(text)), [room, roomDef.roomWideGames]);
+  const hub = useMemo(() => {
+    const h = new ActivityHub(room, roomDef.roomWideGames, (text) => toast(text));
+    // A real room's big screen is the game server's (feature 10)
+    if (room instanceof LiveRoom) h.remote = room.watchRemote;
+    return h;
+  }, [room, roomDef.roomWideGames]);
   useSyncExternalStore(hub.subscribe, hub.getVersion, hub.getVersion);
   // Pick a Side's timer and "you're on B" need more than once a second
   const sideNow = useNow((hub.side && hub.spots.floor.phase === 'playing') || hub.tel ? 250 : 5000);
@@ -386,16 +391,29 @@ export default function RoomView({
       toast('Someone else is sharing here right now');
     }, 3000);
   };
-  // The TV's share comes from the game server; the Watch together panel shows it as usual
-  const tvSharer = game ? [...room.state.players].find(([, p]) => p.share === 'tv') : undefined;
-  const tvBy = tvSharer?.[0];
-  const tvAudio = !!tvSharer?.[1].shareAudio;
+  // A link the game server wouldn't put on the big screen
   useEffect(() => {
-    if (!game) return;
-    const cur = hub.watch.share;
-    if (cur && (cur.by !== tvBy || cur.audio !== tvAudio)) hub.stopShare(cur.by);
-    if (tvBy && !hub.watch.share) hub.startShare({ by: tvBy, audio: tvAudio });
-  }, [game, hub, tvBy, tvAudio]);
+    if (!(room instanceof LiveRoom)) return;
+    return room.onWatchRefused((reason) =>
+      toast(
+        reason === 'link'
+          ? 'That doesn’t look like a YouTube link'
+          : reason === 'unavailable'
+            ? 'That video can’t play here: it’s private, gone, or its owner turned off embedding'
+            : reason === 'full'
+              ? 'Up next is full (20). Skip or remove one first'
+              : 'Step onto the rug in front of the screen to put something on',
+      ),
+    );
+  }, [room]);
+  // Owners and mods: everything off the big screen, from anywhere (a real room)
+  const turnOffTv =
+    canStage && room instanceof LiveRoom
+      ? () => {
+          room.watchOff();
+          toast('📺 The big screen is off');
+        }
+      : undefined;
 
   const shareOnTv = async () => {
     setPuttingOn(false);
@@ -1257,13 +1275,14 @@ export default function RoomView({
                     onPause={(p) => hub.setPaused(p)}
                     onSeek={(sec) => hub.seek(sec)}
                     onSkip={() => hub.next()}
-                    onEnded={(id) => hub.watch.now?.id === id && hub.next()}
+                    onEnded={(id) => hub.ended(id)}
                     onAdd={(v) => hub.putOn({ ...v, by: 'me' })}
                     onRemove={(i) => hub.removeQueued(i)}
                     onShare={() => void shareOnTv()}
                     onStopShare={() => (game ? stopLiveShare() : hub.stopShare('me'))}
                     shareStream={game ? (by) => voice.screens.get(by) ?? null : undefined}
                     deaf={deaf}
+                    onTurnOff={turnOffTv}
                   />
                 </div>
               )}
@@ -1513,6 +1532,7 @@ export default function RoomView({
                     watchTitle={hub.watch.share ? `${who(hub.watch.share.by).name}’s screen` : hub.watch.now?.title}
                     hostName={(id) => who(id).name}
                     onGo={goThere}
+                    onTurnOffTv={turnOffTv}
                   />
                 </div>
               )}

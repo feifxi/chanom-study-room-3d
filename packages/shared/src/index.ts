@@ -11,3 +11,4 @@ export * from './npc.js';
 export * from './player.js';
 export * from './rooms.js';
 export * from './world.js';
+export * from './watch.js';

@@ -14,6 +14,7 @@ export function ActivitiesPanel({
   watchTitle,
   hostName,
   onGo,
+  onTurnOffTv,
   common = false,
 }: {
   states: Record<SpotId, SpotState>;
@@ -24,6 +25,8 @@ export function ActivitiesPanel({
   watchTitle?: string;
   hostName: (id: string) => string;
   onGo: (spot: Spot) => void;
+  /** Owners and mods in a real room: turn the big screen off from here */
+  onTurnOffTv?: () => void;
 }) {
   return (
     <div className="panel flex w-[360px] max-w-[calc(100vw-2rem)] flex-col gap-2 p-3">
@@ -81,6 +84,11 @@ export function ActivitiesPanel({
               <span className="block text-sm font-extrabold">{spot.activity}</span>
               <span className="block truncate text-[11px] text-muted-foreground">{status}</span>
             </span>
+            {spot.id === 'tv' && live && onTurnOffTv && (
+              <button onClick={onTurnOffTv} className="rounded-full border bg-card px-3 py-1 text-xs font-extrabold hover:bg-muted">
+                Turn off
+              </button>
+            )}
             {spot.built && !off && (
               <button
                 onClick={() => onGo(spot)}

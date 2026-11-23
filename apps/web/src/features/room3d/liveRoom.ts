@@ -12,7 +12,10 @@ import type {
   Quiet,
   Said,
   VoicePass,
+  WatchRefused,
+  WatchVideo,
 } from '@connecta/shared';
+import type { Video, WatchRemote, WatchState } from '../activities/hub';
 import type { GameRoom } from '@/features/game/useGame';
 import type { MapDef } from '../map/types';
 import { MockRoom, player } from './mockRoom';
@@ -95,8 +98,6 @@ export interface NpcEvents {
  * into `state.npcs`.
  */
 export class LiveRoom extends MockRoom {
-  private unsubscribe: () => void;
-
   constructor(
     map: MapDef,
     private readonly game: GameRoom,
@@ -105,6 +106,15 @@ export class LiveRoom extends MockRoom {
     super(map, me, [], []);
     // The mock's own cats give way to the server's
     this.state.npcs.clear();
+    this.sync();
+  }
+
+  /**
+   * Starts following the game server; returns the stop. Called from an effect (not the constructor)
+   * so React's development double mount, which runs a clean-up straight away, attaches again.
+   */
+  attach() {
+    const game = this.game;
     const sync = () => this.sync();
     game.onStateChange(sync);
     // Who's here changes rarely; a full sync on each patch keeps positions current
@@ -125,11 +135,12 @@ export class LiveRoom extends MockRoom {
       game.onMessage('said', (m: Said) => this.saidListeners.forEach((fn) => fn(m.id === game.sessionId ? 'me' : m.id, m.text))),
       game.onMessage('quiet', (m: Quiet) => this.quietListeners.forEach((fn) => fn(m.until))),
     ];
-    this.unsubscribe = () => {
+    this.sync();
+    return () => {
+      clearTimeout(this.subjectTimer);
       game.onStateChange.remove(sync);
       for (const off of offs) off?.();
     };
-    this.sync();
   }
 
   /** The map the game server says the room is on (an owner's live switch moves everyone). */
@@ -137,9 +148,46 @@ export class LiveRoom extends MockRoom {
     return this.game.state?.mapId ?? '';
   }
 
-  dispose() {
-    clearTimeout(this.subjectTimer);
-    this.unsubscribe();
+  // --- Watch together (feature 10): the game server's big screen ---
+
+  /** The server's screen in the activity hub's shape (you're 'me'; a TV share is a player's) */
+  watchState(): Omit<WatchState, 'resume'> {
+    const w = this.game.state?.watch;
+    const key = (sessionId: string) => (sessionId === this.game.sessionId ? 'me' : sessionId);
+    const video = (v: WatchVideo): Video => ({ id: v.videoId, title: v.title, key: v.key, by: key(v.by), byName: v.byName });
+    let share: WatchState['share'] = null;
+    this.game.state?.players?.forEach((p, id) => {
+      if (p.share === 'tv') share = { by: key(id), audio: p.shareAudio };
+    });
+    if (!w) return { now: null, queue: [], offset: 0, startedAt: 0, paused: false, share };
+    return {
+      now: w.videoId ? video(w) : null,
+      queue: [...w.queue].map(video),
+      offset: w.offset,
+      startedAt: w.startedAt,
+      paused: w.paused,
+      share,
+    };
+  }
+
+  /** The hub's way to the server's screen */
+  readonly watchRemote: WatchRemote = {
+    state: () => this.watchState(),
+    add: (videoId) => this.game.send('watch:add', { link: videoId }),
+    pause: (paused) => this.game.send('watch:pause', { paused }),
+    seek: (seconds) => this.game.send('watch:seek', { seconds }),
+    next: (key) => this.game.send('watch:next', { key }),
+    remove: (key) => this.game.send('watch:remove', { key }),
+  };
+
+  /** Owners and mods: everything off the big screen */
+  watchOff() {
+    this.game.send('watch:off');
+  }
+
+  /** A link the server wouldn't put on, and why */
+  onWatchRefused(fn: (reason: WatchRefused['reason']) => void) {
+    return this.game.onMessage('watch:refused', (m: WatchRefused) => fn(m.reason));
   }
 
   private saidListeners = new Set<(id: string, text: string) => void>();

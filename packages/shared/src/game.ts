@@ -108,8 +108,10 @@ export interface GamePresence {
  * `voice` (asks for a {@link VoicePass}), `deaf` { on }, `mute` { id, on } (owner and mods: Mute
  * for everyone, by session id), `share` { where: 'tv' | 'table' | '', audio } (a screen share at
  * the TV or the desk you sit at; '' stops it), `npc:summon` { kind } (at the Buddy Machine),
- * `npc:goodbye` { id }, `npc:pet` { id }.
- * What the server sends besides state: `said`, `quiet`, `voice`, and for the cats and study buddies
+ * `npc:goodbye` { id }, `npc:pet` { id }, and Watch together's `watch:add` { link }, `watch:pause`
+ * { paused }, `watch:seek` { seconds }, `watch:next` { key } (skip, or the video ended),
+ * `watch:remove` { key } and `watch:off` (owners and mods).
+ * What the server sends besides state: `said`, `quiet`, `voice`, `watch:refused` (WatchRefused in watch.ts), and for the cats and study buddies
  * `npc:summoned` ({@link NpcSummoned}), `npc:said` ({@link Said}, the NPC's id), `npc:react`
  * ({@link NpcReact}), `npc:note` ({@link NpcNote}) and `npc:refused` ({@link NpcRefused}).
  */

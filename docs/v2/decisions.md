@@ -426,6 +426,17 @@ decision is made or changed: one line, a date, and the reason.
   for, for the 12-hour cap, while rankings use the viewer's time zone. **Guests** show in "This room
   today" from the game server's memory and are never saved. A running round shows 📖 even if you've
   gone quiet: focusing is never Away, for friends too.
+- **Watch together and photo mode, in parts** (2026-11-23, the owner): 1. Watch together on the game
+  server; 2. photo mode (Share posts to Room chat, 📸 over your head). The **round-based activity
+  framework** (lobby, host, Call everyone, Leave and the 30 s rule, results, Room-wide games) is
+  built **with the first party game**, not now: Watch together is drop-in and needs none of it,
+  and a lobby with no game can't be tried (a placeholder game would be built and tested twice).
+  Also agreed: **anyone on the rug controls the TV, guests too** (kicking handles anyone who's a
+  pain); the **game server checks each link with YouTube** (oEmbed) before it plays, so a broken or
+  private video never reaches everyone and titles can't be made up, and **Up next holds 20**;
+  owners and mods get **Turn off the TV** now (it's the screen's own off switch; timeouts and
+  reports stay with moderation); the screen lives **in memory only**, since the spec clears it
+  when nobody's watching anyway.
 - **Focus part 3: the Focus page** (2026-11-23, the owner): four points, agreed. The hero's button
   goes **back to the room you were last in** (remembered in the browser, still a member), else
   "Find a room to study in" → Discover; the demo's fixed "Study in the Library" assumed a Common

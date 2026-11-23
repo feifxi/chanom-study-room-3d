@@ -16,6 +16,9 @@ import {
   type NpcView,
   type PlayerView,
   type Said,
+  type WatchRefused,
+  type WatchVideo,
+  type WatchView,
 } from '@connecta/shared';
 import { mapDataFor } from '@connecta/shared/maps';
 import { timing } from './focus.js';
@@ -23,12 +26,16 @@ import { dispatch, dispatchWalkedIn, links } from './links.js';
 import { decodeJwt } from 'jose';
 import { gameServer } from './server.js';
 import { liveKitVoice, voice } from './voice.js';
+import { youtube } from './watch.js';
 
 const SECRET = process.env.GAME_SECRET!;
 const PORT = 4092;
 const client = new Client(`http://localhost:${PORT}`);
 
-type GameRoom = Room<unknown, { mapId: string; players: Map<string, PlayerView>; npcs: Map<string, NpcView> }>;
+type GameRoom = Room<
+  unknown,
+  { mapId: string; players: Map<string, PlayerView>; npcs: Map<string, NpcView>; watch: WatchView & { queue: WatchVideo[] } }
+>;
 
 const presence: GamePresence[] = [];
 /** Each test walks into a room of its own (an empty room closes only a second after the last leave) */
@@ -471,6 +478,76 @@ describe('bubbles and status', () => {
       await quietly();
       expect(me(g).share).toBe('');
     });
+  });
+});
+
+describe('watch together', () => {
+  const library = mapDataFor('library');
+  const tv = { x: -10.45, z: 6.05 };
+  const LINK = 'https://youtu.be/lTRiuFIWV54';
+  const real = youtube.lookup;
+  beforeEach(() => {
+    youtube.lookup = async (id) => (id === 'privateXXXX' ? null : { title: `Title of ${id}` });
+  });
+  afterEach(() => {
+    youtube.lookup = real;
+  });
+  const refusals = (r: GameRoom) => {
+    const got: string[] = [];
+    r.onMessage('watch:refused', (m: WatchRefused) => got.push(m.reason));
+    return got;
+  };
+
+  it('anyone on the rug, guests too, puts a checked video on; others are turned away', async () => {
+    const a = track(await walkIn());
+    const g = track(await walkIn({ sub: 'u-guest', name: 'Mint', role: 'guest' }));
+    const told = refusals(a);
+    a.send('watch:add', { link: LINK });
+    await until(() => told.includes('away'));
+    await walkTo(a, tv);
+    a.send('watch:add', { link: 'https://vimeo.com/1' });
+    a.send('watch:add', { link: 'https://youtu.be/privateXXXX' });
+    await until(() => told.includes('link') && told.includes('unavailable'));
+    a.send('watch:add', { link: LINK });
+    await until(() => a.state.watch.videoId === 'lTRiuFIWV54');
+    expect(a.state.watch).toMatchObject({ title: 'Title of lTRiuFIWV54', byName: 'Mai', paused: false });
+
+    await walkTo(g, { x: tv.x + 0.5, z: tv.z });
+    g.send('watch:add', { link: 'https://youtu.be/aaaaaaaaaaa' });
+    await until(() => a.state.watch.queue.length === 1);
+    expect(a.state.watch.queue[0]).toMatchObject({ videoId: 'aaaaaaaaaaa', byName: 'Mint' });
+    g.send('watch:pause', { paused: true });
+    await until(() => a.state.watch.paused);
+    g.send('watch:next', { key: a.state.watch.key });
+    await until(() => a.state.watch.videoId === 'aaaaaaaaaaa');
+  });
+
+  it('controls only from the rug; owners and mods turn it off from anywhere', async () => {
+    const a = track(await walkIn());
+    const far = track(await walkIn({ sub: 'u-jod', name: 'Jod' }));
+    const mod = track(await walkIn({ sub: 'u-ken', name: 'Ken', role: 'mod' }));
+    await walkTo(a, tv);
+    a.send('watch:add', { link: LINK });
+    await until(() => far.state.watch.videoId === 'lTRiuFIWV54');
+    far.send('watch:pause', { paused: true });
+    far.send('watch:off');
+    await quietly();
+    expect(a.state.watch).toMatchObject({ videoId: 'lTRiuFIWV54', paused: false });
+    mod.send('watch:off');
+    await until(() => a.state.watch.videoId === '');
+  });
+
+  it('a share pauses the video and it carries on when the sharer walks off', async () => {
+    const a = track(await walkIn());
+    const b = track(await walkIn({ sub: 'u-jod', name: 'Jod' }));
+    await walkTo(a, tv);
+    await walkTo(b, { x: tv.x + 0.5, z: tv.z });
+    a.send('watch:add', { link: LINK });
+    await until(() => a.state.watch.videoId !== '');
+    b.send('share', { where: 'tv', audio: true });
+    await until(() => a.state.watch.paused);
+    await walkTo(b, library.spawn);
+    await until(() => !a.state.watch.paused);
   });
 });
 

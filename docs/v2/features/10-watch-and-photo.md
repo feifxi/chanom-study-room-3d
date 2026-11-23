@@ -1,9 +1,9 @@
 # 10. Watch together and photo mode
 
-**Status:** decided and built in the demo. In the real app (2026-11-22, build step 4 part 4) a
-screen share on the TV is real (over LiveKit, to the people on the rug); YouTube Watch together is
-still each browser's own until step 5, so a share pausing a video and the video carrying on after
-come then. **Try it:** http://localhost:3100/servers/chanom/rooms/library
+**Status:** decided and built in the demo. In the real app a screen share on the TV is real (over
+LiveKit, to the people on the rug, 2026-11-22), and Watch together runs on the game server
+(2026-11-23): one screen and one Up next for everyone on the rug, a share pausing the video and it
+carrying on after. Photo mode is next ([how it's split](../decisions.md#engineering-and-infra)). **Try it:** http://localhost:3100/servers/chanom/rooms/library
 
 - Activities → Watch together → **Go there**, click the orange **Put something on**, paste a YouTube link (e.g.
   `https://youtu.be/lTRiuFIWV54`). Click outside the panel to shrink it; click the small player to
@@ -60,9 +60,15 @@ library's TV lounge, the café's lounge, the rooftop's cinema sheet with floor c
 
 ### Controls
 
-- **Anyone watching controls everything:** play/pause, seek, skip, add to the queue, remove from it.
-  It's your room; mods can kick anyone who's a pain.
+- **Anyone watching controls everything,** guests too: play/pause, seek, skip, add to the queue,
+  remove from it. It's your room; mods can kick anyone who's a pain.
 - **Up next:** anyone adds a link; videos play in order; skip or the end of a video plays the next.
+  At most **20** wait in Up next ("Up next is full (20)").
+- **Links are checked first:** the game server asks YouTube about the video before anyone's screen
+  gets it. A private or missing video, or one whose owner turned off embedding, is refused with a
+  toast ("That video can't play here…"); the title is always YouTube's.
+- **Turn off the TV** (owners and mods): clears what's on and Up next, from the panel or the
+  Activities list, from anywhere in the room. A share stays (it ends when its sharer walks off).
 - **Big ↔ small:** a click on the dimmed room (or Escape, or Activities) shrinks it to a small player
   in the bottom-right corner and brings everything back; that click doesn't walk you. Mic, Sound,
   Chat work without shrinking it. Clicking the small player's picture makes
@@ -87,13 +93,21 @@ library's TV lounge, the café's lounge, the rooftop's cinema sheet with floor c
 
 ### Sync (for the backend)
 
-- The server keeps `{ videoId, offset, startedAt, paused }`: where the video was at `startedAt`. Every
-  player seeks back in line when it's more than 2 s off. Play/pause/seek set a new offset and time.
-- The first player to report "ended" moves the queue on (the server ignores reports for an old video).
-- Titles come from YouTube's oEmbed (free, no key).
+- The game server keeps the screen in room state (`watch`: `{ key, videoId, title, by, byName,
+offset, startedAt, paused, queue }`, `apps/game/src/watch.ts`): where the video was at
+  `startedAt`. Every player seeks back in line when it's more than 2 s off. Play/pause/seek set a
+  new offset and time. Messages: `watch:add { link }`, `watch:pause`, `watch:seek`, `watch:next
+{ key }` (skip, or "ended"), `watch:remove { key }`, `watch:off` (owners and mods); only people
+  on the rug may send the others, and `watch:refused { reason }` says why a link wasn't put on.
+- Skip and "ended" name the video they mean (`key`), so the first report moves Up next on and the
+  rest are ignored.
+- The game server looks each link up with YouTube's oEmbed (free, no key) and refuses a 4xx; if
+  YouTube can't be reached it lets the video through and the players show YouTube's own message.
+- It lives in memory only: the screen and Up next are gone when the room empties (nobody on the
+  rug for 30 s turns it off anyway).
 - **Screen share** (built): the game server holds who shares (the player's `share` is 'tv', with
   `shareAudio`) and ends it when the sharer leaves the rug; whether the video should resume comes
-  with Watch together in step 5. The picture and sound are LiveKit tracks (`getDisplayMedia` with
+  with Watch together (built: the video pauses while a share is on and carries on after). The picture and sound are LiveKit tracks (`getDisplayMedia` with
   `audio: true`), and the sharer's client lets only people on the rug receive them, as private
   zones do ([06-3d-room.md](06-3d-room.md#backend-notes)).
 

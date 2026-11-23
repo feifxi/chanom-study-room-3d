@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Client, type Room } from '@colyseus/sdk';
-import { GAME_CLOSE, GAME_ROOM, type GameJoinOptions, type NpcView, type PlayerView } from '@connecta/shared';
+import { GAME_CLOSE, GAME_ROOM, type GameJoinOptions, type NpcView, type PlayerView, type WatchView } from '@connecta/shared';
 import { api } from '@/lib/api/client';
 
 /** The game server's state as the web app reads it (apps/game/src/state.ts). */
@@ -10,6 +10,8 @@ export interface GameState {
   mapId: string;
   players: Map<string, PlayerView>;
   npcs: Map<string, NpcView>;
+  /** Watch together's big screen (feature 10) */
+  watch?: WatchView;
 }
 export type GameRoom = Room<unknown, GameState>;
 

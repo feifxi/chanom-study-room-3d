@@ -62,12 +62,43 @@ export const Npc = schema(
 );
 export type Npc = SchemaType<typeof Npc>;
 
+/** A video on the big screen or in Up next (WatchVideo in packages/shared) */
+export const Video = schema(
+  {
+    key: t.string(),
+    videoId: t.string(),
+    title: t.string(),
+    by: t.string(),
+    byName: t.string(),
+  },
+  'Video',
+);
+export type Video = SchemaType<typeof Video>;
+
+/** Watch together's screen (WatchView in packages/shared): what's on, the shared timeline, Up next */
+export const Watch = schema(
+  {
+    key: t.string().default(''),
+    videoId: t.string().default(''),
+    title: t.string().default(''),
+    by: t.string().default(''),
+    byName: t.string().default(''),
+    offset: t.number().default(0),
+    startedAt: t.number().default(0),
+    paused: t.boolean().default(false),
+    queue: t.array(Video),
+  },
+  'Watch',
+);
+export type Watch = SchemaType<typeof Watch>;
+
 export const RoomState = schema(
   {
     /** The room's map; changing it (Room settings) moves everyone to the new map's door */
     mapId: t.string(),
     players: t.map(Player),
     npcs: t.map(Npc),
+    watch: t.ref(Watch),
   },
   'RoomState',
 );

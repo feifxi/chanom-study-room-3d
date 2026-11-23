@@ -58,6 +58,14 @@ Tick or strike these as they're dealt with.
       server's, so rankings are right). The labels' `clockOffset` is 0 everywhere; a server time
       sync would fix both.
 - [ ] **The focus quests still count in this browser only** until coins and quests.
+- [ ] **Watch together's timeline uses each browser's clock** against the server's `startedAt`, like
+      the focus countdown: a computer clock that's a few seconds off plays a few seconds off (and
+      keeps seeking if it's more than 2 s off). A server time sync would fix both.
+- [ ] **A refused link closes the Put something on card** (the toast says why), so trying another
+      link means opening it again. The card could stay open until the server answers.
+- [ ] **The browser still looks the title up too** (the panel's old oEmbed call) before sending the
+      link, though the server's title is the one used: one extra request per link.
+- [ ] **Common rooms keep the demo's local TV** until moderation and open rooms.
 - [ ] **The Everyone cache lives in each API process:** with several API processes, turning "Show
       me on Everyone" off clears only one of them, so another could list you for up to 5 minutes.
       Fine for one process; Redis would fix it when there are more.
@@ -215,3 +223,23 @@ log](decisions.md), 2026-11-23.
 ago" by its end time only; with days counted by start it showed up as today, so the test now sets
 both. Screenshots at 390 dark and 1280 light with a week of sample rounds (removed afterwards)
 looked right.
+
+### Watch together on the game server
+
+**Changed:** the big screen is the game server's (`apps/game/src/watch.ts`, room state `watch`):
+what's on, the shared timeline and Up next (20 at most), changed by anyone on the rug through
+`watch:*` messages, with owners and mods able to turn it off from anywhere. Links are checked with
+YouTube's oEmbed on the server first. A TV share pauses the video and it carries on after; nobody
+on the rug for 30 s turns it off. In the web app the activity hub mirrors the server's screen in
+real rooms (`WatchRemote`), so the panel, the 3D screen, spot tags and the Activities list work as
+before; mock rooms keep the hub's own screen. `parseYouTube` and `watchPosition` moved to
+`packages/shared`. Decisions: [decision log](decisions.md), 2026-11-23.
+
+**Bugs found and fixed while building:** **in development, a real room stopped following the game
+server right after it opened** at phone width: React's development double mount ran the room's
+clean-up straight away and nothing subscribed again, so your own position stayed at the door (the
+rug, seats and spots thought you were there) while you walked. Desktop hid it because the room got
+rebuilt soon after. The room now subscribes in an effect (`LiveRoom.attach`). Production never
+double-mounts, so only development was affected. A headless run with two people (desktop and
+phone) checked a refused private video, a real video in sync on both, a pause from the phone
+reaching the desktop, and Turn off the TV closing the phone's panel.

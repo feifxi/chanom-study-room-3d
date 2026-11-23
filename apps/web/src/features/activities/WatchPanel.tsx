@@ -5,6 +5,7 @@ import { Maximize2, Minimize2, MonitorUp, Pause, Play, Plus, SkipForward, Volume
 import { useDismiss } from '../room/useDismiss';
 import { canShareScreen, isTouchScreen } from '@/lib/screen';
 import { cn } from '@/lib/utils';
+import { WATCH_DRIFT_S, parseYouTube } from '@connecta/shared';
 import { watchPosition, type ScreenShare, type Video, type WatchState } from './hub';
 import { myShareStream } from './screenShare';
 
@@ -15,14 +16,6 @@ import { myShareStream } from './screenShare';
  */
 
 // --- YouTube links and the IFrame API ---
-
-/** The video id from a youtube.com / youtu.be / Shorts link, or a bare id. */
-export function parseYouTube(input: string): string | null {
-  const s = input.trim();
-  if (/^[\w-]{11}$/.test(s)) return s;
-  const m = s.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{11})/);
-  return m?.[1] ?? null;
-}
 
 async function titleOf(id: string): Promise<string> {
   try {
@@ -76,8 +69,6 @@ function loadYouTube(): Promise<YTNamespace> {
 
 const PLAYING = 1;
 const ENDED = 0;
-/** Further apart than this from the shared timeline and we seek back in line. */
-const DRIFT_S = 2;
 
 const clock = (s: number) => {
   const t = Math.max(0, Math.floor(s));
@@ -120,6 +111,7 @@ export function WatchPanel({
   onStopShare,
   shareStream,
   deaf,
+  onTurnOff,
 }: {
   watch: WatchState;
   who: (id: string) => string;
@@ -139,6 +131,8 @@ export function WatchPanel({
   shareStream?: (by: string) => MediaStream | null;
   /** Deafened: a share's sound is off too */
   deaf?: boolean;
+  /** Owners and mods: everything off the screen (something unsuitable) */
+  onTurnOff?: () => void;
 }) {
   const panel = useDismiss<HTMLElement>(!mini, () => onMini(true));
   const host = useRef<HTMLDivElement>(null);
@@ -203,7 +197,7 @@ export function WatchPanel({
         p.loadVideoById({ videoId: w.now.id, startSeconds: target });
         return;
       }
-      if (Math.abs(p.getCurrentTime() - target) > DRIFT_S) p.seekTo(target, true);
+      if (Math.abs(p.getCurrentTime() - target) > WATCH_DRIFT_S) p.seekTo(target, true);
       if (w.paused) p.pauseVideo();
       else if (p.getPlayerState() !== PLAYING) {
         p.playVideo();
@@ -348,21 +342,32 @@ export function WatchPanel({
                 <p className="line-clamp-2 text-sm font-extrabold">{watch.now?.title}</p>
                 {watch.now && (
                   <p className="text-[11px] text-muted-foreground">
-                    put on by {who(watch.now.by)} · {watchers} watching
+                    put on by {watch.now.byName ?? who(watch.now.by)} · {watchers} watching
                   </p>
                 )}
               </div>
             )}
             <div className="flex min-h-0 flex-1 flex-col gap-1 rounded-xl bg-muted/60 p-2">
-              <p className="px-1 text-[11px] font-black text-muted-foreground">
-                Up next {watch.queue.length > 0 && `· ${watch.queue.length}`}
-              </p>
+              <div className="flex items-center gap-2 px-1">
+                <p className="flex-1 text-[11px] font-black text-muted-foreground">
+                  Up next {watch.queue.length > 0 && `· ${watch.queue.length}`}
+                </p>
+                {onTurnOff && (
+                  <button
+                    onClick={onTurnOff}
+                    title="Owners and mods: turn the screen off and clear Up next"
+                    className="rounded-full px-2 py-0.5 text-[11px] font-bold text-muted-foreground hover:bg-card hover:text-destructive"
+                  >
+                    Turn off the TV
+                  </button>
+                )}
+              </div>
               {watch.queue.length === 0 && <p className="px-1 text-[11px] text-muted-foreground">Nothing yet. Anyone watching can add.</p>}
               <div className="flex max-h-[40dvh] flex-col gap-1 overflow-y-auto">
                 {watch.queue.map((v, i) => (
-                  <div key={`${v.id}-${i}`} className="flex items-center gap-2 rounded-lg bg-card px-2 py-1 text-xs">
+                  <div key={v.key ?? `${v.id}-${i}`} className="flex items-center gap-2 rounded-lg bg-card px-2 py-1 text-xs">
                     <span className="min-w-0 flex-1 truncate font-bold">{v.title}</span>
-                    <span className="text-muted-foreground">{who(v.by)}</span>
+                    <span className="text-muted-foreground">{v.byName ?? who(v.by)}</span>
                     <button
                       onClick={() => onRemove(i)}
                       aria-label={`Remove ${v.title}`}

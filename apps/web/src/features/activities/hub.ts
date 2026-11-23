@@ -1,3 +1,4 @@
+import { watchPosition } from '@connecta/shared';
 import type { MockRoom } from '../room3d/mockRoom';
 import { BoardStore, catDoodle, type Stroke } from './board/board';
 import { DOODLES, FUNNY_GUESSES, randomPrompt, wobble } from './telephone/content';
@@ -100,6 +101,23 @@ export interface Video {
   id: string;
   title: string;
   by: string;
+  /** A real room's: which add this is (skip and remove name it) and who added it, even after they left */
+  key?: string;
+  byName?: string;
+}
+
+/**
+ * A real room: the game server owns the big screen (feature 10). The hub mirrors it each tick and
+ * passes every action on; the demo's rooms keep the hub's own screen.
+ */
+export interface WatchRemote {
+  /** The server's screen, with its TV share, in the hub's shape (you're 'me') */
+  state(): Omit<WatchState, 'resume'>;
+  add(videoId: string): void;
+  pause(paused: boolean): void;
+  seek(seconds: number): void;
+  next(key: string): void;
+  remove(key: string): void;
 }
 
 /**
@@ -131,11 +149,13 @@ export interface ScreenShare {
 /** Nobody watching for this long: the screen switches off and the queue clears. */
 const EMPTY_SCREEN_MS = 30_000;
 
-export const watchPosition = (w: WatchState, now = Date.now()) => (w.paused ? w.offset : w.offset + (now - w.startedAt) / 1000);
+export { watchPosition };
 
 export class ActivityHub {
   readonly spots = Object.fromEntries(SPOTS.map((s) => [s.id, fresh(s)])) as Record<SpotId, SpotState>;
   readonly watch: WatchState = { now: null, queue: [], offset: 0, startedAt: 0, paused: false, share: null, resume: false };
+  /** Set in a real room: the big screen is the game server's */
+  remote: WatchRemote | null = null;
   /** The whiteboard's drawing (its own store: strokes change on every pointer move). */
   readonly board = new BoardStore();
   /** Pick a Side: the deck the host picked in the lobby, and the game while it runs (and its results). */
@@ -242,6 +262,14 @@ export class ActivityHub {
 
       // Drop-in (big screen, whiteboard): whoever's in the area is in; no rounds, no lobby, no knock-outs
       if (spot.kind === 'drop-in') {
+        if (spot.id === 'tv' && this.remote) {
+          Object.assign(this.watch, this.remote.state(), { resume: false });
+          const on = !!(this.watch.now || this.watch.share);
+          if (on && st.phase !== 'playing') Object.assign(st, fresh(spot), { phase: 'playing', since: now });
+          if (!on && st.phase !== 'free') Object.assign(st, fresh(spot));
+          st.players = on ? counted : [];
+          continue;
+        }
         if (st.phase !== 'playing') continue;
         st.players = counted;
         if (counted.length) st.since = now;
@@ -306,6 +334,7 @@ export class ActivityHub {
 
   /** Put a video on: plays now if the screen is off, otherwise joins the queue. */
   putOn(video: Video, now = Date.now()) {
+    if (this.remote) return this.remote.add(video.id);
     const st = this.spots.tv;
     if (st.phase === 'free') Object.assign(st, fresh(spotById('tv')), { phase: 'playing', hostId: video.by, since: now });
     // While a screen is shared, new videos wait their turn
@@ -315,6 +344,7 @@ export class ActivityHub {
   }
 
   setPaused(paused: boolean, now = Date.now()) {
+    if (this.remote) return this.remote.pause(paused);
     const w = this.watch;
     if (w.paused === paused) return;
     Object.assign(w, { offset: watchPosition(w, now), startedAt: now, paused });
@@ -322,12 +352,19 @@ export class ActivityHub {
   }
 
   seek(seconds: number, now = Date.now()) {
+    if (this.remote) return this.remote.seek(seconds);
     Object.assign(this.watch, { offset: Math.max(0, seconds), startedAt: now });
     this.changed();
   }
 
+  /** A player says this video ended: the next one, once (a late report for an older video is ignored) */
+  ended(videoId: string, now = Date.now()) {
+    if (this.watch.now?.id === videoId) this.next(now);
+  }
+
   /** Skip, or the video ended: next in the queue, or the screen goes quiet. */
   next(now = Date.now()) {
+    if (this.remote) return void (this.watch.now?.key && this.remote.next(this.watch.now.key));
     const w = this.watch;
     const up = w.queue.shift() ?? null;
     Object.assign(w, { now: up, offset: 0, startedAt: now, paused: false });
@@ -336,12 +373,15 @@ export class ActivityHub {
   }
 
   removeQueued(index: number) {
+    const key = this.watch.queue[index]?.key;
+    if (this.remote) return void (key && this.remote.remove(key));
     this.watch.queue.splice(index, 1);
     this.changed();
   }
 
   /** Share a screen on the TV: it takes over at once, and a playing video pauses until it ends. */
   startShare(share: ScreenShare, now = Date.now()) {
+    if (this.remote) return; // the server's: a player's share
     const st = this.spots.tv;
     const w = this.watch;
     if (w.share) return;
@@ -354,6 +394,7 @@ export class ActivityHub {
 
   /** The sharer stopped (or walked away): the video carries on, the next one starts, or the screen goes quiet. */
   stopShare(by: string, now = Date.now()) {
+    if (this.remote) return;
     const w = this.watch;
     if (w.share?.by !== by) return;
     const resume = w.resume;
