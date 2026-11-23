@@ -1707,6 +1707,14 @@ export interface components {
         Wardrobe: {
             coins: number;
             owned: string[];
+            pets: {
+                item: string;
+                coat: string;
+                name: string;
+            }[];
+        };
+        BuyBody: {
+            name?: string;
         };
         DmSummary: {
             id: string;
@@ -3495,7 +3503,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BuyBody"];
+            };
+        };
         responses: {
             200: {
                 headers: {

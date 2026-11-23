@@ -431,6 +431,12 @@ decision is made or changed: one line, a date, and the reason.
   with a friend's deck, and the room's owner and mods look after them. Members write decks and
   change their own; guests play with them. We lose using one deck in several rooms; "copy to
   another room" can come later. This replaces "My decks, private to you".
+- **Pets are room cats, not followers** (2026-11-23, the owner's idea): a pet is a cat in a Shop
+  coat that its owner brings out of the Buddy Machine; it lives in the room like the other cats
+  instead of trailing you. It reuses the server's cats (no new 3D animal, no per-person following
+  work) and keeps the room one place. Only the owner sends it home, and it leaves with them. Four
+  coats at 1,000–1,200 (a coat is less than a whole new animal). Built without a demo round, at the
+  owner's word ("just do it").
 - **The Shop's first set** (2026-11-23, the owner approved it in the demo): Bunny Ears 200, Bear
   Ears 200, Star Clips 220, Flower Crown 280, Halo 300, Witch Hat 380; Hoodie 500, Overalls 550,
   Raincoat 650, Yukata 800. Outfits are shapes in your outfit colour; one accessory slot, as before.

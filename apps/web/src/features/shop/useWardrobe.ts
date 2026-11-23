@@ -23,15 +23,15 @@ export function useWardrobe() {
     },
     enabled: signedUp(me),
   });
-  return { owned: data?.owned ?? [], ready: !!data };
+  return { owned: data?.owned ?? [], pets: data?.pets ?? [], ready: !!data };
 }
 
 /** Buy with coins: resolves with an error message when it didn't work */
 export function useBuy() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: async (itemId: string): Promise<string | null> => {
-      const { data, error } = await api.POST('/api/shop/items/{id}/buy', { params: { path: { id: itemId } } });
+    mutationFn: async ({ id, name }: { id: string; name?: string }): Promise<string | null> => {
+      const { data, error } = await api.POST('/api/shop/items/{id}/buy', { params: { path: { id } }, body: { name } });
       if (!data) return (error as { message?: string } | undefined)?.message ?? 'Couldn’t buy it. Try again?';
       client.setQueryData(WARDROBE_KEY, data);
       void client.invalidateQueries({ queryKey: QUESTS_KEY });

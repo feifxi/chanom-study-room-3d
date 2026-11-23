@@ -1,4 +1,5 @@
 import { randomInt } from 'node:crypto';
+import { petsOf } from '../shop/pets.js';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import {
   canActOn,
@@ -384,6 +385,7 @@ export class RoomsService {
       timedOutUntil: member?.timedOutUntil && member.timedOutUntil > now ? member.timedOutUntil.getTime() : 0,
       guestVoice: room.guestVoice,
       roomWideGames: room.roomWideGames,
+      pets: await petsOf(this.prisma, userId),
     });
     return { ticket, place: roomId };
   }

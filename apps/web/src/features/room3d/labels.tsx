@@ -197,7 +197,7 @@ export function LabelLayer({
         const npc = npcs?.get(id);
         if (!npc) return null;
         const key = npcKey(id);
-        const icon = npc.kind === 'cat' ? (npc.anim === 'nap' ? '💤' : '🐈') : (STATUS_ICON[npc.status] ?? '🧑‍🎓');
+        const icon = npc.kind === 'cat' ? (npc.anim === 'nap' ? '💤' : npc.owner ? '🐾' : '🐈') : (STATUS_ICON[npc.status] ?? '🧑‍🎓');
         return (
           <div
             key={key}
@@ -213,12 +213,13 @@ export function LabelLayer({
             <div className="flex items-center gap-1 rounded-lg bg-lavender/95 px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-lavender-ink shadow-sm">
               <span>{icon}</span>
               {npc.name}
+              {npc.ownerName && <span className="font-semibold opacity-75">· {npc.ownerName}’s cat</span>}
               {npc.kind === 'buddy' && npc.status === 'focus' && (
                 <span className="font-semibold opacity-75">
                   · {minutesSince(npc.focusSince, serverNow)}m{npc.subject && ` · ${npc.subject}`}
                 </span>
               )}
-              <span className="rounded bg-white/80 px-1 text-[9px] tracking-wide">NPC</span>
+              {!npc.owner && <span className="rounded bg-white/80 px-1 text-[9px] tracking-wide">NPC</span>}
             </div>
           </div>
         );

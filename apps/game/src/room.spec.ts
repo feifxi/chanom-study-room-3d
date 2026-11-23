@@ -1236,6 +1236,48 @@ describe('cats and study buddies', () => {
     expect(heard.said.some((m) => m.id === id)).toBe(true);
   }, 20_000);
 
+  it('a pet: its owner brings it (once, on top of the cats), only they send it home, and it leaves with them', async () => {
+    const snowball = { item: 'catSnowball', coat: 'snowball', name: 'Puff' };
+    const a = track(await walkIn({ pets: [snowball] }));
+    const b = track(await walkIn({ sub: 'u-jod', name: 'Jod', handle: 'jod' }));
+    const heardA = listen(a);
+    const heardB = listen(b);
+    await walkTo(a, machine);
+    await walkTo(b, machine);
+    // Jod doesn't own it: nothing happens
+    b.send('pet:summon', { item: 'catSnowball' });
+    a.send('pet:summon', { item: 'catSnowball' });
+    await until(() => named(b, 'Puff'), 3000);
+    const [id, puff] = named(b, 'Puff')!;
+    expect(puff).toMatchObject({ kind: 'cat', owner: 'u-mai', ownerName: 'Mai' });
+    expect(JSON.parse(puff.look).coat).toBe('snowball');
+    expect(heardB.notes.at(-1)).toBe('✨ Mai’s cat Puff came to visit!');
+    expect(heardB.summoned).toHaveLength(1);
+    // One at a time; it doesn't count toward the room's 4 cats
+    await quietly(2100);
+    a.send('pet:summon', { item: 'catSnowball' });
+    await until(() => heardA.refused.length === 1);
+    expect(heardA.refused[0]).toMatch(/already/);
+    b.send('npc:summon', { kind: 'cat' });
+    await until(() => a.state.npcs.size === 4, 3000);
+
+    b.send('npc:goodbye', { id });
+    await until(() => heardB.refused.length === 1);
+    expect(heardB.refused[0]).toBe('Only Mai can send Puff home');
+    expect(a.state.npcs.has(id)).toBe(true);
+
+    // A pet bought while you're in the room shows up in the machine at once
+    dispatch({ roomId: '*', type: 'pets', userId: 'u-jod', pets: [{ item: 'catTux', coat: 'gent', name: 'Sir' }] });
+    await quietly();
+    b.send('pet:summon', { item: 'catTux' });
+    await until(() => named(a, 'Sir'), 3000);
+
+    // Mai leaves: Puff goes home with her
+    await a.leave();
+    await until(() => heardB.notes.includes('👋 Puff went home with Mai'));
+    await until(() => !b.state.npcs.has(id), 15_000);
+  }, 40_000);
+
   it('anyone can say goodbye; a new map brings its own resident cats back', async () => {
     const a = track(await walkIn());
     const b = track(await walkIn({ sub: 'u-jod', name: 'Jod', handle: 'jod' }));

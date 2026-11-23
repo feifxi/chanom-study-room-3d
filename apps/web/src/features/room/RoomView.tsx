@@ -13,6 +13,7 @@ import { setConnection } from '@/lib/connection';
 import { DMS, ME, USERS, type Server } from '@/lib/mock';
 import type { PlaceRoom } from '@/features/place/model';
 import { useMeAsUser } from '@/features/account/useMe';
+import { useWardrobe } from '@/features/shop/useWardrobe';
 import { AWAY_EVENT, crowdPeople, useCrowd } from '@/lib/demoCrowd';
 import { GUEST_LOOK, loadGuest } from '@/lib/guest';
 import { getMyLook, useMyLook } from '@/lib/myLook';
@@ -144,6 +145,8 @@ export default function RoomView({
   );
   // Your own name from your account; the people around you are still mock until walking in is ported (step 4)
   const account = useMeAsUser();
+  // Your Shop pets, for the Buddy Machine
+  const { pets } = useWardrobe();
   const myName = guest ? guestAs || 'Guest' : account.name;
 
   // The owner sets the room's look and time of day for everyone (feature 7); Common rooms use the defaults
@@ -1563,6 +1566,9 @@ export default function RoomView({
                       if (n && !game) setLines((l) => [...l, { id: `bye-${Date.now()}`, system: true, text: `👋 ${n.name} went home` }]);
                     }}
                     onClose={() => setMachine(false)}
+                    pets={pets}
+                    myUserId={room.state.players.get('me')?.userId}
+                    onSummonPet={room instanceof LiveRoom ? (item) => room.summonPet(item) : undefined}
                   />
                 </div>
               )}

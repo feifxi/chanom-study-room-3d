@@ -6,7 +6,9 @@ import type { Accessory, OutfitStyle } from './avatar.js';
  */
 export type ShopItem =
   | { id: string; kind: 'accessory'; value: Accessory; name: string; emoji: string; price: number; blurb: string }
-  | { id: string; kind: 'outfit'; value: OutfitStyle; name: string; emoji: string; price: number; blurb: string };
+  | { id: string; kind: 'outfit'; value: OutfitStyle; name: string; emoji: string; price: number; blurb: string }
+  /** A pet: a cat coat (PET_COATS in ./npc), summoned from the Buddy Machine; its name is the default pet name */
+  | { id: string; kind: 'pet'; value: string; name: string; emoji: string; price: number; blurb: string };
 
 export const SHOP_ITEMS: readonly ShopItem[] = [
   {
@@ -67,6 +69,34 @@ export const SHOP_ITEMS: readonly ShopItem[] = [
     blurb: 'A little hood and matching boots',
   },
   { id: 'yukata', kind: 'outfit', value: 'yukata', name: 'Yukata', emoji: '🎐', price: 800, blurb: 'A summer robe with a sash and a bow' },
+  {
+    id: 'catMidnight',
+    kind: 'pet',
+    value: 'midnight',
+    name: 'Midnight',
+    emoji: '🐈‍⬛',
+    price: 1000,
+    blurb: 'Black, with gold eyes and a star tag',
+  },
+  { id: 'catTux', kind: 'pet', value: 'gent', name: 'Tux', emoji: '🎩', price: 1200, blurb: 'Black and white, in a little bow tie' },
+  {
+    id: 'catSiamese',
+    kind: 'pet',
+    value: 'siamese',
+    name: 'Siamese',
+    emoji: '🔔',
+    price: 1200,
+    blurb: 'Cream with dark points and a bell collar',
+  },
+  {
+    id: 'catSnowball',
+    kind: 'pet',
+    value: 'snowball',
+    name: 'Snowball',
+    emoji: '🤍',
+    price: 1000,
+    blurb: 'A fluffy white cat with a pink bow',
+  },
 ];
 
 export const shopItem = (id: string) => SHOP_ITEMS.find((i) => i.id === id);

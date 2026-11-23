@@ -2,7 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
-import { COAT_BY_ID, NPC_LIMITS, SUMMON_COOLDOWN_MS, SUMMON_REVEAL_MS, parseJson, type NpcKind, type NpcView } from '@connecta/shared';
+import {
+  COAT_BY_ID,
+  NPC_LIMITS,
+  SUMMON_COOLDOWN_MS,
+  SUMMON_REVEAL_MS,
+  parseJson,
+  type NpcKind,
+  type NpcView,
+  type PetOut,
+} from '@connecta/shared';
 import { cn } from '@/lib/utils';
 import { useDismiss } from '../room/useDismiss';
 
@@ -22,7 +31,8 @@ export interface MachineSummon {
  * The Buddy Machine (feature 6): walk up and press E. Summon a cat or a study buddy for the whole
  * room (a capsule rolls out of the machine and pops open), or say goodbye to one. Nobody owns them:
  * anyone can summon, anyone can send one home. Up to 4 cats and 5 study buddies, 9 in all; they go
- * home when the room empties.
+ * home when the room empties. Your pets (Shop) get their own row: one out at a time, up to 4 pets
+ * in a room on top of the cats, and only you send yours home.
  */
 export function BuddyMachinePanel({
   npcs,
@@ -31,6 +41,9 @@ export function BuddyMachinePanel({
   onSummon,
   onGoodbye,
   onClose,
+  pets = [],
+  myUserId,
+  onSummonPet,
 }: {
   npcs: [string, NpcView][];
   /** Your latest summon: the cooldown and the "rolling out…" line */
@@ -39,6 +52,10 @@ export function BuddyMachinePanel({
   onSummon: (kind: NpcKind) => void;
   onGoodbye: (id: string) => void;
   onClose: () => void;
+  /** Pets you own (real rooms, people with an account) */
+  pets?: PetOut[];
+  myUserId?: string;
+  onSummonPet?: (item: string) => void;
 }) {
   const panel = useDismiss<HTMLDivElement>(true, onClose);
   const [now, setNow] = useState(() => Date.now());
@@ -46,7 +63,10 @@ export function BuddyMachinePanel({
     const id = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(id);
   }, []);
-  const count = (kind?: NpcKind) => npcs.filter(([, n]) => !kind || n.kind === kind).length;
+  // Pets don't count toward the room's cats
+  const count = (kind?: NpcKind) => npcs.filter(([, n]) => !n.owner && (!kind || n.kind === kind)).length;
+  const petsOut = npcs.filter(([, n]) => n.owner).length;
+  const myPetOut = npcs.some(([, n]) => myUserId && n.owner === myUserId);
   const cooldown = lastSummon ? Math.max(0, SUMMON_COOLDOWN_MS - (now - lastSummon.at)) : 0;
   const recent = lastSummon && now - lastSummon.at < 6000 ? lastSummon : undefined;
 
@@ -90,6 +110,43 @@ export function BuddyMachinePanel({
           </div>
         );
       })}
+      {onSummonPet && pets.length > 0 && (
+        <>
+          <h3 className="mt-1 px-1 text-[11px] font-black tracking-wider text-muted-foreground uppercase">
+            Your pets · {petsOut}/{NPC_LIMITS.pet} in the room
+          </h3>
+          {pets.map((pet) => {
+            const out = npcs.some(
+              ([, n]) => n.owner === myUserId && n.name === pet.name && parseJson<{ coat?: string }>(n.look, {}).coat === pet.coat,
+            );
+            const blocked = myPetOut || petsOut >= NPC_LIMITS.pet || cooldown > 0;
+            return (
+              <div key={pet.item} className="flex items-center gap-3 rounded-2xl border bg-card/70 p-2">
+                <span className="grid size-10 flex-none place-items-center rounded-xl bg-peach text-xl">🐾</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-extrabold">{pet.name}</span>
+                  <span className="block text-[11px] text-muted-foreground">{COAT_BY_ID.get(pet.coat)?.label ?? 'Cat'} · your cat</span>
+                </span>
+                <button
+                  onClick={() => onSummonPet(pet.item)}
+                  disabled={blocked}
+                  className="rounded-full bg-primary px-3 py-1 text-xs font-extrabold whitespace-nowrap text-primary-foreground hover:bg-primary-ink disabled:bg-muted disabled:text-muted-foreground"
+                >
+                  {out
+                    ? 'Here ✓'
+                    : myPetOut
+                      ? 'One at a time'
+                      : petsOut >= NPC_LIMITS.pet
+                        ? 'Full'
+                        : cooldown > 0
+                          ? `${Math.ceil(cooldown / 1000)}s`
+                          : 'Bring out'}
+                </button>
+              </div>
+            );
+          })}
+        </>
+      )}
       <p aria-live="polite" className="min-h-4 px-1 text-xs font-bold">
         {error ? (
           <span className="text-destructive">{error}</span>
@@ -107,27 +164,35 @@ export function BuddyMachinePanel({
         <ul className="flex max-h-56 flex-col gap-1 overflow-y-auto">
           {npcs.map(([id, n]) => (
             <li key={id} className="flex items-center gap-2.5 rounded-xl bg-muted/60 px-2.5 py-1.5">
-              <span className="text-lg">{n.kind === 'cat' ? '🐈' : '🧑‍🎓'}</span>
+              <span className="text-lg">{n.owner ? '🐾' : n.kind === 'cat' ? '🐈' : '🧑‍🎓'}</span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-extrabold">{n.name}</span>
+                <span className="block truncate text-sm font-extrabold">
+                  {n.name}
+                  {n.ownerName && (
+                    <span className="font-bold text-muted-foreground"> · {n.owner === myUserId ? 'your' : `${n.ownerName}’s`} cat</span>
+                  )}
+                </span>
                 <span className="block truncate text-[11px] text-muted-foreground">
                   {n.kind === 'cat'
                     ? `${COAT_BY_ID.get(parseJson<{ coat?: string }>(n.look, {}).coat ?? '')?.label ?? 'Cat'}${n.anim === 'nap' ? ' · napping 💤' : ''}`
                     : `Studying ${n.subject}`}
                 </span>
               </span>
-              <button
-                onClick={() => onGoodbye(id)}
-                className="rounded-full border bg-card px-2.5 py-1 text-xs font-extrabold hover:bg-muted"
-              >
-                Goodbye 👋
-              </button>
+              {/* Someone's pet: only they send it home */}
+              {(!n.owner || n.owner === myUserId) && (
+                <button
+                  onClick={() => onGoodbye(id)}
+                  className="rounded-full border bg-card px-2.5 py-1 text-xs font-extrabold hover:bg-muted"
+                >
+                  Goodbye 👋
+                </button>
+              )}
             </li>
           ))}
         </ul>
       )}
       <p className="px-1 text-[11px] text-muted-foreground">
-        Up to {NPC_LIMITS.cat} cats and {NPC_LIMITS.buddy} study buddies. They go home when the room empties.
+        Up to {NPC_LIMITS.cat} cats and {NPC_LIMITS.buddy} study buddies. They go home when the room empties; pets go home with their owner.
       </p>
     </div>
   );

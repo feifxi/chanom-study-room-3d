@@ -117,7 +117,9 @@ Every room is a little alive, the same for everyone in it.
     with **Goodbye 👋**: it waves, walks back to the machine and is gone ("👋 Jod said goodbye to
     Tofu").
   - **Nobody owns them:** anyone can summon and anyone can say goodbye, guests too. No "summoned
-    by" on the list.
+    by" on the list. The exception is **pets** (cats bought in the Shop): a "Your pets" row brings
+    yours out, only you send it home, and it leaves with you
+    ([15](15-business-infra.md#pets)).
   - **Limits:** up to 4 cats and 5 study buddies, 9 in all (the resident cats count); one pull
     every 2 s each. Full shows on the button; the machine explains a refusal ("That's plenty of
     cats for one room").

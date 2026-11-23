@@ -1,3 +1,4 @@
+import type { PetOut } from './npc.js';
 import type { AvatarLook } from './avatar.js';
 import type { PlayerRole } from './player.js';
 
@@ -30,6 +31,8 @@ export interface GameTicket {
   guestVoice: boolean;
   /** Room settings → Room-wide games (Pick a Side) */
   roomWideGames?: boolean;
+  /** Pets you own, for the Buddy Machine */
+  pets?: PetOut[];
 }
 export const TICKET_AUDIENCE = 'connecta-game';
 export const TICKET_SECONDS = 60;
@@ -92,7 +95,9 @@ export type GameRoomEvent =
   | { roomId: string; type: 'roomWideGames'; on: boolean }
   | { roomId: string; type: 'deleted' }
   /** A saved look (the API checked you own it): every room you're in shows it. roomId '*' = all rooms */
-  | { roomId: '*'; type: 'look'; userId: string; look: AvatarLook };
+  | { roomId: '*'; type: 'look'; userId: string; look: AvatarLook }
+  /** You bought a pet: the Buddy Machine in every room you're in offers it */
+  | { roomId: '*'; type: 'pets'; userId: string; pets: PetOut[] };
 
 export interface GamePresence {
   userId: string;
@@ -111,7 +116,7 @@ export interface GamePresence {
  * `voice` (asks for a {@link VoicePass}), `deaf` { on }, `mute` { id, on } (owner and mods: Mute
  * for everyone, by session id), `share` { where: 'tv' | 'table' | '', audio } (a screen share at
  * the TV or the desk you sit at; '' stops it), `npc:summon` { kind } (at the Buddy Machine),
- * `npc:goodbye` { id }, `npc:pet` { id }, and Watch together's `watch:add` { link }, `watch:pause`
+ * `npc:goodbye` { id }, `npc:pet` { id }, `pet:summon` { item } (one of your pets), and Watch together's `watch:add` { link }, `watch:pause`
  * { paused }, `watch:seek` { seconds }, `watch:next` { key } (skip, or the video ended),
  * `watch:remove` { key } and `watch:off` (owners and mods), `photo` { on } (photo mode's 📸), and the
  * activity framework's `activity:begin`, `activity:end`, `activity:leave`, `activity:call` { spot }

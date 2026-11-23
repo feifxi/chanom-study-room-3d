@@ -43,6 +43,8 @@ Tick or strike these as they're dealt with.
 - [ ] Guests who never come back aren't cleaned up (needs a background job).
 - [ ] Signed out, the browser console logs a 401 from `/api/me`: expected, just noisy.
 
+- [ ] **Pets add up to 4 more cats** to a full Buddy Machine (13 NPCs); the perf check doesn't
+      measure that either (see the next item).
 - [ ] **A full Buddy Machine isn't measured by the perf check:** it runs a mock room with the two
       resident cats. Nine NPCs (4 cats at ~25–30 draw calls each, 5 study buddies) likely go over
       the 5-person draw-call budget (160) until cats are merged
@@ -416,3 +418,25 @@ bought accessories; the Shop page uses the real wardrobe; on a phone the quests 
 
 A headless run checked the API refusing an unowned witch hat, buying it in the Shop (1,000 → 620
 coins), wearing it, and Jod seeing it on Mai in the room at once.
+
+### Coins and quests, part 3: pets
+
+**Changed:** four pets in the Shop (Midnight, Tux, Siamese, Snowball): cat coats with an extra (a
+star tag, a bow tie, a bell collar, a pink bow; Siamese points, a fluffy ruff, coloured eyes) drawn
+by the room's `CatRig`. You name one when buying (`owned_items.name`). The API puts your pets in the
+join ticket and sends a `pets` room event after buying one; the game server's NPC director brings
+out a pet only for its owner (`pet:summon`), one each and 4 a room on top of the cats, refuses
+anyone else's goodbye, and sends it home when its owner's last tab leaves (not when a newer tab
+takes over). The Buddy Machine has a Your pets row and hides Goodbye on other people's pets; tags
+say "Puff · Mai's cat". The Shop has a Pets tab with a turning preview and a name field. The demo
+got the same cats and Shop page (with stand-in hooks), so it still matches.
+
+**Bugs found and fixed while building:**
+
+- The Siamese face mask sat inside the head and didn't show; moved it out.
+- The pet preview cut the cat off and swung it side-on; framed wider with a gentler turn.
+
+A headless run checked buying and naming Snowball "Puff" (2,000 → 1,000 coins), Mai bringing Puff
+out with Jod in the room (Jod sees the tag and note, and no Goodbye), and Puff going home about
+20 s after Mai closed her tab. `demo:perf` passed on every map (one café battery-saver row went
+over on JS time once and passed on the rerun).

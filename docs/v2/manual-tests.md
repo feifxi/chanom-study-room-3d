@@ -475,3 +475,20 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
       hair or floats oddly; the overalls' trouser legs and the raincoat's boots move with the legs.
 - [ ] A guest's character maker (invite page) shows only the free items.
 - [ ] Phone width: the Shop opens on your character and the items; the quests come after.
+
+### Coins and quests, part 3: pets
+
+- [ ] The Shop's Pets tab lists Midnight, Tux, Siamese and Snowball; picking one shows that cat up
+      close, turning; "New this week" shows Snowball.
+- [ ] Buying asks for a name (the pet's own to start with); the toast uses your name for it.
+- [ ] In a room, the Buddy Machine shows **Your pets** with Bring out; a capsule rolls out and the
+      cat appears with "Name · Your-name's cat" on its tag; everyone's Bubbles log says it came to
+      visit.
+- [ ] Your pet wanders, naps and follows whoever pets it, like the other cats; petting it counts
+      toward "pet a cat".
+- [ ] Someone else sees no Goodbye on your pet's row; you can send it home.
+- [ ] With one pet out, your other pets say "One at a time". Five people can't have more than 4
+      pets out in one room.
+- [ ] Leave the room: about 20 s later your pet walks back to the machine ("went home with you").
+- [ ] Buy a pet while you're in a room: it's in the machine without rejoining.
+- [ ] Look at each coat in a room from a few angles: the bow, star tag, bow tie and bell sit right.

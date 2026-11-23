@@ -1,8 +1,8 @@
-import { Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import { z } from 'zod';
-import { WardrobeSchema, type Wardrobe } from './shop.schemas.js';
+import { BuyBodySchema, WardrobeSchema, type Wardrobe } from './shop.schemas.js';
 import { ShopService } from './shop.service.js';
 
 const ItemId = { schema: z.string().max(40) };
@@ -19,11 +19,15 @@ export class ShopController {
     return this.shop.wardrobe(session.user.id);
   }
 
-  /** Buy an item with coins (400 not_enough_coins, 409 when you have it already). */
+  /** Buy an item with coins, naming it if it's a pet (400 not_enough_coins, 409 when you have it already). */
   @Post('items/:id/buy')
   @HttpCode(200)
   @ApiOkResponse({ standardSchema: WardrobeSchema })
-  buy(@Session() session: UserSession, @Param('id', ItemId) id: string): Promise<Wardrobe> {
-    return this.shop.buy(session.user.id, id);
+  buy(
+    @Session() session: UserSession,
+    @Param('id', ItemId) id: string,
+    @Body({ schema: BuyBodySchema }) body: z.infer<typeof BuyBodySchema>,
+  ): Promise<Wardrobe> {
+    return this.shop.buy(session.user.id, id, body.name);
   }
 }

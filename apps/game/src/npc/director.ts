@@ -13,6 +13,7 @@ import {
   pickRandom,
   randomLook,
   type NpcKind,
+  type PetOut,
   type Point,
 } from '@connecta/shared';
 import { Npc, type Player } from '../state.js';
@@ -36,6 +37,8 @@ interface Pending {
   label: string;
   revealAt: number;
   byName: string;
+  /** A pet: its owner */
+  owner?: { userId: string; name: string };
 }
 
 /**
@@ -71,10 +74,17 @@ export class NpcDirector {
     }
   }
 
-  /** NPCs in the room plus capsules still rolling out */
+  /** NPCs in the room plus capsules still rolling out; pets are counted on their own */
   private count(kind?: NpcKind) {
-    let n = this.pending.filter((p) => !kind || p.kind === kind).length;
-    for (const npc of this.npcs.values()) if (!kind || npc.kind === kind) n++;
+    let n = this.pending.filter((p) => !p.owner && (!kind || p.kind === kind)).length;
+    for (const npc of this.npcs.values()) if (!npc.owner && (!kind || npc.kind === kind)) n++;
+    return n;
+  }
+
+  /** Pets out (or rolling out), all of them or one person's */
+  private petCount(userId?: string) {
+    let n = this.pending.filter((p) => p.owner && (!userId || p.owner.userId === userId)).length;
+    for (const npc of this.npcs.values()) if (npc.owner && (!userId || npc.owner === userId)) n++;
     return n;
   }
 
@@ -112,11 +122,47 @@ export class NpcDirector {
     return null;
   }
 
+  /** Bring one of your pets (the API vouched you own it): one each, up to 4 in a room */
+  summonPet(sessionId: string, player: Player, pet: PetOut): string | null {
+    const machine = this.ctx.host.map.gacha;
+    if (Math.hypot(player.x - machine.x, player.z - machine.z) > machine.reach + MACHINE_SLACK) return 'Walk up to the machine first';
+    const now = Date.now();
+    if (now - (this.summonedAt.get(sessionId) ?? 0) < SUMMON_COOLDOWN_MS) return 'The machine is still cooling down';
+    if (this.petCount(player.userId)) return 'One of your pets is out already: say goodbye to it first';
+    if (this.petCount() >= NPC_LIMITS.pet) return 'This room has plenty of pets right now';
+    if (!COAT_BY_ID.has(pet.coat)) return 'That pet can’t come out right now';
+    this.summonedAt.set(sessionId, now);
+    const id = `n${this.nextId++}`;
+    const owner = { userId: player.userId, name: player.name };
+    this.pending.push({
+      id,
+      kind: 'cat',
+      name: pet.name,
+      coat: pet.coat,
+      label: 'cat',
+      revealAt: now + SUMMON_REVEAL_MS,
+      byName: player.name,
+      owner,
+    });
+    this.ctx.host.summoned({ npcId: id, kind: 'cat', name: pet.name, label: 'cat', bySessionId: sessionId, byName: player.name });
+    return null;
+  }
+
+  /** Your last tab left the room: your pet goes home with you */
+  ownerLeft(userId: string) {
+    this.pending = this.pending.filter((p) => p.owner?.userId !== userId);
+    for (const agent of this.agents()) {
+      if (agent.npc.owner === userId)
+        this.goodbye(agent.id, { name: agent.npc.ownerName, userId }, `👋 ${agent.npc.name} went home with ${agent.npc.ownerName}`);
+    }
+  }
+
   /** Put an NPC in the room right away. */
-  private spawn(kind: NpcKind, opts: { id?: string; name?: string; coat?: string; at?: Point } = {}) {
+  private spawn(kind: NpcKind, opts: { id?: string; name?: string; coat?: string; at?: Point; owner?: Pending['owner'] } = {}) {
     const id = opts.id ?? `n${this.nextId++}`;
     const at = opts.at ?? this.ctx.host.map.npcSpawn;
     const npc = new Npc({ kind, name: opts.name ?? this.freshName(kind), look: '', x: at.x, z: at.z, yaw: 0, moving: false });
+    if (opts.owner) Object.assign(npc, { owner: opts.owner.userId, ownerName: opts.owner.name });
     if (kind === 'cat') {
       npc.look = JSON.stringify({ coat: opts.coat && COAT_BY_ID.has(opts.coat) ? opts.coat : pickRandom(CAT_COATS).id });
     } else {
@@ -150,13 +196,14 @@ export class NpcDirector {
     return pool.length ? pickRandom(pool) : `${kind === 'cat' ? 'Kitty' : 'Buddy'} ${this.nextId}`;
   }
 
-  /** Say goodbye: it waves, walks back into the machine and is gone. Anyone can. */
-  goodbye(id: string, byName: string) {
+  /** Say goodbye: it waves, walks back into the machine and is gone. Anyone can, but a pet only its owner. */
+  goodbye(id: string, by: { name: string; userId: string }, note?: string): string | null {
     const agent = this.agent(id);
-    if (!agent || agent.brain.state === 'leaving') return;
+    if (!agent || agent.brain.state === 'leaving') return null;
     const { npc, brain } = agent;
+    if (npc.owner && npc.owner !== by.userId) return `Only ${npc.ownerName} can send ${npc.name} home`;
     this.ctx.host.say(id, pickRandom(GOODBYE_LINES));
-    this.ctx.host.note(`👋 ${byName} said goodbye to ${npc.name}`);
+    this.ctx.host.note(note ?? `👋 ${by.name} said goodbye to ${npc.name}`);
     standUp(this.ctx, npc);
     npc.following = '';
     npc.y = 0;
@@ -166,6 +213,7 @@ export class NpcDirector {
       this.npcs.delete(id);
       this.ctx.brains.delete(id);
     });
+    return null;
   }
 
   // ── People ────────────────────────────────────────────────────────────────────────────────────
@@ -215,14 +263,16 @@ export class NpcDirector {
     if (!due.length) return;
     this.pending = this.pending.filter((s) => s.revealAt > now);
     for (const p of due) {
-      this.spawn(p.kind, { id: p.id, name: p.name, coat: p.coat });
+      this.spawn(p.kind, { id: p.id, name: p.name, coat: p.coat, owner: p.owner });
       if (p.kind === 'buddy') {
         const agent = this.agent(p.id)!;
         const seat = pickFreeSeat(this.ctx.host.map.deskSeats, takenSeats(this.ctx, p.id));
         if (seat) sitAt(agent.npc, agent.brain, seat);
       }
       const article = /^[aeiou]/i.test(p.label) ? 'an' : 'a';
-      this.ctx.host.note(`✨ ${p.byName} summoned ${article} ${p.label}, ${p.name}!`);
+      this.ctx.host.note(
+        p.owner ? `✨ ${p.owner.name}’s cat ${p.name} came to visit!` : `✨ ${p.byName} summoned ${article} ${p.label}, ${p.name}!`,
+      );
       this.ctx.host.react(p.id, '✨');
     }
   }

@@ -531,6 +531,11 @@ export class LiveRoom extends MockRoom {
     return null;
   }
 
+  /** Bring one of your pets out of the Buddy Machine */
+  summonPet(item: string) {
+    this.game.send('pet:summon', { item });
+  }
+
   override goodbye(id: string) {
     this.game.send('npc:goodbye', { id });
   }

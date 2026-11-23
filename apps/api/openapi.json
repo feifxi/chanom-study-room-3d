@@ -2418,6 +2418,16 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuyBody"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "",
@@ -5253,13 +5263,47 @@
             "items": {
               "type": "string"
             }
+          },
+          "pets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "item": {
+                  "type": "string"
+                },
+                "coat": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "item",
+                "coat",
+                "name"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [
           "coins",
-          "owned"
+          "owned",
+          "pets"
         ],
         "additionalProperties": false
+      },
+      "BuyBody": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16
+          }
+        }
       },
       "DmSummary": {
         "type": "object",

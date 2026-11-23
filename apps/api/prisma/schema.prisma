@@ -585,6 +585,8 @@ model CoinEntry {
 model OwnedItem {
   userId   String   @map("user_id")
   itemId   String   @map("item_id")
+  /// A pet's name, chosen when it was bought (null for everything else)
+  name     String?
   boughtAt DateTime @default(now()) @map("bought_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

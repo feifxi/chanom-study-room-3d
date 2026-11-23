@@ -31,13 +31,13 @@ server with only what V2 needs added, and monitoring on its own server for SRE p
 
 ## Coins and daily quests
 
-**Status:** quests and coins are real (2026-11-23, part 1), and so is the Shop's first set (part 2,
-approved in the demo). Pets follow as their own part. **Try it:** http://localhost:3100/home/shop
+**Status:** done (2026-11-23): quests and coins (part 1), the Shop's first set (part 2, approved in
+the demo) and pets (part 3, built straight into the app at the owner's word). **Try it:** http://localhost:3100/home/shop
 (the demo starts you with 1,240 coins).
 
 - **Coins are earned, never bought.** Money only buys Plus. Coins buy cosmetics in the Shop
   (accessories ~200–400, outfits ~500–800, pets ~1,000–1,500: something new about once a week).
-  Premium skins and pets come with Plus, never for coins; Plus earns no extra coins.
+  Plus-only premium skins and pets come with Plus, never for coins; Plus earns no extra coins.
 - **3 quests a day** (new at midnight, ~60 coins a day), one per group, so someone studying in a room
   with room-wide games off can still earn:
   - 📖 Focus: focus for 1 hour, finish 2 focus sessions
@@ -66,9 +66,27 @@ approved in the demo). Pets follow as their own part. **Try it:** http://localho
 - **Try it on** shows the item on your own character; **Buy** takes the coins (final, no refunds);
   **Wear it** changes your look in every room. Cards say Owned ✓ or Wearing. What you own appears
   in Settings → My character (an Outfit row and more accessories).
-- Tabs: Everything, Outfits, Accessories. "New this week" shows the newest item on your character
-  (a real weekly drop waits for the admin site). On a phone the quests come after the items.
-- Not now: pets (their own part), photo frames, Plus-only items (until Plus).
+- Tabs: Everything, Outfits, Accessories, Pets. "New this week" shows the newest item (Snowball
+  for now; a real weekly drop waits for the admin site). On a phone the quests come after the items.
+- Not now: photo frames, Plus-only items (until Plus), animals other than cats.
+
+### Pets
+
+- **A pet is a cat in a coat you can't summon at random**, with a little extra so it stands out:
+  Midnight 1,000 (black, gold eyes, a star tag), Tux 1,200 (black and white, a bow tie), Siamese
+  1,200 (cream with dark points, a bell collar), Snowball 1,000 (fluffy white, a pink bow). Other
+  animals need their own models, so they wait.
+- **You name it when you buy it** (its own name to start with, up to 16 characters). The Shop
+  shows it up close, turning slowly.
+- **It doesn't follow you around.** It's one of the room's cats: in the Buddy Machine, **Your pets**
+  lists yours with **Bring out**; it rolls out in a capsule ("✨ Mai's cat Puff came to visit!") and
+  then wanders, naps and follows whoever pets it like any cat. Its tag says "Puff · Mai's cat".
+- **Only its owner sends it home** (others see no Goodbye on its row), and it goes home with them
+  when they leave the room ("👋 Puff went home with Mai"), after the 20 s a dropped connection
+  gets to come back.
+- **Limits:** one of your pets out at a time; up to 4 pets in a room, on top of the 4 cats and 5
+  study buddies. Bringing one out counts as using the Buddy Machine for the quest, and petting one
+  counts as petting a cat. Guests own no pets.
 
 ### Coins and quests: backend notes
 
@@ -301,3 +319,8 @@ Revisit when the playtest shows the app server or bandwidth is the limit.
   `ShopService.checkLook` (400 `not_owned`). **The game server takes looks only from the API**: a
   saved look goes out as a room event to every room (`{ roomId: '*', type: 'look' }`); there's no
   `look` message from the browser any more, so nobody can wear what they didn't buy.
+- **Pets:** `owned_items.name` holds a pet's name (`POST /api/shop/items/:id/buy` takes `{ name }`;
+  the wardrobe lists `pets`). The join ticket carries your pets, and a pet bought while you're in a
+  room reaches the game servers as a `{ roomId: '*', type: 'pets' }` room event, so the game server
+  only brings out pets the API vouched for (`pet:summon { item }`). A pet is an NPC with `owner` and
+  `ownerName` set; it doesn't count toward the room's cats.

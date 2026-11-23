@@ -2,13 +2,17 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { shopItem, SHOP_ITEMS, type AvatarLook } from '@connecta/shared';
 import { requireSignedUp } from '../accounts/signed-up.js';
 import { Prisma } from '../generated/prisma/client.js';
+import { GameService } from '../game/game.service.js';
 import { LiveService } from '../live/live.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { petsOf } from './pets.js';
 import type { Wardrobe } from './shop.schemas.js';
 
 /** The Shop items a look uses (nothing for the free ones) */
 function itemsIn(look: Partial<AvatarLook>): string[] {
-  return SHOP_ITEMS.filter((i) => (i.kind === 'accessory' ? look.accessory === i.value : look.style === i.value)).map((i) => i.id);
+  return SHOP_ITEMS.filter((i) =>
+    i.kind === 'accessory' ? look.accessory === i.value : i.kind === 'outfit' && look.style === i.value,
+  ).map((i) => i.id);
 }
 
 /**
@@ -20,17 +24,19 @@ export class ShopService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly live: LiveService,
+    private readonly game: GameService,
   ) {}
 
   async wardrobe(userId: string): Promise<Wardrobe> {
-    const [user, owned] = await Promise.all([
+    const [user, owned, pets] = await Promise.all([
       this.prisma.user.findUniqueOrThrow({ where: { id: userId }, select: { coins: true } }),
       this.prisma.ownedItem.findMany({ where: { userId }, orderBy: { boughtAt: 'asc' }, select: { itemId: true } }),
+      petsOf(this.prisma, userId),
     ]);
-    return { coins: user.coins, owned: owned.map((o) => o.itemId) };
+    return { coins: user.coins, owned: owned.map((o) => o.itemId), pets };
   }
 
-  async buy(userId: string, itemId: string): Promise<Wardrobe> {
+  async buy(userId: string, itemId: string, name?: string): Promise<Wardrobe> {
     await requireSignedUp(this.prisma, userId);
     const item = shopItem(itemId);
     if (!item) throw new NotFoundException('That isn’t in the Shop');
@@ -45,7 +51,7 @@ export class ShopService {
         });
         if (!paid.count) throw new BadRequestException({ message: 'Not enough coins yet', code: 'not_enough_coins' });
         await tx.coinEntry.create({ data: { userId, amount: -item.price, reason: `shop:${item.id}` } });
-        await tx.ownedItem.create({ data: { userId, itemId } });
+        await tx.ownedItem.create({ data: { userId, itemId, name: item.kind === 'pet' ? (name ?? item.name) : null } });
       })
       .catch((error: unknown) => {
         // The same item bought twice at once: the second rolls back, coins and all
@@ -55,7 +61,10 @@ export class ShopService {
       });
     // Your other tabs: the coins in the header and the quest list
     this.live.toUser(userId, 'quests', {});
-    return this.wardrobe(userId);
+    const wardrobe = await this.wardrobe(userId);
+    // A new pet: the Buddy Machine offers it right away in a room you're already in
+    if (item.kind === 'pet') this.game.roomEvent({ roomId: '*', type: 'pets', userId, pets: wardrobe.pets });
+    return wardrobe;
   }
 
   /** Throws unless the look only uses free items and ones you own */

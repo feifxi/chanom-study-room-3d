@@ -1,5 +1,19 @@
 import * as THREE from 'three';
-import { COAT_BY_ID, CAT_COATS } from '@connecta/shared';
+import { COAT_BY_ID, CAT_COATS, type CatCoat } from '@connecta/shared';
+
+/** A flat five-pointed star, a little thick */
+function starGeometry(outer: number, inner: number, depth: number) {
+  const shape = new THREE.Shape();
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2;
+    const r = i % 2 ? inner : outer;
+    if (i) shape.lineTo(Math.sin(a) * r, Math.cos(a) * r);
+    else shape.moveTo(Math.sin(a) * r, Math.cos(a) * r);
+  }
+  const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false });
+  geo.translate(0, 0, -depth / 2);
+  return geo;
+}
 
 /*
  * A chibi cat in the same cel-shaded, ink-outlined style as the characters:
@@ -59,6 +73,9 @@ export class CatRig {
     const coat = COAT_BY_ID.get(coatId) ?? CAT_COATS[0]!;
     const fur = toon(coat.body);
     const belly = toon(coat.belly);
+    // Siamese: darker ears, mask, paws and tail; tuxedos: white socks and tail tip
+    const point = coat.points ? toon(coat.points) : null;
+    const pawFur = point ?? (coat.socks ? belly : fur);
     this.group.add(this.body);
     const b = this.body;
 
@@ -77,7 +94,7 @@ export class CatRig {
       [0.08, 0.13],
       [-0.08, -0.15],
       [0.08, -0.15],
-    ].map(([x, z]) => mesh(b, sphere(0.05, 10, 8), coat.id === 'tuxedo' ? belly : fur, x, 0.045, z, 0.12));
+    ].map(([x, z]) => mesh(b, sphere(0.05, 10, 8), pawFur, x, 0.045, z, 0.12));
 
     // Tail: three links that curl and sway
     let parent: THREE.Object3D = b;
@@ -90,7 +107,9 @@ export class CatRig {
       if (i > 0) link.position.y = 0.1;
       link.rotation.x = i === 0 ? -0.9 : -0.35;
       parent.add(link);
-      mesh(link, new THREE.CapsuleGeometry(0.035 - i * 0.005, 0.08, 4, 8), i === 2 && coat.id === 'tuxedo' ? belly : fur, 0, 0.05, 0, 0.1);
+      const r = (0.035 - i * 0.005) * (coat.fluffy ? 1.45 : 1);
+      const tailFur = point && i > 0 ? point : i === 2 && coat.socks ? belly : fur;
+      mesh(link, new THREE.CapsuleGeometry(r, 0.08, 4, 8), tailFur, 0, 0.05, 0, 0.1);
       this.tail.push(link);
       parent = link;
     }
@@ -106,7 +125,7 @@ export class CatRig {
       ear.position.set(s * 0.1, 0.12, -0.01);
       ear.rotation.z = -s * 0.35;
       h.add(ear);
-      mesh(ear, new THREE.ConeGeometry(0.06, 0.12, 12), fur, 0, 0, 0, 0.08);
+      mesh(ear, new THREE.ConeGeometry(0.06, 0.12, 12), point ?? fur, 0, 0, 0, 0.08);
       mesh(ear, new THREE.ConeGeometry(0.035, 0.07, 10), toon('#ffb3c8'), 0, -0.01, 0.025).scale.z = 0.5;
     }
     const white = new THREE.MeshBasicMaterial({ color: '#ffffff' });
@@ -115,7 +134,9 @@ export class CatRig {
       eye.position.set(s * 0.065, 0.01, 0.145);
       eye.rotation.y = s * 0.35;
       h.add(eye);
-      mesh(eye, sphere(0.038), toon(INK), 0, 0, 0, 0, false).scale.set(0.85, 1.15, 0.35);
+      mesh(eye, sphere(0.038), toon(coat.eyes ?? INK), 0, 0, 0, 0, false).scale.set(0.85, 1.15, 0.35);
+      // Coloured eyes get a dark pupil so they still read as eyes
+      if (coat.eyes) mesh(eye, sphere(0.02, 8, 6), toon(INK), 0, 0, 0.01, 0, false).scale.set(0.55, 1.2, 0.4);
       mesh(eye, sphere(0.014, 8, 6), white, -s * 0.01, 0.015, 0.012, 0, false);
       return eye;
     });
@@ -125,6 +146,7 @@ export class CatRig {
       arc.visible = false;
       return arc;
     });
+    if (point) mesh(h, sphere(0.085, 14, 10), point, 0, -0.05, 0.1).scale.set(1.2, 0.8, 0.75);
     mesh(h, sphere(0.016, 8, 6), toon('#ff8fab'), 0, -0.035, 0.165, 0, false);
     const blush = new THREE.MeshBasicMaterial({ color: '#ff8fab', transparent: true, opacity: 0.55 });
     for (const s of [-1, 1]) {
@@ -133,6 +155,50 @@ export class CatRig {
         const whisker = mesh(h, new THREE.CylinderGeometry(0.003, 0.003, 0.11, 4), toon(INK), s * 0.14, -0.035 + dy, 0.11, 0, false);
         whisker.rotation.set(0, 0, Math.PI / 2 + s * dy * 6);
       }
+    }
+
+    // Fluffy: a soft ruff round the neck
+    if (coat.fluffy) {
+      for (let i = 0; i < 7; i++) {
+        const a = (i / 7) * Math.PI * 2;
+        mesh(b, sphere(0.06, 8, 6), fur, Math.sin(a) * 0.1, 0.3 + Math.cos(a) * 0.035, 0.12 + Math.cos(a) * 0.05);
+      }
+    }
+    if (coat.extra) this.dressUp(coat.extra);
+  }
+
+  /** A pet's little extra (Shop pets): a bow, or a collar with a star tag, a bow tie or a bell */
+  private dressUp(extra: NonNullable<CatCoat['extra']>) {
+    const b = this.body;
+    if (extra === 'bow') {
+      const pink = toon('#ff7eb0');
+      const bow = new THREE.Group();
+      bow.position.set(0.11, 0.13, 0.04);
+      bow.rotation.set(0.2, 0, -0.5);
+      this.head.add(bow);
+      for (const s of [-1, 1]) {
+        const loop = mesh(bow, new THREE.ConeGeometry(0.045, 0.07, 8), pink, s * 0.035, 0, 0, 0.1);
+        loop.rotation.z = (s * Math.PI) / 2;
+      }
+      mesh(bow, sphere(0.022, 8, 6), pink, 0, 0, 0, 0.1);
+      return;
+    }
+    // A collar round the neck, then what hangs from it
+    const collarColor = extra === 'bell' ? '#d94f5c' : extra === 'starTag' ? '#7c5cff' : '#34313b';
+    const collar = mesh(b, new THREE.TorusGeometry(0.105, 0.016, 6, 18), toon(collarColor), 0, 0.31, 0.15);
+    collar.rotation.x = Math.PI / 2 - 0.45;
+    if (extra === 'bell') {
+      mesh(b, sphere(0.032, 10, 8), toon('#f2c14e'), 0, 0.255, 0.245, 0.1);
+    } else if (extra === 'starTag') {
+      const star = mesh(b, starGeometry(0.045, 0.02, 0.014), toon('#f2c14e'), 0, 0.25, 0.25, 0.1);
+      star.rotation.x = -0.3;
+    } else {
+      const red = toon('#d94f5c');
+      for (const s of [-1, 1]) {
+        const wing = mesh(b, new THREE.ConeGeometry(0.04, 0.07, 6), red, s * 0.035, 0.27, 0.245, 0.1);
+        wing.rotation.z = (s * Math.PI) / 2;
+      }
+      mesh(b, sphere(0.018, 8, 6), red, 0, 0.27, 0.25, 0.1);
     }
   }
 

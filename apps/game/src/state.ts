@@ -59,6 +59,9 @@ export const Npc = schema(
     focusSince: t.number().default(0),
     subject: t.string().default(''),
     following: t.string().default(''),
+    /** A pet's owner (user id) and name: only they send it home */
+    owner: t.string().default(''),
+    ownerName: t.string().default(''),
   },
   'Npc',
 );

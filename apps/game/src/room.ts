@@ -17,6 +17,7 @@ import {
   type NpcReact,
   type NpcRefused,
   type NpcSummoned,
+  type PetOut,
   type Quiet,
   type Said,
   type FocusPreset,
@@ -69,6 +70,8 @@ const finite = z.number().refine(Number.isFinite);
 /** Server-only bookkeeping per connection (not synced). */
 interface Private {
   userId: string;
+  /** Pets you own (the API vouched for them) */
+  pets: PetOut[];
   lastMoveAt: number;
   /** Metres of movement allowed right now (see refillMoveBudget) */
   moveBudget: number;
@@ -436,10 +439,21 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       else this.quest(client.sessionId, 'buddy');
     }),
 
-    /** Send one home: nobody owns them, so anyone can */
+    /** One of your pets, from the Buddy Machine (people with an account; guests own none) */
+    'pet:summon': validate(z.object({ item: z.string().max(40) }), (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      const pet = this.priv.get(client.sessionId)?.pets.find((x) => x.item === msg.item);
+      if (!p || !pet) return;
+      const refused = this.npc.summonPet(client.sessionId, p, pet);
+      if (refused) client.send('npc:refused', { reason: refused } satisfies NpcRefused);
+      else this.quest(client.sessionId, 'buddy');
+    }),
+
+    /** Send one home: nobody owns them, so anyone can (a pet only its owner) */
     'npc:goodbye': validate(z.object({ id: z.string().max(40) }), (client, msg) => {
       const p = this.state.players.get(client.sessionId);
-      if (p) this.npc.goodbye(msg.id, p.name);
+      const refused = p && this.npc.goodbye(msg.id, { name: p.name, userId: p.userId });
+      if (refused) client.send('npc:refused', { reason: refused } satisfies NpcRefused);
     }),
 
     /** Head pats for a cat within reach */
@@ -503,7 +517,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       s.timer = idleTimer();
       // …and so does your place in a game
       this.activities.renamed(sessionId, client.sessionId, Date.now());
-      this.remove(sessionId);
+      this.remove(sessionId, true);
       old?.leave(GAME_CLOSE.elsewhere);
     }
     const spot = this.doorSpot();
@@ -525,6 +539,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     );
     this.priv.set(client.sessionId, {
       userId: ticket.sub,
+      pets: ticket.pets ?? [],
       lastMoveAt: Date.now(),
       moveBudget: 0,
       lastSaidAt: 0,
@@ -576,6 +591,12 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
         for (const sessionId of this.sessionsOf(event.userId)) {
           const p = this.state.players.get(sessionId);
           if (p) p.look = JSON.stringify(sanitizeLook(event.look));
+        }
+        break;
+      case 'pets':
+        for (const sessionId of this.sessionsOf(event.userId)) {
+          const s = this.priv.get(sessionId);
+          if (s) s.pets = event.pets;
         }
         break;
       case 'kick':
@@ -725,7 +746,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
   }
 
   /** Gone for good (left, timed out, replaced, removed): out of the state and out of presence. */
-  private remove(sessionId: string) {
+  /** `replaced`: a newer tab of yours takes over, so you haven't really left (your pet stays) */
+  private remove(sessionId: string, replaced = false) {
     const s = this.priv.get(sessionId);
     if (!s) return;
     // Leaving ends a focus round and counts what you did
@@ -740,6 +762,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     this.state.players.delete(sessionId);
     voice.current?.remove(this.connectaId, sessionId);
     links.presence({ userId: s.userId, tabId: tabId(sessionId), roomId: null });
+    if (!replaced && !this.sessionsOf(s.userId).length) this.npc.ownerLeft(s.userId);
     if (wasFull && this.turnedAway && this.priv.size < this.capacity) {
       this.turnedAway = false;
       links.space(this.connectaId);
