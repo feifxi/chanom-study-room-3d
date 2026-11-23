@@ -20,39 +20,41 @@ datasource db {
 
 /// A person: a full account, or a guest (isAnonymous) made from an invite that can sign up later.
 model User {
-  id              String    @id
+  id                       String    @id
   /// Display name: up to 16 characters, not unique
-  name            String
+  name                     String
   /// Guests get a placeholder address that never receives mail
-  email           String    @unique
-  emailVerified   Boolean   @default(false) @map("email_verified")
-  image           String?
-  isAnonymous     Boolean   @default(false) @map("is_anonymous")
+  email                    String    @unique
+  emailVerified            Boolean   @default(false) @map("email_verified")
+  image                    String?
+  isAnonymous              Boolean   @default(false) @map("is_anonymous")
   /// Unique @handle, lowercase. Null until sign-up is finished (and always for guests)
-  handle          String?   @unique
-  handleChangedAt DateTime? @map("handle_changed_at")
+  handle                   String?   @unique
+  handleChangedAt          DateTime? @map("handle_changed_at")
   /// The full date, never shown to anyone else. Null until sign-up is finished
-  birthday        DateTime? @db.Date
+  birthday                 DateTime? @db.Date
   /// The character (AvatarLook from @connecta/shared)
-  look            Json?
+  look                     Json?
   /// Who can send a friend request: anyone, rooms (people who share a room) or nobody
-  requestsFrom    String    @default("anyone") @map("requests_from")
+  requestsFrom             String    @default("anyone") @map("requests_from")
   /// Friends see you as offline (and not in any room)
-  appearOffline   Boolean   @default(false) @map("appear_offline")
+  appearOffline            Boolean   @default(false) @map("appear_offline")
   /// Friends see what you're doing ("Focusing · Calculus"), not only where
-  showActivity    Boolean   @default(true) @map("show_activity")
+  showActivity             Boolean   @default(true) @map("show_activity")
   /// When you last went offline; the live state itself is in Redis (PresenceService)
-  lastSeenAt      DateTime? @map("last_seen_at")
+  lastSeenAt               DateTime? @map("last_seen_at")
   /// Your browser's time zone (IANA), kept up to date by the web app: your focus days start at your midnight
-  timeZone        String    @default("UTC") @map("time_zone")
+  timeZone                 String    @default("UTC") @map("time_zone")
   /// Listed on the Everyone focus ranking; null = the default for your age (on 18+, off under 18)
-  showOnEveryone  Boolean?  @map("show_on_everyone")
+  showOnEveryone           Boolean?  @map("show_on_everyone")
+  /// Settings → Notifications: no game invite cards while your focus timer runs
+  hideInvitesWhileFocusing Boolean   @default(false) @map("hide_invites_while_focusing")
   /// Asked to be deleted: goes at this time unless they sign in and keep it (7 days)
-  deleteAt        DateTime? @map("delete_at")
+  deleteAt                 DateTime? @map("delete_at")
   /// Deleted: the row stays as "Deleted user" so their messages still read; everything personal is gone
-  deletedAt       DateTime? @map("deleted_at")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt                DateTime? @map("deleted_at")
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
 
   sessions         Session[]
   accounts         Account[]

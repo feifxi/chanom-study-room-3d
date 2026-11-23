@@ -42,6 +42,8 @@ export const MeSchema = z
     timeZone: z.string(),
     /** Listed on the Everyone focus ranking (your choice, or the default: on 18+, off under 18) */
     showOnEveryone: z.boolean(),
+    /** No game invite cards while your focus timer runs (Settings → Notifications) */
+    hideInvitesWhileFocusing: z.boolean(),
   })
   .meta({ id: 'Me' });
 export type Me = z.infer<typeof MeSchema>;
@@ -72,6 +74,8 @@ export const PrivacyBodySchema = z
   .object({ requestsFrom: z.enum(REQUESTS_FROM), appearOffline: z.boolean(), showActivity: z.boolean(), showOnEveryone: z.boolean() })
   .partial()
   .meta({ id: 'PrivacyBody' });
+
+export const NotificationsBodySchema = z.object({ hideInvitesWhileFocusing: z.boolean() }).partial().meta({ id: 'NotificationsBody' });
 
 export const HandleBodySchema = z.object({ handle: z.string() }).meta({ id: 'HandleBody' });
 

@@ -116,6 +116,22 @@ export interface paths {
         patch: operations["MeController_privacy"];
         trace?: never;
     };
+    "/api/me/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["MeController_notifications"];
+        trace?: never;
+    };
     "/api/me/handle": {
         parameters: {
             query?: never;
@@ -1099,6 +1115,7 @@ export interface components {
             showActivity: boolean;
             timeZone: string;
             showOnEveryone: boolean;
+            hideInvitesWhileFocusing: boolean;
         };
         Look: {
             hair: string;
@@ -1144,6 +1161,9 @@ export interface components {
             appearOffline?: boolean;
             showActivity?: boolean;
             showOnEveryone?: boolean;
+        };
+        NotificationsBody: {
+            hideInvitesWhileFocusing?: boolean;
         };
         HandleBody: {
             handle: string;
@@ -1852,6 +1872,29 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["PrivacyBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+        };
+    };
+    MeController_notifications: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NotificationsBody"];
             };
         };
         responses: {

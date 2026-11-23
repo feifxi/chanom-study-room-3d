@@ -110,8 +110,11 @@ export interface GamePresence {
  * the TV or the desk you sit at; '' stops it), `npc:summon` { kind } (at the Buddy Machine),
  * `npc:goodbye` { id }, `npc:pet` { id }, and Watch together's `watch:add` { link }, `watch:pause`
  * { paused }, `watch:seek` { seconds }, `watch:next` { key } (skip, or the video ended),
- * `watch:remove` { key } and `watch:off` (owners and mods), and `photo` { on } (photo mode's 📸).
- * What the server sends besides state: `said`, `quiet`, `voice`, `watch:refused` (WatchRefused in watch.ts), and for the cats and study buddies
+ * `watch:remove` { key } and `watch:off` (owners and mods), `photo` { on } (photo mode's 📸), and the
+ * activity framework's `activity:begin`, `activity:end`, `activity:leave`, `activity:call` { spot }
+ * with chess's `chess:move` { from, to, promotion? }, `chess:resign`, `chess:draw:offer` and
+ * `chess:draw:answer` { accept }.
+ * What the server sends besides state: `said`, `quiet`, `voice`, `watch:refused` (WatchRefused in watch.ts), `activity:out` (ActivityOut), and for the cats and study buddies
  * `npc:summoned` ({@link NpcSummoned}), `npc:said` ({@link Said}, the NPC's id), `npc:react`
  * ({@link NpcReact}), `npc:note` ({@link NpcNote}) and `npc:refused` ({@link NpcRefused}).
  */

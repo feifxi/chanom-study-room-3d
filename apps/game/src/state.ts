@@ -94,6 +94,46 @@ export const Watch = schema(
 );
 export type Watch = SchemaType<typeof Watch>;
 
+/** An activity spot's round (SpotView in packages/shared): the framework's state, whatever the game */
+export const Spot = schema(
+  {
+    phase: t.string().default('free'),
+    gameId: t.string().default(''),
+    hostId: t.string().default(''),
+    players: t.array('string'),
+    nextRound: t.array('string'),
+    out: t.array('string'),
+    awaySince: t.map('number'),
+    startsAt: t.number().default(0),
+    inviteBy: t.string().default(''),
+    inviteAt: t.number().default(0),
+    results: t.array('string'),
+    resultsUntil: t.number().default(0),
+  },
+  'Spot',
+);
+export type Spot = SchemaType<typeof Spot>;
+
+/** The chess table's game (ChessView in packages/shared), copied from the rules' state after each change */
+export const Chess = schema(
+  {
+    white: t.string().default(''),
+    black: t.string().default(''),
+    moves: t.array('string'),
+    fen: t.string().default(''),
+    lastFrom: t.string().default(''),
+    lastTo: t.string().default(''),
+    takenW: t.array('string'),
+    takenB: t.array('string'),
+    drawOffer: t.string().default(''),
+    endWinner: t.string().default(''),
+    endWhy: t.string().default(''),
+    rev: t.number().default(0),
+  },
+  'Chess',
+);
+export type Chess = SchemaType<typeof Chess>;
+
 export const RoomState = schema(
   {
     /** The room's map; changing it (Room settings) moves everyone to the new map's door */
@@ -101,6 +141,9 @@ export const RoomState = schema(
     players: t.map(Player),
     npcs: t.map(Npc),
     watch: t.ref(Watch),
+    /** The activity spots the game server runs (chess for now; the others still run in each browser) */
+    spots: t.map(Spot),
+    chess: t.ref(Chess),
   },
   'RoomState',
 );

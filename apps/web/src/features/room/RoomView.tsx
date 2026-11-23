@@ -70,7 +70,8 @@ import { ChatPanel, type RoomLine } from './ChatPanel';
 import { PeoplePill, RoomPeople, type RoomPerson, type RoomRole } from './RoomPeople';
 import { RoomTools } from './RoomTools';
 import { StudyPanel } from './StudyPanel';
-import { useClickToWalk, useHideInvitesWhileFocusing } from '@/lib/controls';
+import { useClickToWalk } from '@/lib/controls';
+import { useHideInvitesWhileFocusing } from '@/features/account/useNotifications';
 import { LeaveRoomGuard, LeaveRoomLink } from './LeaveRoom';
 import { type Phase } from './usePomodoro';
 import { useFocusTimer } from '../focus/useFocusTimer';
@@ -225,7 +226,11 @@ export default function RoomView({
   const hub = useMemo(() => {
     const h = new ActivityHub(room, roomDef.roomWideGames, (text) => toast(text));
     // A real room's big screen is the game server's (feature 10)
-    if (room instanceof LiveRoom) h.remote = room.watchRemote;
+    if (room instanceof LiveRoom) {
+      h.remote = room.watchRemote;
+      // …and the spots it runs (chess for now; the others still play here until their games come over)
+      h.activities = room.activityRemote;
+    }
     return h;
   }, [room, roomDef.roomWideGames]);
   useSyncExternalStore(hub.subscribe, hub.getVersion, hub.getVersion);
@@ -412,6 +417,13 @@ export default function RoomView({
           }
         }
       : undefined;
+  // A round the game server runs let you go
+  useEffect(() => {
+    if (!(room instanceof LiveRoom)) return;
+    return room.onActivityOut(({ why }) =>
+      toast(why === 'away' ? 'You were away from the game for 30 s, so you’re out' : 'You left the game'),
+    );
+  }, [room]);
   // A link the game server wouldn't put on the big screen
   useEffect(() => {
     if (!(room instanceof LiveRoom)) return;

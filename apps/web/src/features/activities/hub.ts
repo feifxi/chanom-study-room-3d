@@ -107,6 +107,24 @@ export interface Video {
 }
 
 /**
+ * A real room: the game server runs some spots (feature 9; chess for now). The hub mirrors their
+ * rounds each tick and passes the host's and players' actions on; the other spots still run here.
+ */
+export interface ActivityRemote {
+  /** The spots the server runs, in the hub's shape (you're 'me') */
+  spots(): Partial<Record<SpotId, Omit<SpotState, 'game'> & { gameId: string }>>;
+  chess(): ChessGame | null;
+  begin(): void;
+  end(): void;
+  call(): void;
+  leave(): void;
+  chessMove(from: Square, to: Square, promotion?: PieceSymbol): void;
+  chessResign(): void;
+  chessOfferDraw(): void;
+  chessAnswerDraw(accept: boolean): void;
+}
+
+/**
  * A real room: the game server owns the big screen (feature 10). The hub mirrors it each tick and
  * passes every action on; the demo's rooms keep the hub's own screen.
  */
@@ -156,6 +174,12 @@ export class ActivityHub {
   readonly watch: WatchState = { now: null, queue: [], offset: 0, startedAt: 0, paused: false, share: null, resume: false };
   /** Set in a real room: the big screen is the game server's */
   remote: WatchRemote | null = null;
+  /** Set in a real room: the spots the game server runs (chess for now) */
+  activities: ActivityRemote | null = null;
+  /** Whether the game server runs this spot (then its round is mirrored, not played here) */
+  private served(spotId: SpotId) {
+    return !!this.activities?.spots()[spotId];
+  }
   /** The whiteboard's drawing (its own store: strokes change on every pointer move). */
   readonly board = new BoardStore();
   /** Pick a Side: the deck the host picked in the lobby, and the game while it runs (and its results). */
@@ -252,9 +276,17 @@ export class ActivityHub {
   }
 
   tick(now: number) {
+    const served = this.activities?.spots() ?? {};
+    if (this.activities) this.chess = this.activities.chess();
     for (const spot of SPOTS) {
       if (!spot.built) continue;
       const st = this.spots[spot.id];
+      const remote = served[spot.id];
+      if (remote) {
+        const { gameId, ...rest } = remote;
+        Object.assign(st, rest, { game: spot.games.find((g) => g.id === gameId) ?? spot.games[0]! });
+        continue;
+      }
       const here = [...this.room.state.players.keys()].filter((id) => this.inArea(spot, id));
       // Pressed Leave but still standing there: forget it once they step out
       st.optedOut = st.optedOut.filter((id) => here.includes(id));
@@ -598,6 +630,7 @@ export class ActivityHub {
   }
 
   chessMove(id: string, from: Square, to: Square, promotion?: PieceSymbol) {
+    if (this.served('chess')) return (this.activities!.chessMove(from, to, promotion), true);
     const g = this.chess;
     if (!g || !play(g, id, from, to, promotion)) return false;
     this.chessAfter();
@@ -605,12 +638,14 @@ export class ActivityHub {
   }
 
   chessResign(id: string) {
+    if (this.served('chess')) return this.activities!.chessResign();
     if (!this.chess) return;
     resign(this.chess, id);
     this.chessAfter();
   }
 
   chessOfferDraw(id: string) {
+    if (this.served('chess')) return this.activities!.chessOfferDraw();
     const g = this.chess;
     if (!g) return;
     offerDraw(g, id);
@@ -621,6 +656,7 @@ export class ActivityHub {
   }
 
   chessAnswerDraw(id: string, accept: boolean) {
+    if (this.served('chess')) return this.activities!.chessAnswerDraw(accept);
     if (!this.chess) return;
     answerDraw(this.chess, id, accept);
     this.chessAfter();
@@ -814,6 +850,7 @@ export class ActivityHub {
 
   /** E at a standing spot: open a lobby there, with you as host. */
   start(spotId: SpotId, by: string, now = Date.now()) {
+    if (this.served(spotId)) return; // a table: sitting down starts it
     const spot = spotById(spotId);
     const st = this.spots[spotId];
     if (st.phase !== 'free' || (spot.roomWide && !this.roomWideGames)) return;
@@ -900,12 +937,14 @@ export class ActivityHub {
 
   /** The host's 📣: one invite card to everyone in the room. */
   call(spotId: SpotId, by: string, now = Date.now()) {
+    if (this.served(spotId)) return this.activities!.call();
     this.spots[spotId].invite = { by, at: now };
     this.changed();
     if (by === 'me') this.scriptFriendsCome(spotId);
   }
 
   begin(spotId: SpotId, now = Date.now()) {
+    if (this.served(spotId)) return this.activities!.begin();
     const st = this.spots[spotId];
     if (st.phase === 'results') Object.assign(st, { phase: 'gathering', results: [], out: [] });
     st.startsAt = now + COUNTDOWN_MS;
@@ -914,6 +953,7 @@ export class ActivityHub {
 
   /** The host ends the round early: back to the lobby, no winner. */
   end(spotId: SpotId, now = Date.now()) {
+    if (this.served(spotId)) return this.activities!.end();
     const st = this.spots[spotId];
     if (spotId === 'floor') this.side = null;
     if (spotId === 'art') this.tel = null;
@@ -925,6 +965,7 @@ export class ActivityHub {
 
   /** Leave: out at once (mid-round that's a loss). Seats stand you up; the room view walks you out of a ring. */
   leave(spotId: SpotId, id: string) {
+    if (this.served(spotId)) return void (id === 'me' && this.activities!.leave());
     const spot = spotById(spotId);
     const st = this.spots[spotId];
     if (st.phase === 'playing' && st.players.includes(id) && spot.kind === 'rounds') this.knockOut(st, id, 'left');

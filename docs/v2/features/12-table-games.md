@@ -1,7 +1,9 @@
 # 12. Table games: chess and Slave
 
 **Status:** **done in the demo** (chess and Slave, 2026-11-21). Werewolf was dropped on 2026-11-20
-and Color Cards on 2026-11-21 (see [the decision log](../decisions.md)). Next is the port.
+and Color Cards on 2026-11-21 (see [the decision log](../decisions.md)). On the real backend:
+**chess** runs on the game server (2026-11-23, Library only until the other maps get a chess
+table); Slave is next.
 
 **Try chess:** http://localhost:3100/servers/chanom/rooms/library → Activities → Chess → **Go
 there**, **E** to sit, 📣 **Call everyone** (a friend takes the other stool), **Start**. To watch,
@@ -67,9 +69,10 @@ castling, en passant, promotion and the automatic draws.
 
 ### Backend notes
 
-- The server owns the game: `{ white, black, moves (SAN), fen, last, taken, drawOffer, end }`. It
-  checks every move with chess.js (the same library the client uses to show legal squares) and
-  replays the move list, so repetition draws work. Clients send `chess:move {from, to, promotion}`,
+- The server owns the game (`ChessTable` in `apps/game/src/activity.ts`, room state `chess`):
+  `{ white, black, moves (SAN), fen, lastFrom, lastTo, takenW, takenB, drawOffer, endWinner, endWhy }`.
+  It checks every move with the rules in `@connecta/shared/chess` (chess.js; the client uses the
+  same code to show legal squares) and replays the move list, so repetition draws work. Clients send `chess:move {from, to, promotion}`,
   `chess:resign`, `chess:draw:offer`, `chess:draw:answer`.
 - Cost: nothing stored; a game lives with the room.
 

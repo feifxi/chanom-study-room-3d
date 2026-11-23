@@ -67,6 +67,10 @@ Tick or strike these as they're dealt with.
       link, though the server's title is the one used: one extra request per link.
 - [ ] **Common rooms keep the demo's local TV** until moderation and open rooms; photo mode
       there has no Share (they're text only until feature 14).
+- [ ] **Card games, the whiteboard, Pick a Side and Draw & Guess still run in each browser** in
+      real rooms (only you see them) until their parts of party and table games.
+- [ ] **The invite card shows for 20 s on the browser's clock** against the server's time, like the
+      other countdowns (a server time sync would fix them all).
 - [ ] **The photo frames are the three free ones**; the Shop's "Photo frames" come with Plus and
       the Shop.
 - [ ] **The Everyone cache lives in each API process:** with several API processes, turning "Show
@@ -257,3 +261,20 @@ can pose. Decision: [decision log](decisions.md), 2026-11-23 (Watch together and
 **Bugs found and fixed while building:** none. A headless run with two people saw 📸 by Mai's name
 on the phone, Share post the photo to Room chat (processed, 1248×716), and the 📸 go when she
 closed photo mode.
+
+### Party and table games, part 1: the round flow and chess
+
+**Changed:** the game server runs the activity framework's round flow (`apps/game/src/activity.ts`):
+sitting opens a lobby with the first to sit as host, the host's Start (3 s countdown), End and 📣
+Call everyone, Leave and the 30 s rule, leaving the room as leaving, results and Play again. Chess
+is its first game (`ChessTable`), every move checked with the rules now shared in
+`@connecta/shared/chess`. The web app's hub mirrors the spots the server runs and keeps playing
+the others itself until their parts. "Hide game invites while I'm focusing" moved from the
+browser to the account (`users.hide_invites_while_focusing`, `PATCH /api/me/notifications`).
+Decisions: [decision log](decisions.md), 2026-11-23.
+
+**Bugs found and fixed while building:** **a reload mid-game would have lost it**: the new
+connection replaces the old session, which counted as leaving the room. Your place in a round now
+moves to the new connection (like the focus timer), with the 30 s to sit back down. A headless run
+with Mai (desktop) and Jod (phone) checked the invite card, the lobby, Start, colours on both
+boards, a move seen by the other, and Resign ending it with the results card.

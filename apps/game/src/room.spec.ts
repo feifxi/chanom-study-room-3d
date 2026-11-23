@@ -16,6 +16,9 @@ import {
   type NpcView,
   type PlayerView,
   type Said,
+  type ActivityOut,
+  type ChessView,
+  type SpotView,
   type WatchRefused,
   type WatchVideo,
   type WatchView,
@@ -34,7 +37,14 @@ const client = new Client(`http://localhost:${PORT}`);
 
 type GameRoom = Room<
   unknown,
-  { mapId: string; players: Map<string, PlayerView>; npcs: Map<string, NpcView>; watch: WatchView & { queue: WatchVideo[] } }
+  {
+    mapId: string;
+    players: Map<string, PlayerView>;
+    npcs: Map<string, NpcView>;
+    watch: WatchView & { queue: WatchVideo[] };
+    spots: Map<string, SpotView & { players: string[]; out: string[]; results: string[]; nextRound: string[] }>;
+    chess: ChessView & { moves: string[] };
+  }
 >;
 
 const presence: GamePresence[] = [];
@@ -548,6 +558,112 @@ describe('watch together', () => {
     await until(() => a.state.watch.paused);
     await walkTo(b, library.spawn);
     await until(() => !a.state.watch.paused);
+  });
+});
+
+describe('activities: chess', () => {
+  const spot = (r: GameRoom) => r.state.spots.get('chess')!;
+  /** Walk up to a chess stool and sit */
+  async function sitAt(r: GameRoom, seat: 'chess-0' | 'chess-1') {
+    await walkTo(r, seat === 'chess-0' ? { x: 5.7, z: 7.6 } : { x: 2.9, z: 7.6 });
+    r.send('sit', { seatId: seat });
+    await until(() => me(r).seatId === seat);
+  }
+  async function game() {
+    const a = track(await walkIn());
+    const b = track(await walkIn({ sub: 'u-jod', name: 'Jod' }));
+    await sitAt(a, 'chess-0');
+    await until(() => spot(a).phase === 'gathering');
+    await sitAt(b, 'chess-1');
+    await until(() => spot(a).players.length === 2);
+    return { a, b };
+  }
+  const started = async (a: GameRoom) => {
+    a.send('activity:begin');
+    await until(() => spot(a).phase === 'playing', 5000);
+  };
+
+  it('sitting opens the lobby with you as host; only the host calls and starts', { timeout: 20_000 }, async () => {
+    const { a, b } = await game();
+    expect(spot(a)).toMatchObject({ hostId: a.sessionId, phase: 'gathering' });
+    b.send('activity:call');
+    b.send('activity:begin');
+    await quietly(300);
+    expect(spot(a)).toMatchObject({ inviteBy: '', startsAt: 0 });
+    a.send('activity:call');
+    await until(() => spot(b).inviteBy === a.sessionId);
+    await started(a);
+    const c = a.state.chess;
+    expect([c.white, c.black].sort()).toEqual([a.sessionId, b.sessionId].sort());
+    expect(spot(a).inviteBy).toBe('');
+  });
+
+  it('moves are checked here: only yours, only legal; resigning ends it and Play again swaps colours', { timeout: 30_000 }, async () => {
+    const { a, b } = await game();
+    await started(a);
+    const white = a.state.chess.white === a.sessionId ? a : b;
+    const black = white === a ? b : a;
+    black.send('chess:move', { from: 'e7', to: 'e5' });
+    white.send('chess:move', { from: 'e2', to: 'e5' });
+    await quietly(300);
+    expect(a.state.chess.moves.length).toBe(0);
+    white.send('chess:move', { from: 'e2', to: 'e4' });
+    await until(() => a.state.chess.moves.length === 1);
+    expect(a.state.chess).toMatchObject({ lastFrom: 'e2', lastTo: 'e4' });
+    black.send('chess:resign');
+    await until(() => spot(a).phase === 'results');
+    expect(a.state.chess).toMatchObject({ endWhy: 'resigned', endWinner: white.sessionId });
+    expect([...spot(a).results]).toEqual([white.sessionId, black.sessionId]);
+    a.send('activity:begin');
+    await until(() => spot(a).phase === 'playing', 5000);
+    expect(a.state.chess.white).toBe(black.sessionId);
+  });
+
+  it('Leave or leaving the room mid-game loses it; the leaver is told and stands up', { timeout: 20_000 }, async () => {
+    const { a, b } = await game();
+    await started(a);
+    const told: ActivityOut[] = [];
+    b.onMessage('activity:out', (m: ActivityOut) => told.push(m));
+    b.send('activity:leave');
+    await until(() => spot(a).phase === 'results');
+    expect(a.state.chess).toMatchObject({ endWhy: 'left', endWinner: a.sessionId });
+    await until(() => told.length === 1 && me(b).seatId === '');
+    expect(told[0]).toEqual({ spot: 'chess', why: 'left' });
+
+    // Back to the lobby with only Mai, after the results
+    await until(() => spot(a).phase === 'gathering', 10_000);
+    expect([...spot(a).players]).toEqual([a.sessionId]);
+    await sitAt(b, 'chess-1');
+    await until(() => spot(a).players.length === 2);
+    await started(a);
+    await b.leave();
+    await until(() => a.state.chess.endWhy === 'left');
+    expect(a.state.chess.endWinner).toBe(a.sessionId);
+  });
+
+  it('a reload mid-game keeps your place: sit back down and play on', { timeout: 20_000 }, async () => {
+    const { a, b } = await game();
+    await started(a);
+    const wasWhite = a.state.chess.white === b.sessionId;
+    const b2 = track(await walkIn({ sub: 'u-jod', name: 'Jod' }));
+    await until(() => [...spot(a).players].includes(b2.sessionId));
+    expect(spot(a).phase).toBe('playing');
+    expect(a.state.chess[wasWhite ? 'white' : 'black']).toBe(b2.sessionId);
+    expect(spot(a).awaySince.has(b2.sessionId)).toBe(true);
+    await sitAt(b2, 'chess-1');
+    await until(() => !spot(a).awaySince.has(b2.sessionId));
+    const white = wasWhite ? b2 : a;
+    white.send('chess:move', { from: 'd2', to: 'd4' });
+    await until(() => a.state.chess.moves.length === 1);
+  });
+
+  it('the host ends a round early: back to the lobby, no result', { timeout: 20_000 }, async () => {
+    const { a } = await game();
+    await started(a);
+    a.send('activity:end');
+    await until(() => spot(a).phase === 'gathering');
+    expect(a.state.chess.fen).toBe('');
+    expect([...spot(a).results]).toEqual([]);
   });
 });
 

@@ -14,8 +14,12 @@ import type {
   VoicePass,
   WatchRefused,
   WatchVideo,
+  ActivityOut,
 } from '@connecta/shared';
-import type { Video, WatchRemote, WatchState } from '../activities/hub';
+import type { ActivityRemote, SpotState, Video, WatchRemote, WatchState } from '../activities/hub';
+import type { SpotId } from '../activities/spots';
+import type { ChessGame, EndReason } from '../activities/chess/game';
+import type { PieceSymbol, Square } from 'chess.js';
 import type { GameRoom } from '@/features/game/useGame';
 import type { MapDef } from '../map/types';
 import { MockRoom, player } from './mockRoom';
@@ -184,6 +188,79 @@ export class LiveRoom extends MockRoom {
   /** Photo mode open or closed: others see 📸 by your name */
   setPhoto(on: boolean) {
     this.game.send('photo', { on });
+  }
+
+  // --- Activities (feature 9): the spots the game server runs, chess for now ---
+
+  private key(sessionId: string) {
+    return sessionId === this.game.sessionId ? 'me' : sessionId;
+  }
+
+  /** The chess game in the rules' shape, rebuilt only when it changes (the board replays its moves) */
+  private chessCache: { rev: number; game: ChessGame | null } = { rev: -1, game: null };
+  private chessView(): ChessGame | null {
+    const c = this.game.state?.chess;
+    if (!c) return null;
+    if (c.rev === this.chessCache.rev) return this.chessCache.game;
+    const key = (id: string) => this.key(id);
+    const game: ChessGame | null = c.fen
+      ? {
+          white: key(c.white),
+          black: key(c.black),
+          moves: [...c.moves],
+          fen: c.fen,
+          last: c.lastFrom ? { from: c.lastFrom as Square, to: c.lastTo as Square } : null,
+          taken: { w: [...c.takenW] as PieceSymbol[], b: [...c.takenB] as PieceSymbol[] },
+          drawOffer: c.drawOffer ? key(c.drawOffer) : null,
+          end: c.endWhy ? { winner: c.endWinner ? key(c.endWinner) : null, why: c.endWhy as EndReason } : null,
+          rev: c.rev,
+        }
+      : null;
+    this.chessCache = { rev: c.rev, game };
+    return game;
+  }
+
+  /** The hub's way to the spots the server runs */
+  readonly activityRemote: ActivityRemote = {
+    spots: () => {
+      const out: ReturnType<ActivityRemote['spots']> = {};
+      const key = (id: string) => this.key(id);
+      this.game.state?.spots?.forEach((s, id) => {
+        const awaySince: Record<string, number> = {};
+        s.awaySince.forEach((at, who) => (awaySince[key(who)] = at));
+        out[id as SpotId] = {
+          phase: s.phase as SpotState['phase'],
+          gameId: s.gameId,
+          hostId: s.hostId ? key(s.hostId) : null,
+          players: [...s.players].map(key),
+          nextRound: [...s.nextRound].map(key),
+          out: [...s.out].map(key),
+          awaySince,
+          optedOut: [],
+          arriving: false,
+          since: 0,
+          startsAt: s.startsAt,
+          invite: s.inviteAt ? { by: key(s.inviteBy), at: s.inviteAt } : null,
+          results: [...s.results].map(key),
+          resultsUntil: s.resultsUntil,
+        };
+      });
+      return out;
+    },
+    chess: () => this.chessView(),
+    begin: () => this.game.send('activity:begin'),
+    end: () => this.game.send('activity:end'),
+    call: () => this.game.send('activity:call'),
+    leave: () => this.game.send('activity:leave'),
+    chessMove: (from, to, promotion) => this.game.send('chess:move', { from, to, promotion }),
+    chessResign: () => this.game.send('chess:resign'),
+    chessOfferDraw: () => this.game.send('chess:draw:offer'),
+    chessAnswerDraw: (accept) => this.game.send('chess:draw:answer', { accept }),
+  };
+
+  /** A round let you go (you pressed Leave, or were away from it for 30 s) */
+  onActivityOut(fn: (out: ActivityOut) => void) {
+    return this.game.onMessage('activity:out', fn);
   }
 
   /** Owners and mods: everything off the big screen */

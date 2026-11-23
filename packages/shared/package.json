@@ -16,6 +16,10 @@
     "./maps/*": {
       "types": "./dist/maps/*.d.ts",
       "default": "./dist/maps/*.js"
+    },
+    "./chess": {
+      "types": "./dist/chess.d.ts",
+      "default": "./dist/chess.js"
     }
   },
   "scripts": {
@@ -27,5 +31,8 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "dependencies": {
+    "chess.js": "^1.4.0"
+  }
 }

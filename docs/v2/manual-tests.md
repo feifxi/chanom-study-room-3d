@@ -334,3 +334,26 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
 - [ ] **Save** downloads the PNG; **Copy** puts it on the clipboard (or says the browser won't).
 - [ ] As a guest: Save and Copy only, no Share.
 - [ ] With the API stopped, Share says it couldn't and keeps the photo on screen to try again.
+
+### Party and table games, part 1: the round flow and chess
+
+- [ ] Two people in a real Library room. Mai sits at the chess table: the lobby card opens with her
+      as host (👑). 📣 **Call everyone**: Jod gets "Mai is starting Chess · Go there" (it goes after
+      ~20 s or when closed); Go there runs him over.
+- [ ] Jod sits: "You're in. Mai starts the game." Only Mai has Start; it counts down 3 s.
+- [ ] The board opens big for both, your colour at the bottom; only the player to move can move,
+      illegal moves don't go; the other sees each move at once (last move tinted, check glows).
+- [ ] Offer a draw (Accept / Decline), Resign ("Resign this game?"), checkmate: each ends it with
+      the right results card on both screens. **Play again** swaps colours.
+- [ ] Mid-game: **Leave** (or stand up) → the other wins "the other player left", and you get "You
+      left the game". Walk away for 30 s → "You were away…, so you're out". Leave the room → the
+      other wins at once.
+- [ ] Mid-game: reload the page → you're back at the door; walk back and sit within 30 s and play
+      on (same colour). Wait longer and you lose.
+- [ ] The host's **End** stops it with no result, back to the lobby.
+- [ ] A third person standing on the chess table's rug sees the small read-only board; it never
+      lets them move.
+- [ ] Settings → Notifications → **Hide game invites while I'm focusing** on: with a focus round
+      running, no invite card; it stays on after a reload and on another device. Off: cards show.
+- [ ] In the Café or Rooftop, the Activities list has no chess.
+- [ ] Phone width: the lobby card, the board and the results card fit.

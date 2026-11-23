@@ -12,3 +12,4 @@ export * from './player.js';
 export * from './rooms.js';
 export * from './world.js';
 export * from './watch.js';
+export * from './activities.js';

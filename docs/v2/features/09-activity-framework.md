@@ -1,6 +1,8 @@
 # 9. Activity framework
 
-**Status:** decided and built in the demo (card games are a placeholder until feature 12). **Try it:**
+**Status:** decided and built in the demo. On the real backend (2026-11-23) the game server runs the
+round flow for **chess**; the other spots still run in each browser until their games come over
+(step 5's party and table games, one part each). **Try it:**
 http://localhost:3100/servers/chanom/rooms/library
 
 - Activities → Card games → **Go there**, press **E** to sit, 📣 **Call everyone** (two friends walk
@@ -88,7 +90,7 @@ maps without an art table still stand at easels and press E.
   - No sound and never takes keyboard focus. Shown to everyone, **including people focusing** (people
     in the same room usually want to join in).
   - Personal setting (Settings → Notifications): **"Hide game invites while I'm focusing"**, off by
-    default. You still see what's on under Activities.
+    default, saved on your account so it follows you to every device. You still see what's on under Activities.
   - Two cards at most on screen, then "+1 more under Activities".
 - **No spam limits.** It's your room; owners and mods can kick or time someone out.
 
@@ -145,10 +147,19 @@ walking onto a colour, never dims the room.
 
 ## Backend notes
 
-- An `Activity` module in the Colyseus room: per spot `{ phase, gameId, hostId, players, nextRound,
-out, awaySince, startsAt }`, synced in the room state. The server decides who's in from positions
-  and seats it already has; games plug in with `start / onLeave / finish` hooks.
-- Invites are a room broadcast; the client filters (dismissed, focusing + setting).
+- `apps/game/src/activity.ts` runs the flow: per spot `{ phase, gameId, hostId, players, nextRound,
+out, awaySince, startsAt, inviteBy, inviteAt, results, resultsUntil }` in the room state
+  (`spots`, people as session ids). The server decides who's in from the seats and positions it
+  already has; games plug in as a `RoundGame` (`start`, `out`, `standing`, `stop`, `renamed`).
+  Messages: `activity:begin`, `activity:end`, `activity:call` (the host's), `activity:leave`;
+  `activity:out { spot, why }` tells someone the round let them go.
+- **Leaving the room is leaving** (out at once); a dropped connection has the 30 s. A **reload**
+  (the same account on a new connection) keeps your place: you're "away" until you're back on the
+  seat or rug, with the usual 30 s.
+- Invites are part of the spot's state; the client filters (dismissed, focusing + the account's
+  "Hide game invites while I'm focusing", `PATCH /api/me/notifications`).
+- In the web app the activity hub mirrors the spots the server runs (`ActivityRemote`) and plays
+  the rest itself, so every panel works the same either way.
 - Results only go to quests ("play any activity once"); no game history is stored.
 - Cost: nothing new beyond the room state; games with media (watch together) add their own.
 

@@ -121,3 +121,13 @@ describe('deleting an account', () => {
     expect((await again.get('/api/me')).body).toMatchObject({ signedUp: false });
   });
 });
+
+describe('Settings → Notifications', () => {
+  it('keeps "hide game invites while I’m focusing" on the account (off by default)', async () => {
+    const b = await member('mai@example.com', 'maimai');
+    expect((await b.get('/api/me').expect(200)).body.hideInvitesWhileFocusing).toBe(false);
+    const res = await b.patch('/api/me/notifications', { hideInvitesWhileFocusing: true }).expect(200);
+    expect(res.body.hideInvitesWhileFocusing).toBe(true);
+    expect((await b.get('/api/me').expect(200)).body.hideInvitesWhileFocusing).toBe(true);
+  });
+});

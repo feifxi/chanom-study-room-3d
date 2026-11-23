@@ -32,6 +32,7 @@ export function toMe(user: User): Me {
     showActivity: user.showActivity,
     timeZone: user.timeZone,
     showOnEveryone: listedOnEveryone(user),
+    hideInvitesWhileFocusing: user.hideInvitesWhileFocusing,
   };
 }
 
@@ -98,6 +99,11 @@ export class AccountsService {
     // Off the Everyone ranking means off it now, not when its cache runs out
     if (input.showOnEveryone !== undefined) this.focus.forgetEveryone();
     return me;
+  }
+
+  async updateNotifications(userId: string, input: { hideInvitesWhileFocusing?: boolean }): Promise<Me> {
+    await this.signedUp(userId);
+    return toMe(await this.prisma.user.update({ where: { id: userId }, data: input }));
   }
 
   /** The last step: character, display name and @handle. Then the app opens Home. */

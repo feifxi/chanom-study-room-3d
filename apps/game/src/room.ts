@@ -39,6 +39,7 @@ import { clamp, refillMoveBudget, spendMove } from './rules.js';
 import { readTicket } from './ticket.js';
 import { voice } from './voice.js';
 import { Tv, youtube } from './watch.js';
+import { Activities, ChessTable } from './activity.js';
 
 /** Set by the entry point from GAME_SECRET. */
 export const secrets = { ticket: '' };
@@ -102,6 +103,9 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
   private focusDone = new Map<string, number>();
   /** Watch together's big screen (feature 10): in memory, gone when the room empties */
   private tv = new Tv(this.state.watch);
+  /** The activity spots this server runs (feature 9): chess for now */
+  private chess = new ChessTable(this.state.chess);
+  private activities = this.makeActivities();
 
   messages = {
     move: validate(
@@ -189,6 +193,24 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       const p = this.state.players.get(client.sessionId);
       if (p && (p.role === 'owner' || p.role === 'mod')) this.tv.off();
     },
+
+    /**
+     * The activity framework (feature 9): the host starts, ends and calls everyone; anyone leaves.
+     * Joining is sitting down (or standing on a spot's rug), so it needs no message.
+     */
+    'activity:begin': (client: Client) => this.activities.begin(client.sessionId, Date.now()),
+    'activity:end': (client: Client) => this.activities.end(client.sessionId),
+    'activity:call': (client: Client) => this.activities.call(client.sessionId, Date.now()),
+    'activity:leave': (client: Client) => this.activities.leave(client.sessionId),
+
+    /** Chess (feature 12): every move is checked with the shared rules */
+    'chess:move': validate(
+      z.object({ from: z.string().max(2), to: z.string().max(2), promotion: z.enum(['q', 'r', 'b', 'n']).optional() }),
+      (client, msg) => this.chess.move(client.sessionId, msg.from, msg.to, msg.promotion),
+    ),
+    'chess:resign': (client: Client) => this.chess.resign(client.sessionId),
+    'chess:draw:offer': (client: Client) => this.chess.offerDraw(client.sessionId),
+    'chess:draw:answer': validate(z.object({ accept: z.boolean() }), (client, msg) => this.chess.answerDraw(client.sessionId, msg.accept)),
 
     /** Photo mode (feature 10): 📸 by your name while it's open, so people can pose */
     photo: validate(z.object({ on: z.boolean() }), (client, msg) => {
@@ -371,6 +393,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     this.clock.setInterval(() => this.npc.tick(NPC_TICK_MS / 1000), NPC_TICK_MS);
     this.clock.setInterval(() => this.tickTimers(), TIMER_TICK_MS);
     this.clock.setInterval(() => this.tickTv(), TIMER_TICK_MS);
+    this.clock.setInterval(() => this.activities.tick(Date.now()), TIMER_TICK_MS);
   }
 
   onJoin(client: Client, _options: JoinOptions, ticket: Auth) {
@@ -383,6 +406,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       const old = this.clients_.get(sessionId);
       if (s.timer.phase !== 'idle') carried = { timer: s.timer, subject: this.state.players.get(sessionId)?.subject ?? '' };
       s.timer = idleTimer();
+      // …and so does your place in a game
+      this.activities.renamed(sessionId, client.sessionId, Date.now());
       this.remove(sessionId);
       old?.leave(GAME_CLOSE.elsewhere);
     }
@@ -594,6 +619,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       if (ended) this.roundEnded(sessionId, ended);
     }
     const wasFull = this.priv.size >= this.capacity;
+    this.activities.gone(sessionId);
     this.priv.delete(sessionId);
     this.clients_.delete(sessionId);
     this.state.players.delete(sessionId);
@@ -616,6 +642,25 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     // The new map's resident cats; summoned friends don't come along
     this.npc.reset();
     this.tv.off();
+    this.activities.mapChanged();
+  }
+
+  /** The framework's window on this room */
+  private makeActivities() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- the host reads the room's current map
+    const room = this;
+    const activities = new Activities(this.state.spots, {
+      get map() {
+        return room.map;
+      },
+      get players() {
+        return room.state.players;
+      },
+      standUp: (p) => this.standUp(p),
+      send: (sessionId, type, message) => this.clients_.get(sessionId)?.send(type, message),
+    });
+    activities.add(ChessTable.spot, this.chess);
+    return activities;
   }
 
   /** The NPC code's window on this room */

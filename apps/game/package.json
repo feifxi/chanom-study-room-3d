@@ -16,6 +16,7 @@
     "@colyseus/schema": "^5",
     "@connecta/shared": "workspace:*",
     "bullmq": "^6.7.8",
+    "chess.js": "^1.4.0",
     "colyseus": "^0.18",
     "dotenv": "^17",
     "ioredis": "^6",

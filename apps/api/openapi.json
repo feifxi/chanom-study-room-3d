@@ -287,6 +287,37 @@
         ]
       }
     },
+    "/api/me/notifications": {
+      "patch": {
+        "operationId": "MeController_notifications",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationsBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "me"
+        ]
+      }
+    },
     "/api/me/handle": {
       "put": {
         "operationId": "MeController_handle",
@@ -2872,6 +2903,9 @@
           },
           "showOnEveryone": {
             "type": "boolean"
+          },
+          "hideInvitesWhileFocusing": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -2888,7 +2922,8 @@
           "appearOffline",
           "showActivity",
           "timeZone",
-          "showOnEveryone"
+          "showOnEveryone",
+          "hideInvitesWhileFocusing"
         ],
         "additionalProperties": false
       },
@@ -3057,6 +3092,14 @@
             "type": "boolean"
           },
           "showOnEveryone": {
+            "type": "boolean"
+          }
+        }
+      },
+      "NotificationsBody": {
+        "type": "object",
+        "properties": {
+          "hideInvitesWhileFocusing": {
             "type": "boolean"
           }
         }

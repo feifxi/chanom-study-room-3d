@@ -23,7 +23,8 @@ import { AccountTab } from './AccountTab';
 import { PlusBillingTab } from './PlusBillingTab';
 import { cn } from '@/lib/utils';
 import { getMyLook, saveMyLook, useMyLook } from '@/lib/myLook';
-import { KEYS, useClickToWalk, useHideInvitesWhileFocusing } from '@/lib/controls';
+import { KEYS, useClickToWalk } from '@/lib/controls';
+import { useHideInvitesWhileFocusing } from '@/features/account/useNotifications';
 
 const AvatarPreview = dynamic(() => import('@/features/avatar/AvatarPreview').then((m) => m.AvatarPreview), { ssr: false });
 
@@ -443,13 +444,14 @@ function BlockedPeople() {
 /** Game invite cards ("Mai is starting Pick a Side") show for everyone by default, even while focusing. */
 function HideInvitesRow() {
   const [on, setOn] = useHideInvitesWhileFocusing();
+  const { data: me } = useMe();
   return (
     <label className="flex items-center justify-between gap-4">
       <span>
         <span className="block text-sm font-bold">Hide game invites while I’m focusing</span>
         <span className="block text-xs text-muted-foreground">You can still see what’s on under Activities.</span>
       </span>
-      <Switch checked={on} onCheckedChange={setOn} />
+      <Switch checked={on} disabled={!me?.handle} onCheckedChange={(v) => void setOn(v)} />
     </label>
   );
 }

@@ -10,6 +10,7 @@ import {
   DeletionBodySchema,
   HandleBodySchema,
   PrivacyBodySchema,
+  NotificationsBodySchema,
   ProfileBodySchema,
   TooSoonSchema,
   type AccountDetails,
@@ -82,6 +83,16 @@ export class MeController {
   @ApiOkResponse({ standardSchema: MeSchema })
   privacy(@Session() session: UserSession, @Body({ schema: PrivacyBodySchema }) body: z.infer<typeof PrivacyBodySchema>): Promise<Me> {
     return this.accounts.updatePrivacy(session.user.id, body);
+  }
+
+  /** Settings → Notifications: what interrupts you in a room (game invites while you focus). */
+  @Patch('notifications')
+  @ApiOkResponse({ standardSchema: MeSchema })
+  notifications(
+    @Session() session: UserSession,
+    @Body({ schema: NotificationsBodySchema }) body: z.infer<typeof NotificationsBodySchema>,
+  ): Promise<Me> {
+    return this.accounts.updateNotifications(session.user.id, body);
   }
 
   /** A new @handle: once every 30 days (409 too_soon), and it must be free (409 handle_unavailable). */

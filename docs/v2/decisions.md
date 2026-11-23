@@ -426,6 +426,15 @@ decision is made or changed: one line, a date, and the reason.
   for, for the 12-hour cap, while rankings use the viewer's time zone. **Guests** show in "This room
   today" from the game server's memory and are never saved. A running round shows 📖 even if you've
   gone quiet: focusing is never Away, for friends too.
+- **Party and table games, one game per part** (2026-11-23, the owner): 1. the round flow and chess
+  (the smallest real game proves the whole flow, Call everyone included); 2. Slave (hidden hands,
+  turn timers); 3. the whiteboard; 4. Pick a Side; 5. Draw & Guess. Also agreed: Pick a Side gets
+  **built-in decks and My decks now, AI decks after Plus** (they need an AI provider and a paid
+  key only the owner can set up, and their limit is a Plus perk; Claude's cheapest model is the
+  suggestion then); **"Hide game invites while I'm focusing" is an account setting**, so it
+  follows you; **guests play and draw everywhere**, but sharing to Room chat (a drawing, a chain)
+  stays with members; **chess stays Library-only** until the other maps' art pass. While building
+  part 1: a **reload mid-game keeps your place** (the 30 s to get back), like the focus timer.
 - **Watch together and photo mode, in parts** (2026-11-23, the owner): 1. Watch together on the game
   server; 2. photo mode (Share posts to Room chat, 📸 over your head). The **round-based activity
   framework** (lobby, host, Call everyone, Leave and the 30 s rule, results, Room-wide games) is
