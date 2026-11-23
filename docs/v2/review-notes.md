@@ -224,7 +224,7 @@ ago" by its end time only; with days counted by start it showed up as today, so 
 both. Screenshots at 390 dark and 1280 light with a week of sample rounds (removed afterwards)
 looked right.
 
-### Watch together on the game server
+### Watch together on the game server (`1c13f05`)
 
 **Changed:** the big screen is the game server's (`apps/game/src/watch.ts`, room state `watch`):
 what's on, the shared timeline and Up next (20 at most), changed by anyone on the rug through
