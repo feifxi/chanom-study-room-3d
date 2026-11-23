@@ -112,6 +112,7 @@ export class CommonService implements OnModuleDestroy {
       roomWideGames: type.roomWideGames,
       plus: hasPlus(user, new Date(now)),
       common: true,
+      filterWords: true,
     });
     return { ticket, place, n, name: commonCopyName(type, n), note };
   }

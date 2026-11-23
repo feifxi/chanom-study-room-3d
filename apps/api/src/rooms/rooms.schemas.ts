@@ -1,3 +1,4 @@
+import { hasBlockedWord } from '@connecta/shared/moderate';
 import {
   INVITE_EXPIRIES,
   JOIN_NOTE_MAX,
@@ -17,7 +18,13 @@ import {
 import { z } from 'zod';
 import { LookSchema } from '../accounts/accounts.schemas.js';
 
-const RoomName = z.string().trim().min(1).max(ROOM_NAME_MAX);
+// Room names, descriptions and rules are refused rather than masked (feature 14)
+const RoomName = z
+  .string()
+  .trim()
+  .min(1)
+  .max(ROOM_NAME_MAX)
+  .refine((t) => !hasBlockedWord(t), 'That name has a word we don’t allow');
 const Role = z.enum(ROOM_ROLES);
 
 /** Someone as other people see them: no email, no birthday. */
@@ -106,7 +113,11 @@ export const RoomSettingsBodySchema = z
   .object({
     name: RoomName,
     emoji: z.string().min(1).max(16),
-    description: z.string().trim().max(ROOM_DESCRIPTION_MAX),
+    description: z
+      .string()
+      .trim()
+      .max(ROOM_DESCRIPTION_MAX)
+      .refine((t) => !hasBlockedWord(t), 'That description has a word we don’t allow'),
     mapId: z.enum(MAP_IDS),
     size: z.enum(ROOM_SIZES),
     time: z.enum(ROOM_TIMES),
@@ -114,7 +125,11 @@ export const RoomSettingsBodySchema = z
     capacity: z.number().int().min(2),
     tags: z.array(z.enum(ROOM_TAGS)).max(ROOM_TAGS_MAX),
     language: z.enum(ROOM_LANGUAGES).nullable(),
-    rules: z.string().trim().max(ROOM_RULES_MAX),
+    rules: z
+      .string()
+      .trim()
+      .max(ROOM_RULES_MAX)
+      .refine((t) => !hasBlockedWord(t), 'Those rules have a word we don’t allow'),
     showRules: z.boolean(),
     filterWords: z.boolean(),
     slowMode: z.boolean(),

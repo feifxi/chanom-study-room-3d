@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { CharacterEditor } from '@/features/avatar/CharacterEditor';
 import { HandleField, useHandleCheck } from '@/features/account/HandleField';
 import { fetchMe, useSetMe } from '@/features/account/useMe';
+import { problem } from '@/features/rooms/useRooms';
 import { api, type HandleCheck, type Me } from '@/lib/api/client';
 import { authClient } from '@/lib/auth-client';
 import { clearGuest } from '@/lib/guest';
@@ -153,7 +154,11 @@ function LoginFlow() {
     const { data, error, response } = await api.POST('/api/me/sign-up', { body: { name: name.trim(), handle, look } });
     setBusy(false);
     if (response.status === 409 && error) return setTaken(error as HandleCheck);
-    if (!data) return toast.error("Couldn't finish signing up. Try again?");
+    // A name with a blocked word says so (feature 14)
+    if (!data)
+      return toast.error(
+        response.status === 400 ? problem(error, "Couldn't finish signing up. Try again?") : "Couldn't finish signing up. Try again?",
+      );
     continueAs(data);
   };
 

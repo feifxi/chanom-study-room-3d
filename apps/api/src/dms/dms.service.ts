@@ -116,6 +116,7 @@ export class DmsService {
       const original = await this.prisma.message.findFirst({ where: { id: input.replyToId, dmId, ready: true } });
       if (!original) throw new NotFoundException('That message is gone');
     }
+    input = { ...input, text: await this.chat.filter(input.text, null) };
     const { mentions } = await this.chat.dmMentions(member.dm.pair, input.text);
     return this.post(userId, dmId, () => this.chat.create(userId, { dmId }, input, mentions, false));
   }

@@ -67,14 +67,16 @@ export function InvitePage({ code, kind }: { code: string; kind: 'member' | 'gue
         const { error } = await authClient.signIn.anonymous();
         if (error) throw error;
       }
-      const { data } = await api.PUT('/api/me/guest', { body: { name: guestName, look } });
-      if (!data) throw new Error('guest profile');
+      const { data, error } = await api.PUT('/api/me/guest', { body: { name: guestName, look } });
+      // A name with a blocked word says so (feature 14)
+      if (!data) throw new Error(problem(error, 'guest profile'));
       current = data;
       setMe(current);
       saveGuest({ name: guestName, look });
-    } catch {
+    } catch (err) {
       setBusy(false);
-      toast.error('Couldn’t let you in. Try again?');
+      const why = err instanceof Error ? err.message : '';
+      toast.error(why.includes('allow') ? why : 'Couldn’t let you in. Try again?');
       return;
     }
     await accept();

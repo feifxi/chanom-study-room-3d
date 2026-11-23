@@ -566,3 +566,17 @@ Use the Demo tab → Your Plus (it runs the reminders at once); check the 🔔 i
 - [ ] Signed out, the landing page's "Try a room as a guest" (or `/common/cafe`) asks for a name and a
       look, then walks you in as a guest; the room offers "Make an account ✨".
 - [ ] Discover's and Home's cards show friends inside ("Mai is here").
+
+### Moderation, part 2: the word filter
+
+- [ ] Room chat: send "what the fuck" → it shows as "what the ****" for everyone; edit a message to
+      "oh shit" → "oh ****". Turn Room settings → Filter words off: the next one is left as typed.
+- [ ] DMs: blocked words are always masked, English and Thai ("ไอ้เหี้ยนี่" → "ไอ้*****นี่"), and
+      ordinary words that contain one aren't ("โหดเหี้ยม").
+- [ ] Bubbles in a 3D room are masked; turning Filter words off in Room settings stops it at once
+      for everyone inside. In a Common room they're always masked.
+- [ ] A name with a blocked word is refused with "That name has a word we don't allow": sign-up,
+      Settings → Profile, the guest step on an invite and a Common room. An @handle like that shows
+      as not available; a room name, description or rules like that won't save.
+- [ ] Pictures still send as before with no `OPENAI_API_KEY` (the API logs "chat pictures aren't
+      checked"). With a key: a picture OpenAI flags is dropped from its message.

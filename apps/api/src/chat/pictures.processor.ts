@@ -6,6 +6,7 @@ import sharp from 'sharp';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { StorageService } from '../storage/storage.service.js';
 import { ChatService } from './chat.service.js';
+import { PictureCheck } from './picture-check.js';
 import { PICTURES_QUEUE, PicturesService, uploadKey } from './pictures.service.js';
 
 /** Longest side once stored; phones send 4,000+ px that nobody needs in a chat */
@@ -24,6 +25,7 @@ export class PicturesProcessor extends WorkerHost {
     private readonly storage: StorageService,
     private readonly pictures: PicturesService,
     private readonly chat: ChatService,
+    private readonly safety: PictureCheck,
   ) {
     super();
   }
@@ -67,9 +69,8 @@ export class PicturesProcessor extends WorkerHost {
     }
   }
 
-  /**
-   * The safety check before a picture can show. A stand-in until moderation (feature 14) plugs in a
-   * real image check; refusing means throwing an UnrecoverableError.
-   */
-  private async check(_webp: Buffer): Promise<void> {}
+  /** The safety check before a picture can show: a flagged picture is dropped from its message */
+  private async check(webp: Buffer): Promise<void> {
+    if (await this.safety.flagged(webp)) throw new UnrecoverableError('flagged');
+  }
 }

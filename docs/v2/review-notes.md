@@ -576,3 +576,34 @@ her, and a signed-out visitor picked a name and walked in as a guest: three in C
 - [ ] **Room capacity settings for Common rooms** (25 and 5) are constants, not admin settings yet.
 - [ ] **A Common copy's look is the map's default** and the 3D room still takes the mock
       `PUBLIC_SERVER` shape, with the copy as its one room.
+
+### Moderation, part 2: the word filter
+
+**Changed:** `@connecta/shared/moderate` holds the filter (`obscenity`'s English set, our own list
+with Thai). The API masks room chat (following the room's Filter words), DMs and edits, and refuses
+blocked words in names, @handles, room names, descriptions and rules; the game server masks bubbles
+(the ticket carries the room's setting, a room event changes it live; always on in Common rooms).
+The pictures worker now asks OpenAI's moderation endpoint (`PictureCheck`), which stays off until
+`OPENAI_API_KEY` is set. The web app's sign-up, Settings → Profile and guest steps show the refusal's
+reason instead of "Try again", and `problem()` drops the field name from validation messages.
+
+**Bugs found and fixed while building:**
+
+- Validation errors reached the screen as "description: That description has…" (the pipe prefixes
+  the field); `problem()` now shows the sentence alone.
+- The Common rooms test could fail right after a browser run: it cleared its own Redis keys but not
+  the presence of Common copies, which the dev Redis still held for a guest who'd just left. It
+  clears those too now.
+
+A headless run: a guest named "Fuckface" was refused with the reason, then walked into the Library
+as "Mint" and "this is shit lol" popped up as "this is **** lol".
+
+**Open:**
+
+- [ ] **The word list is in code** (`OWN_WORDS`), until the admin site's Moderation page edits it.
+      The Thai list is short and needs a native speaker's pass.
+- [ ] **Messages sent before this change** aren't masked after the fact.
+- [ ] **The picture check hasn't run against OpenAI** (no key yet): only its test with a stand-in
+      answer. When the owner adds a key, send a picture to confirm.
+- [ ] **Links aren't clickable in Common rooms** (spec 14) was already true for bubbles (bubbles
+      never make links); nothing else changed there.

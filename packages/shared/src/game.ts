@@ -37,6 +37,8 @@ export interface GameTicket {
   plus?: boolean;
   /** A Common room copy: text only for everyone, slow mode, no big screen (feature 14) */
   common?: boolean;
+  /** Room settings → Filter words: blocked words in bubbles become asterisks (always in Common rooms) */
+  filterWords?: boolean;
 }
 export const TICKET_AUDIENCE = 'connecta-game';
 export const TICKET_SECONDS = 60;
@@ -97,6 +99,7 @@ export type GameRoomEvent =
   | { roomId: string; type: 'map'; mapId: string }
   | { roomId: string; type: 'guestVoice'; on: boolean }
   | { roomId: string; type: 'roomWideGames'; on: boolean }
+  | { roomId: string; type: 'filterWords'; on: boolean }
   | { roomId: string; type: 'deleted' }
   /** A saved look (the API checked you own it): every room you're in shows it. roomId '*' = all rooms */
   | { roomId: '*'; type: 'look'; userId: string; look: AvatarLook }

@@ -1,7 +1,7 @@
 # 14. Common rooms, open rooms and moderation
 
 **Status:** decided and built in the demo; in `apps/` in four parts (2026-11-24): Common rooms
-(done), the word filter, reports, team accounts in Common rooms. Suspensions, bans and the admin
+(done), the word filter (done), reports, team accounts in Common rooms. Suspensions, bans and the admin
 site come after. **Try it:** http://localhost:3100 with the Demo tab's
 **View as**:
 
@@ -77,12 +77,17 @@ is run.
 Every message, picture and room name goes through one `moderate()` step. Each layer can be switched
 on or off in the admin site, cheapest first:
 
-1. **Word filter** (free): `obscenity` plus our own list, Thai included.
+1. **Word filter** (free): `obscenity` plus our own list, Thai included. Messages and bubbles get
+   blocked words **masked** as `****` (the meaning usually survives); names, @handles, room names,
+   descriptions and rules with one are **refused** ("That name has a word we don't allow"). Room chat
+   and bubbles follow the room's **Filter words** setting (on by default); DMs, names and Common rooms
+   are always filtered.
 2. **Limits:** slow mode, link caps.
 3. **Report thresholds:** 3 reports in 10 minutes → muted 15 minutes (rooms with mods); 5 in 30
    minutes from different accounts → out of Common rooms for an hour.
-4. **OpenAI's free Moderation API** for pictures and smarter text checks (confirm it's still free
-   when building). Paid AI checks only if needed later.
+4. **OpenAI's free Moderation API** for pictures (`omni-moderation-latest`): a flagged chat
+   picture is dropped from its message. Built, and off until the owner adds `OPENAI_API_KEY`. Smarter
+   text checks and paid AI checks only if needed later.
 
 ## Reporting a room
 
@@ -130,6 +135,15 @@ seats held 30 s for fresh tickets (Redis); empty copies close. `GET /api/common`
 and names friends inside; presence names a friend's copy (`room.common`) so Home and Friends link
 "Walk in" to `/common/<type>?with=<id>`. Without a session `/common/<type>` asks for a name and a
 look and walks in as a guest.
+
+**Built so far (the word filter):** `maskWords` and `hasBlockedWord` in `@connecta/shared/moderate`
+(its own entry, so the web bundle doesn't carry the word lists): `obscenity`'s English set plus
+`OWN_WORDS`, Thai matched inside text with a short list of ordinary words that contain a listed one
+(`เหี้ยม`). The API masks room chat (unless the room turned Filter words off), DMs and edits, and
+refuses names, @handles and room text through the Zod schemas; the game server masks bubbles, told
+the room's setting by the ticket and live by a `filterWords` room event. The pictures worker asks
+`PictureCheck` (`src/chat/picture-check.ts`) before a picture can show; without a key it lets every
+picture through. The admin site will edit the word list (it's in code until then).
 
 - Common rooms: a `common_room_types` table (template, name, vibe) and copies as ordinary Colyseus
   rooms with `kind = 'common'`; the room sets the rules (no LiveKit publish grant for anyone, no

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { handleProblem, handleSuggestions } from '@connecta/shared';
+import { hasBlockedWord } from '@connecta/shared/moderate';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { HandleCheck } from './accounts.schemas.js';
 
@@ -12,7 +13,7 @@ export class HandlesService {
    * change, count as free; one held for someone else counts as taken.
    */
   async check(handle: string, userId: string, now = new Date()): Promise<HandleCheck> {
-    const problem = handleProblem(handle);
+    const problem = handleProblem(handle) ?? (hasBlockedWord(handle) ? 'That handle has a word we don’t allow' : null);
     if (problem) return { handle, available: false, reason: problem, suggestions: [] };
     if (await this.isFree(handle, userId, now)) return { handle, available: true, reason: null, suggestions: [] };
     const suggestions: string[] = [];

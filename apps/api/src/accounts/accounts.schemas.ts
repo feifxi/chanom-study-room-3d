@@ -1,3 +1,4 @@
+import { hasBlockedWord } from '@connecta/shared/moderate';
 import { ALL_ACCESSORIES, DISPLAY_NAME_MAX, HAIR_COLORS, OUTFIT_COLORS, OUTFIT_STYLES, REQUESTS_FROM } from '@connecta/shared';
 import { z } from 'zod';
 
@@ -17,7 +18,13 @@ export const LookSchema = z
   })
   .meta({ id: 'Look' });
 
-const DisplayName = z.string().trim().min(1).max(DISPLAY_NAME_MAX);
+// Names are refused rather than masked: a name of asterisks helps nobody (feature 14)
+const DisplayName = z
+  .string()
+  .trim()
+  .min(1)
+  .max(DISPLAY_NAME_MAX)
+  .refine((name) => !hasBlockedWord(name), 'That name has a word we don’t allow');
 
 export const MeSchema = z
   .object({

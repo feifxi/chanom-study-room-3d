@@ -19,6 +19,7 @@ import { CharacterEditor } from '@/features/avatar/CharacterEditor';
 import { PersonFace } from '@/components/PersonFace';
 import { friendsApi, useBlocks, useFriendAction } from '@/features/friends/useFriends';
 import { api } from '@/lib/api/client';
+import { problem } from '@/features/rooms/useRooms';
 import { AccountTab } from './AccountTab';
 import { PlusBillingTab } from './PlusBillingTab';
 import { cn } from '@/lib/utils';
@@ -119,9 +120,9 @@ function Profile({ onEditCharacter }: { onEditCharacter: () => void }) {
 
   const saveName = async () => {
     setBusy(true);
-    const { data } = await api.PATCH('/api/me/profile', { body: { name: name.trim() } });
+    const { data, error } = await api.PATCH('/api/me/profile', { body: { name: name.trim() } });
     setBusy(false);
-    if (!data) return toast.error("Couldn't save your name. Try again?");
+    if (!data) return toast.error(problem(error, "Couldn't save your name. Try again?"));
     setMe(data);
     toast.success('Name saved ✨');
   };

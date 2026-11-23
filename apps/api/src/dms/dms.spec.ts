@@ -46,6 +46,13 @@ async function pair() {
 }
 
 describe('DMs', () => {
+  it('always masks blocked words', async () => {
+    const { mai, dmId } = await pair();
+    expect((await mai.post(`/api/dms/${dmId}/messages`, { text: 'ไอ้เหี้ยนี่ what the fuck' }).expect(201)).body.text).toBe(
+      'ไอ้*****นี่ what the ****',
+    );
+  });
+
   it('one chat per pair, whoever opens it, and it stays out of lists until a message', async () => {
     const { mai, jod, dmId } = await pair();
     const fromJod = (await jod.put('/api/dms/with/maimai').expect(200)).body;

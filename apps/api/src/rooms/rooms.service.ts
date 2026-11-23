@@ -159,6 +159,9 @@ export class RoomsService {
     // Guests inside can start or stop talking at once
     if (input.guestVoice !== undefined && input.guestVoice !== room.guestVoice)
       this.game.roomEvent({ roomId, type: 'guestVoice', on: input.guestVoice });
+    // Bubbles inside follow Filter words at once
+    if (input.filterWords !== undefined && input.filterWords !== room.filterWords)
+      this.game.roomEvent({ roomId, type: 'filterWords', on: input.filterWords });
     // Room-wide games off: a Pick a Side game on the floor ends
     if (input.roomWideGames !== undefined && input.roomWideGames !== room.roomWideGames)
       this.game.roomEvent({ roomId, type: 'roomWideGames', on: input.roomWideGames });
@@ -392,6 +395,7 @@ export class RoomsService {
       timedOutUntil: member?.timedOutUntil && member.timedOutUntil > now ? member.timedOutUntil.getTime() : 0,
       guestVoice: room.guestVoice,
       roomWideGames: room.roomWideGames,
+      filterWords: room.filterWords,
       pets: await petsOf(this.prisma, userId),
       plus: hasPlus(user, now),
     });

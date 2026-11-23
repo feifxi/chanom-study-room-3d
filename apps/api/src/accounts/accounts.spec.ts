@@ -94,6 +94,14 @@ describe('finishing sign-up', () => {
     await b.post('/api/me/sign-up', { name: 'Mai', handle: 'admin', look: LOOK }).expect(409);
     await b.post('/api/me/sign-up', { name: 'Mai', handle: 'maimai', look: { ...LOOK, hair: '#bad' } }).expect(400);
   });
+
+  it('refuses a blocked word in the name or the @handle', async () => {
+    const b = await adult('mai@example.com');
+    expect((await b.get('/api/handles/fuckboy').expect(200)).body).toMatchObject({ available: false });
+    await b.post('/api/me/sign-up', { name: 'Mai', handle: 'fuckboy', look: LOOK }).expect(409);
+    await b.post('/api/me/sign-up', { name: 'ไอ้สัส', handle: 'maimai', look: LOOK }).expect(400);
+    await b.post('/api/me/sign-up', { name: 'Mai', handle: 'maimai', look: LOOK }).expect(200);
+  });
 });
 
 describe('guests', () => {

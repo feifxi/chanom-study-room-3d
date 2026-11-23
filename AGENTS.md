@@ -44,8 +44,8 @@ are done (the round flow, chess, Slave, the whiteboard, Pick a Side and Draw & G
 server). **Coins and quests** are done (quests, coins, the Shop's first set and pets). **Plus** is done
 (Plus on the account and limits, paying with Stripe or a local stand-in until the owner adds test
 keys, Gift Plus, and when Plus ends). **Moderation with Common and open rooms** is in progress in
-four parts: part 1 (Common rooms) is done; next is the word filter, then reports, then team
-accounts in Common rooms.
+four parts: part 1 (Common rooms) and part 2 (the word filter) are done; next are reports, then
+team accounts in Common rooms.
 Steps 1–4 are done: the skeleton; accounts and rooms; the gateway
 (friends, chat, pictures, DMs, presence and the 🔔 inbox); walking in a room (the Colyseus game
 server `apps/game` with movement, capacity and live room changes, bubbles, Away, the people list,

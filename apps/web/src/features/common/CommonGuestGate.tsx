@@ -14,6 +14,7 @@ import { RoomShot, SplitScreen } from '@/components/app/SplitScreen';
 import { api } from '@/lib/api/client';
 import { authClient } from '@/lib/auth-client';
 import { GUEST_LOOK, saveGuest } from '@/lib/guest';
+import { problem } from '@/features/rooms/useRooms';
 
 /**
  * A Common room for someone without a session (feature 14): pick a name and a character and walk in
@@ -33,13 +34,15 @@ export function CommonGuestGate({ type }: { type: CommonType }) {
         const { error } = await authClient.signIn.anonymous();
         if (error) throw error;
       }
-      const { data } = await api.PUT('/api/me/guest', { body: { name: guestName, look } });
-      if (!data) throw new Error('guest profile');
+      const { data, error } = await api.PUT('/api/me/guest', { body: { name: guestName, look } });
+      // A name with a blocked word says so (feature 14)
+      if (!data) throw new Error(problem(error, 'guest profile'));
       saveGuest({ name: guestName, look });
       router.refresh();
-    } catch {
+    } catch (err) {
       setBusy(false);
-      toast.error('Couldn’t let you in. Try again?');
+      const why = err instanceof Error ? err.message : '';
+      toast.error(why.includes('allow') ? why : 'Couldn’t let you in. Try again?');
     }
   };
 

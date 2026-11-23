@@ -50,6 +50,9 @@ export const envSchema = z
     STRIPE_SECRET_KEY: optional,
     /** From `stripe listen` locally, or the webhook endpoint in Stripe's dashboard */
     STRIPE_WEBHOOK_SECRET: optional,
+
+    /** OpenAI's free moderation endpoint checks chat pictures. Unset: pictures aren't checked */
+    OPENAI_API_KEY: optional,
   })
   .refine((env) => !env.GOOGLE_CLIENT_ID === !env.GOOGLE_CLIENT_SECRET, {
     message: 'Set both GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, or neither',

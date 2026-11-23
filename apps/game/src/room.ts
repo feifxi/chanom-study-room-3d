@@ -34,6 +34,7 @@ import {
   type BoardAdd,
 } from '@connecta/shared';
 import { inArea, mapDataFor, zoneAtIn, type MapData } from '@connecta/shared/maps';
+import { maskWords } from '@connecta/shared/moderate';
 import { idleTimer, startFocus, stopTimer, tickTimer, type EndedRound, type FocusTimer } from './focus.js';
 import { links, liveRooms } from './links.js';
 import { log } from './log.js';
@@ -109,6 +110,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
   private guestVoice = false;
   /** A Common room copy (feature 14): text only for everyone, slow mode, no big screen */
   private common = false;
+  /** Room settings → Filter words (on by default; always in Common rooms) */
+  private filterWords = true;
   /** Room settings → Room-wide games (from the ticket, then live) */
   private roomWideGames = true;
   /** Muted for everyone, by account, so walking out and back in doesn't lift it; gone when the room empties */
@@ -331,7 +334,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     say: validate(z.object({ text: z.string() }), (client, msg) => {
       const p = this.state.players.get(client.sessionId);
       const s = this.priv.get(client.sessionId);
-      const text = msg.text.trim().slice(0, BUBBLE_MAX);
+      const said_ = msg.text.trim().slice(0, BUBBLE_MAX);
+      const text = this.filterWords ? maskWords(said_) : said_;
       if (!p || !s || !text) return;
       const now = Date.now();
       if (s.quietUntil > now) return void client.send('quiet', { until: s.quietUntil } satisfies Quiet);
@@ -479,6 +483,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     this.capacity = ticket.capacity;
     this.guestVoice = ticket.guestVoice ?? false;
     this.common = ticket.common ?? false;
+    this.filterWords = this.common || (ticket.filterWords ?? true);
     this.roomWideGames = ticket.roomWideGames ?? true;
     const staff = ticket.role === 'owner' || ticket.role === 'mod';
     const others = [...this.priv.values()].filter((s) => s.userId !== ticket.sub).length;
@@ -644,6 +649,9 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       case 'guestVoice':
         this.guestVoice = event.on;
         for (const sessionId of this.priv.keys()) this.refreshVoice(sessionId);
+        break;
+      case 'filterWords':
+        this.filterWords = this.common || event.on;
         break;
       case 'roomWideGames':
         this.roomWideGames = event.on;

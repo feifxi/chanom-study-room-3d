@@ -24,7 +24,8 @@ afterAll(async () => {
 });
 beforeEach(async () => {
   await resetAccounts(prisma);
-  const keys = await redis.keys('common:*');
+  // The dev Redis is shared: a copy someone just left in the browser may still list them
+  const keys = [...(await redis.keys('common:*')), ...(await redis.keys('presence:inside:common-*'))];
   if (keys.length) await redis.del(...keys);
 });
 

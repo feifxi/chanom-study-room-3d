@@ -21,7 +21,8 @@ export function problem(error: unknown, fallback = 'That didn’t work. Try agai
   if (error && typeof error === 'object' && 'message' in error) {
     const m = (error as { message: unknown }).message;
     if (typeof m === 'string' && m) return m;
-    if (Array.isArray(m) && typeof m[0] === 'string') return m[0];
+    // Validation errors come as ["field: what's wrong"]; the sentence alone reads better
+    if (Array.isArray(m) && typeof m[0] === 'string') return m[0].replace(/^[\w.]+: /, '');
   }
   return fallback;
 }

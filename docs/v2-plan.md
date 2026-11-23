@@ -121,7 +121,8 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
      **Plus is done.**
    - **Moderation with Common and open rooms**, in parts (agreed 2026-11-24): ~~Common rooms~~ done
      2026-11-24 (copies on the game server, picked by the API, text only for everyone, guests
-     welcome); the word filter (masks words; OpenAI's picture check behind a key); reports and their
+     welcome); ~~the word filter~~ done 2026-11-24 (masks messages and bubbles, refuses names;
+     OpenAI's picture check built, off until a key); reports and their
      automatic steps; team accounts in Common rooms. Suspensions and bans come with the admin site.
 6. **The seed:** one fill of all the data (people, rooms, members, friends, DMs…) for testing the
    whole app ([why at the end](v2/decisions.md#engineering-and-infra)).

@@ -324,6 +324,20 @@ describe('bubbles and status', () => {
     expect(passed).toBe(false);
   });
 
+  it('blocked words in bubbles become asterisks, unless the room turned Filter words off', async () => {
+    const a = track(await walkIn());
+    const b = track(await walkIn({ sub: 'u-jod', name: 'Jod', handle: 'jod' }));
+    const heard = hear(b);
+    a.send('say', { text: 'what the fuck' });
+    await until(() => heard.length === 1);
+    expect(heard[0]!.text).toBe('what the ****');
+    dispatch({ roomId: ROOM, type: 'filterWords', on: false });
+    await new Promise((r) => setTimeout(r, 450));
+    a.send('say', { text: 'what the fuck' });
+    await until(() => heard.length === 2);
+    expect(heard[1]!.text).toBe('what the fuck');
+  });
+
   it('a bubble said in a private zone stays in it, unless you talk to everyone', async () => {
     const zone = mapDataFor('library').zones[0]!;
     const inside = track(await walkIn({ role: 'mod' }));

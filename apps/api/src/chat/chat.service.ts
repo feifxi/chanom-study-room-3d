@@ -1,6 +1,7 @@
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { mentionedHandles, MESSAGES_PAGE } from '@connecta/shared';
+import { maskWords } from '@connecta/shared/moderate';
 import { requireSignedUp } from '../accounts/signed-up.js';
 import { Prisma } from '../generated/prisma/client.js';
 import { LiveService } from '../live/live.service.js';
@@ -104,6 +105,7 @@ export class ChatService {
       const original = await this.prisma.message.findFirst({ where: { id: input.replyToId, roomId, ready: true } });
       if (!original) throw new NotFoundException('That message is gone');
     }
+    input = { ...input, text: await this.filter(input.text, roomId) };
     const { mentions, mentionsRoom } = await this.mentions(roomId, input.text, member.role !== 'member');
     const message = await this.create(userId, { roomId }, input, mentions, mentionsRoom);
     // Sending means you've read up to here
@@ -188,6 +190,7 @@ export class ChatService {
     const { moderator } = await this.access(userId, message);
     if (message.authorId !== userId) throw new ForbiddenException('You can only edit your own messages');
     if (message.kind !== 'text') throw new ForbiddenException('Cards can’t be edited');
+    text = await this.filter(text, message.roomId);
     const { mentions, mentionsRoom } = message.roomId
       ? await this.mentions(message.roomId, text, moderator)
       : await this.dmMentions(message.dm!.pair, text);
@@ -197,6 +200,18 @@ export class ChatService {
       include: messageInclude,
     });
     return this.publish(row);
+  }
+
+  /**
+   * The word filter (feature 14): blocked words become asterisks. Room chat follows the room's
+   * "Filter words" setting (on by default); DMs (roomId null) are always filtered.
+   */
+  async filter(text: string, roomId: string | null): Promise<string> {
+    if (roomId) {
+      const room = await this.prisma.room.findUnique({ where: { id: roomId }, select: { filterWords: true } });
+      if (room && !room.filterWords) return text;
+    }
+    return maskWords(text);
   }
 
   /** Your own, or anyone's if you're the owner or a mod of the room (in a DM, only your own). */

@@ -44,6 +44,10 @@
     "./plus": {
       "types": "./dist/plus.d.ts",
       "default": "./dist/plus.js"
+    },
+    "./moderate": {
+      "types": "./dist/moderate.d.ts",
+      "default": "./dist/moderate.js"
     }
   },
   "scripts": {
@@ -57,6 +61,7 @@
     "dist"
   ],
   "dependencies": {
-    "chess.js": "^1.4.0"
+    "chess.js": "^1.4.0",
+    "obscenity": "^0.4.6"
   }
 }

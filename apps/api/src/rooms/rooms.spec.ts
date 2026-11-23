@@ -66,6 +66,15 @@ describe('making a room', () => {
 });
 
 describe('room settings', () => {
+  it('refuses a blocked word in the name, description or rules', async () => {
+    const { mai, id } = await maisRoom();
+    await mai.post('/api/rooms', { name: 'Fuck club', mapId: 'library' }).expect(400);
+    const refused = await mai.patch(`/api/rooms/${id}`, { description: 'no shit allowed' }).expect(400);
+    expect(refused.body.message).toEqual(['description: That description has a word we don’t allow']);
+    await mai.patch(`/api/rooms/${id}`, { rules: 'ห้ามพูดคำว่าควย' }).expect(400);
+    await mai.patch(`/api/rooms/${id}`, { description: 'Cosy study in Scunthorpe' }).expect(200);
+  });
+
   it('lets mods change safety and invites but not the room itself', async () => {
     const { mai, id } = await maisRoom();
     const ken = await joinByInvite(mai, id, 'kenken');

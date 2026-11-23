@@ -442,6 +442,12 @@ decision is made or changed: one line, a date, and the reason.
   as `****` rather than refusing the message; OpenAI's free picture check built but off until a key);
   reports with their automatic steps; team accounts in Common rooms. Suspensions and bans wait for
   the admin site, since only the team gives them.
+- **Names are refused, messages masked** (2026-11-24): a message with a blocked word still says
+  something once it's `****`, but a name, an @handle or a room name of asterisks helps nobody, so
+  those are refused with a reason. Thai has no spaces, so our Thai list only holds words that can't
+  hide inside ordinary ones, plus a short list of exceptions (เหี้ยม, "cruel").
+- **The word filter is its own entry, `@connecta/shared/moderate`** (2026-11-24): only the API and
+  the game server use it, so the web app doesn't ship the word lists.
 - **Common room copies have no database rows** (2026-11-24): a copy is just a game-server room
   (`common-library-2`); who's in it comes from presence, and a fresh ticket holds its seat for 30 s
   so two people can't both take the 20th. The URL names the type (`/common/library`), not the copy:

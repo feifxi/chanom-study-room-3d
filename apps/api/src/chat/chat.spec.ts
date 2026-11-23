@@ -42,6 +42,15 @@ async function room() {
 const say = (b: Browser, id: string, text: string, replyToId?: string) => b.post(`/api/rooms/${id}/messages`, { text, replyToId });
 
 describe('room chat', () => {
+  it('masks blocked words unless the room turned Filter words off; edits too', async () => {
+    const { mai, jod, id } = await room();
+    const sent = (await say(jod, id, 'what the fuck').expect(201)).body;
+    expect(sent.text).toBe('what the ****');
+    expect((await jod.patch(`/api/messages/${sent.id}`, { text: 'oh shit' }).expect(200)).body.text).toBe('oh ****');
+    await mai.patch(`/api/rooms/${id}`, { filterWords: false }).expect(200);
+    expect((await say(jod, id, 'what the fuck').expect(201)).body.text).toBe('what the fuck');
+  });
+
   it('saves messages for members, oldest first, paged by id', async () => {
     const { mai, jod, id } = await room();
     for (const text of ['one', 'two', 'three']) await say(mai, id, text).expect(201);
