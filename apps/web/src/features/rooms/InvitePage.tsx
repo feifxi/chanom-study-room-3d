@@ -9,6 +9,7 @@ import type { AvatarLook } from '@connecta/shared';
 import { DISPLAY_NAME_MAX } from '@connecta/shared';
 import { toast } from 'sonner';
 import { CharacterEditor } from '@/features/avatar/CharacterEditor';
+import { GuestAge, GuestTooYoung, isTooYoung } from '@/features/account/GuestAge';
 import { fetchMe, useMe, useSetMe } from '@/features/account/useMe';
 import { mapFor } from '@/features/place/model';
 import { api } from '@/lib/api/client';
@@ -38,6 +39,8 @@ export function InvitePage({ code, kind }: { code: string; kind: 'member' | 'gue
   const [look, setLook] = useState<AvatarLook>(GUEST_LOOK);
   const [picking, setPicking] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [over13, setOver13] = useState<boolean | null>(null);
+  const [tooYoung, setTooYoung] = useState(false);
   const here = `/${kind === 'guest' ? 'g' : 'i'}/${code}`;
 
   const p = invite.data;
@@ -67,7 +70,11 @@ export function InvitePage({ code, kind }: { code: string; kind: 'member' | 'gue
         const { error } = await authClient.signIn.anonymous();
         if (error) throw error;
       }
-      const { data, error } = await api.PUT('/api/me/guest', { body: { name: guestName, look } });
+      const { data, error } = await api.PUT('/api/me/guest', { body: { name: guestName, look, over13: !!over13 } });
+      if (isTooYoung(error)) {
+        setBusy(false);
+        return setTooYoung(true);
+      }
       // A name with a blocked word says so (feature 14)
       if (!data) throw new Error(problem(error, 'guest profile'));
       current = data;
@@ -160,8 +167,9 @@ export function InvitePage({ code, kind }: { code: string; kind: 'member' | 'gue
                   Members find the room on their Home and have its chat any time. It takes a minute.
                 </p>
                 <Button asChild className="h-11 rounded-2xl font-extrabold">
-                  <Link href={`/login?next=${encodeURIComponent(here)}`}>
-                    <LogIn /> Sign in to join
+                  {/* Mostly new people: "Join Connecta"; an existing account signs in on the same page */}
+                  <Link href={`/login?new=1&next=${encodeURIComponent(here)}`}>
+                    <LogIn /> Join Connecta to come in
                   </Link>
                 </Button>
               </>
@@ -176,7 +184,9 @@ export function InvitePage({ code, kind }: { code: string; kind: 'member' | 'gue
             </Button>
           ) : (
             <>
-              {picking ? (
+              {tooYoung ? (
+                <GuestTooYoung />
+              ) : picking ? (
                 <form
                   className="flex flex-col gap-4 rounded-3xl bg-muted/60 p-4"
                   onSubmit={(e) => {
@@ -207,7 +217,8 @@ export function InvitePage({ code, kind }: { code: string; kind: 'member' | 'gue
                       />
                     </div>
                   </CharacterEditor>
-                  <Button type="submit" disabled={busy} className="h-11 rounded-2xl font-extrabold">
+                  <GuestAge value={over13} onChange={setOver13} />
+                  <Button type="submit" disabled={busy || over13 === null} className="h-11 rounded-2xl font-extrabold">
                     <DoorOpen /> Walk in
                   </Button>
                 </form>

@@ -4,6 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createTestApp, createTestGateway, nextEvent, resetAccounts, signedUp, type Browser } from '../../test/test-app.js';
 import type { Mail } from '../mail/mail.service.js';
 import type { PrismaService } from '../prisma/prisma.service.js';
+import { LiveService } from '../live/live.service.js';
 import { AWAY_MS, PresenceService } from './presence.service.js';
 
 let app: INestApplication;
@@ -137,6 +138,19 @@ describe('presence', () => {
     expect(await hiding).toMatchObject({ presence: { status: 'offline', lastSeenAt: null, room: null } });
     expect(await presenceOf(jod, mai.id)).toMatchObject({ status: 'offline', room: null });
     expect((await mai.get(`/api/rooms/${roomId}`).expect(200)).body.inside).toEqual([]);
+  });
+});
+
+describe('signed out everywhere', () => {
+  it('tells every open tab, then the gateway drops their sockets itself', async () => {
+    const { mai } = await setup();
+    const tab = await live(mai);
+    await settled();
+    const told = nextEvent(tab, 'account');
+    const dropped = new Promise<string>((resolve) => tab.on('disconnect', resolve));
+    app.get(LiveService).signOut(mai.id);
+    expect(await told).toEqual({ signedOut: true });
+    expect(await dropped).toBe('io server disconnect');
   });
 });
 

@@ -172,6 +172,13 @@ decision changes, edit its line ("reversed on …") instead of adding a contradi
   asterisks helps nobody); OpenAI's free picture check behind a key.
 - **10 reports an hour per person** (2026-11-24): plenty for a bad night, not enough to flood the
   team. **The whiteboard has a per-person budget** like movement's, sized so a fast pen never hits it.
+- **Guests answer the age question too** (2026-11-24): a neutral "Under 13 / 13 or older" at the
+  guest door, under 13 locked a day like sign-up. Common rooms stay open to guests (they're how
+  people try Connecta).
+- **A guest's report mute is kept on their visit** (2026-11-24), so walking back in doesn't end it.
+  A new browser escapes it; fingerprinting devices isn't worth it.
+- **Room mods' actions go in the team's audit log** (2026-11-24, as `roommod.*`), so reports can be
+  read beside them; mods themselves don't see a log.
 - **Report steps count only accounts that are there, once each** (2026-11-24): guests are free to
   make, so five guests can't push someone out. Only the team sees reports; mods may be the problem.
 - **No vote-kick** (groups bully with it), **no automatic strikes**, **no voice recording, ever.**
@@ -208,6 +215,8 @@ decision changes, edit its line ("reversed on …") instead of adding a contradi
 - **`node-linker=hoisted`**: an isolated layout installs two `@colyseus/core` copies.
 - **One seed for the whole app** (2026-11-24): the approved designs' people and rooms, so the app
   looks like what was approved; a rerun clears only seed rows.
+- **Invite and friend links open "Join Connecta"** (2026-11-24): most people opening them are new;
+  an existing account signs in on the same page.
 - **Old rows go on a timer** (2026-11-24): guests 30 days after their last session expires (a
   returning guest is a new account anyway), quest progress after a week.
 - **Which room you're in is only ever the game server's to say** (2026-11-24): the browser's

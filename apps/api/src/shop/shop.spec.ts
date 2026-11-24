@@ -70,8 +70,8 @@ describe('the Shop', () => {
     // A guest (no account) picks from the free set only
     const guest = browser(app);
     await guest.post('/api/auth/sign-in/anonymous').expect(200);
-    await guest.put('/api/me/guest', { name: 'Mint', look }).expect(400);
-    await guest.put('/api/me/guest', { name: 'Mint', look: LOOK }).expect(200);
+    await guest.put('/api/me/guest', { name: 'Mint', look, over13: true }).expect(400);
+    await guest.put('/api/me/guest', { name: 'Mint', look: LOOK, over13: true }).expect(200);
   });
 
   it('a pet is named when bought, joins the Buddy Machine in rooms you’re in, and comes in your join ticket', async () => {

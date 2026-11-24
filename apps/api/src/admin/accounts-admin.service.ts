@@ -132,7 +132,7 @@ export class AccountsAdminService {
   /** Every session ends now: open tabs hear it and go to sign-in, rooms let them go */
   private async signOutEverywhere(userId: string) {
     await this.prisma.session.deleteMany({ where: { userId } });
-    this.live.toUser(userId, 'account', { signedOut: true });
+    this.live.signOut(userId);
     this.game.roomEvent({ roomId: '*', type: 'kick', userId });
   }
 

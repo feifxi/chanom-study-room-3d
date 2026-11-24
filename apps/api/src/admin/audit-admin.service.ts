@@ -12,11 +12,18 @@ const SETTING: Record<string, string> = { common: 'Common rooms', moderation: 'M
 export class AuditAdminService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(teamId: string, input: { who?: 'all' | 'team' | 'auto'; before?: string }): Promise<AuditList> {
+  async list(teamId: string, input: { who?: 'all' | 'team' | 'auto' | 'rooms'; before?: string }): Promise<AuditList> {
     await requireTeam(this.prisma, teamId);
     const rows = await this.prisma.auditEntry.findMany({
       where: {
-        ...(input.who === 'team' ? { byId: { not: null } } : input.who === 'auto' ? { byId: null } : {}),
+        // Room mods' actions (roommod.*) are people's too, but not the team's
+        ...(input.who === 'team'
+          ? { byId: { not: null }, NOT: { action: { startsWith: 'roommod.' } } }
+          : input.who === 'auto'
+            ? { byId: null }
+            : input.who === 'rooms'
+              ? { action: { startsWith: 'roommod.' } }
+              : {}),
         // Ids are time-ordered (uuid v7): older than the last one shown
         ...(input.before ? { id: { lt: input.before } } : {}),
       },

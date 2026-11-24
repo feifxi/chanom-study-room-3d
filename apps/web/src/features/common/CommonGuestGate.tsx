@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CharacterEditor } from '@/features/avatar/CharacterEditor';
 import { fetchMe } from '@/features/account/useMe';
+import { GuestAge, GuestTooYoung, isTooYoung } from '@/features/account/GuestAge';
 import { RoomShot, SplitScreen } from '@/components/app/SplitScreen';
 import { api } from '@/lib/api/client';
 import { authClient } from '@/lib/auth-client';
@@ -25,6 +26,8 @@ export function CommonGuestGate({ type }: { type: CommonType }) {
   const [name, setName] = useState('');
   const [look, setLook] = useState<AvatarLook>(GUEST_LOOK);
   const [busy, setBusy] = useState(false);
+  const [over13, setOver13] = useState<boolean | null>(null);
+  const [tooYoung, setTooYoung] = useState(false);
 
   const walkIn = async () => {
     const guestName = name.trim() || 'Guest';
@@ -34,7 +37,8 @@ export function CommonGuestGate({ type }: { type: CommonType }) {
         const { error } = await authClient.signIn.anonymous();
         if (error) throw error;
       }
-      const { data, error } = await api.PUT('/api/me/guest', { body: { name: guestName, look } });
+      const { data, error } = await api.PUT('/api/me/guest', { body: { name: guestName, look, over13: !!over13 } });
+      if (isTooYoung(error)) return setTooYoung(true);
       // A name with a blocked word says so (feature 14)
       if (!data) throw new Error(problem(error, 'guest profile'));
       saveGuest({ name: guestName, look });
@@ -65,33 +69,38 @@ export function CommonGuestGate({ type }: { type: CommonType }) {
         <h1 className="text-3xl font-black tracking-[-0.03em]">{type.name}</h1>
         <p className="text-sm text-muted-foreground">{type.vibe} · text only, so it’s comfy with strangers</p>
       </div>
-      <form
-        className="flex w-full max-w-md flex-col gap-4 rounded-3xl bg-muted/60 p-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-          void walkIn();
-        }}
-      >
-        <p className="font-extrabold">Pick how you look</p>
-        <CharacterEditor look={look} onChange={setLook} previewClassName="h-44 w-32">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="guest-name" className="text-xs font-bold text-muted-foreground">
-              Your name
-            </Label>
-            <Input
-              id="guest-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Guest"
-              maxLength={DISPLAY_NAME_MAX}
-              className="rounded-xl bg-card"
-            />
-          </div>
-        </CharacterEditor>
-        <Button type="submit" disabled={busy} className="h-11 rounded-2xl font-extrabold">
-          <DoorOpen /> Walk in as a guest
-        </Button>
-      </form>
+      {tooYoung ? (
+        <GuestTooYoung />
+      ) : (
+        <form
+          className="flex w-full max-w-md flex-col gap-4 rounded-3xl bg-muted/60 p-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void walkIn();
+          }}
+        >
+          <p className="font-extrabold">Pick how you look</p>
+          <CharacterEditor look={look} onChange={setLook} previewClassName="h-44 w-32">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="guest-name" className="text-xs font-bold text-muted-foreground">
+                Your name
+              </Label>
+              <Input
+                id="guest-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Guest"
+                maxLength={DISPLAY_NAME_MAX}
+                className="rounded-xl bg-card"
+              />
+            </div>
+          </CharacterEditor>
+          <GuestAge value={over13} onChange={setOver13} />
+          <Button type="submit" disabled={busy || over13 === null} className="h-11 rounded-2xl font-extrabold">
+            <DoorOpen /> Walk in as a guest
+          </Button>
+        </form>
+      )}
     </SplitScreen>
   );
 }

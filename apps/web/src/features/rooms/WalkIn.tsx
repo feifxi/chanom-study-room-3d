@@ -93,7 +93,7 @@ function CantWalkIn({ room, why, guest, onRetry }: { room: Room; why: GameEnd; g
       title: `You walked into another room`,
       body: `You can be in one room at a time, so you left ${room.name}. Come back any time.`,
     },
-    gone: { emoji: '🍃', title: `${room.name} isn’t there any more`, body: 'The room was closed, or you’re no longer in it.' },
+    gone: { emoji: '🍃', title: `${room.name} isn’t there any more`, body: 'Its owner deleted it, or you’re no longer in it.' },
     unreachable: { emoji: '📡', title: 'Couldn’t reach the room', body: 'Check your connection, then try again.' },
   };
   const { emoji, title, body } = copy[why];

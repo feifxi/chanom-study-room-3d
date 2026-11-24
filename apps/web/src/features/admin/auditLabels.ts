@@ -21,6 +21,12 @@ const LABELS: Record<string, string> = {
   'setting.word_add': 'Added a word',
   'setting.word_remove': 'Removed a word',
   'payment.refund': 'Refunded',
+  'roommod.kick': 'Kicked from a room',
+  'roommod.ban': 'Banned from a room',
+  'roommod.unban': 'Unbanned in a room',
+  'roommod.timeout': 'Timed out in a room',
+  'roommod.make_mod': 'Made a mod',
+  'roommod.remove_mod': 'Removed as mod',
 };
 
 export function actionLabel(action: string): string {

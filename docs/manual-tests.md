@@ -44,7 +44,11 @@ Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
 - [ ] Signed out, the landing page and a Common room log no error for `/api/me` in the console.
 - [ ] A taken @handle is refused with suggestions; Home opens after.
 - [ ] Guest pass (`/g/<code>`, from Chanom Friends → Invite → Guest pass): pick a look, walk in;
-      sign up later and keep the look.
+      sign up later and keep the look. The invite page's button reads "Join Connecta to come in"
+      and opens "Join Connecta ✨"; a friend link reads "Join Connecta to add them".
+- [ ] Guest door (pass or Common room): Walk in stays off until "How old are you?" is answered;
+      "Under 13" shows "Come back when you're 13" and that browser can't walk in as a guest for a
+      day (a private window can).
 - [ ] Change the name; change the @handle (a second change is refused for 30 days).
 - [ ] Settings → Account shows linked sign-ins and birthday.
 - [ ] Delete the account: asks for new room owners, waits 7 days, signing in offers to keep it.
@@ -262,12 +266,20 @@ Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
       admin site; Send a message only shows for friends.
 - [ ] Word filter: room chat and edits masked; Filter words off leaves them; DMs always masked,
       Thai too ("ไอ้เหี้ยนี่" → "ไอ้*****นี่", but "โหดเหี้ยม" stays); bubbles masked, live switch;
-      names, handles and room text with a blocked word refused.
+      names, handles and room text with a blocked word refused. A room deck and Draw & Guess
+      writing are masked too (Filter words off leaves them).
 - [ ] Without `OPENAI_API_KEY` pictures still send; with it, flagged ones are dropped.
 - [ ] Report a message (not your own), a person (3D "…" or DM), a room (Room card, Discover; not
       your own, not Common). The 11th report within an hour says the team has your reports.
 - [ ] 3 accounts reporting one member in 10 min → muted 15 min (never the owner; one account
       three times doesn't count). 5 in a Common copy in 30 min → out of Common rooms for an hour.
+- [ ] The muted person is told why: "Some people here reported you…" for reports, "A mod timed you
+      out…" for a mod's Time out (in 3D and in Room chat). A muted guest who walks out and back in
+      is still muted.
+- [ ] A mod's kick, ban, unban, time out and Make mod appear in the admin Audit log under "Room
+      mods" (not under "Team").
+- [ ] The team closes a room (admin → Rooms) while people are inside: they see "<room> is
+      closed", not "isn't there any more". Suspending someone drops their open tabs at once.
 - [ ] `pnpm --filter @connecta/api team fei` (and `off`). A team account in a Common room has the
       chip, Time out (follows into other copies) and Remove (1 h). Reports never act on the team.
 

@@ -1779,6 +1779,7 @@ export interface components {
         GuestBody: {
             name: string;
             look: components["schemas"]["Look"];
+            over13: boolean;
         };
         ProfileBody: {
             name?: string;
@@ -2887,6 +2888,14 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Me"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TooYoung"];
                 };
             };
         };
@@ -5500,7 +5509,7 @@ export interface operations {
     AdminController_auditEntries: {
         parameters: {
             query?: {
-                who?: "all" | "team" | "auto";
+                who?: "all" | "team" | "auto" | "rooms";
                 before?: string;
             };
             header?: never;

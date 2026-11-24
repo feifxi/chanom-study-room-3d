@@ -1,3 +1,4 @@
+import { maskWords } from '@connecta/shared/moderate';
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { ROOM_DECKS_MAX, type Deck } from '@connecta/shared/pick-a-side';
 import type { RoomDeck as Row, User } from '../generated/prisma/client.js';
@@ -32,7 +33,7 @@ export class DecksService {
     if ((await this.prisma.roomDeck.count({ where: { roomId } })) >= ROOM_DECKS_MAX)
       throw new ConflictException({ code: 'too_many', message: `A room keeps up to ${ROOM_DECKS_MAX} decks` });
     const row = await this.prisma.roomDeck.create({
-      data: { roomId, authorId: userId, ...stored(body) },
+      data: { roomId, authorId: userId, ...stored(body, await this.filters(roomId)) },
       include: { author: true },
     });
     return this.view(row, userId, role);
@@ -42,8 +43,17 @@ export class DecksService {
     const deck = await this.find(id);
     const role = await this.access(deck.roomId, userId, now);
     if (deck.authorId !== userId) throw new ForbiddenException('Only whoever wrote a deck changes it');
-    const row = await this.prisma.roomDeck.update({ where: { id }, data: stored(body), include: { author: true } });
+    const row = await this.prisma.roomDeck.update({
+      where: { id },
+      data: stored(body, await this.filters(deck.roomId)),
+      include: { author: true },
+    });
     return this.view(row, userId, role);
+  }
+
+  /** Room settings → Filter rude words */
+  private async filters(roomId: string) {
+    return (await this.prisma.room.findUnique({ where: { id: roomId }, select: { filterWords: true } }))?.filterWords ?? true;
   }
 
   async remove(id: string, userId: string, now = new Date()): Promise<void> {
@@ -93,12 +103,14 @@ export class DecksService {
   }
 }
 
-function stored(body: DeckBody) {
+/** What's saved: with the room's word filter on (the default), rude words masked like in chat */
+function stored(body: DeckBody, filter: boolean) {
+  const clean = (text: string) => (filter ? maskWords(text) : text);
   return {
-    name: body.name,
+    name: clean(body.name),
     kind: body.kind,
     questions: body.questions.map(({ q, answers, right }): StoredQuestion =>
-      body.kind === 'quiz' ? { q, answers, right } : { q, answers },
+      body.kind === 'quiz' ? { q: clean(q), answers: answers.map(clean), right } : { q: clean(q), answers: answers.map(clean) },
     ),
   };
 }

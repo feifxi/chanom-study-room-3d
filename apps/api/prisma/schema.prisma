@@ -270,6 +270,8 @@ model Membership {
   notify        String    @default("mentions")
   /// Can't talk or type until then
   timedOutUntil DateTime? @map("timed_out_until")
+  /// Who timed them out (mod or reports), so they're told why
+  timedOutBy    String?   @map("timed_out_by")
   /// The last room chat message you\'ve seen: "New messages" and the unread count start after it
   lastReadId    String?   @map("last_read_id")
 
@@ -333,6 +335,8 @@ model GuestVisit {
   userId String   @map("user_id")
   user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   until  DateTime
+  /// Muted by reports until then (guests have no membership to hold it); outlives walking back in
+  timedOutUntil DateTime? @map("timed_out_until")
 
   @@id([roomId, userId])
   @@map("guest_visits")

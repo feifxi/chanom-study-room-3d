@@ -55,8 +55,8 @@ export function FriendLinkPage({ handle }: { handle: string }) {
           </Button>
         ) : (
           <Button asChild className="h-11 w-full rounded-2xl font-extrabold">
-            <Link href={`/login?next=${encodeURIComponent(`/f/${handle}`)}`}>
-              <LogIn /> Sign in to add them
+            <Link href={`/login?new=1&next=${encodeURIComponent(`/f/${handle}`)}`}>
+              <LogIn /> Join Connecta to add them
             </Link>
           </Button>
         )}

@@ -21,6 +21,7 @@ import {
   type NpcSummoned,
   type PetOut,
   type Quiet,
+  type QuietBy,
   type Said,
   type FocusPreset,
   type GameJoinOptions,
@@ -85,6 +86,8 @@ interface Private {
   typingAt: number;
   /** Timed out until then (epoch ms): no bubbles, no typing */
   quietUntil: number;
+  /** Who timed them out (told with "quiet") */
+  quietBy?: QuietBy;
   /** No input for 10 minutes (the client decides; a running focus round still shows as focus) */
   away: boolean;
   /** The focus timer, run here so the minutes are real */
@@ -308,7 +311,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       (client, msg) => this.tel.part(client.sessionId, msg.step, msg.s, msg.color, msg.size, msg.pts),
     ),
     'tel:send': validate(z.object({ step: z.number().int().min(0), text: z.string().max(400).optional() }), (client, msg) =>
-      this.tel.send(client.sessionId, msg.step, msg.text),
+      // What people write passes the room's word filter, like bubbles (drawings can't be checked)
+      this.tel.send(client.sessionId, msg.step, msg.text && this.filterWords ? maskWords(msg.text) : msg.text),
     ),
     'tel:react': validate(
       z.object({ chain: z.number().int().min(0), entry: z.number().int().min(0), emoji: z.string().max(8) }),
@@ -345,7 +349,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       const text = this.filterWords ? maskWords(said_) : said_;
       if (!p || !s || !text) return;
       const now = Date.now();
-      if (s.quietUntil > now) return void client.send('quiet', { until: s.quietUntil } satisfies Quiet);
+      if (s.quietUntil > now) return void client.send('quiet', { until: s.quietUntil, by: s.quietBy } satisfies Quiet);
       if (now - s.lastSaidAt < (this.common ? COMMON_SAY_MS : SAY_COOLDOWN_MS)) return;
       s.lastSaidAt = now;
       p.typing = false;
@@ -571,6 +575,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       lastSaidAt: 0,
       typingAt: 0,
       quietUntil: ticket.timedOutUntil ?? 0,
+      quietBy: ticket.timedOutBy,
       away: false,
       timer: carried?.timer ?? idleTimer(),
     });
@@ -653,7 +658,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
         for (const sessionId of this.sessionsOf(event.userId)) {
           const s = this.priv.get(sessionId);
           const p = this.state.players.get(sessionId);
-          if (s) s.quietUntil = event.until;
+          if (s) Object.assign(s, { quietUntil: event.until, quietBy: event.by });
           if (p) p.typing = false;
           this.refreshVoice(sessionId);
         }
@@ -678,7 +683,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       case 'deleted':
         for (const [sessionId, client] of this.clients_) {
           this.remove(sessionId);
-          client.leave(GAME_CLOSE.gone);
+          // Told apart, so people inside learn why they're out
+          client.leave(event.closed ? GAME_CLOSE.closed : GAME_CLOSE.gone);
         }
         break;
     }

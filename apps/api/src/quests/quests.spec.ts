@@ -70,7 +70,7 @@ describe('daily quests', () => {
 
     const guest = browser(app);
     await guest.post('/api/auth/sign-in/anonymous').expect(200);
-    await guest.put('/api/me/guest', { name: 'Mint', look: LOOK }).expect(200);
+    await guest.put('/api/me/guest', { name: 'Mint', look: LOOK, over13: true }).expect(200);
     const guestId = (await guest.get('/api/me').expect(200)).body.id as string;
     for (const c of ['focusMinutes', 'focusRounds', 'roomMinutes', 'said', 'pets', 'buddy', 'played'] as const)
       await quests.count(event(guestId, c, 100));

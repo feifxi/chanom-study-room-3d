@@ -110,7 +110,7 @@ describe('guests', () => {
     const b = browser(app);
     await b.post('/api/auth/sign-in/anonymous').expect(200);
     const guestLook = { hair: '#c8e3ff', outfit: '#12a37f', accessory: 'headphones' };
-    const guest = await b.put('/api/me/guest', { name: 'Mochi', look: guestLook }).expect(200);
+    const guest = await b.put('/api/me/guest', { name: 'Mochi', look: guestLook, over13: true }).expect(200);
     expect(guest.body).toMatchObject({ name: 'Mochi', isGuest: true, email: null });
     // Guests have no birthday step
     await b.post('/api/me/birthday', { birthday: '2004-05-14' }).expect(403);
@@ -122,10 +122,19 @@ describe('guests', () => {
     expect(await prisma.user.count({ where: { isAnonymous: true } })).toBe(0);
   });
 
+  it('under 13 at the guest door: refused, and this browser waits a day', async () => {
+    const b = browser(app);
+    await b.post('/api/auth/sign-in/anonymous').expect(200);
+    const refused = await b.put('/api/me/guest', { name: 'Mochi', look: LOOK, over13: false }).expect(403);
+    expect(refused.body).toMatchObject({ code: 'too_young' });
+    // Changing the answer doesn't help
+    await b.put('/api/me/guest', { name: 'Mochi', look: LOOK, over13: true }).expect(403);
+  });
+
   it('a guest who never came back goes after 30 days; one with a live session stays', async () => {
     const b = browser(app);
     await b.post('/api/auth/sign-in/anonymous').expect(200);
-    await b.put('/api/me/guest', { name: 'Mochi', look: LOOK }).expect(200);
+    await b.put('/api/me/guest', { name: 'Mochi', look: LOOK, over13: true }).expect(200);
     const accounts = app.get(AccountsService);
     const later = new Date(Date.now() + (GUEST_KEEP_DAYS + 1) * 86_400_000);
     // Still signed in (the session runs past "now"): kept

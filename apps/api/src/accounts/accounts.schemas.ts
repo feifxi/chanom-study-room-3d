@@ -67,7 +67,14 @@ export const BirthdayBodySchema = z.object({ birthday: z.iso.date().describe('YY
 
 export const SignUpBodySchema = z.object({ name: DisplayName, handle: z.string(), look: LookSchema }).meta({ id: 'SignUpBody' });
 
-export const GuestBodySchema = z.object({ name: DisplayName, look: LookSchema }).meta({ id: 'GuestBody' });
+export const GuestBodySchema = z
+  .object({
+    name: DisplayName,
+    look: LookSchema,
+    /** The door's age question: under 13 locks this sign-in and browser for a day, like sign-up */
+    over13: z.boolean(),
+  })
+  .meta({ id: 'GuestBody' });
 
 export const HandleCheckSchema = z
   .object({

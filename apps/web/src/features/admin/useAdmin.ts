@@ -194,7 +194,7 @@ export function useRefund() {
 }
 
 /** The audit log, 100 at a time, newest first */
-export function useAuditLog(who: 'all' | 'team' | 'auto') {
+export function useAuditLog(who: 'all' | 'team' | 'auto' | 'rooms') {
   return useInfiniteQuery({
     queryKey: ['admin', 'audit', who],
     queryFn: async ({ pageParam }) => ok(await api.GET('/api/admin/audit', { params: { query: { who, before: pageParam } } })),

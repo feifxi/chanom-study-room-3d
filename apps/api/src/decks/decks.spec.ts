@@ -43,7 +43,7 @@ async function room() {
   const pass = (await mai.post(`/api/rooms/${id}/invites`, { kind: 'guest' }).expect(200)).body;
   const mint = browser(app);
   await mint.post('/api/auth/sign-in/anonymous').expect(200);
-  await mint.put('/api/me/guest', { name: 'Mint', look: LOOK }).expect(200);
+  await mint.put('/api/me/guest', { name: 'Mint', look: LOOK, over13: true }).expect(200);
   await mint.post(`/api/invites/${pass.code}/accept`).expect(200);
   return { mai, jod, mint, id };
 }
@@ -60,6 +60,16 @@ describe('room decks', () => {
     const ploy = await person('ploy');
     await ploy.get(`/api/rooms/${id}/decks`).expect(404);
     await ploy.post(`/api/decks/${deck.id}/pass`).expect(404);
+  });
+
+  it('masks rude words like the chat does', async () => {
+    const { jod, id } = await room();
+    const rude = {
+      ...WYR,
+      questions: [{ q: 'What the fuck: tea or coffee?', answers: ['Tea', 'sh1t coffee'] }, ...WYR.questions.slice(1)],
+    };
+    const deck = (await jod.post(`/api/rooms/${id}/decks`, rude).expect(201)).body;
+    expect(deck.questions[0]).toMatchObject({ q: 'What the ****: tea or coffee?', answers: ['Tea', '**** coffee'] });
   });
 
   it('checks the questions: 2 answers for Would you rather, 4 with one right for a quiz, 3 at least', async () => {

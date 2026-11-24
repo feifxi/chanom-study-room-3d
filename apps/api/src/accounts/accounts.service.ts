@@ -97,23 +97,24 @@ export class AccountsService {
     if (user.isAnonymous) throw new ForbiddenException('Guests have no birthday; sign up first');
     if (user.handle) throw new ConflictException('Sign-up is already finished');
 
-    const keys = [`user:${userId}`, `device:${deviceId}`];
+    // The birthday itself isn't kept when under 13: no data about under-13s beyond the lock
+    await this.ageGate([`user:${userId}`, `device:${deviceId}`], ageOn(birthday, now.toISOString().slice(0, 10)) >= MIN_AGE, now);
+    return toMe(await this.prisma.user.update({ where: { id: userId }, data: { birthday: new Date(birthday) } }));
+  }
+
+  /** Under 13 (or locked already): this sign-in and this browser wait a day (403 too_young) */
+  private async ageGate(keys: string[], oldEnough: boolean, now: Date) {
     const lock = await this.prisma.ageLock.findFirst({
       where: { key: { in: keys }, until: { gt: now } },
       orderBy: { until: 'desc' },
     });
     if (lock) throw tooYoung(lock.until);
-
-    if (ageOn(birthday, now.toISOString().slice(0, 10)) < MIN_AGE) {
-      // The birthday itself isn't kept: no data about under-13s beyond the lock
-      const until = new Date(now.getTime() + AGE_LOCK_MS);
-      await this.prisma.$transaction(
-        keys.map((key) => this.prisma.ageLock.upsert({ where: { key }, create: { key, until }, update: { until } })),
-      );
-      throw tooYoung(until);
-    }
-
-    return toMe(await this.prisma.user.update({ where: { id: userId }, data: { birthday: new Date(birthday) } }));
+    if (oldEnough) return;
+    const until = new Date(now.getTime() + AGE_LOCK_MS);
+    await this.prisma.$transaction(
+      keys.map((key) => this.prisma.ageLock.upsert({ where: { key }, create: { key, until }, update: { until } })),
+    );
+    throw tooYoung(until);
   }
 
   /** Settings → Privacy & safety. */
@@ -163,9 +164,16 @@ export class AccountsService {
   }
 
   /** A guest's name and character (from the invite page). */
-  async setGuest(userId: string, input: { name: string; look: Partial<AvatarLook> }): Promise<Me> {
+  async setGuest(
+    userId: string,
+    input: { name: string; look: Partial<AvatarLook>; over13: boolean },
+    deviceId: string,
+    now = new Date(),
+  ): Promise<Me> {
     const user = await this.user(userId);
     if (!user.isAnonymous) throw new ForbiddenException('Only guests set a guest name');
+    // Guests answer the same age rule as accounts (no birthday kept, only the lock)
+    await this.ageGate([`user:${userId}`, `device:${deviceId}`], input.over13, now);
     await this.shop.checkLook(userId, input.look);
     return toMe(await this.prisma.user.update({ where: { id: userId }, data: { name: input.name, look: input.look } }));
   }

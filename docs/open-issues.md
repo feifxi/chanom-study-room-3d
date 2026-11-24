@@ -20,14 +20,13 @@ adds a line here; a fix removes it. Bigger planned work is in the [roadmap](road
 
 ## Moderation
 
-- Room deck text and Draw & Guess prompts aren't run through the word filter.
-- Room mod actions (kick, ban, Mute for everyone) aren't in an audit log; only team actions are.
-- A muted person sees the usual "You're timed out", not why. A guest's automatic mute ends when
-  they walk back in.
-- People inside a room when it's closed see "isn't there any more", not why.
+- A mod's Mute for everyone isn't in the audit log (it lives only on the game server); kick, ban,
+  time out and mod changes are.
+- Draw & Guess drawings can't be checked (only its writing is filtered).
+- A guest who gets a new browser escapes a mute or a guest-door age lock (no device fingerprinting,
+  on purpose).
 - A Google or Discord sign-in while suspended shows a generic message (Better Auth passes back
   only a code); email sign-in shows the reason.
-- The gateway doesn't close a suspended person's socket itself; the tab does when it goes to sign-in.
 - The Thai word list is short and needs a native speaker's pass. Messages sent before the filter
   aren't masked.
 
@@ -65,8 +64,6 @@ adds a line here; a fix removes it. Bigger planned work is in the [roadmap](road
 
 ## Small UX
 
-- Invite and friend links say "Sign in to join" and open "Welcome back"; "Join Connecta" may read
-  better there.
 - To-dos can't be reordered.
 - Focus minutes count toward the quest when a round ends, not minute by minute.
 - The Everyone ranking's cache lives in each API process (fine with one).

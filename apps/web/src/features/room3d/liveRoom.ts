@@ -11,6 +11,7 @@ import type {
   NpcView,
   PlayerView,
   Quiet,
+  QuietBy,
   Said,
   VoicePass,
   WatchRefused,
@@ -235,7 +236,7 @@ export class LiveRoom implements StudyRoom {
       game.onMessage('npc:note', (m: NpcNote) => this.npcListeners.forEach((l) => l.note(m.text))),
       game.onMessage('npc:refused', (m: NpcRefused) => this.npcListeners.forEach((l) => l.refused(m.reason))),
       game.onMessage('said', (m: Said) => this.saidListeners.forEach((fn) => fn(m.id === game.sessionId ? 'me' : m.id, m.text))),
-      game.onMessage('quiet', (m: Quiet) => this.quietListeners.forEach((fn) => fn(m.until))),
+      game.onMessage('quiet', (m: Quiet) => this.quietListeners.forEach((fn) => fn(m.until, m.by))),
       game.onMessage('slave:hand', (m: SlaveHand) => (this.slaveHand = m)),
       // Draw & Guess: what you work from, the album, and "time's up, send what you have"
       game.onMessage('tel:turn', (m: TelTurn) => {
@@ -593,14 +594,14 @@ export class LiveRoom implements StudyRoom {
   }
 
   private saidListeners = new Set<(id: string, text: string) => void>();
-  private quietListeners = new Set<(until: number) => void>();
+  private quietListeners = new Set<(until: number, by?: QuietBy) => void>();
   /** A bubble someone said (you're 'me'), as the server let it through (private zones, time outs). */
   onSaid(fn: (id: string, text: string) => void) {
     this.saidListeners.add(fn);
     return () => void this.saidListeners.delete(fn);
   }
   /** You're timed out: nothing goes out until then. */
-  onQuiet(fn: (until: number) => void) {
+  onQuiet(fn: (until: number, by?: QuietBy) => void) {
     this.quietListeners.add(fn);
     return () => void this.quietListeners.delete(fn);
   }

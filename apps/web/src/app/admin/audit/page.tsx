@@ -7,16 +7,16 @@ import { AdminTitle, Pill } from '@/features/admin/AdminFrame';
 import { actionLabel, whenShort } from '@/features/admin/auditLabels';
 import { useAuditLog } from '@/features/admin/useAdmin';
 
-/** Who did what: every team action and every automatic step, newest first. Read-only. */
+/** Who did what: every team action, automatic step and room mod action, newest first. Read-only. */
 export default function AuditPage() {
-  const [who, setWho] = useState<'all' | 'team' | 'auto'>('all');
+  const [who, setWho] = useState<'all' | 'team' | 'auto' | 'rooms'>('all');
   const log = useAuditLog(who);
   const entries = log.data?.pages.flatMap((p) => p.entries) ?? [];
   return (
     <div className="mx-auto max-w-5xl p-5 sm:p-8">
-      <AdminTitle title="Audit log" note="Every team action and automatic step. Nobody can edit it.">
+      <AdminTitle title="Audit log" note="Every team action, automatic step and room mod action. Nobody can edit it.">
         <div className="flex gap-1 rounded-full bg-muted p-1">
-          {(['all', 'team', 'auto'] as const).map((w) => (
+          {(['all', 'team', 'auto', 'rooms'] as const).map((w) => (
             <button
               key={w}
               onClick={() => setWho(w)}
@@ -25,7 +25,7 @@ export default function AuditPage() {
                 who === w ? 'bg-card shadow-sm' : 'text-muted-foreground',
               )}
             >
-              {w}
+              {w === 'rooms' ? 'room mods' : w}
             </button>
           ))}
         </div>

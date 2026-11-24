@@ -34,11 +34,14 @@ switched on or off on the admin site:
 
 1. **Word filter** (free): `obscenity` plus our own list, Thai included. Messages and bubbles are
    **masked** (`****`); names, @handles and room text with a blocked word are **refused**. Rooms can
-   turn masking off for their own chat; DMs, names and Common rooms are always filtered.
+   turn masking off for their own chat (and their decks and Draw & Guess writing, which follow the
+   same switch); DMs, names and Common rooms are always filtered.
 2. **Limits:** slow mode.
 3. **Report steps:** in a room, 3 reports in 10 min → muted there 15 min (a mod's timeout, never
-   the owner); in Common rooms, 5 in 30 min → out of every Common room for an hour. Only accounts
-   that are there count, once each; guests can report but don't count.
+   the owner; a guest's mute holds if they walk back in); in Common rooms, 5 in 30 min → out of every Common room for an hour. Only accounts
+   that are there count, once each; guests can report but don't count. A muted person is told who
+   did it: a mod, reports from people there, or the Connecta team. People inside a room the team
+   closes are told it was closed.
 4. **Picture check:** OpenAI's free moderation endpoint; a flagged picture is dropped. Off until
    `OPENAI_API_KEY` is set.
 
@@ -71,7 +74,7 @@ switched on or off on the admin site:
 | Moderation   | the layers on or off, our word list                                                                |
 | Money        | revenue, payments, refunds ([15](15-plus-coins-shop.md))                                           |
 | Maps         | lists the maps; the editor comes with Blender ([7](07-maps.md))                                    |
-| Audit log    | every team action and automatic step, kept a year                                                  |
+| Audit log    | every team action, automatic step and room mod action (kick, ban, time out, mods), kept a year     |
 
 - **Urgent first:** sexual content, danger, anything an automatic step acted on, or 3+ reporters.
 - **A suspension or ban** stops sign-in and signs the person out everywhere at once; signing in

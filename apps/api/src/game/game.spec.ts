@@ -79,7 +79,7 @@ describe('join tickets', () => {
     const { code } = (await mai.post(`/api/rooms/${id}/invites`, { kind: 'guest' }).expect(200)).body;
     const guest = browser(app);
     await guest.post('/api/auth/sign-in/anonymous').expect(200);
-    await guest.put('/api/me/guest', { name: 'Mint', look: LOOK }).expect(200);
+    await guest.put('/api/me/guest', { name: 'Mint', look: LOOK, over13: true }).expect(200);
     await guest.post(`/api/invites/${code}/accept`).expect(200);
     const { ticket } = (await guest.post(`/api/rooms/${id}/ticket`).expect(200)).body;
     expect(decodeJwt(ticket)).toMatchObject({ role: 'guest', name: 'Mint', handle: null });

@@ -441,11 +441,17 @@ export default function RoomView({
       const p = room.state.players.get(id);
       if (p) say(id, id === 'me' ? myName : p.name, text);
     });
-    const offQuiet = room.onQuiet((until) =>
+    // Say who and why: a mute nobody explains feels like a bug
+    const offQuiet = room.onQuiet((until, by) => {
+      const at = new Date(until).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
       toast(
-        `You’re timed out until ${new Date(until).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}, so nobody hears you yet`,
-      ),
-    );
+        by === 'reports'
+          ? `Some people here reported you, so nobody hears you until ${at}`
+          : by === 'team'
+            ? `The Connecta team timed you out until ${at}, so nobody hears you yet`
+            : `A mod timed you out until ${at}, so nobody hears you yet`,
+      );
+    });
     return () => {
       offSaid();
       offQuiet();

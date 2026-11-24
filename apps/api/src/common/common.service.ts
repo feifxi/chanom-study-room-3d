@@ -143,6 +143,7 @@ export class CommonService implements OnModuleDestroy {
       capacity: this.settings.get().commonCapacity,
       mapId: type.mapId,
       timedOutUntil: quiet,
+      timedOutBy: 'team',
       guestVoice: false,
       roomWideGames: type.roomWideGames,
       plus: hasPlus(user, new Date(now)),
@@ -162,7 +163,7 @@ export class CommonService implements OnModuleDestroy {
     const at = await this.teamOn(teamId, userId, now);
     const until = now + TIMEOUT_MINUTES[duration] * 60_000;
     await this.redis.set(key.quiet(userId), String(until), 'PX', until - now);
-    this.game.roomEvent({ roomId: at, type: 'timeout', userId, until });
+    this.game.roomEvent({ roomId: at, type: 'timeout', userId, until, by: 'team' });
     await this.audit.record({ by: teamId, action: 'common.timeout', targetKind: 'user', targetId: userId, details: { duration, at } });
   }
 

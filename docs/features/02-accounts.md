@@ -33,7 +33,9 @@ is held for you for 30 days.
 
 ## Guests
 
-From a guest pass (`/g/<code>`) or a Common room: pick a name and a look, walk in. Inside they get a
+From a guest pass (`/g/<code>`) or a Common room: pick a name and a look, answer "How old are you?"
+(under 13 locks that browser for a day, like sign-up), walk in. A guest is a temporary account in
+this browser, reused from room to room. Inside they get a
 **Join <room> ✨** / **Make an account ✨** button; signing up from there keeps the look and name.
 A guest account goes after 30 days once its last session has expired (a nightly job).
 

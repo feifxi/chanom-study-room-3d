@@ -275,6 +275,13 @@ describe('room events from the API', () => {
     dispatch({ roomId: ROOM, type: 'deleted' });
     expect(await code).toBe(GAME_CLOSE.gone);
   });
+
+  it('a room the team closes sends everyone out, saying so', async () => {
+    const room = await walkIn();
+    const code = closed(room);
+    dispatch({ roomId: ROOM, type: 'deleted', closed: true });
+    expect(await code).toBe(GAME_CLOSE.closed);
+  });
 });
 
 /** Everything a client hears said, in order. */
@@ -388,13 +395,16 @@ describe('bubbles and status', () => {
 
   it('a timed-out person can’t say or type, and is told until when', async () => {
     const until1 = Date.now() + 60_000;
-    const a = track(await walkIn({ timedOutUntil: until1 }));
+    const a = track(await walkIn({ timedOutUntil: until1, timedOutBy: 'reports' }));
     const b = track(await walkIn({ sub: 'u-jod', name: 'Jod', handle: 'jod' }));
     const heard = hear(b);
     let quiet = 0;
-    a.onMessage('quiet', (m: { until: number }) => (quiet = m.until));
+    let by = '';
+    a.onMessage('quiet', (m: { until: number; by?: string }) => ((quiet = m.until), (by = m.by ?? '')));
     a.send('say', { text: 'hi' });
     await until(() => quiet === until1);
+    // Told why, not just until when
+    expect(by).toBe('reports');
     a.send('typing', { typing: true });
     await quietly();
     expect(heard).toHaveLength(0);

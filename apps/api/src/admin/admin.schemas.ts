@@ -266,7 +266,7 @@ export const AdminMoneyQuerySchema = z.object({ filter: z.enum(PAYMENT_FILTERS).
 export const RefundBodySchema = z.object({ reason: z.enum(REFUND_REASONS) }).meta({ id: 'RefundBody' });
 
 export const AuditQuerySchema = z.object({
-  who: z.enum(['all', 'team', 'auto']).optional(),
+  who: z.enum(['all', 'team', 'auto', 'rooms']).optional(),
   /** An entry's id: the page after it (older) */
   before: z.string().max(64).optional(),
 });

@@ -6,6 +6,7 @@ import { CommonService } from '../common/common.service.js';
 import type { Mail } from '../mail/mail.service.js';
 import { PresenceService } from '../presence/presence.service.js';
 import type { PrismaService } from '../prisma/prisma.service.js';
+import { RoomsService } from '../rooms/rooms.service.js';
 import { REPORTS_PER_HOUR, ReportsService } from './reports.service.js';
 
 let app: INestApplication;
@@ -94,12 +95,28 @@ describe('reports', () => {
     await reports.report(crowdIds[1]!, { kind: 'person', userId: jod.id, place: id, reason: 'harass' }, now + 3000);
     await say('still here').expect(201);
     await reports.report(crowdIds[2]!, { kind: 'person', userId: jod.id, place: id, reason: 'harass', bubbles: ['go away'] }, now + 4000);
-    expect((await say('hello?').expect(403)).body).toMatchObject({ code: 'timed_out' });
+    expect((await say('hello?').expect(403)).body).toMatchObject({ code: 'timed_out', message: expect.stringContaining('reported you') });
     const member = await prisma.membership.findUnique({ where: { roomId_userId: { roomId: id, userId: jod.id } } });
     expect(member!.timedOutUntil!.getTime()).toBe(now + 4000 + 15 * 60_000);
     const rows = await prisma.report.findMany({ orderBy: { createdAt: 'asc' } });
     expect(rows.map((r) => r.counted)).toEqual([true, true, false, true, true]);
     expect(rows.at(-1)).toMatchObject({ step: 'muted', context: { bubblesSeen: ['go away'] } });
+  });
+
+  it('a guest muted by reports stays muted when they walk back in', async () => {
+    const crowdIds = await crowd(3, 'm');
+    const [guest] = await crowd(1, 'g', true);
+    const { id } = await room(crowdIds);
+    await prisma.guestVisit.create({ data: { roomId: id, userId: guest!, until: new Date(Date.now() + 86_400_000) } });
+    const now = Date.now();
+    for (const [i, by] of crowdIds.entries())
+      await reports.report(by, { kind: 'person', userId: guest!, place: id, reason: 'harass' }, now + i * 1000);
+    const visit = await prisma.guestVisit.findUnique({ where: { roomId_userId: { roomId: id, userId: guest! } } });
+    expect(visit!.timedOutUntil!.getTime()).toBe(now + 2000 + 15 * 60_000);
+    // Walking back in: the game server's ticket carries the mute
+    const { ticket } = await app.get(RoomsService).ticket(id, guest!);
+    const claims = JSON.parse(Buffer.from(ticket.split('.')[1]!, 'base64url').toString());
+    expect(claims.timedOutUntil).toBe(now + 2000 + 15 * 60_000);
   });
 
   it('one account sends at most 10 reports an hour', async () => {

@@ -93,7 +93,7 @@ export class RoomsAdminService {
       );
     const updated = await this.prisma.room.update({ where: { id: roomId }, data, include });
     // Closed: everyone inside goes, as when a room is deleted
-    if (kind === 'close') this.game.roomEvent({ roomId, type: 'deleted' });
+    if (kind === 'close') this.game.roomEvent({ roomId, type: 'deleted', closed: true });
     await this.audit.record({
       by: teamId,
       action: `room.${kind}`,

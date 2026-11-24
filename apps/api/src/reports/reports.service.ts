@@ -188,12 +188,12 @@ export class ReportsService implements OnModuleDestroy {
     } else {
       // The owner runs the room: reports about them go to the team only
       if (await this.isOwner(userId, place)) return;
-      await this.prisma.membership.updateMany({
-        where: { roomId: place, userId, OR: [{ timedOutUntil: null }, { timedOutUntil: { lt: new Date(until) } }] },
-        data: { timedOutUntil: new Date(until) },
-      });
-      // Guests have no membership: inside 3D is where they'd talk
-      this.game.roomEvent({ roomId: place, type: 'timeout', userId, until });
+      // A member's mute is on their membership, a guest's on their visit, so walking back in keeps it
+      const longer = { roomId: place, userId, OR: [{ timedOutUntil: null }, { timedOutUntil: { lt: new Date(until) } }] };
+      await this.prisma.membership.updateMany({ where: longer, data: { timedOutUntil: new Date(until), timedOutBy: 'reports' } });
+      await this.prisma.guestVisit.updateMany({ where: longer, data: { timedOutUntil: new Date(until) } });
+      // Inside 3D at once
+      this.game.roomEvent({ roomId: place, type: 'timeout', userId, until, by: 'reports' });
     }
     await this.prisma.report.update({ where: { id: reportId }, data: { step: common ? 'common_out' : 'muted' } });
     await this.audit.record({

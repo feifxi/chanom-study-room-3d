@@ -71,11 +71,18 @@ export class MeController {
     return this.accounts.signUp(session.user.id, body);
   }
 
-  /** A guest's name and character, set right after the guest session starts. */
+  /** A guest's name and character, set right after the guest session starts. Under 13 answers 403 too_young. */
   @Put('guest')
   @ApiOkResponse({ standardSchema: MeSchema })
-  guest(@Session() session: UserSession, @Body({ schema: GuestBodySchema }) body: z.infer<typeof GuestBodySchema>): Promise<Me> {
-    return this.accounts.setGuest(session.user.id, body);
+  @ApiForbiddenResponse({ standardSchema: TooYoungSchema })
+  guest(
+    @Session() session: UserSession,
+    @Body({ schema: GuestBodySchema }) body: z.infer<typeof GuestBodySchema>,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<Me> {
+    const secure = this.config.get('NODE_ENV', { infer: true }) === 'production';
+    return this.accounts.setGuest(session.user.id, body, deviceId(req, res, secure));
   }
 
   /** Settings → My profile / My character: display name and look. */

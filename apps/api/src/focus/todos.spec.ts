@@ -95,7 +95,7 @@ describe('the to-do list', () => {
   it('guests have no list', async () => {
     const guest = browser(app);
     await guest.post('/api/auth/sign-in/anonymous').expect(200);
-    await guest.put('/api/me/guest', { name: 'Mint', look: LOOK }).expect(200);
+    await guest.put('/api/me/guest', { name: 'Mint', look: LOOK, over13: true }).expect(200);
     const res = await guest.get('/api/todos');
     expect(res.status).toBeGreaterThanOrEqual(400);
     await guest.post('/api/todos', { text: 'Nope' }).expect(res.status);

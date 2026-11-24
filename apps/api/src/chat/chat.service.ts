@@ -102,7 +102,11 @@ export class ChatService {
       throw new ForbiddenException({ message: 'The Connecta team closed this room', code: 'closed' });
     }
     if (member.timedOutUntil && member.timedOutUntil > new Date()) {
-      throw new ForbiddenException({ message: 'You’re timed out in this room for now.', code: 'timed_out', until: member.timedOutUntil });
+      const why =
+        member.timedOutBy === 'reports'
+          ? 'Some people here reported you, so you can’t post for a little while.'
+          : 'A mod timed you out in this room for now.';
+      throw new ForbiddenException({ message: why, code: 'timed_out', until: member.timedOutUntil });
     }
     if (input.replyToId) {
       const original = await this.prisma.message.findFirst({ where: { id: input.replyToId, roomId, ready: true } });

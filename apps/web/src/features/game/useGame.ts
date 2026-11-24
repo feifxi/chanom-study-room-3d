@@ -47,6 +47,7 @@ const CLOSED: Record<number, GameEnd> = {
   [GAME_CLOSE.elsewhere]: 'elsewhere',
   [GAME_CLOSE.otherRoom]: 'otherRoom',
   [GAME_CLOSE.gone]: 'gone',
+  [GAME_CLOSE.closed]: 'closed',
 };
 
 /**

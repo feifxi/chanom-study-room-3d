@@ -27,6 +27,8 @@ export interface GameTicket {
   mapId: string;
   /** Timed out until then (epoch ms; 0 = not): no bubbles, typing or voice */
   timedOutUntil: number;
+  /** Who timed them out, so they're told why */
+  timedOutBy?: QuietBy;
   /** The room lets guests talk (Room settings → Invites); members always can */
   guestVoice: boolean;
   /** Room settings → Room-wide games (Pick a Side) */
@@ -76,6 +78,8 @@ export const GAME_CLOSE = {
   gone: 4004,
   /** You walked into another room: one room at a time */
   otherRoom: 4005,
+  /** The Connecta team closed the room */
+  closed: 4006,
 } as const;
 
 /** Redis channels between the API and the game server. */
@@ -99,12 +103,12 @@ export interface GameWalkedIn {
 export type GameRoomEvent =
   | { roomId: string; type: 'kick' | 'ban' | 'left'; userId: string }
   | { roomId: string; type: 'role'; userId: string; role: PlayerRole }
-  | { roomId: string; type: 'timeout'; userId: string; until: number }
+  | { roomId: string; type: 'timeout'; userId: string; until: number; by?: QuietBy }
   | { roomId: string; type: 'map'; mapId: string }
   | { roomId: string; type: 'guestVoice'; on: boolean }
   | { roomId: string; type: 'roomWideGames'; on: boolean }
   | { roomId: string; type: 'filterWords'; on: boolean }
-  | { roomId: string; type: 'deleted' }
+  | { roomId: string; type: 'deleted'; /** closed by the Connecta team, not deleted by its owner */ closed?: boolean }
   /** A saved look (the API checked you own it): every room you're in shows it. roomId '*' = all rooms */
   | { roomId: '*'; type: 'look'; userId: string; look: AvatarLook }
   /** You bought a pet: the Buddy Machine in every room you're in offers it */
@@ -181,6 +185,10 @@ export interface NpcRefused {
   reason: string;
 }
 /** You're timed out: nothing you say or type goes out until then (epoch ms). */
+/** Who timed someone out: a room's mod, reports from people there, or the Connecta team */
+export type QuietBy = 'mod' | 'reports' | 'team';
+
 export interface Quiet {
   until: number;
+  by?: QuietBy;
 }

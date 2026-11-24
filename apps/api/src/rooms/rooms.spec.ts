@@ -175,7 +175,7 @@ describe('invites', () => {
 
     const guest = browser(app);
     await guest.post('/api/auth/sign-in/anonymous').expect(200);
-    await guest.put('/api/me/guest', { name: 'Mint', look: LOOK }).expect(200);
+    await guest.put('/api/me/guest', { name: 'Mint', look: LOOK, over13: true }).expect(200);
     // Guests can't use member invites
     const member = (await mai.post(`/api/rooms/${id}/invites`, { kind: 'member' })).body;
     await guest.post(`/api/invites/${member.code}/accept`).expect(403);
@@ -246,6 +246,12 @@ describe('getting in', () => {
 
     await mai.delete(`/api/rooms/${id}/bans/${jod.id}`).expect(204);
     await jod.post(`/api/rooms/${id}/join`).expect(200);
+    // Both are in the team's audit log, as a room mod's (not a team) action
+    const log = await prisma.auditEntry.findMany({ where: { targetId: jod.id }, orderBy: { id: 'asc' } });
+    expect(log.map((e) => [e.action, e.byId, e.reason])).toEqual([
+      ['roommod.ban', mai.id, 'Spamming links'],
+      ['roommod.unban', mai.id, ''],
+    ]);
   });
 });
 

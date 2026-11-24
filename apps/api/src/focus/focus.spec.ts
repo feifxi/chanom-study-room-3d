@@ -71,7 +71,7 @@ describe('saving rounds', () => {
     const { code } = (await mai.post(`/api/rooms/${id}/invites`, { kind: 'guest' }).expect(200)).body;
     const guest = browser(app);
     await guest.post('/api/auth/sign-in/anonymous').expect(200);
-    await guest.put('/api/me/guest', { name: 'Mint', look: LOOK }).expect(200);
+    await guest.put('/api/me/guest', { name: 'Mint', look: LOOK, over13: true }).expect(200);
     await guest.post(`/api/invites/${code}/accept`).expect(200);
     const guestId = (await guest.get('/api/me').expect(200)).body.id as string;
     await focus.save(round({ userId: guestId, roomId: id }));

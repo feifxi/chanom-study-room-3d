@@ -14,6 +14,7 @@ import {
   TIMEOUT_MINUTES,
   type InviteExpiry,
   type MapId,
+  type QuietBy,
   type RoomRole,
   type RoomSize,
   type PlayerRole,
@@ -26,6 +27,7 @@ import { GameService } from '../game/game.service.js';
 import { LiveService } from '../live/live.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { PresenceService } from '../presence/presence.service.js';
+import { AuditService } from '../audit/audit.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { toPerson } from './person.js';
 import { thumbnailUrl, ThumbnailService } from './thumbnail.service.js';
@@ -84,7 +86,26 @@ export class RoomsService {
     private readonly inbox: NotificationsService,
     private readonly game: GameService,
     private readonly thumbnails: ThumbnailService,
+    private readonly audit: AuditService,
   ) {}
+
+  /** Room mods' actions go in the team's audit log too, so a report can be read beside them */
+  private logMod(
+    action: string,
+    roomId: string,
+    by: string,
+    whoId: string,
+    extra: { reason?: string; details?: Record<string, unknown> } = {},
+  ) {
+    return this.audit.record({
+      by,
+      action: `roommod.${action}`,
+      targetKind: 'user',
+      targetId: whoId,
+      reason: extra.reason,
+      details: { roomId, ...extra.details },
+    });
+  }
 
   // ── Your rooms ────────────────────────────────────────────────────────────────────────────────
 
@@ -305,6 +326,7 @@ export class RoomsService {
     if (them.role === 'owner') throw new ForbiddenException('The owner stays the owner; hand the room over instead');
     await this.prisma.membership.update({ where: { roomId_userId: { roomId, userId: whoId } }, data: { role } });
     this.game.roomEvent({ roomId, type: 'role', userId: whoId, role });
+    await this.logMod(role === 'mod' ? 'make_mod' : 'remove_mod', roomId, userId, whoId);
   }
 
   /** Removed from the room (a member, or a guest whose pass ends); a new invite brings them back. */
@@ -321,15 +343,20 @@ export class RoomsService {
     ]);
     this.live.leaveRoom(whoId, roomId);
     this.game.roomEvent({ roomId, type: 'kick', userId: whoId });
+    await this.logMod('kick', roomId, userId, whoId);
   }
 
   /** They stay, but can't talk or type until it runs out. */
   async timeOut(roomId: string, userId: string, whoId: string, duration: Timeout, now = new Date()): Promise<void> {
     await this.actOn(roomId, userId, whoId, true);
     const until = new Date(now.getTime() + TIMEOUT_MINUTES[duration] * 60_000);
-    await this.prisma.membership.update({ where: { roomId_userId: { roomId, userId: whoId } }, data: { timedOutUntil: until } });
+    await this.prisma.membership.update({
+      where: { roomId_userId: { roomId, userId: whoId } },
+      data: { timedOutUntil: until, timedOutBy: 'mod' },
+    });
     // Inside 3D too: no bubbles or typing until then
-    this.game.roomEvent({ roomId, type: 'timeout', userId: whoId, until: until.getTime() });
+    this.game.roomEvent({ roomId, type: 'timeout', userId: whoId, until: until.getTime(), by: 'mod' });
+    await this.logMod('timeout', roomId, userId, whoId, { details: { duration } });
   }
 
   /** Removed, and can't rejoin, ask or use guest passes. Works on members and on people who aren't (a guest, someone asking). */
@@ -349,6 +376,7 @@ export class RoomsService {
     ]);
     this.live.leaveRoom(whoId, roomId);
     this.game.roomEvent({ roomId, type: 'ban', userId: whoId });
+    await this.logMod('ban', roomId, userId, whoId, { reason });
   }
 
   async bans(roomId: string, userId: string): Promise<Ban[]> {
@@ -363,6 +391,7 @@ export class RoomsService {
   async unban(roomId: string, userId: string, whoId: string): Promise<void> {
     await this.moderator(roomId, userId);
     await this.prisma.roomBan.deleteMany({ where: { roomId, userId: whoId } });
+    await this.logMod('unban', roomId, userId, whoId);
   }
 
   // ── Walking in (the game server) ──────────────────────────────────────────────────────────────
@@ -396,7 +425,12 @@ export class RoomsService {
       role,
       capacity: Math.min(room.capacity ?? max, max),
       mapId: room.mapId,
-      timedOutUntil: member?.timedOutUntil && member.timedOutUntil > now ? member.timedOutUntil.getTime() : 0,
+      timedOutUntil: Math.max(
+        member?.timedOutUntil && member.timedOutUntil > now ? member.timedOutUntil.getTime() : 0,
+        !member && guest?.timedOutUntil && guest.timedOutUntil > now ? guest.timedOutUntil.getTime() : 0,
+      ),
+      // A guest's mute only ever comes from reports
+      timedOutBy: member ? ((member.timedOutBy as QuietBy | null) ?? 'mod') : 'reports',
       guestVoice: room.guestVoice,
       roomWideGames: room.roomWideGames,
       filterWords: room.filterWords,

@@ -114,7 +114,7 @@ describe('room chat', () => {
   it('keeps timed-out members quiet', async () => {
     const { mai, jod, id } = await room();
     await mai.put(`/api/rooms/${id}/members/${jod.id}/timeout`, { duration: '10m' }).expect(204);
-    expect((await say(jod, id, 'hey').expect(403)).body.code).toBe('timed_out');
+    expect((await say(jod, id, 'hey').expect(403)).body).toMatchObject({ code: 'timed_out', message: expect.stringContaining('A mod') });
   });
 
   it('counts unread messages and mentions for Home, until you read them', async () => {

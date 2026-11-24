@@ -221,6 +221,16 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TooYoung"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -4009,7 +4019,8 @@
               "enum": [
                 "all",
                 "team",
-                "auto"
+                "auto",
+                "rooms"
               ]
             }
           },
@@ -4432,11 +4443,15 @@
           },
           "look": {
             "$ref": "#/components/schemas/Look"
+          },
+          "over13": {
+            "type": "boolean"
           }
         },
         "required": [
           "name",
-          "look"
+          "look",
+          "over13"
         ]
       },
       "ProfileBody": {
