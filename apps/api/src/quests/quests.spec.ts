@@ -85,4 +85,12 @@ describe('daily quests', () => {
     // say-5 counts the messages; on a "30 min with others" day they count nothing
     expect(together.progress).toBe(together.id === 'say-5' ? 2 : 0);
   });
+
+  it('forgets progress older than a week (paid coins stay in the ledger)', async () => {
+    const mai = (await signedUp(app, sent, 'maimai')) as Browser & { id: string };
+    const day = (d: string) => ({ userId: mai.id, day: new Date(d), questId: 'say-5', progress: 1 });
+    await prisma.questProgress.createMany({ data: [day('2026-11-01'), day('2026-11-20')] });
+    expect(await quests.purgeOld(new Date('2026-11-24T12:00:00Z'))).toBe(1);
+    expect(await prisma.questProgress.count({ where: { userId: mai.id } })).toBe(1);
+  });
 });

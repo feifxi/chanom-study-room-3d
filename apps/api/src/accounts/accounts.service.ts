@@ -1,9 +1,19 @@
-import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   ageOn,
   DELETE_GRACE_DAYS,
   HANDLE_CHANGE_DAYS,
   HANDLE_HOLD_DAYS,
+  LOOK_COOLDOWN_MS,
   MIN_AGE,
   sanitizeLook,
   type AvatarLook,
@@ -24,6 +34,8 @@ import { GameService } from '../game/game.service.js';
 import { ShopService } from '../shop/shop.service.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+/** A guest account this old with no live session is cleaned up */
+export const GUEST_KEEP_DAYS = 30;
 
 /** How long the sign-in and the browser wait after an under-13 birthday (so it isn't just "pick another year"). */
 export const AGE_LOCK_MS = 24 * 60 * 60 * 1000;
@@ -159,10 +171,25 @@ export class AccountsService {
   }
 
   /** Settings → My profile and My character: display name and look. */
-  async updateProfile(userId: string, input: { name?: string; look?: Partial<AvatarLook> }): Promise<Me> {
-    await this.signedUp(userId);
-    if (input.look) await this.shop.checkLook(userId, input.look);
-    const me = toMe(await this.prisma.user.update({ where: { id: userId }, data: { name: input.name, look: input.look } }));
+  async updateProfile(userId: string, input: { name?: string; look?: Partial<AvatarLook> }, now = new Date()): Promise<Me> {
+    const user = await this.signedUp(userId);
+    if (input.look) {
+      const wait = (user.lookChangedAt?.getTime() ?? 0) + LOOK_COOLDOWN_MS - now.getTime();
+      if (wait > 0) {
+        const s = Math.ceil(wait / 1000);
+        throw new HttpException(
+          { code: 'too_soon', message: `One more sec: you can change again in ${s} s` },
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+      await this.shop.checkLook(userId, input.look);
+    }
+    const me = toMe(
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { name: input.name, look: input.look, ...(input.look ? { lookChangedAt: now } : {}) },
+      }),
+    );
     // Every room you're in shows it at once (the game servers take looks only from here, checked)
     if (input.look && me.look) this.game.roomEvent({ roomId: '*', type: 'look', userId, look: me.look });
     return me;
@@ -249,6 +276,22 @@ export class AccountsService {
    * messages still read; the name, email, birthday, look and sign-ins go, they leave every room (the
    * rooms they own pass on), and the @handle is held for 30 more days. Returns how many went.
    */
+  /**
+   * Guests who never came back: their account goes once it's 30 days old and no session is still
+   * good. What they left (reports, a room's people list) keeps its names; bans on them go with it,
+   * since a returning guest is a new account anyway.
+   */
+  async purgeGuests(now = new Date()): Promise<number> {
+    const { count } = await this.prisma.user.deleteMany({
+      where: {
+        isAnonymous: true,
+        createdAt: { lt: new Date(now.getTime() - GUEST_KEEP_DAYS * DAY_MS) },
+        sessions: { none: { expiresAt: { gt: now } } },
+      },
+    });
+    return count;
+  }
+
   async purgeDue(now = new Date()): Promise<number> {
     const due = await this.prisma.user.findMany({
       where: { deleteAt: { lte: now }, deletedAt: null },

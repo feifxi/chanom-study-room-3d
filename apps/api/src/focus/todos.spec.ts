@@ -1,10 +1,11 @@
 import type { INestApplication } from '@nestjs/common';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TODO_LIMIT } from '@connecta/shared';
 import { browser, createTestApp, LOOK, resetAccounts, signedUp, type Browser } from '../../test/test-app.js';
 import type { Mail } from '../mail/mail.service.js';
 import type { PrismaService } from '../prisma/prisma.service.js';
-import { TodosService } from './todos.service.js';
+import { LiveService } from '../live/live.service.js';
+import { TODOS_EVENT, TodosService } from './todos.service.js';
 
 let app: INestApplication;
 let sent: Mail[];
@@ -25,6 +26,16 @@ const texts = async (b: Browser) =>
   (await b.get('/api/todos').expect(200)).body.todos.map((t: { text: string; done: boolean }) => [t.text, t.done]);
 
 describe('the to-do list', () => {
+  it('tells your other tabs after each change', async () => {
+    const mai = await person('maimai');
+    const told = vi.spyOn(app.get(LiveService), 'toUser');
+    const t = (await mai.post('/api/todos', { text: 'Read chapter 7' }).expect(201)).body;
+    await mai.patch(`/api/todos/${t.id}`, { done: true }).expect(200);
+    await mai.delete('/api/todos/done').expect(204);
+    expect(told.mock.calls.filter(([userId, event]) => userId === mai.id && event === TODOS_EVENT)).toHaveLength(3);
+    told.mockRestore();
+  });
+
   it('adds in order, ticks, unticks, deletes and clears done', async () => {
     const mai = await person('maimai');
     const read = (await mai.post('/api/todos', { text: '  Read chapter 7  ' }).expect(201)).body;

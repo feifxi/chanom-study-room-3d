@@ -105,6 +105,9 @@
                 }
               }
             }
+          },
+          "204": {
+            "description": "Signed out"
           }
         },
         "tags": [

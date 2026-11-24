@@ -68,20 +68,14 @@ export class LiveGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   /**
-   * A tab's state, sent when it changes and every minute: the room it has open in 3D (or null),
-   * and how long since the last input in it. A room needs membership or a guest pass.
+   * A tab's state, sent when it changes and every minute: how long since the last input in it.
+   * Which room you're in is the game server's to say (GamePresenceBridge), never the browser's.
    */
   @SubscribeMessage('presence')
   async here(@ConnectedSocket() socket: LiveSocket, @MessageBody() body: unknown): Promise<Ack> {
-    const { roomId, idleMs } = (body ?? {}) as { roomId?: unknown; idleMs?: unknown };
-    if (!socket.data?.userId || (roomId != null && typeof roomId !== 'string') || (idleMs != null && typeof idleMs !== 'number')) {
-      return { ok: false, error: 'bad_request' };
-    }
-    if (roomId && !(await this.mayBeIn(socket.data.userId, roomId))) return { ok: false, error: 'not_found' };
-    await this.presence.tab(socket.data.userId, socket.id, {
-      roomId: (roomId as string | undefined) ?? null,
-      idleMs: idleMs as number | undefined,
-    });
+    const { idleMs } = (body ?? {}) as { idleMs?: unknown };
+    if (!socket.data?.userId || (idleMs != null && typeof idleMs !== 'number')) return { ok: false, error: 'bad_request' };
+    await this.presence.tab(socket.data.userId, socket.id, { idleMs: idleMs as number | undefined });
     return { ok: true };
   }
 
@@ -96,14 +90,6 @@ export class LiveGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     });
     await socket.join(mine.map((m) => `inside:${m.roomId}`));
     return { ok: true };
-  }
-
-  private async mayBeIn(userId: string, roomId: string) {
-    const [member, guest] = await Promise.all([
-      this.prisma.membership.findUnique({ where: { roomId_userId: { roomId, userId } } }),
-      this.prisma.guestVisit.findUnique({ where: { roomId_userId: { roomId, userId } } }),
-    ]);
-    return !!member || (!!guest && guest.until > new Date());
   }
 
   private warn(error: unknown) {

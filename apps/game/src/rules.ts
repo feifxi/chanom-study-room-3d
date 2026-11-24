@@ -20,6 +20,26 @@ export function refillMoveBudget(budget: number, elapsedSec: number) {
   return Math.min(MOVE_BUDGET_MAX, budget + Math.max(0, elapsedSec) * MAX_SPEED);
 }
 
+/**
+ * The whiteboard's rate limit, a token bucket like movement's: each message costs 1 plus a tenth of
+ * its numbers, refilling 400 a second. A pen sends one small message per pointer move (at most ~240
+ * a second on a fast screen), well inside it; a flood of full messages gets cut to a trickle.
+ */
+export const BOARD_BUDGET_MAX = 800;
+const BOARD_REFILL_PER_SEC = 400;
+export const boardCost = (numbers = 0) => 1 + numbers / 10;
+/** Wiping the board for everyone costs more: a few a second at most */
+export const BOARD_CLEAR_COST = 200;
+
+/** Spends from the bucket if it holds enough (mutates it); false means drop the message */
+export function spendBoard(bucket: { boardLeft: number; boardAt: number }, cost: number, now: number) {
+  bucket.boardLeft = Math.min(BOARD_BUDGET_MAX, bucket.boardLeft + (Math.max(0, now - bucket.boardAt) / 1000) * BOARD_REFILL_PER_SEC);
+  bucket.boardAt = now;
+  if (bucket.boardLeft < cost) return false;
+  bucket.boardLeft -= cost;
+  return true;
+}
+
 type Bounds = { minX: number; maxX: number; minZ: number; maxZ: number };
 
 export function spendMove(from: { x: number; z: number }, to: { x: number; z: number }, budget: number, bounds: Bounds) {

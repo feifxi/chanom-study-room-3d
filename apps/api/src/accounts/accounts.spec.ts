@@ -3,6 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { browser, createTestApp, LOOK, resetAccounts, signInWithCode } from '../../test/test-app.js';
 import type { Mail } from '../mail/mail.service.js';
 import type { PrismaService } from '../prisma/prisma.service.js';
+import { AccountsService, GUEST_KEEP_DAYS } from './accounts.service.js';
 
 let app: INestApplication;
 let sent: Mail[];
@@ -23,8 +24,8 @@ async function adult(email: string) {
 }
 
 describe('signing in with an email code', () => {
-  it('needs a session for /api/me', async () => {
-    await browser(app).get('/api/me').expect(401);
+  it('answers 204 from /api/me when signed out', async () => {
+    await browser(app).get('/api/me').expect(204);
   });
 
   it('emails a 6-digit code and signs in with it', async () => {
@@ -39,7 +40,7 @@ describe('signing in with an email code', () => {
     await b.post('/api/auth/email-otp/send-verification-otp', { email: 'mai@example.com', type: 'sign-in' }).expect(200);
     const res = await b.post('/api/auth/sign-in/email-otp', { email: 'mai@example.com', otp: '000000' });
     expect(res.status).toBeGreaterThanOrEqual(400);
-    await b.get('/api/me').expect(401);
+    await b.get('/api/me').expect(204);
   });
 });
 
@@ -118,6 +119,19 @@ describe('guests', () => {
     const me = await b.get('/api/me').expect(200);
     expect(me.body).toMatchObject({ name: 'Mochi', look: guestLook, isGuest: false, email: 'mochi@example.com' });
     // The guest is gone
+    expect(await prisma.user.count({ where: { isAnonymous: true } })).toBe(0);
+  });
+
+  it('a guest who never came back goes after 30 days; one with a live session stays', async () => {
+    const b = browser(app);
+    await b.post('/api/auth/sign-in/anonymous').expect(200);
+    await b.put('/api/me/guest', { name: 'Mochi', look: LOOK }).expect(200);
+    const accounts = app.get(AccountsService);
+    const later = new Date(Date.now() + (GUEST_KEEP_DAYS + 1) * 86_400_000);
+    // Still signed in (the session runs past "now"): kept
+    expect(await accounts.purgeGuests()).toBe(0);
+    // Long after, with the session expired: gone
+    expect(await accounts.purgeGuests(later)).toBe(1);
     expect(await prisma.user.count({ where: { isAnonymous: true } })).toBe(0);
   });
 });

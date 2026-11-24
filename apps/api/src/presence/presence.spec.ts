@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createTestApp, createTestGateway, nextEvent, resetAccounts, signedUp, type Browser } from '../../test/test-app.js';
 import type { Mail } from '../mail/mail.service.js';
 import type { PrismaService } from '../prisma/prisma.service.js';
-import { AWAY_MS } from './presence.service.js';
+import { AWAY_MS, PresenceService } from './presence.service.js';
 
 let app: INestApplication;
 let gateway: INestApplication;
@@ -35,6 +35,8 @@ const live = async (b: Browser) => {
   return s;
 };
 const settled = () => new Promise((r) => setTimeout(r, 150));
+/** What the game server reports (through GamePresenceBridge) when someone walks in or out of a room */
+const inRoom = (userId: string, roomId: string | null) => app.get(PresenceService).tab(userId, `game:${userId}`, { roomId });
 
 async function friends(a: Person, b: Person, bHandle: string) {
   await a.post('/api/friends/requests', { handle: bHandle }).expect(200);
@@ -70,7 +72,8 @@ describe('presence', () => {
   it('in a room: named to members, hidden for a private room you’re not in, and counted inside', async () => {
     const { mai, jod, roomId } = await setup();
     const maiLive = await live(mai);
-    expect(await maiLive.emitWithAck('presence', { roomId, idleMs: 0 })).toEqual({ ok: true });
+    expect(await maiLive.emitWithAck('presence', { idleMs: 0 })).toEqual({ ok: true });
+    await inRoom(mai.id, roomId);
     await settled();
     // Jod isn't a member of Mai's private room
     expect((await presenceOf(jod, mai.id)).room).toMatchObject({ hidden: true, id: null, name: null, member: false });
@@ -84,7 +87,7 @@ describe('presence', () => {
     const jodLive = await live(jod);
     await jodLive.emitWithAck('watch:inside', [roomId]);
     const leaving = nextEvent(jodLive, 'inside');
-    await maiLive.emitWithAck('presence', { roomId: null });
+    await inRoom(mai.id, null);
     expect(await leaving).toEqual({ roomId, inside: 0 });
   });
 
@@ -96,7 +99,8 @@ describe('presence', () => {
     await ter.patch(`/api/rooms/${quiet}`, { visibility: 'open', tags: ['Study'] }).expect(200);
     await jod.post(`/api/rooms/${quiet}/join`).expect(200);
     const maiLive = await live(mai);
-    await maiLive.emitWithAck('presence', { roomId, idleMs: 0 });
+    await maiLive.emitWithAck('presence', { idleMs: 0 });
+    await inRoom(mai.id, roomId);
     await settled();
 
     const listed = (await jod.get('/api/rooms/listed?tag=Study').expect(200)).body as { id: string; inside: number }[];
@@ -106,10 +110,11 @@ describe('presence', () => {
     ]);
   });
 
-  it('can’t claim a room you can’t walk into', async () => {
+  it('a browser can’t say which room it’s in (only the game server can)', async () => {
     const { jod, roomId } = await setup();
     const jodLive = await live(jod);
-    expect(await jodLive.emitWithAck('presence', { roomId })).toEqual({ ok: false, error: 'not_found' });
+    await jodLive.emitWithAck('presence', { roomId, idleMs: 0 });
+    expect(await app.get(PresenceService).inside(roomId)).not.toContain(jod.id);
   });
 
   it('away after 10 minutes without input in any tab', async () => {
@@ -123,8 +128,8 @@ describe('presence', () => {
 
   it('appear offline: friends see offline (no last seen), at once', async () => {
     const { mai, jod, roomId } = await setup();
-    const maiLive = await live(mai);
-    await maiLive.emitWithAck('presence', { roomId });
+    await live(mai);
+    await inRoom(mai.id, roomId);
     const jodLive = await live(jod);
     const hiding = nextEvent(jodLive, 'presence');
     const me = (await mai.patch('/api/me/privacy', { appearOffline: true }).expect(200)).body;
@@ -139,8 +144,8 @@ describe('ask to join and invites', () => {
   it('asking to join a friend’s room: Send invite posts a link back', async () => {
     const { mai, jod, roomId } = await setup();
     await jod.post('/api/dms/with/maimai/ask').expect(400);
-    const maiLive = await live(mai);
-    await maiLive.emitWithAck('presence', { roomId });
+    await live(mai);
+    await inRoom(mai.id, roomId);
 
     const ask = (await jod.post('/api/dms/with/maimai/ask').expect(201)).body;
     expect(ask).toMatchObject({ kind: 'ask', card: { roomId, state: 'open' } });

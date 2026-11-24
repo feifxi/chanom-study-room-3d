@@ -20,6 +20,12 @@ export class QuestsService {
     private readonly live: LiveService,
   ) {}
 
+  /** Quests are daily: a week back is plenty for "today" in any time zone */
+  async purgeOld(now = new Date()): Promise<number> {
+    const { count } = await this.prisma.questProgress.deleteMany({ where: { day: { lt: new Date(now.getTime() - 7 * 86_400_000) } } });
+    return count;
+  }
+
   /** Your three for today, with progress, and your coins */
   async today(userId: string, now = Date.now()): Promise<QuestsToday> {
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId }, select: { timeZone: true, coins: true } });

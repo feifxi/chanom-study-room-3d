@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, Patch, Post, Put, Req, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ApiConflictResponse, ApiForbiddenResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
+import { ApiConflictResponse, ApiForbiddenResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { OptionalAuth, Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import type { Request, Response } from 'express';
 import type { Env } from '../config/env.js';
 import {
@@ -34,9 +34,16 @@ export class MeController {
     private readonly config: ConfigService<Env, true>,
   ) {}
 
+  /** You, or 204 when signed out (asked on every page, so signed out isn't an error to log). */
   @Get()
+  @OptionalAuth()
   @ApiOkResponse({ standardSchema: MeSchema })
-  me(@Session() session: UserSession): Promise<Me> {
+  @ApiNoContentResponse({ description: 'Signed out' })
+  async me(@Session() session: UserSession | null, @Res({ passthrough: true }) res: Response): Promise<Me | undefined> {
+    if (!session) {
+      res.status(204);
+      return undefined;
+    }
     return this.accounts.me(session.user.id);
   }
 

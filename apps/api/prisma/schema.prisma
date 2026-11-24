@@ -35,6 +35,8 @@ model User {
   birthday                 DateTime? @db.Date
   /// The character (AvatarLook from @connecta/shared)
   look                     Json?
+  /// The last look change: one every few seconds, so nobody flickers outfits in a room
+  lookChangedAt            DateTime? @map("look_changed_at")
   /// Who can send a friend request: anyone, rooms (people who share a room) or nobody
   requestsFrom             String    @default("anyone") @map("requests_from")
   /// Friends see you as offline (and not in any room)
@@ -715,6 +717,8 @@ model Report {
 
   @@index([status, createdAt])
   @@index([userId])
+  /// The rate limit: how many one person sent lately
+  @@index([reporterId, createdAt])
   @@map("reports")
 }
 

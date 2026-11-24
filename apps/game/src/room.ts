@@ -41,7 +41,7 @@ import { links, liveRooms } from './links.js';
 import { log } from './log.js';
 import { NpcDirector } from './npc/director.js';
 import { Player, RoomState } from './state.js';
-import { clamp, refillMoveBudget, spendMove } from './rules.js';
+import { BOARD_BUDGET_MAX, BOARD_CLEAR_COST, boardCost, clamp, refillMoveBudget, spendBoard, spendMove } from './rules.js';
 import { readDeckPass, readTicket } from './ticket.js';
 import { voice } from './voice.js';
 import { Tv, youtube } from './watch.js';
@@ -78,6 +78,9 @@ interface Private {
   lastMoveAt: number;
   /** Metres of movement allowed right now (see refillMoveBudget) */
   moveBudget: number;
+  /** The whiteboard's rate limit (see spendBoard) */
+  boardLeft: number;
+  boardAt: number;
   lastSaidAt: number;
   typingAt: number;
   /** Timed out until then (epoch ms): no bubbles, no typing */
@@ -254,25 +257,25 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     'board:start': validate(
       z.object({ n: z.number().int().min(0), color: z.string().max(16), size: z.number(), pts: z.array(z.number()).max(BOARD_ADD_MAX) }),
       (client, msg) => {
-        const who = this.atBoard(client.sessionId);
+        const who = this.atBoard(client.sessionId, boardCost(msg.pts.length));
         const stroke = who && this.board.start(client.sessionId, who.userId, msg.n, msg.color, msg.size, msg.pts);
         if (stroke) this.broadcast('board:start', stroke, { except: client });
-        // Refused (timed out, walked off, a bad pen): the drawer's screen takes it back too
+        // Refused (timed out, walked off, a bad pen, too fast): the drawer's screen takes it back too
         else client.send('board:undo', { id: `${client.sessionId}:${msg.n}` });
       },
     ),
     'board:add': validate(z.object({ n: z.number().int().min(0), pts: z.array(z.number()).max(BOARD_ADD_MAX) }), (client, msg) => {
-      if (!this.atBoard(client.sessionId)) return;
+      if (!this.atBoard(client.sessionId, boardCost(msg.pts.length))) return;
       const add = this.board.add(client.sessionId, msg.n, msg.pts);
       if (add) this.broadcast('board:add', add satisfies BoardAdd, { except: client });
     }),
     'board:undo': (client: Client) => {
-      const who = this.atBoard(client.sessionId);
+      const who = this.atBoard(client.sessionId, boardCost());
       const id = who && this.board.undo(who.userId);
       if (id) this.broadcast('board:undo', { id });
     },
     'board:clear': (client: Client) => {
-      if (this.atBoard(client.sessionId) && this.board.clear()) this.broadcast('board:clear');
+      if (this.atBoard(client.sessionId, BOARD_CLEAR_COST) && this.board.clear()) this.broadcast('board:clear');
     },
     'board:sync': (client: Client) => client.send('board:all', { strokes: this.board.all() }),
     // The round flow at a standing spot: E opens a lobby; the host picks the game (Pick a Side's mode)
@@ -324,6 +327,9 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     // The page is listening: your cards again (after a reload mid-game they were sent before it was)
     'slave:hand': (client: Client) => this.slave.joined(client.sessionId),
     'slave:giveBack': validate(z.object({ cards: CARDS }), (client, msg) => this.slave.giveBack(client.sessionId, msg.cards)),
+
+    /** The browser syncs its clock to ours: countdowns compare against our times */
+    clock: validate(z.object({ sentAt: finite }), (client, msg) => client.send('clock', { sentAt: msg.sentAt, serverAt: Date.now() })),
 
     /** Photo mode (feature 10): 📸 by your name while it's open, so people can pose */
     photo: validate(z.object({ on: z.boolean() }), (client, msg) => {
@@ -560,6 +566,8 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       pets: ticket.pets ?? [],
       lastMoveAt: Date.now(),
       moveBudget: 0,
+      boardLeft: BOARD_BUDGET_MAX,
+      boardAt: Date.now(),
       lastSaidAt: 0,
       typingAt: 0,
       quietUntil: ticket.timedOutUntil ?? 0,
@@ -823,10 +831,12 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
 
   /** The framework's window on this room */
   /** Someone standing in front of the whiteboard who may draw (not timed out) */
-  private atBoard(sessionId: string) {
+  /** Who may draw: standing at the board, not timed out, and within the rate limit (spends `cost`) */
+  private atBoard(sessionId: string, cost: number) {
     const p = this.state.players.get(sessionId);
     const s = this.priv.get(sessionId);
-    if (!p || !s || s.quietUntil > Date.now() || !inArea(this.map.boardArea, p.x, p.z)) return null;
+    const now = Date.now();
+    if (!p || !s || s.quietUntil > now || !inArea(this.map.boardArea, p.x, p.z) || !spendBoard(s, cost, now)) return null;
     return s;
   }
 

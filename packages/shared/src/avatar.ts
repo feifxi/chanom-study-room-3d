@@ -22,6 +22,9 @@ export interface AvatarLook {
   style?: OutfitStyle;
 }
 
+/** One look change every 5 s, so nobody flickers outfits in a room (the API enforces it) */
+export const LOOK_COOLDOWN_MS = 5000;
+
 export const DEFAULT_LOOK: AvatarLook = { hair: HAIR_COLORS[0], outfit: OUTFIT_COLORS[0], accessory: 'ribbon', style: 'sailor' };
 
 const pick = <T>(arr: readonly T[]): T => arr[Math.floor(Math.random() * arr.length)]!;

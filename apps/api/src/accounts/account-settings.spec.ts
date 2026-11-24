@@ -32,6 +32,10 @@ describe('My profile and My character', () => {
     const look = { hair: '#46527f', outfit: '#e84855', accessory: 'glasses' };
     const res = await b.patch('/api/me/profile', { name: 'Mai 🌸', look }).expect(200);
     expect(res.body).toMatchObject({ name: 'Mai 🌸', look });
+    // One look change every 5 s; the name alone can change any time
+    const again = await b.patch('/api/me/profile', { look: { ...look, hair: '#c8e3ff' } }).expect(429);
+    expect(again.body).toMatchObject({ code: 'too_soon' });
+    await b.patch('/api/me/profile', { name: 'Mai' }).expect(200);
   });
 
   it('needs a finished sign-up', async () => {
@@ -91,7 +95,7 @@ describe('deleting an account', () => {
     await b.post('/api/me/deletion', { handle: 'wrong' }).expect(400);
     const res = await b.post('/api/me/deletion', { handle: '@maimai' }).expect(200);
     expect(new Date(res.body.deleteAt).getTime()).toBeGreaterThan(Date.now() + 6 * DAY);
-    await other.get('/api/me').expect(401);
+    await other.get('/api/me').expect(204);
     // Nothing else works until it's kept
     await b.patch('/api/me/profile', { name: 'Mai' }).expect(403);
 
@@ -111,7 +115,7 @@ describe('deleting an account', () => {
     const user = await prisma.user.findFirstOrThrow({ where: { deletedAt: { not: null } } });
     expect(user).toMatchObject({ name: 'Deleted user', handle: null, birthday: null, look: null });
     expect(user.email).not.toContain('mai@example.com');
-    await b.get('/api/me').expect(401);
+    await b.get('/api/me').expect(204);
 
     // The handle stays held, and the email is free for a brand-new account
     const pim = await member('pim@example.com', 'pimmy');

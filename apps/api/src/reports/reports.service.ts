@@ -1,4 +1,13 @@
-import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException, OnModuleDestroy } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 import { PERSON_REASONS, REPORT_STEPS, ROOM_REASONS, parseCommonCopy } from '@connecta/shared';
@@ -14,6 +23,8 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import type { ReportBody, ReportSent } from './reports.schemas.js';
 
 const MINUTE = 60_000;
+/** Reports one person may send in an hour: plenty for a bad night, not enough to flood the team */
+export const REPORTS_PER_HOUR = 10;
 const PERSON = new Set<string>(PERSON_REASONS.map((r) => r.id));
 const ROOM = new Set<string>(ROOM_REASONS.map((r) => r.id));
 
@@ -53,6 +64,14 @@ export class ReportsService implements OnModuleDestroy {
     if (!reporter.isAnonymous && !reporter.handle) throw new ForbiddenException('Finish signing up first');
     if ((input.kind === 'room') !== ROOM.has(input.reason) || (input.kind !== 'room' && !PERSON.has(input.reason)))
       throw new BadRequestException('That reason is for another kind of report');
+
+    const lately = await this.prisma.report.count({ where: { reporterId, createdAt: { gt: new Date(now - 60 * MINUTE) } } });
+    if (lately >= REPORTS_PER_HOUR) {
+      throw new HttpException(
+        { code: 'too_many', message: 'Thanks, the team has your reports. You can send more in a little while.' },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
 
     const about = await this.about(reporterId, input);
     if (about.userId === reporterId) throw new BadRequestException('You can’t report yourself');

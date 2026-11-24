@@ -375,6 +375,17 @@ describe('bubbles and status', () => {
     await until(() => heardOutside.some((m) => m.text === 'everyone!'));
   }, 20_000);
 
+  it('answers the browser’s clock ask with the server’s time', async () => {
+    const a = track(await walkIn());
+    let answer: { sentAt: number; serverAt: number } | undefined;
+    a.onMessage('clock', (m: typeof answer) => (answer = m));
+    const sentAt = Date.now();
+    a.send('clock', { sentAt });
+    await until(() => !!answer);
+    expect(answer!.sentAt).toBe(sentAt);
+    expect(Math.abs(answer!.serverAt - Date.now())).toBeLessThan(1000);
+  });
+
   it('a timed-out person can’t say or type, and is told until when', async () => {
     const until1 = Date.now() + 60_000;
     const a = track(await walkIn({ timedOutUntil: until1 }));

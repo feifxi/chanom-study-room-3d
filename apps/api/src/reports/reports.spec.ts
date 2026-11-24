@@ -6,7 +6,7 @@ import { CommonService } from '../common/common.service.js';
 import type { Mail } from '../mail/mail.service.js';
 import { PresenceService } from '../presence/presence.service.js';
 import type { PrismaService } from '../prisma/prisma.service.js';
-import { ReportsService } from './reports.service.js';
+import { REPORTS_PER_HOUR, ReportsService } from './reports.service.js';
 
 let app: INestApplication;
 let sent: Mail[];
@@ -100,6 +100,16 @@ describe('reports', () => {
     const rows = await prisma.report.findMany({ orderBy: { createdAt: 'asc' } });
     expect(rows.map((r) => r.counted)).toEqual([true, true, false, true, true]);
     expect(rows.at(-1)).toMatchObject({ step: 'muted', context: { bubblesSeen: ['go away'] } });
+  });
+
+  it('one account sends at most 10 reports an hour', async () => {
+    const [mai] = await crowd(1, 'r');
+    const { jod } = await room([mai!]);
+    const send = () => reports.report(mai!, { kind: 'person', userId: jod.id, reason: 'spam' });
+    for (let i = 0; i < REPORTS_PER_HOUR; i++) await send();
+    await expect(send()).rejects.toMatchObject({ status: 429 });
+    // An hour on, they may again
+    await expect(reports.report(mai!, { kind: 'person', userId: jod.id, reason: 'spam' }, Date.now() + 61 * 60_000)).resolves.toBeTruthy();
   });
 
   it('never mutes the owner, and reports older than the window don’t add up', async () => {

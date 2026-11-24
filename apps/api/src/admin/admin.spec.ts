@@ -58,7 +58,7 @@ describe('the admin site', () => {
     const done = (await t.post(`/api/admin/users/${mai.id}/actions`, { kind: 'suspend_1d', reason: 'Spamming invite links' }).expect(200))
       .body;
     expect(done).toMatchObject({ status: 'suspended', actions: [{ kind: 'suspend', reason: 'Spamming invite links', by: 'teamtam' }] });
-    await mai.get('/api/me').expect(401);
+    await mai.get('/api/me').expect(204); // signed out
     const refused = await signInAgain('maimai');
     expect(refused.status).toBe(403);
     expect(refused.body.message).toMatch(
