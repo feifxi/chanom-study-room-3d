@@ -1,10 +1,10 @@
 import { AdminTitle, Pill } from '@/features/admin/AdminFrame';
-import { MAPS } from '@/lib/mock';
+import { MAPS } from '@/lib/maps';
 
 /**
  * Maps (feature 7). The map editor is built with the Blender work, on its map format, starting with
- * the Library (docs/v2-plan.md); its design is in the demo's admin site. Until then the maps are built
- * in code, and this page says which is which.
+ * the Library; its approved design is noted in docs/features/07-maps.md. Until then the maps are
+ * built in code, and this page says which is which.
  */
 export default function MapsAdminPage() {
   return (
@@ -16,9 +16,7 @@ export default function MapsAdminPage() {
             <p className="text-3xl">{m.emoji}</p>
             <p className="mt-2 font-black">{m.name}</p>
             <p className="mt-1 text-xs text-muted-foreground">{m.mood}</p>
-            <div className="mt-3">
-              {m.id === 'library' ? <Pill tone="ok">Main map</Pill> : <Pill tone="muted">Temporary demo map</Pill>}
-            </div>
+            <div className="mt-3">{m.id === 'library' ? <Pill tone="ok">Main map</Pill> : <Pill tone="muted">Temporary map</Pill>}</div>
           </div>
         ))}
       </div>

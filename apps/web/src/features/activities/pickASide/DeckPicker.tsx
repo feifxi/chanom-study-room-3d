@@ -1,42 +1,29 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, Pencil, Plus, Sparkles, Trash2, X } from 'lucide-react';
+import { ChevronDown, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import {
-  AI_PER_DAY,
-  BUILT_IN,
-  aiUsedToday,
-  makeAiDeck,
-  type Deck,
-  type DeckKind,
-  type DeckShelf,
-  type Question,
-  type ShelfDeck,
-} from './decks';
+import { BUILT_IN, type Deck, type DeckKind, type DeckShelf, type Question, type ShelfDeck } from './decks';
 
-type Tab = 'built-in' | 'room' | 'ai';
+type Tab = 'built-in' | 'room';
 
 /**
- * The host's deck choice in the lobby: built-in topics, the room's own decks (written by its
- * members), or (the demo, and after Plus) an AI deck made from a topic. Only decks that fit the mode
- * show (two answers for Would you rather, four for the quizzes).
+ * The host's deck choice in the lobby: built-in topics or the room's own decks (written by its
+ * members). Only decks that fit the mode show (two answers for Would you rather, four for the
+ * quizzes). AI decks come with Plus later.
  */
 export function DeckPicker({ deck, kind, onPick, shelf }: { deck: Deck; kind: DeckKind; onPick: (d: Deck) => void; shelf: DeckShelf }) {
   const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState<Tab>(deck.source === 'ai' && !shelf.ai ? 'built-in' : deck.source);
+  const [tab, setTab] = useState<Tab>(deck.source === 'room' ? 'room' : 'built-in');
   const [editing, setEditing] = useState<ShelfDeck | 'new' | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const mine = shelf.decks.filter((d) => d.kind === kind);
-  const tabs = (
-    [
-      ['built-in', 'Built in'],
-      ['room', 'This room'],
-      ['ai', '✨ AI'],
-    ] as const
-  ).filter(([id]) => id !== 'ai' || shelf.ai);
+  const tabs = [
+    ['built-in', 'Built in'],
+    ['room', 'This room'],
+  ] as const;
   const pick = (d: Deck) => {
     onPick(d);
     setOpen(false);
@@ -56,10 +43,7 @@ export function DeckPicker({ deck, kind, onPick, shelf }: { deck: Deck; kind: De
           </button>
         </PopoverTrigger>
         <PopoverContent side="top" className="w-[340px] rounded-2xl p-2">
-          <div
-            className={cn('mb-2 grid gap-1 rounded-full bg-muted p-1 text-xs font-bold', tabs.length === 3 ? 'grid-cols-3' : 'grid-cols-2')}
-            role="tablist"
-          >
+          <div className={cn('mb-2 grid gap-1 rounded-full bg-muted p-1 text-xs font-bold', 'grid-cols-2')} role="tablist">
             {tabs.map(([id, label]) => (
               <button
                 key={id}
@@ -135,8 +119,6 @@ export function DeckPicker({ deck, kind, onPick, shelf }: { deck: Deck; kind: De
               )}
             </div>
           )}
-
-          {tab === 'ai' && shelf.ai && <AiDeck kind={kind} onUse={pick} shelf={shelf} />}
         </PopoverContent>
       </Popover>
       {editing && (
@@ -171,92 +153,6 @@ function DeckButton({ d, on, onClick, by }: { d: Deck; on: boolean; onClick: () 
       </span>
       <span className="text-[10px] text-muted-foreground">{d.questions.length}</span>
     </button>
-  );
-}
-
-/** Type a topic, get 15 questions, glance over them, use them (and keep them if you like). */
-function AiDeck({ kind, onUse, shelf }: { kind: DeckKind; onUse: (d: Deck) => void; shelf: DeckShelf }) {
-  const [topic, setTopic] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [made, setMade] = useState<Deck | null>(null);
-  const [saved, setSaved] = useState(false);
-  const used = aiUsedToday();
-  const left = Math.max(0, AI_PER_DAY - used);
-  const make = async () => {
-    if (!topic.trim() || busy || !left) return;
-    setBusy(true);
-    setMade(await makeAiDeck(topic, kind));
-    setSaved(false);
-    setBusy(false);
-  };
-
-  if (made)
-    return (
-      <div className="flex flex-col gap-2">
-        <p className="px-1 text-xs font-black">
-          ✨ {made.name} · {made.questions.length} questions
-        </p>
-        <ol className="flex max-h-48 list-decimal flex-col gap-1 overflow-y-auto rounded-xl bg-muted/60 py-2 pr-2 pl-7 text-[11px]">
-          {made.questions.map((q) => (
-            <li key={q.id}>
-              <span className="font-bold">{q.q}</span> <span className="text-muted-foreground">{q.answers.join(' / ')}</span>
-            </li>
-          ))}
-        </ol>
-        <p className="px-1 text-[10px] text-muted-foreground">Demo: the real AI writes these about your topic.</p>
-        <div className="flex gap-1.5">
-          <button onClick={() => setMade(null)} className="rounded-full border px-3 py-1.5 text-xs font-extrabold hover:bg-muted">
-            Try again
-          </button>
-          <button
-            onClick={async () => {
-              if (await shelf.save({ name: made.name, kind: made.kind, questions: made.questions })) setSaved(true);
-            }}
-            disabled={saved}
-            className="rounded-full border px-3 py-1.5 text-xs font-extrabold hover:bg-muted disabled:text-muted-foreground"
-          >
-            {saved ? 'Saved ✓' : 'Save to this room'}
-          </button>
-          <button
-            onClick={() => onUse(made)}
-            className="flex-1 rounded-full bg-primary py-1.5 text-xs font-extrabold text-primary-foreground hover:bg-primary-ink"
-          >
-            Use it
-          </button>
-        </div>
-      </div>
-    );
-
-  return (
-    <form
-      className="flex flex-col gap-2"
-      onSubmit={(e) => {
-        e.preventDefault();
-        void make();
-      }}
-    >
-      <p className="px-1 text-xs text-muted-foreground">
-        Type a topic and AI writes 15 {kind === 'quiz' ? 'quiz questions' : '“would you rather” questions'}.
-      </p>
-      <input
-        value={topic}
-        onChange={(e) => setTopic(e.target.value)}
-        placeholder={kind === 'quiz' ? 'e.g. Thai history, chapter 3 biology' : 'e.g. school trips, K-pop'}
-        maxLength={60}
-        className="h-9 rounded-full border bg-card px-3 text-sm"
-        aria-label="Topic"
-      />
-      <button
-        type="submit"
-        disabled={!topic.trim() || busy || !left}
-        className="flex items-center justify-center gap-1.5 rounded-full bg-primary py-2 text-xs font-extrabold text-primary-foreground hover:bg-primary-ink disabled:opacity-45"
-      >
-        <Sparkles className="size-3.5" /> {busy ? 'Writing questions…' : 'Make 15 questions'}
-      </button>
-      <p className="text-center text-[10px] text-muted-foreground">
-        {left} of {AI_PER_DAY} AI decks left today{AI_PER_DAY < 10 && ' · more with Plus'}
-      </p>
-    </form>
   );
 }
 

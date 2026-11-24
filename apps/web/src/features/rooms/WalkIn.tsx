@@ -6,7 +6,6 @@ import { Bell, Home, MessageCircle, RotateCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useGame, type GameEnd } from '@/features/game/useGame';
 import { asServer, placeRoom } from '@/features/place/model';
-import { readLook, saveLook } from '@/features/place/roomLook';
 import { Scene } from '@/features/place/Scene';
 import { useInRoom } from '@/features/presence/usePresence';
 import { RoomLoader } from '@/features/room/RoomLoader';
@@ -14,8 +13,8 @@ import { notifyWhenSpace, roomsApi, useRoom, type Room } from './useRooms';
 import { rememberRoom } from '@/features/focus/useFocusStats';
 
 /**
- * A room from the API, in 3D: you walk in through the game server (build step 4), which also tells
- * friends you're here. Activities, focus and the study panel are still the demo's until step 5.
+ * A room from the API, in 3D: you walk in through the game server, which also tells friends you're
+ * here.
  */
 export function WalkIn({ room: initial, guestName }: { room: Room; guestName: string | null }) {
   const { data } = useRoom(initial.id, initial);
@@ -23,13 +22,6 @@ export function WalkIn({ room: initial, guestName }: { room: Room; guestName: st
   // "Walk in here" (after opening the room in another tab) and "Try again" walk in afresh
   const [attempt, setAttempt] = useState(0);
   const game = useGame(room.id, attempt);
-  // The 3D view reads the room's look from this browser's store: fill it from the saved room before
-  // it mounts (it only renders in the browser; on the server there's no store and nothing to do)
-  useState(() => {
-    if (typeof window !== 'undefined') {
-      saveLook(initial.id, { ...readLook(initial.id, initial.mapId), mapId: initial.mapId, size: initial.size, time: initial.time });
-    }
-  });
 
   useEffect(() => {
     if (room.me.role) roomsApi.visit(room.id).catch(() => {});
@@ -58,6 +50,7 @@ export function WalkIn({ room: initial, guestName }: { room: Room; guestName: st
       place={room.me.role ? placeRoom(room) : undefined}
       roomId={room.mapId}
       guestName={guestName}
+      time={room.time}
       game={game.room}
     />
   );
@@ -67,7 +60,7 @@ export function WalkIn({ room: initial, guestName }: { room: Room; guestName: st
 function Shade({ room, children }: { room: Room; children: ReactNode }) {
   return (
     <div className="fixed inset-0 isolate grid place-items-center p-4">
-      <Scene roomId={room.id} mapId={room.mapId} className="fixed" emojiClass="text-[9rem]" />
+      <Scene mapId={room.mapId} thumbnail={room.thumbnail} className="fixed" emojiClass="text-[9rem]" />
       <div className="fixed inset-0 -z-10 bg-black/45 backdrop-blur-sm" />
       {children}
     </div>

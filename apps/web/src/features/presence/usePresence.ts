@@ -23,7 +23,7 @@ export const inRoomNow = () => roomId !== null;
 
 /**
  * While you're inside a room in 3D, this tab shows inbox items and DMs as toasts. Which room you're
- * in, for friends and "inside now", comes from the game server (build step 4), not from the tab.
+ * in, for friends and "inside now", comes from the game server, not from the tab.
  */
 export function useInRoom(id: string | null) {
   useEffect(() => {

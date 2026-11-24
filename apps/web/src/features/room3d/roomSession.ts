@@ -1,8 +1,8 @@
 import type { NpcSummoned, NpcView, PlayerView } from '@connecta/shared';
 
 /**
- * The connection types the 3D files need. `StudyRoom` is the small slice of a Colyseus room they
- * actually use, so a local mock (mockRoom.ts) can play the game server.
+ * The connection types the 3D files need. `StudyRoom` is the small slice of the room they actually
+ * use (LiveRoom provides it).
  */
 export interface StudyRoom {
   sessionId: string;
@@ -10,7 +10,6 @@ export interface StudyRoom {
   send(type: string, payload: unknown): void;
 }
 
-export const BUBBLE_MS = 4500;
 /** Bubbles are short, out-loud lines: up to 120 characters (the game server enforces it). */
 export { BUBBLE_MAX } from '@connecta/shared';
 /** How long a bubble stays over your head: about 6 s, a little longer for long lines (max 10 s). */

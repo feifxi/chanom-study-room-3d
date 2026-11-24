@@ -30,7 +30,7 @@ import {
  * this becomes the map file.
  *
  * Not final art: odd props, overlapping rugs and other fixes are listed in the polish backlog in
- * docs/v2/features/07-maps.md.
+ * docs/features/07-maps.md.
  */
 
 export const ROOM = { width: 26, depth: 18 } as const;

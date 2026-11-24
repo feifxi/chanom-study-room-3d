@@ -3,7 +3,7 @@ import type { AvatarLook } from './avatar.js';
 import type { PlayerRole } from './player.js';
 
 /**
- * The game server's protocol (build step 4): one Colyseus room per Connecta room. The web app gets a
+ * The game server's protocol: one Colyseus room per Connecta room. The web app gets a
  * signed ticket from the API (`POST /api/rooms/:id/ticket`) and joins with it; the game server checks
  * the signature and never reads the database.
  */

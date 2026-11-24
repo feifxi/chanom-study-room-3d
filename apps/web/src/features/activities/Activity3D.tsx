@@ -358,7 +358,7 @@ export function ActivityLayer3D({
       <BoardSurface board={board} />
       <ScreenSurface videoId={watch.now?.id ?? null} paused={watch.paused} shareName={shareName} />
       {/* A free zone (the always-on whiteboard) has no outline: walking up opens the board */}
-      {SPOTS.filter((s) => s.built && !s.freeZone && spots[s.id].phase !== 'free').map((s) => (
+      {SPOTS.filter((s) => s.inMap && !s.freeZone && spots[s.id].phase !== 'free').map((s) => (
         <AreaOutline
           key={s.id}
           area={s.area}
@@ -426,7 +426,7 @@ function StepOnFlash({ motion, spots }: { motion: React.RefObject<LocalMotion>; 
   useFrame((state) => {
     const m = motion.current;
     // Not the whiteboard: walking up to it opens the board, which says enough
-    const spot = SPOTS.find((s) => s.built && !s.freeZone && inArea(s.area, m.x, m.z));
+    const spot = SPOTS.find((s) => s.inMap && !s.freeZone && inArea(s.area, m.x, m.z));
     const zone = spot ? undefined : activeMap().zones.find((zn) => inArea(zn.area, m.x, m.z));
     const key = spot?.id ?? zone?.id ?? null;
     if (key !== last.current) {

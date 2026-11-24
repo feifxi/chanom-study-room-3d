@@ -28,7 +28,6 @@ export const useWideScreen = () => useMediaQuery('(min-width: 1080px)');
 
 /** One-off checks, for initial state. */
 export const isTouchScreen = () => typeof window !== 'undefined' && window.matchMedia(TOUCH).matches;
-export const isCompactScreen = () => typeof window !== 'undefined' && window.matchMedia(COMPACT).matches;
 
 /** Mobile browsers (and iPad Safari) can't share a screen. */
 export const canShareScreen = () => typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getDisplayMedia;

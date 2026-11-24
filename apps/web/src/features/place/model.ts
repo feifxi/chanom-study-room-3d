@@ -1,6 +1,7 @@
 import type { RoomRole, Visibility } from '@connecta/shared';
 import type { Person, Room } from '@/features/rooms/useRooms';
-import { MAPS, type MapTemplate, type Server } from '@/lib/mock';
+import { MAPS, type MapTemplate } from '@/lib/maps';
+import type { Server } from '@/lib/roomShape';
 
 /**
  * Place layout's model (decided 2026-11-08): no servers, just rooms. A room has one map (from a
@@ -64,8 +65,8 @@ export function placeRoom(room: Room): PlaceRoom {
 export const ROLE_LABEL: Record<RoomRole, string> = { owner: 'Owner', mod: 'Mod', member: 'Member' };
 
 /**
- * The room in the demo's old shape, for the parts still on mock data: the room's chat (build step 3)
- * and walking in (step 4). Goes when they're ported (docs/v2-plan.md, port checklist).
+ * The room in the older `Server` shape the room screen still takes (lib/roomShape.ts). Goes in the
+ * cleanup listed in docs/open-issues.md.
  */
 export function asServer(room: Room): Server {
   const role = room.me.role === 'owner' ? 'Owner' : room.me.role === 'mod' ? 'Mod' : undefined;

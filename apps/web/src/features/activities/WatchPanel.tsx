@@ -127,8 +127,8 @@ export function WatchPanel({
   onRemove: (i: number) => void;
   onShare: () => void;
   onStopShare: () => void;
-  /** Someone else's share as it arrives over LiveKit (a real room); none in the demo */
-  shareStream?: (by: string) => MediaStream | null;
+  /** Someone else's share as it arrives over LiveKit */
+  shareStream: (by: string) => MediaStream | null;
   /** Deafened: a share's sound is off too */
   deaf?: boolean;
   /** Owners and mods: everything off the screen (something unsuitable) */
@@ -251,7 +251,7 @@ export function WatchPanel({
               <SharePicture
                 share={share}
                 name={who(share.by)}
-                stream={shareStream ? (share.by === 'me' ? myShareStream() : shareStream(share.by)) : undefined}
+                stream={share.by === 'me' ? myShareStream() : shareStream(share.by)}
                 volume={deaf ? 0 : volume}
               />
             )}
@@ -392,9 +392,7 @@ export function WatchPanel({
 
 /**
  * A shared screen on the stage. Your own share shows your live capture (muted: you'd hear yourself
- * twice); someone else's plays with its sound at your volume. In the demo nobody else really
- * shares, so their screens are a pretend slide (`stream` undefined); in a real room it's null until
- * the picture arrives.
+ * twice); someone else's plays with its sound at your volume, once the picture arrives.
  */
 function SharePicture({
   share,
@@ -404,41 +402,21 @@ function SharePicture({
 }: {
   share: ScreenShare;
   name: string;
-  stream?: MediaStream | null;
+  stream: MediaStream | null;
   volume?: number;
 }) {
   const video = useRef<HTMLVideoElement>(null);
   const mine = share.by === 'me';
-  const shown = stream === undefined && mine ? myShareStream() : stream;
   useEffect(() => {
-    if (video.current) video.current.srcObject = shown ?? null;
-  }, [shown]);
+    if (video.current) video.current.srcObject = stream;
+  }, [stream]);
   useEffect(() => {
     if (video.current) video.current.volume = volume / 100;
-  }, [volume, shown]);
-  if (shown) return <video ref={video} autoPlay muted={mine} playsInline className="absolute inset-0 size-full bg-black object-contain" />;
-  if (stream === null)
-    return (
-      <div className="absolute inset-0 grid place-items-center bg-black text-sm font-bold text-white/70">
-        <span className="animate-pulse">{name}’s screen is on its way…</span>
-      </div>
-    );
+  }, [volume, stream]);
+  if (stream) return <video ref={video} autoPlay muted={mine} playsInline className="absolute inset-0 size-full bg-black object-contain" />;
   return (
-    <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#2b2f5c] to-[#4b2d55] p-6 text-white">
-      <div className="w-full max-w-[520px] rounded-xl bg-white/10 p-4 shadow-lg ring-1 ring-white/15">
-        <div className="mb-3 flex gap-1.5">
-          {['#ff8a8a', '#ffd36e', '#8fe3a1'].map((c) => (
-            <span key={c} className="size-2.5 rounded-full" style={{ background: c }} />
-          ))}
-        </div>
-        <p className="text-lg font-black">📊 Group project · slide 3</p>
-        <div className="mt-3 flex flex-col gap-2">
-          {[90, 72, 80].map((w) => (
-            <span key={w} className="h-2.5 rounded-full bg-white/25" style={{ width: `${w}%` }} />
-          ))}
-        </div>
-      </div>
-      <p className="absolute bottom-2 text-[11px] font-bold text-white/70">{name}’s screen · a pretend picture in the demo</p>
+    <div className="absolute inset-0 grid place-items-center bg-black text-sm font-bold text-white/70">
+      <span className="animate-pulse">{name}’s screen is on its way…</span>
     </div>
   );
 }

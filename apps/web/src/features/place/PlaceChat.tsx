@@ -35,7 +35,7 @@ export function PlaceChat({ initial }: { initial: Room }) {
 
   return (
     <div className="fixed inset-0 isolate flex flex-col gap-3 p-3">
-      <Scene roomId={room.id} mapId={room.map.id} className="fixed" emojiClass="text-[9rem]" />
+      <Scene mapId={room.map.id} thumbnail={room.room.thumbnail} className="fixed" emojiClass="text-[9rem]" />
       <div className="fixed inset-0 -z-10 bg-black/35 backdrop-blur-sm" />
 
       <header className="panel flex flex-none items-center gap-2 p-2">

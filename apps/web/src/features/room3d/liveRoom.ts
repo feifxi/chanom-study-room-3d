@@ -1,5 +1,5 @@
 import { Callbacks } from '@colyseus/sdk';
-import { BOARD_ADD_MAX } from '@connecta/shared';
+import { BOARD_ADD_MAX, WALK_SPEED, randomLook } from '@connecta/shared';
 import type {
   AvatarLook,
   FocusPreset,
@@ -33,7 +33,33 @@ import type { Entry, TelGame, TelMode } from '../activities/telephone/game';
 import type { PieceSymbol, Square } from 'chess.js';
 import type { GameRoom } from '@/features/game/useGame';
 import type { MapDef } from '../map/types';
-import { MockRoom, player } from './mockRoom';
+import type { StudyRoom } from './roomSession';
+
+/** A player with every field filled, for people the server hasn't described yet (and the pretend crowd) */
+const player = (p: Partial<PlayerView> & Pick<PlayerView, 'name' | 'look' | 'x' | 'z'>): PlayerView => ({
+  userId: '',
+  handle: '',
+  role: 'member',
+  stage: false,
+  hushed: false,
+  mutedByMod: false,
+  deaf: false,
+  share: '',
+  shareAudio: false,
+  photo: false,
+  yaw: 0,
+  moving: false,
+  seatId: '',
+  status: 'idle',
+  focusPreset: 0,
+  statusEndsAt: 0,
+  subject: '',
+  focusSince: 0,
+  todayMin: 0,
+  typing: false,
+  moveSeq: 0,
+  ...p,
+});
 
 /** What we copy from the game server's players (everything a client reads). */
 const FIELDS = [
@@ -111,24 +137,74 @@ export interface NpcEvents {
 }
 
 /**
- * A real room (build step 4) behind the same surface the 3D view and the demo's scripts use: the
- * game server's players are mirrored into `state.players` (you stay under 'me', everyone else under
- * their session id), and your moves go to the server. The objects are updated in place, so avatars
- * read them every frame. The cats and study buddies are the game server's too, mirrored the same way
- * into `state.npcs`.
+ * The room as the 3D view sees it: the game server's players are mirrored into `state.players` (you
+ * stay under 'me', everyone else under their session id), and your moves go to the server. The
+ * objects are updated in place, so avatars read them every frame. The cats and study buddies are
+ * the game server's too, mirrored the same way into `state.npcs`.
  */
-export class LiveRoom extends MockRoom {
+export class LiveRoom implements StudyRoom {
+  readonly sessionId = 'me';
+  readonly state = { players: new Map<string, PlayerView>(), npcs: new Map<string, NpcView>() };
+  /** The Test tools' pretend crowd, walking loops along real paths (in this browser only) */
+  private walkers = new Map<string, { path: { x: number; z: number }[]; next: number }>();
+
   constructor(
-    map: MapDef,
+    /** The map the room is in: seats, paths, spots */
+    readonly map: MapDef,
     private readonly game: GameRoom,
     me: { name: string; look: AvatarLook },
     /** The Test tools' pretend crowd (development only): in your browser, never on the server */
     crowd: { id: string; name: string }[] = [],
   ) {
-    super(map, me, [], crowd);
-    // The mock's own cats give way to the server's
-    this.state.npcs.clear();
+    const { spawn } = map;
+    this.state.players.set('me', player({ name: me.name, look: JSON.stringify(me.look), x: spawn.x, z: spawn.z }));
+    const { findPath, randomWalkable } = map.nav;
+    crowd.forEach((c, i) => {
+      const start = randomWalkable(Math.random);
+      this.state.players.set(c.id, player({ name: c.name, look: JSON.stringify(randomLook()), x: start.x, z: start.z, yaw: i }));
+      // Two in three wander a loop through two random places; the rest stand around
+      if (i % 3 === 0) return;
+      const a = randomWalkable(Math.random);
+      const b = randomWalkable(Math.random);
+      this.walkers.set(c.id, { path: [start, ...findPath(start, a), ...findPath(a, b), ...findPath(b, start)], next: 1 });
+    });
     this.sync();
+  }
+
+  /** Bumped when people come or go (or the HUD's fields change), so lists re-render */
+  private version = 0;
+  private listeners = new Set<() => void>();
+  readonly subscribe = (fn: () => void) => {
+    this.listeners.add(fn);
+    return () => void this.listeners.delete(fn);
+  };
+  readonly getVersion = () => this.version;
+  private changed() {
+    this.version++;
+    for (const fn of this.listeners) fn();
+  }
+
+  /** Is this seat free? (The server has the last word when you sit.) */
+  seatFree(seatId: string) {
+    return ![...this.state.players.values()].some((p) => p.seatId === seatId);
+  }
+
+  /** Walks the pretend crowd along their loops (every frame) */
+  tick(dt: number) {
+    for (const [id, w] of this.walkers) {
+      const p = this.state.players.get(id)!;
+      const target = w.path[w.next]!;
+      const dx = target.x - p.x;
+      const dz = target.z - p.z;
+      const d = Math.hypot(dx, dz);
+      const step = WALK_SPEED * 0.6 * dt;
+      if (d <= step) {
+        Object.assign(p, { x: target.x, z: target.z });
+        w.next = (w.next + 1) % w.path.length;
+      } else {
+        Object.assign(p, { x: p.x + (dx / d) * step, z: p.z + (dz / d) * step, yaw: Math.atan2(dx, dz), moving: true });
+      }
+    }
   }
 
   /**
@@ -224,7 +300,7 @@ export class LiveRoom extends MockRoom {
     this.game.send('photo', { on });
   }
 
-  // --- Activities (feature 9): the spots the game server runs, chess for now ---
+  // --- Activities (feature 9): the spots the game server runs ---
 
   private key(sessionId: string) {
     return sessionId === this.game.sessionId ? 'me' : sessionId;
@@ -428,9 +504,6 @@ export class LiveRoom extends MockRoom {
           nextRound: [...s.nextRound].map(key),
           out: [...s.out].map(key),
           awaySince,
-          optedOut: [],
-          arriving: false,
-          since: 0,
           startsAt: s.startsAt,
           invite: s.inviteAt ? { by: key(s.inviteBy), at: s.inviteAt } : null,
           results: [...s.results].map(key),
@@ -532,9 +605,8 @@ export class LiveRoom extends MockRoom {
   }
 
   /** Pull the Buddy Machine's knob; what happens comes back through onNpc */
-  override summon(kind: NpcKind) {
+  summon(kind: NpcKind) {
     this.game.send('npc:summon', { kind });
-    return null;
   }
 
   /** Bring one of your pets out of the Buddy Machine */
@@ -542,7 +614,7 @@ export class LiveRoom extends MockRoom {
     this.game.send('pet:summon', { item });
   }
 
-  override goodbye(id: string) {
+  goodbye(id: string) {
     this.game.send('npc:goodbye', { id });
   }
 
@@ -550,12 +622,9 @@ export class LiveRoom extends MockRoom {
     this.game.send('say', { text });
   }
 
-  override setTyping(typing: boolean) {
+  setTyping(typing: boolean) {
     this.game.send('typing', { typing });
   }
-
-  // Your status is the server's now: away from `setAway`, focus and breaks from the timer it runs
-  override setStatus() {}
 
   /** No input for 10 minutes: 💤 and the mic off (a running focus round still shows as focus) */
   setAway(on: boolean) {
@@ -613,18 +682,9 @@ export class LiveRoom extends MockRoom {
     this.game.send('share', { where, audio });
   }
 
-  override send(type: string, payload: unknown) {
-    if (type === 'move' || type === 'sit' || type === 'stand') this.game.send(type, payload);
-    else if (type === 'npc:pet') {
-      this.game.send(type, payload);
-      super.send(type, payload); // today's quest, still counted here until coins and quests are ported
-    } else super.send(type, payload);
-  }
-
-  // The demo's scripts walk scripted people around; real people walk themselves
-  override sendTo() {}
-  override traveling() {
-    return false;
+  /** Your moves, seats and pets, as the local player driver sends them */
+  send(type: string, payload: unknown) {
+    this.game.send(type, payload);
   }
 
   private sync() {

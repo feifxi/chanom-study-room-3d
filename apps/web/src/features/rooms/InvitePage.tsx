@@ -123,7 +123,12 @@ export function InvitePage({ code, kind }: { code: string; kind: 'member' | 'gue
       }
     >
       <div className="overflow-hidden rounded-[2rem] border bg-card shadow-soft">
-        <div className={`grid h-32 place-items-center text-6xl ${map.tint}`}>{p.room.emoji}</div>
+        {p.room.thumbnail ? (
+          // eslint-disable-next-line @next/next/no-img-element -- a short-lived storage link
+          <img src={p.room.thumbnail} alt="" className="h-32 w-full object-cover" />
+        ) : (
+          <div className={`grid h-32 place-items-center text-6xl ${map.tint}`}>{p.room.emoji}</div>
+        )}
         <div className="flex flex-col gap-5 p-6">
           <div className="text-center">
             <p className="flex items-center justify-center gap-1.5 text-sm font-bold text-muted-foreground">

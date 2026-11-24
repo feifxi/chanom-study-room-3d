@@ -16,14 +16,14 @@ import { perfMeter } from './perf';
 import { LocalController, type Hint } from './LocalController';
 import type { LocalPlayerDriver } from './LocalPlayerDriver';
 import { activeMap } from '../map/active';
-import type { MockRoom } from './mockRoom';
+import type { LiveRoom } from './liveRoom';
 import type { Quality } from './quality';
 import { npcKey, type Bubble, type Summon } from './roomSession';
 import { StaticShadows } from './StaticShadows';
 import { startZoom, ZOOM, ZoomBridge } from './ZoomControl';
 
 interface Props {
-  room: MockRoom;
+  room: LiveRoom;
   motion: React.RefObject<LocalMotion>;
   board: LabelBoard;
   light: DayLight;
@@ -50,7 +50,7 @@ interface Props {
   myLook?: string;
 }
 
-/** The V1 library scene, driven by the mock room instead of the game server. */
+/** The room's 3D scene, driven by the room's mirror of the game server. */
 export function RoomCanvas({
   room,
   motion,
@@ -100,7 +100,7 @@ export function RoomCanvas({
         minPolarAngle={0.35}
         maxPolarAngle={1.2}
       />
-      <MockTicker room={room} />
+      <CrowdTicker room={room} />
       <LocalController room={room} motion={motion} onHint={onHint} onOpenMachine={onOpenMachine} driverRef={driverRef} />
       <ClickToWalk driverRef={driverRef} />
       {children}
@@ -171,13 +171,14 @@ function ClickToWalk({ driverRef }: { driverRef: React.RefObject<LocalPlayerDriv
   );
 }
 
-function MockTicker({ room }: { room: MockRoom }) {
+/** Walks the Test tools' pretend crowd */
+function CrowdTicker({ room }: { room: LiveRoom }) {
   useFrame((_s, dt) => room.tick(Math.min(dt, 0.1)));
   return null;
 }
 
 /** A pulsing ring under the person you're looking for, and an arrow at your feet pointing to them. */
-function FindMarker({ room, motion, targetId }: { room: MockRoom; motion: React.RefObject<LocalMotion>; targetId: string }) {
+function FindMarker({ room, motion, targetId }: { room: LiveRoom; motion: React.RefObject<LocalMotion>; targetId: string }) {
   const ring = useRef<THREE.Mesh>(null);
   const arrow = useRef<THREE.Group>(null);
   useFrame((state) => {

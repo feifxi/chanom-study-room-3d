@@ -6,7 +6,7 @@ import { CreditCard, Gift, QrCode, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { cancelPlus, PLUS_PLANS, REMIND_DAYS, resumePlus, usePlus } from '@/lib/plus';
+import { cancelPlus, manageBilling, PLUS_PLANS, REMIND_DAYS, resumePlus, usePlus } from '@/lib/plus';
 
 /**
  * Settings → Plus & billing (feature 15): your plan and its date, how you pay, cancel or turn renewal
@@ -96,17 +96,15 @@ export function PlusBillingTab() {
           <span className="min-w-0 flex-1 text-sm">
             <span className="block font-bold">{card ? 'Card' : 'PromptPay'}</span>
             <span className="text-xs text-muted-foreground">
-              {card ? 'Charged by itself on the date' : 'You scan a QR each time; switch to a card to make it automatic'}
+              {card ? 'Charged by itself on the date' : 'You scan a QR each time; pick a card when you renew to make it automatic'}
             </span>
           </span>
-          <Button
-            variant="outline"
-            size="sm"
-            className="rounded-full font-bold"
-            onClick={() => toast('Demo: opens Stripe’s billing page to change how you pay')}
-          >
-            Change
-          </Button>
+          {/* A card paid through Stripe changes on Stripe's page; PromptPay has nothing on file */}
+          {card && plus.stripe && (
+            <Button variant="outline" size="sm" className="rounded-full font-bold" onClick={() => void manageBilling()}>
+              Change card
+            </Button>
+          )}
         </section>
       )}
 
@@ -120,9 +118,10 @@ export function PlusBillingTab() {
             <span className="w-24 flex-none text-xs text-muted-foreground">{r.at}</span>
             <span className="min-w-0 flex-1 truncate font-semibold">{r.what}</span>
             <span className="font-mono text-xs">฿{r.amount}</span>
-            <button onClick={() => toast('Demo: downloads the receipt PDF')} className="text-xs font-bold text-primary hover:underline">
-              PDF
-            </button>
+            {/* A new tab, so Settings over a 3D room never leaves the room; it prints or saves as a PDF */}
+            <a href={`/receipt/${r.id}`} target="_blank" rel="noopener" className="text-xs font-bold text-primary hover:underline">
+              Receipt
+            </a>
           </div>
         ))}
       </section>

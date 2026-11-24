@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronDown, Flag, Info, Link2, LogOut, Settings, VolumeX } from 'lucide-react';
+import { parseCommonCopy } from '@connecta/shared';
 import { toast } from 'sonner';
 import { InviteDialog } from '@/features/rooms/InviteDialog';
 import type { PlaceRoom } from '@/features/place/model';
@@ -9,8 +10,8 @@ import { RoomSettingsDialog } from '@/features/place/RoomSettingsDialog';
 import { AboutRoomDialog } from '@/features/place/RoomMenu';
 import { ReportRoomDialog } from '@/features/place/ReportRoomDialog';
 import { cn } from '@/lib/utils';
-import { mapById, useRoomLook } from '@/features/place/roomLook';
-import type { Room, Server } from '@/lib/mock';
+import { mapById } from '@/features/place/roomLook';
+import type { Room, Server } from '@/lib/roomShape';
 import { useDismiss } from './useDismiss';
 
 /**
@@ -26,6 +27,7 @@ export function RoomCard({
   server,
   place,
   room,
+  mapId,
   here,
   guest,
   onLeave,
@@ -35,6 +37,8 @@ export function RoomCard({
   /** The room from the API (none in Common rooms) */
   place?: PlaceRoom;
   room: Room;
+  /** The map it's in now (the owner can switch it while you're inside) */
+  mapId: string;
   /** How many people are in this room right now, you included. */
   here: number;
   guest: boolean;
@@ -49,8 +53,7 @@ export function RoomCard({
   const [about, setAbout] = useState(false);
   const [report, setReport] = useState(false);
   const canEdit = !guest && !!place?.canEdit;
-  const look = useRoomLook(isPublic ? `public:${room.id}` : server.id, room.mapId);
-  const map = mapById(look.mapId);
+  const map = mapById(mapId);
   const name = isPublic ? room.name : server.name;
 
   return (
@@ -87,12 +90,15 @@ export function RoomCard({
               This room <span className="text-[11px] font-bold text-muted-foreground">for everyone</span>
             </h3>
             <div className="flex gap-2">
-              <button
-                onClick={() => (isPublic || guest ? toast.success('Room link copied') : setInvite(true))}
-                className="flex flex-none items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-extrabold text-primary-foreground hover:bg-primary-ink"
-              >
-                <Link2 className="size-4" /> Invite
-              </button>
+              {/* A Common room shares its public link; a guest can't invite anyone into a room by people */}
+              {(isPublic || !guest) && (
+                <button
+                  onClick={() => (isPublic ? copyCommonLink(room.id) : setInvite(true))}
+                  className="flex flex-none items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-extrabold text-primary-foreground hover:bg-primary-ink"
+                >
+                  <Link2 className="size-4" /> Invite
+                </button>
+              )}
               {canEdit ? (
                 <button
                   onClick={() => setSettings(place!.myRole === 'owner' ? 'overview' : 'members')}
@@ -147,5 +153,15 @@ export function RoomCard({
         </>
       )}
     </div>
+  );
+}
+
+/** A Common room's link: whoever opens it drops into one of its copies, like from Discover */
+function copyCommonLink(copyId: string) {
+  const type = parseCommonCopy(copyId)?.type.id;
+  if (!type) return;
+  navigator.clipboard?.writeText(`${window.location.origin}/common/${type}`).then(
+    () => toast.success('Room link copied'),
+    () => toast.error('Couldn’t copy the link'),
   );
 }

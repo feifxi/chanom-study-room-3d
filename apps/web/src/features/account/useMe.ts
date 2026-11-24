@@ -6,7 +6,7 @@ import { authClient } from '@/lib/auth-client';
 import { closeLive } from '@/features/chat/live';
 import { syncTimeZone } from '@/features/focus/useRoomToday';
 import { DEFAULT_LOOK } from '@connecta/shared';
-import type { User } from '@/lib/mock';
+import type { User } from '@/lib/roomShape';
 
 export const ME_KEY = ['me'] as const;
 

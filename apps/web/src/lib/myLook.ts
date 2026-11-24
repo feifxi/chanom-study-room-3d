@@ -1,8 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import type { AvatarLook } from '@connecta/shared';
-import { ME } from './mock';
+import { DEFAULT_LOOK, type AvatarLook } from '@connecta/shared';
 
 /**
  * Your character's look, changeable anywhere, inside a room too (decided 2026-11-09): saving swaps
@@ -11,8 +10,9 @@ import { ME } from './mock';
  */
 export const LOOK_COOLDOWN_MS = 5000;
 
-const EVENT = 'connecta-demo:my-look';
-let state = { look: ME.look, version: 0 };
+const EVENT = 'connecta:my-look';
+// Until the account's look arrives (initMyLook)
+let state = { look: DEFAULT_LOOK, version: 0 };
 let lastSaved = 0;
 
 export const getMyLook = () => state.look;

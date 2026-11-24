@@ -24,7 +24,7 @@ export interface RoomPerson {
   speaking?: boolean;
   /** Can't hear the room (headphones off). */
   deafened?: boolean;
-  /** Their account in a real room (for messages, friends and moderation); '' for the demo's people */
+  /** Their account (for messages, friends and moderation); '' for the pretend crowd */
   userId?: string;
   /** '' for guests */
   handle?: string;
@@ -59,7 +59,7 @@ type PeopleProps = {
   onFind: (id: string | null) => void;
   /** Your role in this room; owners and mods can moderate from the list. */
   myRole?: RoomRole;
-  /** A real room: the people list's actions go to the API */
+  /** The room: the people list's actions go to the API (none in Common rooms) */
   roomId?: string;
   /** Where reports say it happened: the room's id, or the Common copy's */
   place?: string;
@@ -67,7 +67,7 @@ type PeopleProps = {
   bubblesOf?: (id: string) => string[];
   /** You're a guest: no messages, friends or blocks (those need an account) */
   youGuest?: boolean;
-  /** A real room: Mute for everyone through the game server */
+  /** Mute for everyone through the game server */
   onMuteForEveryone?: (p: RoomPerson, on: boolean) => void;
   onMessage: (p: RoomPerson) => void;
 };
@@ -127,7 +127,7 @@ export function RoomPeople({
 }: PeopleProps & { onClose?: () => void; className?: string }) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
-  // Kicked or banned from the list (demo: the server would drop them from the room)
+  // Kicked or banned: gone from the list at once, before the server drops them from the room
   const [removed, setRemoved] = useState<Set<string>>(new Set());
   const people = all.filter((p) => !removed.has(p.id));
   const test = FILTERS.find((f) => f[0] === filter)![2];

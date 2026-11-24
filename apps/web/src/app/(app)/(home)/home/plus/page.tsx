@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { GiftPlusDialog } from '@/components/app/GiftPlusDialog';
 import { SettingsDialog } from '@/components/app/SettingsDialog';
 import { ROOM_PLANS as PLANS } from '@connecta/shared';
-import { FUTURE_MAPS } from '@/lib/mock';
+import { FUTURE_MAPS } from '@/lib/maps';
 import { useMyLook } from '@/lib/myLook';
 import { useMeAsUser } from '@/features/account/useMe';
 import { hasPlus, PLUS_PLANS, REMIND_DAYS, usePlus, type PlanId } from '@/lib/plus';

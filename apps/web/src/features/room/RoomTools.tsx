@@ -11,12 +11,12 @@ import { MusicPanel } from '../music/MusicPanel';
 import { TRACKS } from '../music/tracks';
 import type { Music } from '../music/useMusic';
 import { useDismiss } from './useDismiss';
-import { formatLeft, type usePomodoro } from './usePomodoro';
+import { formatLeft, type FocusTimer } from '../focus/useFocusTimer';
 
 type ToolId = 'study' | 'music' | 'quests' | 'help';
 
 /**
- * My tools, the left rail (V1's icon rail): your own things that don't affect anyone else, one
+ * My tools, the left rail: your own things that don't affect anyone else, one
  * panel open beside it at a time. The study panel stays mounted while closed so a half-typed to-do
  * survives. Like every HUD panel, it closes when you press anywhere else.
  */
@@ -28,7 +28,7 @@ export function RoomTools({
   className,
 }: {
   study: ReactNode;
-  pomo: ReturnType<typeof usePomodoro>;
+  pomo: FocusTimer;
   music: Music;
   touch: boolean;
   className?: string;

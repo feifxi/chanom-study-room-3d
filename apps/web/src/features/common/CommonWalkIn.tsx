@@ -11,7 +11,7 @@ import { Scene } from '@/features/place/Scene';
 import { useInRoom } from '@/features/presence/usePresence';
 import { RoomLoader } from '@/features/room/RoomLoader';
 import { api } from '@/lib/api/client';
-import { PUBLIC_SERVER, type Server } from '@/lib/mock';
+import { PUBLIC_SERVER, type Server } from '@/lib/roomShape';
 
 interface Copy {
   place: string;
@@ -77,7 +77,7 @@ export function CommonWalkIn({ type, withId, guestName }: { type: CommonType; wi
 function Shade({ mapId, children }: { mapId: string; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 isolate grid place-items-center p-4">
-      <Scene roomId={`common:${mapId}`} mapId={mapId} className="fixed" emojiClass="text-[9rem]" />
+      <Scene mapId={mapId} className="fixed" emojiClass="text-[9rem]" />
       <div className="fixed inset-0 -z-10 bg-black/45 backdrop-blur-sm" />
       {children}
     </div>

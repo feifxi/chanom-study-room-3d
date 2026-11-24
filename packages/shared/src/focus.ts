@@ -1,5 +1,5 @@
 /**
- * The focus timer (feature 8, docs/v2/features/08-study-tools.md): personal, two presets, timed by
+ * The focus timer (feature 8, docs/features/08-study-tools.md): personal, two presets, timed by
  * the game server, saved by the API.
  */
 

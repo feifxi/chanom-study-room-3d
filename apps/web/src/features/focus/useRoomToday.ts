@@ -19,13 +19,13 @@ const browserTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
  * game server knows live: rounds finished since the room opened (guests' too, never saved) and the
  * minutes of rounds running now. Saved and finished-here count the same rounds, so the larger wins.
  */
-export function useRoomToday(live: LiveRoom | null, roomId: string | undefined, now: number): TodayRow[] {
-  const players = live ? [...live.state.players.entries()] : [];
+export function useRoomToday(live: LiveRoom, roomId: string | undefined, now: number): TodayRow[] {
+  const players = [...live.state.players.entries()];
   // A round that just ended changes someone's todayMin: fetch the saved numbers again
   const finished = players.reduce((n, [, p]) => n + p.todayMin, 0);
   const { data } = useQuery({
     queryKey: ['focus', 'today', roomId, finished],
-    enabled: !!live && !!roomId,
+    enabled: !!roomId,
     queryFn: async () => {
       const { data } = await api.GET('/api/rooms/{id}/focus/today', {
         params: { path: { id: roomId! }, query: { tz: browserTimeZone() } },
@@ -36,8 +36,6 @@ export function useRoomToday(live: LiveRoom | null, roomId: string | undefined, 
     staleTime: 30_000,
     placeholderData: (previous) => previous,
   });
-  if (!live) return [];
-
   const rows = new Map<string, TodayRow>();
   for (const r of data ?? []) rows.set(r.person.id, { key: r.person.id, name: r.person.name, minutes: r.minutes, me: false });
   for (const [id, p] of players) {

@@ -7,7 +7,7 @@ import { ROOFTOP } from './rooftop';
 import type { MapDef } from './types';
 
 /**
- * The map the room is in. RoomView sets it from the room's look before it builds the mock room, and
+ * The map the room is in. RoomView sets it from the room's look before it builds the room, and
  * everything else (driver, hub, scene, labels) reads it when it needs it, so a live map change
  * (feature 7) swaps every piece at once. Unknown templates fall back to the library.
  *
@@ -30,5 +30,3 @@ export function setActiveMap(mapId: string) {
   active = mapDefFor(mapId);
   return active;
 }
-/** Which templates have a 3D build (the rest show the library). */
-export const isBuiltMap = (mapId: string) => mapId in all();

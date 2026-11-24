@@ -18,7 +18,6 @@ export const commonType = (id: string): CommonType | undefined => COMMON_TYPES.f
 export const COMMON_CAPACITY = 25;
 /** Of those, seats only for people joining a friend inside: strangers are placed up to 20 */
 export const COMMON_FRIEND_SEATS = 5;
-export const COMMON_STRANGERS_UP_TO = COMMON_CAPACITY - COMMON_FRIEND_SEATS;
 /** Slow mode for everyone: one bubble every 3 s */
 export const COMMON_SAY_MS = 3000;
 

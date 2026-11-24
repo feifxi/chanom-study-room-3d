@@ -3,7 +3,7 @@
 import { useTheme } from 'next-themes';
 import { Monitor, Moon, Sun, Wrench } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CROWDS, goAwayNow, setCrowd, useCrowd } from '@/lib/demoCrowd';
+import { CROWDS, goAwayNow, setCrowd, useCrowd } from '@/lib/testCrowd';
 import { cn } from '@/lib/utils';
 import { setPerfOverlay, usePerfOverlay } from '@/features/room3d/perf';
 import { setPlusState, usePlus, type PlusState } from '@/lib/plus';

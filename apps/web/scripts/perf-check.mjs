@@ -31,8 +31,8 @@ for (const map of MAPS)
     for (const crowd of CROWDS) {
       const page = await ctx.newPage();
       await page.addInitScript((c) => {
-        localStorage.setItem('connecta-demo:crowd', String(c));
-        localStorage.setItem('connecta-demo:perf', '1');
+        localStorage.setItem('connecta:crowd', String(c));
+        localStorage.setItem('connecta:perf', '1');
       }, crowd);
       await page.goto(`${BASE}/r/${ROOM_ON[map]}/walk`);
       await page.waitForFunction(() => window.__perf?.sample(), null, { timeout: 30_000 });

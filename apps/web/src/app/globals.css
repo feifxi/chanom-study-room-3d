@@ -192,7 +192,7 @@
   background: linear-gradient(180deg, var(--background), var(--background-2)) fixed;
 }
 
-/* ---------- Kept from V1: floating room panels, the cocoa dock, labels ---------- */
+/* ---------- Floating room panels, the cocoa dock, labels ---------- */
 /* In the components layer so Tailwind utilities (e.g. min-w-0 on phones) can override them */
 @layer components {
   .panel {
@@ -325,7 +325,7 @@
   }
 }
 
-/* The little V1 bounce, for avatars and stickers in 2D */
+/* The little bounce, for avatars and stickers in 2D */
 @keyframes hop {
   0%,
   100% {

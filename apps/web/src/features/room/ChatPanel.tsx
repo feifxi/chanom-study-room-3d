@@ -5,7 +5,7 @@ import { ChevronLeft, Maximize2, X } from 'lucide-react';
 import { Composer } from '@/components/chat/Chat';
 import { BUBBLE_MAX } from '../room3d/roomSession';
 import { cn } from '@/lib/utils';
-import type { Server } from '@/lib/mock';
+import type { Server } from '@/lib/roomShape';
 import { PersonFace } from '@/components/PersonFace';
 import { FriendFace } from '@/features/presence/FriendFace';
 import { DmChat } from '@/features/dms/DmChat';

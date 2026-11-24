@@ -10,7 +10,7 @@ export type GuestProfile = { name: string; look: AvatarLook };
 /** What a guest starts with before picking (also the look when there's no saved guest). */
 export const GUEST_LOOK: AvatarLook = { hair: '#c8e3ff', outfit: '#12a37f', accessory: 'headphones' };
 
-const GUEST_KEY = 'connecta-demo:guest';
+const GUEST_KEY = 'connecta:guest';
 
 export function loadGuest(): GuestProfile | null {
   try {

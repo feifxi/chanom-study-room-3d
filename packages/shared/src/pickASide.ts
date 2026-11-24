@@ -3,14 +3,14 @@ import { areaRadius, inArea, type Area } from './maps/types.js';
 /**
  * Pick a Side (feature 11): a question, a timer, and you answer by standing in a zone of the open
  * floor. When the timer ends the answers lock; the reveal shows for a moment; next question. The
- * game server plays it (`apps/game/src/pickASide.ts`); the demo plays it in the browser.
+ * game server plays it (`apps/game/src/pickASide.ts`).
  *
  * Modes (the spot's "games"):
  * - **Would you rather** (`wyr`): 2 zones, no right answer, the reveal shows the split.
  * - **Quiz** (`quiz`): 4 zones, +1 for the right one, highest score wins.
  *
  * Questions come in decks (one topic each): built in (below), the room's own (written by its
- * members, kept by the API), or made by AI (after Plus).
+ * members, kept by the API). AI decks come with Plus later.
  */
 
 export interface Question {
@@ -256,12 +256,6 @@ export function zoneOffset(area: Area, sides: number, zone: number) {
   const dx = (zone % 2 === 0 ? -1 : 1) * k;
   const dz = sides === 2 ? 0 : (zone < 2 ? -1 : 1) * k;
   return { dx, dz };
-}
-
-/** The middle of a zone in the room, give or take `jitter` (where a bot stands). */
-export function zoneCenter(area: Area, sides: number, zone: number, jitter = 0) {
-  const { dx, dz } = zoneOffset(area, sides, zone);
-  return { x: area.x + dx + (Math.random() - 0.5) * jitter, z: area.z + dz + (Math.random() - 0.5) * jitter };
 }
 
 /**

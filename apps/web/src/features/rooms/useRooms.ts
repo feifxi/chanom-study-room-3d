@@ -117,6 +117,14 @@ export const roomsApi = {
   /** "Full · notify me": a 🔔 item when someone leaves */
   notifyWhenSpace: async (id: string) => ok(await api.POST('/api/rooms/{id}/space', { params: { path: { id } } })),
   visit: async (id: string) => ok(await api.PUT('/api/rooms/{id}/visit', { params: { path: { id } } })),
+  /** The owner's picture: upload it straight to storage, then the API crops, checks and keeps it */
+  setThumbnail: async ({ id, picture }: { id: string; picture: Blob }) => {
+    const start = ok(await api.POST('/api/pictures', { body: { contentType: picture.type, bytes: picture.size } }));
+    const put = await fetch(start.uploadUrl, { method: 'PUT', headers: start.headers, body: picture });
+    if (!put.ok) throw new Error('Couldn’t upload that picture. Try again?');
+    return ok(await api.PUT('/api/rooms/{id}/thumbnail', { params: { path: { id } }, body: { pictureId: start.id } }));
+  },
+  clearThumbnail: async (id: string) => ok(await api.DELETE('/api/rooms/{id}/thumbnail', { params: { path: { id } } })),
   join: async (id: string) => ok(await api.POST('/api/rooms/{id}/join', { params: { path: { id } } })),
   leave: async (id: string) => ok(await api.DELETE('/api/rooms/{id}/me', { params: { path: { id } } })),
   ask: async ({ id, note }: { id: string; note?: string }) =>

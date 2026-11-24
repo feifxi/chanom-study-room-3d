@@ -23,6 +23,7 @@ import { FriendFace } from '@/features/presence/FriendFace';
 import { dmUnread, lastLine, useDms } from '@/features/dms/useDms';
 import { useFriendRequests } from '@/features/friends/useFriends';
 import { useQuests } from '@/features/quests/useQuests';
+import { SIGN_UP_HREF } from '@/features/account/links';
 
 const NAV = [
   { href: '/home', label: 'Home', icon: House },
@@ -80,7 +81,7 @@ export function PlaceHeader() {
       </nav>
       <div className="ml-auto flex flex-none items-center gap-2">
         {guest ? (
-          <Link href="/login" className="rounded-full bg-primary px-4 py-2 text-sm font-extrabold text-primary-foreground">
+          <Link href={SIGN_UP_HREF} className="rounded-full bg-primary px-4 py-2 text-sm font-extrabold text-primary-foreground">
             Sign up
           </Link>
         ) : (

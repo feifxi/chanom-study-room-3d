@@ -9,12 +9,11 @@ import { areaEdgePoint, areaInnerPoint, inArea, type Area } from '../map/types';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SettingsDialog, type SettingsTab } from '@/components/app/SettingsDialog';
-import { setConnection } from '@/lib/connection';
-import { DMS, USERS, type Server } from '@/lib/mock';
+import type { Server } from '@/lib/roomShape';
 import type { PlaceRoom } from '@/features/place/model';
 import { useMe, useMeAsUser } from '@/features/account/useMe';
 import { useWardrobe } from '@/features/shop/useWardrobe';
-import { AWAY_EVENT, crowdPeople, useCrowd } from '@/lib/demoCrowd';
+import { AWAY_EVENT, crowdPeople, useCrowd } from '@/lib/testCrowd';
 import { GUEST_LOOK, loadGuest } from '@/lib/guest';
 import { getMyLook, useMyLook } from '@/lib/myLook';
 import { useCompactScreen, useTouchScreen, useWideScreen, isTouchScreen } from '@/lib/screen';
@@ -22,7 +21,7 @@ import { useNow } from '@/lib/time';
 import { cn } from '@/lib/utils';
 import { useMusic } from '../music/useMusic';
 import type { LocalMotion } from '../room3d/Avatar';
-import { readLook, saveLook, useRoomLook } from '@/features/place/roomLook';
+import type { RoomTime } from '@/features/place/roomLook';
 import { MapMove } from './MapMove';
 import { useDayLight } from '../room3d/dayCycle';
 import { Joystick } from '../room3d/Joystick';
@@ -34,7 +33,6 @@ import { useMutedForMe } from '@/features/voice/mutedForMe';
 import { useVoice } from '@/features/voice/useVoice';
 import { planOf } from '@connecta/shared';
 import { watchesShare } from '@connecta/shared/maps';
-import { MockRoom, type MockPerson } from '../room3d/mockRoom';
 import { LiveRoom } from '../room3d/liveRoom';
 import type { GameRoom } from '@/features/game/useGame';
 import { QUALITY } from '../room3d/quality';
@@ -54,7 +52,7 @@ import { AwayBanner, InviteStack, LobbyCard, NextRoundCard, PlayStrip, ResultsCa
 import type { SideGame } from '../activities/pickASide/game';
 import { BoardPanel } from '../activities/board/BoardPanel';
 import { DeckPicker } from '../activities/pickASide/DeckPicker';
-import { deckKindFor, useLocalShelf } from '../activities/pickASide/decks';
+import { deckKindFor } from '../activities/pickASide/decks';
 import { useRoomDecks } from '../activities/pickASide/useRoomDecks';
 import { sidesFor, zoneAt as sideZoneAt } from '../activities/pickASide/game';
 import { SideHud, list } from '../activities/pickASide/SideHud';
@@ -75,31 +73,14 @@ import { StudyPanel } from './StudyPanel';
 import { useClickToWalk } from '@/lib/controls';
 import { useHideInvitesWhileFocusing } from '@/features/account/useNotifications';
 import { LeaveRoomGuard, LeaveRoomLink } from './LeaveRoom';
-import { type Phase } from './usePomodoro';
 import { useFocusTimer } from '../focus/useFocusTimer';
 import { useRoomToday } from '../focus/useRoomToday';
 import { RoomCard } from './RoomCard';
 import { MoreMenu } from './MoreMenu';
 import { postPhoto } from '@/features/chat/useRoomChat';
 import { problem } from '@/features/rooms/useRooms';
+import { SIGN_UP_HREF } from '@/features/account/links';
 
-/** Scripted crowd: where each mock person sits or walks. */
-const PRESETS: Record<string, Omit<MockPerson, 'id' | 'name' | 'look'>> = {
-  mai: { seatId: 't00-b0', status: 'focus', subject: 'Calculus', focusMin: 32 },
-  jod: { seatId: 'l0-f1', status: 'focus', subject: 'Kuy pawa', focusMin: 9 },
-  ploy: {
-    path: [
-      { x: -6.5, z: 1.3 },
-      { x: 6.8, z: 1.3 },
-      { x: 6.8, z: 8.0 },
-      { x: 0.8, z: 7.2 },
-    ],
-  },
-  ken: { seatId: 'lounge-1' },
-  nam: { seatId: 't10-b1', status: 'focus', subject: 'Physics', focusMin: 18 },
-  pim: { at: { x: 0.5, z: 3.0 } },
-  bow: { seatId: 'fire-0' },
-};
 const GUEST_COLOR = '#9c8aa0';
 /** No keys, clicks or moves for this long: you're away (💤, mic off). */
 const AWAY_MS = 10 * 60_000;
@@ -119,19 +100,21 @@ export default function RoomView({
   place,
   roomId,
   guestName,
+  time = 'clock',
   game,
 }: {
-  /** The room in the demo's old shape (asServer), until walking in is ported (build step 4) */
+  /** The room in the older shape (asServer; lib/roomShape.ts) */
   server: Server;
-  /** The room from the API; none for Common rooms (still mock, feature 14) */
+  /** The room from the API; none for Common rooms */
   place?: PlaceRoom;
   roomId: string;
   guestName: string | null;
-  /** The game server's room (build step 4): real people walk here. None: the demo's scripted people */
-  game?: GameRoom;
+  /** The owner's time of day (the API's room); Common rooms follow the clock */
+  time?: RoomTime;
+  /** The game server's room: everyone here walks, talks and plays through it */
+  game: GameRoom;
 }) {
   const router = useRouter();
-  const serverId = server.id;
   const roomDef = server.rooms.find((r) => r.id === roomId) ?? server.rooms[0]!;
   // Screen shares follow the room's plan: 1080p when its owner has Plus
   const shareHeight = planOf(place?.ownerPlus ?? false).shareHeight;
@@ -140,84 +123,60 @@ export default function RoomView({
   const guest = guestAs !== null;
   // Common rooms are safe for strangers by design (feature 14): text only, for everyone
   const common = server.id === 'public';
-  // Your role before the game server says (it's live after: the owner can make you a mod)
-  const [demoRole] = useState<RoomRole | undefined>(() => (guestAs !== null || server.id === 'public' ? undefined : server.roles.me));
-  // Your own name from your account; the people around you are still mock until walking in is ported (step 4)
+  // Your own name from your account
   const account = useMeAsUser();
   const { data: meAccount } = useMe();
   // Your Shop pets, for the Buddy Machine
   const { pets } = useWardrobe();
   const myName = guest ? guestAs || 'Guest' : account.name;
 
-  // The owner sets the room's look and time of day for everyone (feature 7); Common rooms use the defaults
-  const lookId = server.id === 'public' ? `public:${roomDef.id}` : server.id;
-  const look = useRoomLook(lookId, roomDef.mapId);
+  // The map is the game server's (it moves everyone when the owner switches); the time of day is the
+  // owner's, from the API (feature 7). Common rooms follow the clock
+  const [mapId, setMapId] = useState(() => game.state?.mapId || roomDef.mapId);
   // Your predicted position; the driver snaps it to the server's (the map's door) on its first update
   const motion = useRef<LocalMotion>({ x: mapDefFor(roomDef.mapId).spawn.x, z: mapDefFor(roomDef.mapId).spawn.z, yaw: 0, moving: false });
   // Test tools (development only): fill the room up to a crowd of 50 or 100, in 3D and in the people list
   const crowd = useCrowd();
   const room = useMemo(() => {
     // The map first: seats, paths and the scene all come from it (a live map change rebuilds the room)
-    const map = setActiveMap(look.mapId);
-    // The Test tools' pretend crowd tops the room up to 50 or 100 (you and the server's people aside)
-    if (game)
-      return new LiveRoom(
-        map,
-        game,
-        { name: myName, look: guest ? (loadGuest()?.look ?? GUEST_LOOK) : getMyLook() },
-        crowd ? crowdPeople(Math.max(0, crowd - (game.state?.players?.size ?? 1))) : [],
-      );
-    const regulars = roomDef.people.length ? roomDef.people : ['ploy', 'ken'];
-    const people: MockPerson[] = regulars.map((id) => ({ id, name: USERS[id]!.name, look: USERS[id]!.look, ...PRESETS[id] }));
-    if (roomDef.allowGuests && !guest)
-      people.push({
-        id: 'guest-mint',
-        name: 'Mint',
-        look: { hair: '#8fdcc0', outfit: '#12a37f', accessory: 'none' },
-        at: { x: -8.2, z: 0.8 },
-      });
-    // A guest walks in with the character they picked on the invite page (client-only, so storage is safe here)
-    const extra = crowd ? crowdPeople(Math.max(0, crowd - people.length - 1)) : [];
-    return new MockRoom(map, { name: myName, look: guest ? (loadGuest()?.look ?? GUEST_LOOK) : getMyLook() }, people, extra);
-  }, [roomDef, guest, myName, crowd, look.mapId, game]);
-  useEffect(() => (room instanceof LiveRoom ? room.attach() : undefined), [room]);
-  // People coming and going (a real room's are live; the mock's never change)
+    const map = setActiveMap(mapId);
+    // A guest walks in with the character they picked on the invite page (client-only, so storage is
+    // safe here). The Test tools' pretend crowd tops the room up to 50 or 100
+    return new LiveRoom(
+      map,
+      game,
+      { name: myName, look: guest ? (loadGuest()?.look ?? GUEST_LOOK) : getMyLook() },
+      crowd ? crowdPeople(Math.max(0, crowd - (game.state?.players?.size ?? 1))) : [],
+    );
+  }, [guest, myName, crowd, mapId, game]);
+  useEffect(() => room.attach(), [room]);
+  // People coming and going
   const peopleVersion = useSyncExternalStore(room.subscribe, room.getVersion, room.getVersion);
   // The owner switched maps (Room settings): the game server moved everyone; follow it here too
   useEffect(() => {
-    if (!game) return;
     const follow = () => {
-      const mapId = game.state?.mapId;
-      if (mapId && mapId !== readLook(lookId, mapId).mapId) saveLook(lookId, { ...readLook(lookId, mapId), mapId });
+      if (game.state?.mapId) setMapId(game.state.mapId);
     };
     game.onStateChange(follow);
     return () => game.onStateChange.remove(follow);
-  }, [game, lookId]);
+  }, [game]);
 
-  const serverRole = game ? room.state.players.get('me')?.role : undefined;
+  const serverRole = room.state.players.get('me')?.role;
   // In a Common room the Connecta team gets its own actions (feature 14); nobody else runs one
-  const myRole: RoomRole | undefined = !game
-    ? demoRole
-    : common
-      ? meAccount?.team
-        ? 'Team'
-        : undefined
-      : serverRole === 'owner'
-        ? 'Owner'
-        : serverRole === 'mod'
-          ? 'Mod'
-          : undefined;
+  const myRole: RoomRole | undefined = common
+    ? meAccount?.team
+      ? 'Team'
+      : undefined
+    : serverRole === 'owner'
+      ? 'Owner'
+      : serverRole === 'mod'
+        ? 'Mod'
+        : undefined;
   // Friends get their own group in the people list
   const friendIds = useFriendIds();
 
-  // A look saved in Settings → My character swaps your character live for everyone (no rejoin)
+  // A look saved in Settings → My character shows on you at once (the API tells everyone else)
   const myLook = useMyLook();
-  useEffect(() => {
-    const me = room.state.players.get('me');
-    if (!me || guest || myLook.version === 0) return;
-    // A real room hears it from the API (which checked you own it); a demo room is changed here
-    if (!(room instanceof LiveRoom)) me.look = JSON.stringify(myLook.look);
-  }, [room, guest, myLook]);
 
   const driverRef = useRef<LocalPlayerDriver | null>(null);
   // Zoom buttons ask; the canvas applies it on its next frame and reports back (scroll zoom too)
@@ -226,7 +185,7 @@ export default function RoomView({
   const board = useMemo(() => new LabelBoard(), []);
   // After a live map change everyone stands up (seats belong to the old map)
   const arrive = useCallback(() => room.send('stand', {}), [room]);
-  const light = useDayLight(look.time === 'clock' ? 'auto' : look.time);
+  const light = useDayLight(time === 'clock' ? 'auto' : time);
   const [saver, setSaver] = useState(isTouchScreen);
   // Your own settings, opened from the dock's More menu; null = closed
   const [mySettings, setMySettings] = useState<SettingsTab | null>(null);
@@ -243,26 +202,14 @@ export default function RoomView({
   const touch = useTouchScreen();
   const now = useNow(1000);
 
-  // Activities (feature 9): one framework for every game; the demo's hub plays the server
-  const hub = useMemo(() => {
-    const h = new ActivityHub(room, roomDef.roomWideGames, (text) => toast(text));
-    // A real room's big screen is the game server's (feature 10)
-    if (room instanceof LiveRoom) {
-      h.remote = room.watchRemote;
-      // …and the spots it runs (chess for now; the others still play here until their games come over)
-      h.activities = room.activityRemote;
-    }
-    return h;
-  }, [room, roomDef.roomWideGames]);
+  // Activities (feature 9): one framework for every game, run by the game server
+  const hub = useMemo(() => new ActivityHub(room, room.watchRemote, room.activityRemote), [room]);
   useSyncExternalStore(hub.subscribe, hub.getVersion, hub.getVersion);
   // Pick a Side's timer and "you're on B" need more than once a second
   const sideNow = useNow((hub.side && hub.spots.floor.phase === 'playing') || hub.tel ? 250 : 5000);
   useEffect(() => {
-    const id = setInterval(() => hub.tick(Date.now()), 250);
-    return () => {
-      clearInterval(id);
-      hub.dispose();
-    };
+    const id = setInterval(() => hub.tick(), 250);
+    return () => clearInterval(id);
   }, [hub]);
 
   const [hint, setHint] = useState<Hint | null>(null);
@@ -286,10 +233,8 @@ export default function RoomView({
   const [chatTarget, setChatTarget] = useState<ChatTarget | null>(null);
   const [sheet, setSheet] = useState(false);
   const [chatOpen, setChatOpen] = useState(true);
-  const [sharing, setSharing] = useState(false);
   const [subject, setSubject] = useState('');
   const subjectRef = useRef(subject);
-  const [speaking, setSpeaking] = useState<Set<string>>(new Set());
   const [zone, setZone] = useState<Zone | undefined>(undefined);
   const [away, setAway] = useState(false);
   // Talk to everyone (owner and mods): heard at full volume anywhere in the room
@@ -297,18 +242,11 @@ export default function RoomView({
   // Talk to everyone and the other Room tools are for a room's owner and mods (Common rooms have no voice)
   const canStage = myRole === 'Owner' || myRole === 'Mod';
 
-  const onPhase = useCallback(
-    (phase: Phase) => {
-      // The mock rooms keep your status here; a real room's game server runs the timer itself
-      room.setStatus(phase === 'idle' ? 'idle' : phase, subjectRef.current);
-    },
-    [room],
-  );
-  const pomo = useFocusTimer(room, () => subjectRef.current, onPhase);
-  // "This room today" in a real room: saved minutes from the API plus the game server's live ones
-  const liveToday = useRoomToday(room instanceof LiveRoom ? room : null, place?.id, now);
+  const pomo = useFocusTimer(room, () => subjectRef.current);
+  // "This room today": saved minutes from the API plus the game server's live ones
+  const liveToday = useRoomToday(room, place?.id, now);
   // A reload that kept your running round brings its subject back into the box too
-  const serverSubject = room instanceof LiveRoom ? (room.state.players.get('me')?.subject ?? '') : '';
+  const serverSubject = room.state.players.get('me')?.subject ?? '';
   useEffect(() => {
     if (!serverSubject || subjectRef.current) return;
     subjectRef.current = serverSubject;
@@ -323,7 +261,7 @@ export default function RoomView({
   const watchingTv = hub.mine('me')?.id === 'tv';
   // Each activity spot's floating name (not the whiteboard, a quiet side spot)
   // nor the spot you're playing at (a seat can sit just off its rug)
-  const spotTags: SpotTag[] = SPOTS.filter((sp) => sp.built && !sp.freeZone && sp.id !== hub.mine('me')?.id).map((sp) => {
+  const spotTags: SpotTag[] = SPOTS.filter((sp) => sp.inMap && !sp.freeZone && sp.id !== hub.mine('me')?.id).map((sp) => {
     const st = hub.spots[sp.id];
     const n = st.players.length;
     const phase = st.phase === 'results' ? 'playing' : st.phase;
@@ -337,25 +275,10 @@ export default function RoomView({
             : `${st.game.emoji} ${st.game.name} · ${n} playing`;
     return { id: sp.id, text, phase, area: sp.area };
   });
-  // Your share ended in the hub (you walked away, or Stop sharing): let the capture go too
-  const sharingTv = hub.watch.share?.by === 'me';
-  const sharedTv = useRef(false);
-  useEffect(() => {
-    // A real room's shares end through the game server (see below)
-    if (game) return;
-    if (sharingTv) {
-      sharedTv.current = true;
-      return;
-    }
-    stopMyShare();
-    if (sharedTv.current) toast('Your screen share on the TV ended');
-    sharedTv.current = false;
-  }, [sharingTv, game]);
-
-  // A real room's screen shares (step 4 part 4): the game server says who shares where; the picture
-  // and sound go over LiveKit to the TV rug or the table only
+  // Screen shares: the game server says who shares where; the picture and sound go over LiveKit to
+  // the TV rug or the table only
   const [myShare, setMyShare] = useState<MediaStream | null>(null);
-  const myShareWhere = game ? (room.state.players.get('me')?.share ?? '') : '';
+  const myShareWhere = room.state.players.get('me')?.share ?? '';
   const shareWhereRef = useRef(myShareWhere);
   const sharedLive = useRef(false);
   useEffect(() => {
@@ -369,9 +292,8 @@ export default function RoomView({
       toast('Your screen share ended');
     }
   }, [myShareWhere]);
-  const stopLiveShare = () => (room instanceof LiveRoom ? room.setShare('') : undefined);
+  const stopLiveShare = () => room.setShare('');
   const startLiveShare = async (where: 'tv' | 'table') => {
-    if (!(room instanceof LiveRoom)) return;
     if (room.state.players.get('me')?.hushed) return void toast('You can’t share your screen in this room right now');
     const got = await startMyShare(stopLiveShare, shareHeight);
     if (!got) return;
@@ -388,13 +310,13 @@ export default function RoomView({
   };
   // Photo mode: 📸 by your name while it's open; Share posts to Room chat (members: guests can't post there)
   useEffect(() => {
-    if (!(room instanceof LiveRoom) || !photo) return;
+    if (!photo) return;
     room.setPhoto(true);
     return () => room.setPhoto(false);
   }, [room, photo]);
   // Photos and the whiteboard post to Room chat: members only (guests can't write there)
   const shareToChat = (done: string, failed: string) =>
-    room instanceof LiveRoom && !guest && place
+    !guest && place
       ? async (blob: Blob) => {
           try {
             await postPhoto(place.id, blob);
@@ -409,14 +331,12 @@ export default function RoomView({
   const sharePhoto = shareToChat('📸 Shared to Room chat', 'Couldn’t share that photo. Try again?');
   const shareBoard = shareToChat('🎨 Board shared to Room chat', 'Couldn’t share the board. Try again?');
   const shareChain = shareToChat('📖 Chain shared to Room chat', 'Couldn’t share that chain. Try again?');
-  // Pick a Side's decks: the room's own in a real room, this browser's in the demo
-  const roomDecks = useRoomDecks(room instanceof LiveRoom && place ? place.id : null, !!place?.myRole);
-  const localDecks = useLocalShelf();
+  // Pick a Side's decks: the room's own (Common rooms have none)
+  const roomDecks = useRoomDecks(place ? place.id : null, !!place?.myRole);
   // The whiteboard: strokes through the game server
-  useEffect(() => (room instanceof LiveRoom ? room.connectBoard(hub.board) : undefined), [room, hub]);
+  useEffect(() => room.connectBoard(hub.board), [room, hub]);
   // A round the game server runs let you go
   useEffect(() => {
-    if (!(room instanceof LiveRoom)) return;
     return room.onActivityOut(({ why }) =>
       toast(
         why === 'away'
@@ -429,7 +349,6 @@ export default function RoomView({
   }, [room]);
   // A link the game server wouldn't put on the big screen
   useEffect(() => {
-    if (!(room instanceof LiveRoom)) return;
     return room.onWatchRefused((reason) =>
       toast(
         reason === 'link'
@@ -442,30 +361,25 @@ export default function RoomView({
       ),
     );
   }, [room]);
-  // Owners and mods: everything off the big screen, from anywhere (a real room)
-  const turnOffTv =
-    canStage && room instanceof LiveRoom
-      ? () => {
-          room.watchOff();
-          toast('📺 The big screen is off');
-        }
-      : undefined;
+  // Owners and mods: everything off the big screen, from anywhere
+  const turnOffTv = canStage
+    ? () => {
+        room.watchOff();
+        toast('📺 The big screen is off');
+      }
+    : undefined;
 
-  const shareOnTv = async () => {
+  const shareOnTv = () => {
     setPuttingOn(false);
     setWatchMini(false);
-    if (game) return void startLiveShare('tv');
-    const got = await startMyShare(() => hub.stopShare('me'), shareHeight);
-    if (!got) return;
-    hub.startShare({ by: 'me', audio: got.audio });
-    if (!got.audio) toast('Sharing without sound. For sound, share a tab and tick “Share tab audio”');
+    void startLiveShare('tv');
   };
-  // Voice in a real room (the demo fakes who's talking)
+  // Proximity voice over LiveKit
   const mutedForMe = useMutedForMe();
-  const meNow = game ? room.state.players.get('me') : undefined;
+  const meNow = room.state.players.get('me');
   const hushed = !!meNow?.hushed;
   const voice = useVoice({
-    room: room instanceof LiveRoom ? room : null,
+    room,
     motion,
     mic,
     deaf,
@@ -479,7 +393,7 @@ export default function RoomView({
     share: myShareWhere ? myShare : null,
     watches: (where, p) => watchesShare(activeMap(), where, p),
   });
-  const talking = game ? voice.speaking : speaking;
+  const talking = voice.speaking;
   // A dev-only handle for browser tests: walk somewhere as if clicked, see where you are and the NPCs
   useEffect(() => {
     if (process.env.NODE_ENV === 'production') return;
@@ -514,19 +428,13 @@ export default function RoomView({
     if (atBoard) setBoardMini(true);
   }
 
-  // Stay "connected" while browsing chats elsewhere, like a voice channel
-  useEffect(() => {
-    if (!guest) setConnection({ serverId, roomId: roomDef.id, micOn: mic && !deaf });
-  }, [guest, serverId, roomDef.id, mic, deaf]);
-
   const say = useCallback((id: string, name: string, text: string) => {
     setBubbles((b) => ({ ...b, [id]: { text, until: Date.now() + bubbleMs(text) } }));
     setLines((l) => [...l, { id: `${Date.now()}-${id}`, by: id, name, text }]);
   }, []);
 
-  // Bubbles in a real room come back from the game server (it decides who hears: private zones, time outs)
+  // Bubbles come back from the game server (it decides who hears: private zones, time outs)
   useEffect(() => {
-    if (!(room instanceof LiveRoom)) return;
     const offSaid = room.onSaid((id, text) => {
       const p = room.state.players.get(id);
       if (p) say(id, id === 'me' ? myName : p.name, text);
@@ -543,7 +451,6 @@ export default function RoomView({
   }, [room, say, myName]);
   // The cats and study buddies are the game server's: the machine's news, their bubbles and hearts
   useEffect(() => {
-    if (!(room instanceof LiveRoom)) return;
     return room.onNpc({
       summoned: (m) => {
         const at = Date.now();
@@ -569,28 +476,10 @@ export default function RoomView({
     });
   }, [room]);
   // Away and Talk to everyone show for everyone (💤 and 📢 by your name); the server lets a focus round win over away
-  useEffect(() => {
-    if (room instanceof LiveRoom) room.setAway(away);
-  }, [room, away]);
-  useEffect(() => {
-    if (room instanceof LiveRoom) room.setStage(stage);
-  }, [room, stage]);
+  useEffect(() => room.setAway(away), [room, away]);
+  useEffect(() => room.setStage(stage), [room, stage]);
   // No longer the owner or a mod: the server already turned it off, so does your own screen
-  if (stage && game && !canStage) setStage(false);
-
-  // A little life: someone talks on voice now and then, someone says hi. Demo people only: in a real
-  // room it would put words in real people's mouths
-  useEffect(() => {
-    if (game) return;
-    const ids = [...room.state.players.keys()].filter((id) => id !== 'me');
-    const talker = ids.find((id) => id === 'ploy') ?? ids[0];
-    const t1 = setTimeout(() => talker && say(talker, room.state.players.get(talker)!.name, 'come sit with us! 🛋️'), 2500);
-    const t2 = setInterval(() => setSpeaking((s) => (s.size ? new Set() : new Set(talker ? [talker] : []))), 2600);
-    return () => {
-      clearTimeout(t1);
-      clearInterval(t2);
-    };
-  }, [room, say, game]);
+  if (stage && !canStage) setStage(false);
 
   // Which private zone you're standing in, and whether you've gone quiet long enough to be away
   useEffect(() => {
@@ -636,13 +525,13 @@ export default function RoomView({
   const nearMachine = Math.hypot(me.x - gacha.x, me.z - gacha.z) < gacha.reach + 0.8;
   if (machine && !nearMachine) setMachine(false);
   const atMachine = machine && nearMachine;
-  // The demo crowd's list rows come from crowdPeople (statuses, mics); their avatars walk in 3D
+  // The Test tools' crowd: list rows from crowdPeople (statuses, mics); their avatars walk in 3D
   const realPeople: RoomPerson[] = ids
     .filter((id) => !id.startsWith('crowd-'))
     .map((id) => {
       const p = room.state.players.get(id)!;
-      const isGuest = game ? p.role === 'guest' : id.startsWith('guest') || (id === 'me' && guest);
-      const role = game ? p.role : server.roles[id] === 'Owner' ? 'owner' : server.roles[id] === 'Mod' ? 'mod' : undefined;
+      const isGuest = p.role === 'guest';
+      const role = p.role;
       const status =
         (id === 'me' && stage) || (id !== 'me' && p.stage)
           ? '📢 Talking to everyone'
@@ -664,17 +553,16 @@ export default function RoomView({
       return {
         id,
         name: p.name,
-        color: id === 'me' ? (guest ? GUEST_COLOR : account.color) : (USERS[id]?.color ?? GUEST_COLOR),
+        color: id === 'me' && !guest ? account.color : GUEST_COLOR,
         status,
         guest: isGuest,
         you: id === 'me',
-        friend: id !== 'me' && (game ? friendIds.has(p.userId) : !!USERS[id]),
+        friend: id !== 'me' && friendIds.has(p.userId),
         userId: p.userId,
         handle: p.handle,
-        // Literals, not the value from server.roles: React Compiler would treat the list as aliasing the server
-        role: game && common && p.team ? 'Team' : role === 'owner' ? 'Owner' : role === 'mod' ? 'Mod' : undefined,
-        micOn: id === 'me' ? mic && !deaf && !hushed : game ? voice.micOn.has(id) : id === 'mai' || speaking.has(id),
-        deafened: id === 'me' ? deaf : game ? p.deaf : id === 'jod',
+        role: common && p.team ? 'Team' : role === 'owner' ? 'Owner' : role === 'mod' ? 'Mod' : undefined,
+        micOn: id === 'me' ? mic && !deaf && !hushed : voice.micOn.has(id),
+        deafened: id === 'me' ? deaf : p.deaf,
         speaking: talking.has(id),
         mutedByMod: p.mutedByMod,
         mutedForMe: mutedForMe.has(p.userId),
@@ -689,13 +577,13 @@ export default function RoomView({
   const atGameTable = isGameSeat(me.seatId);
   // The activity whose seat you're about to sit on (card table, art table), for the E hint
   const hintSpot =
-    hint?.kind === 'seat' && isGameSeat(hint.seatId) ? SPOTS.find((sp) => sp.built && sp.seats?.includes(hint.seatId)) : undefined;
+    hint?.kind === 'seat' && isGameSeat(hint.seatId) ? SPOTS.find((sp) => sp.inMap && sp.seats?.includes(hint.seatId)) : undefined;
 
   const who = (id: string): Who => {
     const p = room.state.players.get(id);
     return {
       name: p?.name ?? 'Someone',
-      color: id === 'me' ? (guest ? GUEST_COLOR : account.color) : (USERS[id]?.color ?? GUEST_COLOR),
+      color: id === 'me' && !guest ? account.color : GUEST_COLOR,
     };
   };
   const mySpot = hub.mine('me');
@@ -749,7 +637,7 @@ export default function RoomView({
   };
   /** Leave an activity: seats stand you up (the hub does it); out of a ring, you step outside it. */
   const leaveActivity = (spot: Spot) => {
-    hub.leave(spot.id, 'me');
+    hub.leave();
     if (!spot.seats) {
       const a = Math.atan2(me.x - spot.area.x, me.z - spot.area.z) || Math.PI;
       const to = areaEdgePoint(spot.area, a, 0.8);
@@ -762,7 +650,7 @@ export default function RoomView({
   useEffect(() => {
     // Something to sit on, pet or use within reach wins E (the driver handles it). The screen isn't on
     // E at all: it's the orange button, so E at the TV lounge always means the sofa
-    eAction.current = hint ? null : atFreeFloor ? () => hub.start('floor', 'me') : atFreeArt ? () => hub.start('art', 'me') : null;
+    eAction.current = hint ? null : atFreeFloor ? () => hub.start('floor') : atFreeArt ? () => hub.start('art') : null;
   });
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -776,16 +664,14 @@ export default function RoomView({
 
   const study = (
     <StudyPanel
-      roomId={server.id}
       guest={guest}
       pomo={pomo}
-      today={room instanceof LiveRoom ? liveToday : null}
+      today={liveToday}
       subject={subject}
       onSubject={(s) => {
         subjectRef.current = s;
         setSubject(s);
-        if (room instanceof LiveRoom) room.focusSubject(s);
-        else if (pomo.phase === 'focus') room.setStatus('focus', s);
+        room.focusSubject(s);
       }}
     />
   );
@@ -800,23 +686,20 @@ export default function RoomView({
     findId,
     onFind: find,
     myRole,
-    roomId: game ? server.id : undefined,
+    roomId: server.id,
     // Reports name where it happened: the room, or the Common copy
-    place: game ? (common ? roomDef.id : server.id) : undefined,
+    place: common ? roomDef.id : server.id,
     bubblesOf: (id: string) =>
       lines
         .filter((l) => l.by === id && !l.system)
         .slice(-10)
         .map((l) => l.text),
     youGuest: guest,
-    onMuteForEveryone: room instanceof LiveRoom ? (p: RoomPerson, on: boolean) => room.muteForEveryone(p.id, on) : undefined,
+    onMuteForEveryone: (p: RoomPerson, on: boolean) => room.muteForEveryone(p.id, on),
     onMessage: (p: RoomPerson) => {
       setSheet(false);
-      // A real person: their chat by @handle (the Messages tab opens it, made on first open if you're friends)
-      if (game) return p.handle ? setChatTarget({ kind: 'dm', id: p.handle }) : undefined;
-      const dm = DMS.find((d) => d.with === p.id);
-      if (dm) setChatTarget({ kind: 'dm', id: dm.id });
-      else toast(`A new chat with ${p.name} is in Messages`);
+      // Their chat by @handle (the Messages tab opens it, made on first open if you're friends)
+      if (p.handle) setChatTarget({ kind: 'dm', id: p.handle });
     },
   };
   const chatEl = (className: string, onClose?: () => void) => (
@@ -828,8 +711,7 @@ export default function RoomView({
         // Common rooms: slow mode for everyone (one bubble every 3 s), since nobody's there to moderate
         if (common && Date.now() - lastSaid.current < 3000) return toast('Slow mode: one bubble every 3 seconds');
         lastSaid.current = Date.now();
-        if (room instanceof LiveRoom) room.say(text);
-        else say('me', myName, text);
+        room.say(text);
       }}
       onTyping={(t) => room.setTyping(t)}
       onExpand={(t) => {
@@ -857,7 +739,7 @@ export default function RoomView({
   const chessSpot = spotById('chess');
   const chessPlayer = mySpot?.id === 'chess' && inGame && !!hub.chess;
   const chessWatching =
-    !mySpot && !!hub.chess && hub.spots.chess.phase === 'playing' && chessSpot.built && inArea(chessSpot.area, me.x, me.z);
+    !mySpot && !!hub.chess && hub.spots.chess.phase === 'playing' && chessSpot.inMap && inArea(chessSpot.area, me.x, me.z);
   const [chessMini, setChessMini] = useState(true);
   const [wasWatchingChess, setWasWatchingChess] = useState(chessWatching);
   if (chessWatching !== wasWatchingChess) {
@@ -879,7 +761,7 @@ export default function RoomView({
   // Standing by the card table while a game is on (not in it): watch, like chess
   const cardsSpot = spotById('cards');
   const slaveWatching =
-    !mySpot && !!hub.slave && hub.spots.cards.phase === 'playing' && cardsSpot.built && inArea(cardsSpot.area, me.x, me.z);
+    !mySpot && !!hub.slave && hub.spots.cards.phase === 'playing' && cardsSpot.inMap && inArea(cardsSpot.area, me.x, me.z);
   const [slaveMini, setSlaveMini] = useState(true);
   const [wasWatchingSlave, setWasWatchingSlave] = useState(slaveWatching);
   if (slaveWatching !== wasWatchingSlave) {
@@ -887,9 +769,9 @@ export default function RoomView({
     if (slaveWatching) setSlaveMini(true);
   }
   const slaveTheater = !photo && (slavePlayer || (slaveWatching && !slaveMini));
-  // A desk share at your table (a real room): the same panel as the TV's, big until you shrink it
+  // A desk share at your table: the same panel as the TV's, big until you shrink it
   const myTable = me.seatId ? activeMap().seatById.get(me.seatId)?.tableId : undefined;
-  const deskSharer = game && myTable ? [...room.state.players].find(([, p]) => p.share === `table:${myTable}`) : undefined;
+  const deskSharer = myTable ? [...room.state.players].find(([, p]) => p.share === `table:${myTable}`) : undefined;
   const deskBy = deskSharer?.[0];
   const [deskMini, setDeskMini] = useState(false);
   const [wasDeskBy, setWasDeskBy] = useState(deskBy);
@@ -933,7 +815,6 @@ export default function RoomView({
   // The one real way out; links elsewhere in the room come through the LeaveRoomGuard dialog first
   const leave = (href?: string) => {
     if (pomo.phase === 'focus') pomo.stop();
-    setConnection(null);
     music.pause();
     // Guests have no Home: a Common room sends them back to Discover, an invite to the front page
     router.push(href ?? (guest ? (common ? '/discover' : '/') : '/home'));
@@ -948,7 +829,7 @@ export default function RoomView({
           <span>
             <button
               onClick={() => (deaf ? (setDeaf(false), setMic(true)) : setMic(!mic))}
-              disabled={common || (game ? hushed : guest)}
+              disabled={common || hushed}
               aria-pressed={mic && !deaf}
               className={cn('dock-btn', compact && 'min-w-0 px-3', mic && !deaf ? '!bg-[#2f8f62]' : '!bg-[#7a3442]')}
             >
@@ -959,7 +840,7 @@ export default function RoomView({
         </TooltipTrigger>
         {common ? (
           <TooltipContent>Common rooms are text only: no voice, pictures or videos</TooltipContent>
-        ) : game ? (
+        ) : (
           hushed && (
             <TooltipContent>
               {meNow?.mutedByMod
@@ -969,8 +850,6 @@ export default function RoomView({
                   : 'You’re timed out, so your mic is off for now'}
             </TooltipContent>
           )
-        ) : (
-          guest && <TooltipContent>Guests can’t use voice in this room</TooltipContent>
         )}
       </Tooltip>
       <button
@@ -1049,9 +928,9 @@ export default function RoomView({
       >
         {/* The 3D view */}
         <div className="relative min-w-0 flex-1 overflow-hidden">
-          {game && common && <CommonNoticeBanner game={game} />}
+          {common && <CommonNoticeBanner game={game} />}
           <RoomCanvas
-            key={look.mapId}
+            key={mapId}
             room={room}
             myLookVersion={guest ? 0 : myLook.version}
             myLook={guest || !myLook.version ? undefined : JSON.stringify(myLook.look)}
@@ -1093,11 +972,7 @@ export default function RoomView({
                 speaking: talking,
                 micEnabled: micIds,
                 deafened: new Set(realPeople.filter((p) => p.deafened).map((p) => p.id)),
-                sharing: game
-                  ? new Set(ids.filter((id) => room.state.players.get(id)?.share))
-                  : sharing && seated
-                    ? new Set(['me'])
-                    : new Set(),
+                sharing: new Set(ids.filter((id) => room.state.players.get(id)?.share)),
                 away: new Set(ids.filter((id) => (id === 'me' ? away : room.state.players.get(id)?.status === 'away'))),
                 stage: new Set(ids.filter((id) => (id === 'me' ? stage : room.state.players.get(id)?.stage))),
               }}
@@ -1120,6 +995,7 @@ export default function RoomView({
                   server={server}
                   place={place}
                   room={roomDef}
+                  mapId={mapId}
                   here={people.length}
                   guest={guest}
                   onLeave={() => leave()}
@@ -1130,10 +1006,7 @@ export default function RoomView({
               {/* Top right: who's here, folded into a pill of faces; guests get a way in */}
               <div className={cn('absolute right-3 flex items-start gap-2', compact ? 'top-[80px]' : 'top-3', bigView && 'hidden')}>
                 {guest && (
-                  <LeaveRoomLink
-                    href="/login?from=guest"
-                    className="panel px-3 py-2 text-xs font-extrabold text-primary hover:bg-secondary"
-                  >
+                  <LeaveRoomLink href={SIGN_UP_HREF} className="panel px-3 py-2 text-xs font-extrabold text-primary hover:bg-secondary">
                     {common ? 'Make an account ✨' : `Join ${server.name} ✨`}
                   </LeaveRoomLink>
                 )}
@@ -1177,7 +1050,7 @@ export default function RoomView({
               {/* Theater: the room dims behind the big player; a press on it shrinks the player */}
               {bigView && <div className="absolute inset-0 z-[15] bg-[#120c18]/60" aria-hidden />}
 
-              <MapMove lookId={lookId} mapId={look.mapId} onArrive={arrive} />
+              <MapMove mapId={mapId} onArrive={arrive} />
 
               {perfOn && (
                 <div className={cn('pointer-events-none absolute left-[84px] z-30', compact ? 'top-[132px]' : 'top-[88px]')}>
@@ -1204,7 +1077,7 @@ export default function RoomView({
                           st={myState}
                           isHost={myState.hostId === 'me'}
                           onLeave={() => leaveActivity(mySpot)}
-                          onEnd={() => hub.end(mySpot.id)}
+                          onEnd={() => hub.end()}
                         />
                       )}
                       {myState.awaySince.me && <AwayBanner since={myState.awaySince.me} now={now} />}
@@ -1262,7 +1135,7 @@ export default function RoomView({
                       who={who}
                       now={now}
                       isHost={myState.hostId === 'me'}
-                      onPickGame={(g) => hub.pickGame(mySpot.id, g)}
+                      onPickGame={(g) => hub.pickGame(g)}
                       extra={
                         mySpot.id === 'floor' &&
                         (myState.hostId === 'me' ? (
@@ -1270,7 +1143,7 @@ export default function RoomView({
                             deck={hub.floorDeck}
                             kind={deckKindFor(myState.game.id)}
                             onPick={(d) => hub.pickDeck(d)}
-                            shelf={room instanceof LiveRoom ? roomDecks : localDecks}
+                            shelf={roomDecks}
                           />
                         ) : (
                           <p className="truncate px-1 text-xs font-bold">
@@ -1279,10 +1152,10 @@ export default function RoomView({
                         ))
                       }
                       onCall={() => {
-                        hub.call(mySpot.id, 'me');
+                        hub.call();
                         toast(`📣 Everyone in ${roomDef.name} got an invite`);
                       }}
-                      onStart={() => hub.begin(mySpot.id)}
+                      onStart={() => hub.begin()}
                       onLeave={() => leaveActivity(mySpot)}
                     />
                   ) : myState.phase === 'results' ? (
@@ -1295,7 +1168,7 @@ export default function RoomView({
                       {...(mySpot.id === 'cards' && hub.slave ? slaveResults(hub.slave, (id) => who(id).name) : {})}
                       isHost={myState.hostId === 'me'}
                       now={now}
-                      onAgain={() => hub.begin(mySpot.id)}
+                      onAgain={() => hub.begin()}
                       onLeave={() => leaveActivity(mySpot)}
                     />
                   ) : (
@@ -1327,8 +1200,8 @@ export default function RoomView({
                     onAdd={(v) => hub.putOn({ ...v, by: 'me' })}
                     onRemove={(i) => hub.removeQueued(i)}
                     onShare={() => void shareOnTv()}
-                    onStopShare={() => (game ? stopLiveShare() : hub.stopShare('me'))}
-                    shareStream={game ? (by) => voice.screens.get(by) ?? null : undefined}
+                    onStopShare={stopLiveShare}
+                    shareStream={(by) => voice.screens.get(by) ?? null}
                     deaf={deaf}
                     onTurnOff={turnOffTv}
                   />
@@ -1376,9 +1249,9 @@ export default function RoomView({
                     now={now}
                     mini={!slaveTheater}
                     onMini={setSlaveMini}
-                    onPlay={(cards) => hub.slavePlay('me', cards)}
-                    onPass={() => hub.slavePass('me')}
-                    onGiveBack={(cards) => hub.slaveGiveBack('me', cards)}
+                    onPlay={(cards) => hub.slavePlay(cards)}
+                    onPass={() => hub.slavePass()}
+                    onGiveBack={(cards) => hub.slaveGiveBack(cards)}
                   />
                 </div>
               )}
@@ -1402,10 +1275,10 @@ export default function RoomView({
                     who={who}
                     mini={!chessTheater}
                     onMini={setChessMini}
-                    onMove={(from, to, promotion) => hub.chessMove('me', from, to, promotion)}
-                    onResign={() => hub.chessResign('me')}
-                    onOfferDraw={() => hub.chessOfferDraw('me')}
-                    onAnswerDraw={(accept) => hub.chessAnswerDraw('me', accept)}
+                    onMove={(from, to, promotion) => hub.chessMove(from, to, promotion)}
+                    onResign={() => hub.chessResign()}
+                    onOfferDraw={() => hub.chessOfferDraw()}
+                    onAnswerDraw={(accept) => hub.chessAnswerDraw(accept)}
                   />
                 </div>
               )}
@@ -1477,14 +1350,14 @@ export default function RoomView({
               )}
               {!mySpot && atFreeFloor && !hint && (
                 <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2 whitespace-nowrap">
-                  <button onClick={() => hub.start('floor', 'me')} className="panel rounded-full px-4 py-2 text-sm font-bold">
+                  <button onClick={() => hub.start('floor')} className="panel rounded-full px-4 py-2 text-sm font-bold">
                     {touch ? 'Tap' : 'Press E'} to start Pick a Side 🗳️
                   </button>
                 </div>
               )}
               {!mySpot && atFreeArt && !hint && (
                 <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2 whitespace-nowrap">
-                  <button onClick={() => hub.start('art', 'me')} className="panel rounded-full px-4 py-2 text-sm font-bold">
+                  <button onClick={() => hub.start('art')} className="panel rounded-full px-4 py-2 text-sm font-bold">
                     {touch ? 'Tap' : 'Press E'} to start a game at the art corner 🖌️
                   </button>
                 </div>
@@ -1525,21 +1398,18 @@ export default function RoomView({
                     {seated && seatKind !== 'sofa' && !guest && !common && !compact && (
                       <button
                         onClick={() => {
-                          if (game) return void (myShareWhere ? stopLiveShare() : startLiveShare('table'));
-                          setSharing(!sharing);
-                          toast(sharing ? 'Stopped sharing' : 'Sharing your screen with your table 🖥️');
+                          if (myShareWhere) stopLiveShare();
+                          else void startLiveShare('table');
                         }}
                         // One share per table: someone else's is on
                         disabled={!!deskBy && deskBy !== 'me'}
                         title={deskBy && deskBy !== 'me' ? `${who(deskBy).name} is sharing with your table` : undefined}
                         className={cn(
                           'flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-extrabold shadow-soft disabled:opacity-50',
-                          (game ? myShareWhere : sharing)
-                            ? 'bg-destructive text-white'
-                            : 'bg-primary text-primary-foreground hover:bg-primary-ink',
+                          myShareWhere ? 'bg-destructive text-white' : 'bg-primary text-primary-foreground hover:bg-primary-ink',
                         )}
                       >
-                        <MonitorUp className="size-4" /> {(game ? myShareWhere : sharing) ? 'Stop sharing' : 'Share screen to table'}
+                        <MonitorUp className="size-4" /> {myShareWhere ? 'Stop sharing' : 'Share screen to table'}
                       </button>
                     )}
                   </div>
@@ -1552,26 +1422,13 @@ export default function RoomView({
                     npcs={[...room.state.npcs.entries()]}
                     lastSummon={mySummon}
                     error={machineError}
-                    onSummon={(kind) => {
-                      const got = room.summon(kind);
-                      // A real room answers through the game server (see room.onNpc above)
-                      if (got === null) return;
-                      if (typeof got === 'string') return setMachineError(got);
-                      setMachineError(null);
-                      const at = Date.now();
-                      setMySummon({ kind, ...got, at });
-                      setLastSummon({ npcId: '', kind, ...got, bySessionId: 'me', byName: myName, at });
-                      setLines((l) => [...l, { id: `summon-${at}`, system: true, text: `✨ You summoned ${got.name} the ${got.label}` }]);
-                    }}
-                    onGoodbye={(id) => {
-                      const n = room.state.npcs.get(id);
-                      room.goodbye(id);
-                      if (n && !game) setLines((l) => [...l, { id: `bye-${Date.now()}`, system: true, text: `👋 ${n.name} went home` }]);
-                    }}
+                    // The game server answers through room.onNpc (above)
+                    onSummon={(kind) => room.summon(kind)}
+                    onGoodbye={(id) => room.goodbye(id)}
                     onClose={() => setMachine(false)}
                     pets={pets}
                     myUserId={room.state.players.get('me')?.userId}
-                    onSummonPet={room instanceof LiveRoom ? (item) => room.summonPet(item) : undefined}
+                    onSummonPet={(item) => room.summonPet(item)}
                   />
                 </div>
               )}
@@ -1598,7 +1455,7 @@ export default function RoomView({
                 {!compact && chatOpen && <span className="hidden w-[376px] min-w-0 min-[1080px]:block" />}
               </div>
 
-              {/* Bottom right: zoom (V1). Touch screens pinch, and the tablet joystick has this corner */}
+              {/* Bottom right: zoom. Touch screens pinch, and the tablet joystick has this corner */}
               {!touch && !bigView && (
                 <ZoomControl percent={zoom} onZoom={(z) => (zoomRequest.current = z)} className="absolute right-3 bottom-3" />
               )}

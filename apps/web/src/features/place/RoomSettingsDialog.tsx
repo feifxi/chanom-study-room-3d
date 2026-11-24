@@ -25,11 +25,11 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { roomsApi, useMembers, useRoomAction, type RoomSettings } from '@/features/rooms/useRooms';
 import { cn } from '@/lib/utils';
-import { MAPS } from '@/lib/mock';
+import { MAPS } from '@/lib/maps';
 import { type PlaceRoom } from './model';
 import { SizePicker, TemplateCard } from './MapPickers';
 import { InvitesPanel, MembersPanel } from './RoomMembers';
-import { mapById, ROOM_TIMES, saveLook, toThumbnail, useRoomLook, type RoomLook } from './roomLook';
+import { mapById, ROOM_TIMES, toThumbnail, type RoomLook } from './roomLook';
 import { Scene } from './Scene';
 
 const TABS = [
@@ -155,8 +155,6 @@ function Overview({ room }: { room: PlaceRoom }) {
   const [tags, setTags] = useState<string[]>(r.tags);
   const [lang, setLang] = useState<string | null>(r.language);
   const [capacity, setCapacity] = useState(r.capacity);
-  const saved = useRoomLook(room.id, room.map.id);
-  const [thumb, setThumb] = useState(saved.thumb);
   const [transfer, setTransfer] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const save = useSave(room);
@@ -166,8 +164,6 @@ function Overview({ room }: { room: PlaceRoom }) {
       cur.includes(t) ? cur.filter((x) => x !== t) : cur.length < ROOM_TAGS_MAX ? [...cur, t] : (toast(`Up to ${ROOM_TAGS_MAX} tags`), cur),
     );
   const submit = () => {
-    // The thumbnail stays in this browser until uploads are built (feature 14 checks pictures first)
-    if (!saveLook(room.id, { ...saved, thumb })) return toast.error('Couldn’t save that. Try a smaller picture.');
     save.mutate({
       name: name.trim(),
       description: description.trim(),
@@ -197,7 +193,7 @@ function Overview({ room }: { room: PlaceRoom }) {
           className="rounded-xl"
         />
       </div>
-      <ThumbnailPicker roomId={room.id} mapId={saved.mapId} thumb={thumb} onChange={setThumb} />
+      {r.me.role === 'owner' && <ThumbnailPicker room={room} />}
       <div>
         <p className="mb-2 text-sm font-extrabold">Who can join</p>
         <div className="grid gap-2 sm:grid-cols-3">
@@ -369,16 +365,14 @@ function DeleteRoomDialog({ room, open, onOpenChange }: { room: PlaceRoom; open:
 
 function MapAndLook({ room }: { room: PlaceRoom }) {
   const r = room.room;
-  const saved = useRoomLook(room.id, room.map.id);
-  const [look, setLook] = useState<RoomLook>({ ...saved, mapId: r.mapId, size: r.size, time: r.time });
+  const [look, setLook] = useState<RoomLook>({ mapId: r.mapId, size: r.size, time: r.time });
   const set = (patch: Partial<RoomLook>) => setLook((l) => ({ ...l, ...patch }));
   const someoneInside = room.people.length > 0;
   const mapChanged = look.mapId !== r.mapId || look.size !== r.size;
   const save = useRoomAction(
     () => roomsApi.update({ id: room.id, mapId: look.mapId as MapId, size: look.size, time: look.time }),
     () => {
-      // Also tells a 3D view of this room open in this browser; everyone else gets it over the gateway (build step 3)
-      saveLook(room.id, look);
+      // Everyone inside (this tab too) hears it from the game server and the gateway
       toast.success(mapChanged && someoneInside ? `Moving everyone to ${mapById(look.mapId).name}` : 'Saved for everyone in the room');
     },
   );
@@ -448,59 +442,73 @@ function MapAndLook({ room }: { room: PlaceRoom }) {
   );
 }
 
-/** The room's picture on Home, Discover and invites: the owner's own, or the map's. */
-function ThumbnailPicker({
-  roomId,
-  mapId,
-  thumb,
-  onChange,
-}: {
-  roomId: string;
-  mapId: string;
-  thumb?: string;
-  onChange: (thumb?: string) => void;
-}) {
-  const [busy, setBusy] = useState(false);
+/**
+ * The room's picture on Home, Discover and invites: the owner's own, or the map's. It saves at once
+ * (not with Save changes): the API crops and checks it first, so it can say no.
+ */
+function ThumbnailPicker({ room }: { room: PlaceRoom }) {
+  const thumbnail = room.room.thumbnail;
+  const set = useRoomAction(roomsApi.setThumbnail, () => toast.success('Thumbnail saved'));
+  const clear = useRoomAction(roomsApi.clearThumbnail, () => toast.success('Back to the map’s picture'));
+  const [cropping, setCropping] = useState(false);
+  const busy = cropping || set.isPending || clear.isPending;
   const pick = async (file?: File) => {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) return toast.error('That picture is over 5 MB');
-    setBusy(true);
+    setCropping(true);
+    let picture: Blob;
     try {
-      onChange(await toThumbnail(file));
+      picture = await toThumbnail(file);
     } catch {
-      toast.error('That doesn’t look like a picture');
+      return toast.error('That doesn’t look like a picture');
     } finally {
-      setBusy(false);
+      setCropping(false);
     }
+    set.mutate({ id: room.id, picture });
   };
   return (
     <section>
       <p className="mb-2 text-sm font-extrabold">Thumbnail</p>
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative isolate aspect-video w-48 overflow-hidden rounded-2xl">
-          {thumb ? (
-            // eslint-disable-next-line @next/next/no-img-element -- a data URL preview
-            <img src={thumb} alt="Room thumbnail" className="absolute inset-0 size-full object-cover" />
-          ) : (
-            <Scene roomId={`preview:${roomId}`} mapId={mapId} emojiClass="right-3 bottom-2 text-4xl" />
-          )}
+          <Scene
+            mapId={room.room.mapId}
+            thumbnail={thumbnail}
+            className={cn(busy && 'opacity-60')}
+            emojiClass="right-3 bottom-2 text-4xl"
+          />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="w-fit cursor-pointer rounded-full border bg-card px-4 py-1.5 text-sm font-extrabold hover:bg-muted">
-            {busy ? 'Loading…' : thumb ? 'Change picture' : 'Upload a picture'}
-            <input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(e) => pick(e.target.files?.[0])} />
+          <label
+            className={cn(
+              'w-fit cursor-pointer rounded-full border bg-card px-4 py-1.5 text-sm font-extrabold hover:bg-muted',
+              busy && 'pointer-events-none opacity-60',
+            )}
+          >
+            {busy ? 'Saving…' : thumbnail ? 'Change picture' : 'Upload a picture'}
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="sr-only"
+              disabled={busy}
+              onChange={(e) => {
+                void pick(e.target.files?.[0]);
+                e.target.value = '';
+              }}
+            />
           </label>
-          {thumb && (
+          {thumbnail && (
             <button
               type="button"
-              onClick={() => onChange(undefined)}
+              disabled={busy}
+              onClick={() => clear.mutate(room.id)}
               className="w-fit text-xs font-bold text-muted-foreground hover:underline"
             >
               Use the map’s picture
             </button>
           )}
           <p className="max-w-64 text-xs text-muted-foreground">
-            16:9, up to 5 MB. Checked before it shows. Without one, the map’s picture is used.
+            Cropped to 16:9, up to 5 MB. Checked before it shows. Without one, the map’s picture is used.
           </p>
         </div>
       </div>

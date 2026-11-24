@@ -452,7 +452,7 @@ function Row({
   label: string;
   hint?: string;
   defaultChecked?: boolean;
-  /** Saved settings; the rest are still the demo's local switches */
+  /** Saved settings (unset: a switch kept only on this device) */
   checked?: boolean;
   onCheckedChange?: (on: boolean) => void;
 }) {

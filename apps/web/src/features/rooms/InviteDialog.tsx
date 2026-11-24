@@ -20,7 +20,6 @@ const EXPIRY_LABEL: Record<InviteExpiry, string> = { '1d': '1 day', '7d': '7 day
  * - **Member invite**: whoever opens it joins the room (they need an account). Expires after 7 days
  *   by default (or 1 day, or never). No use limits: to invite one person, invite them as a friend.
  * - **Guest pass**: walk into the 3D room without an account, for 24 hours. Only if the room allows guests.
- * "Invite a friend" (sending the link in a DM) comes with friends and DMs, build step 3.
  * The owner and mods see and cancel active links in Room settings → Invites.
  */
 export function InviteDialog({ room, open, onOpenChange }: { room: PlaceRoom; open: boolean; onOpenChange: (o: boolean) => void }) {

@@ -211,7 +211,7 @@ export function AboutRoomDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-3xl p-0 sm:max-w-lg">
         <div className="relative isolate h-36">
-          <Scene roomId={room.id} mapId={room.map.id} emojiClass="text-6xl" />
+          <Scene mapId={room.map.id} thumbnail={room.room.thumbnail} emojiClass="text-6xl" />
           <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/60 to-transparent" />
           <p className="absolute bottom-3 left-4 flex items-center gap-2 text-2xl font-black text-white">
             <span className={cn('grid size-10 place-items-center rounded-xl text-xl', room.tint)}>{room.emoji}</span>

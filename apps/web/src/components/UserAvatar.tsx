@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import type { Presence, User } from '@/lib/mock';
+import type { Presence, User } from '@/lib/roomShape';
 
 const PRESENCE: Record<Presence, string> = {
   online: 'bg-online',
@@ -17,7 +17,6 @@ export const PRESENCE_LABEL: Record<Presence, string> = {
 
 /**
  * A round chibi sticker: the person's colour, their initial, and a presence dot.
- * Stand-in for a rendered avatar portrait in the real app.
  */
 export function UserAvatar({
   user,

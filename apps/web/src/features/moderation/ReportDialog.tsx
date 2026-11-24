@@ -27,8 +27,7 @@ export function ReportDialog({
   open,
   onOpenChange,
 }: {
-  /** No id: the demo's made-up people, where nothing is sent */
-  person: { id?: string; name: string; guest?: boolean };
+  person: { id: string; name: string; guest?: boolean };
   /** The room or Common copy it happened in */
   place?: string;
   /** Reporting one message (room chat or a DM) */
@@ -48,16 +47,14 @@ export function ReportDialog({
 
   const send = async () => {
     if (!reason) return;
-    if (person.id) {
-      setBusy(true);
-      const { error } = await api.POST('/api/reports', {
-        body: messageId
-          ? { kind: 'message', messageId, reason, details: details || undefined, block: blocking }
-          : { kind: 'person', userId: person.id, place, reason, details: details || undefined, block: blocking, bubbles },
-      });
-      setBusy(false);
-      if (error) return toast.error(problem(error, 'Couldn’t send the report. Try again?'));
-    }
+    setBusy(true);
+    const { error } = await api.POST('/api/reports', {
+      body: messageId
+        ? { kind: 'message', messageId, reason, details: details || undefined, block: blocking }
+        : { kind: 'person', userId: person.id, place, reason, details: details || undefined, block: blocking, bubbles },
+    });
+    setBusy(false);
+    if (error) return toast.error(problem(error, 'Couldn’t send the report. Try again?'));
     toast.success(`Thanks. ${messageId ? 'The message' : person.name} was reported${blocking ? ` and ${person.name} blocked` : ''}.`);
     onOpenChange(false);
     setReason('');

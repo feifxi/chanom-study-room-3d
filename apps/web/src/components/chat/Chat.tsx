@@ -26,8 +26,6 @@ export interface ChatMessageView {
   /** "20:41", "Yesterday 20:41"… */
   at: string;
   text: string;
-  /** The demo's placeholder picture (mock messages) */
-  image?: boolean;
   /** Picture URLs; null while one is still being got ready (only its sender sees that) */
   images?: (string | null)[];
   reactions: { emoji: string; count: number; mine: boolean }[];
@@ -96,7 +94,7 @@ type ViewProps = {
  * - up to 4 pictures a message, 10 MB each (compressed on upload)
  * - "… is typing"; no read receipts ("Seen"), on purpose: no pressure to answer
  * - people you've blocked: their messages fold into "Blocked message · show"
- * It only shows; whoever renders it owns the messages (the API, or the demo's mock state).
+ * It only shows; whoever renders it owns the messages (the API).
  */
 export function ChatView({
   messages,
@@ -325,13 +323,6 @@ function Row({
         )}
         {m.gift && <GiftCard from={m.mine ? 'You' : u.name} gift={m.gift} />}
         {m.card}
-        {m.image && (
-          <div
-            className="mt-2 aspect-[4/3] w-64 max-w-full overflow-hidden rounded-2xl border bg-[url('/screenshot.png')] bg-[length:240%] bg-[position:35%_35%]"
-            role="img"
-            aria-label="Shared picture"
-          />
-        )}
         {m.images && (
           <div className={cn('mt-2 grid max-w-sm gap-1.5', m.images.length > 1 && 'grid-cols-2')}>
             {m.images.map((src, i) =>
@@ -482,7 +473,7 @@ function EmojiPicker({
   );
 }
 
-/** The file behind each picked picture's preview, so a real chat can upload it when you send. */
+/** The file behind each picked picture's preview, so the chat can upload it when you send. */
 const PICKED = new Map<string, File>();
 export const pickedFile = (previewUrl: string) => PICKED.get(previewUrl);
 
@@ -617,7 +608,7 @@ function FullComposer({
           <div className="flex gap-2 border-b p-2">
             {images.map((src) => (
               <span key={src} className="relative">
-                {/* eslint-disable-next-line @next/next/no-img-element -- local object URLs in the demo */}
+                {/* eslint-disable-next-line @next/next/no-img-element -- local object URLs */}
                 <img src={src} alt="" className="size-16 rounded-xl object-cover" />
                 <button
                   onClick={() => setImages((all) => all.filter((x) => x !== src))}
@@ -754,7 +745,7 @@ export function Composer({
         <div className="flex items-end gap-1.5 px-1 pt-1 pb-1.5">
           {images.map((src) => (
             <span key={src} className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element -- local object URLs in the demo */}
+              {/* eslint-disable-next-line @next/next/no-img-element -- local object URLs */}
               <img src={src} alt="" className="size-12 rounded-lg object-cover" />
               <button
                 type="button"

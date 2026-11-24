@@ -1,4 +1,4 @@
-/** Friend rules shared by the web app and the API (docs/v2/features/05-friends.md). */
+/** Friend rules shared by the web app and the API (docs/features/05-friends.md). */
 
 /** A request nobody answers goes away after this many days */
 export const FRIEND_REQUEST_DAYS = 30;

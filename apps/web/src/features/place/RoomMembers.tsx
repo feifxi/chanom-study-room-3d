@@ -18,8 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useMe } from '@/features/account/useMe';
 import { inviteUrl, roomsApi, useBans, useInvites, useMembers, useRequests, useRoomAction } from '@/features/rooms/useRooms';
-import { ago } from '@/lib/mock';
-import { cn } from '@/lib/utils';
+import { cn, ago } from '@/lib/utils';
 import { ROLE_RULES, TIMEOUTS } from './membership';
 import { ROLE_LABEL, type PlaceRoom } from './model';
 

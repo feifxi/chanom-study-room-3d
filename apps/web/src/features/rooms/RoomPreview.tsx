@@ -19,6 +19,7 @@ export function RoomPreview({ room: initial }: { room: Room }) {
     emoji: room.emoji,
     description: room.description,
     mapId: room.mapId,
+    thumbnail: room.thumbnail,
     // Only listed rooms reach here: private ones are a 404 for non-members
     visibility: room.visibility === 'open' ? 'open' : 'request',
     tags: room.tags,
@@ -26,12 +27,14 @@ export function RoomPreview({ room: initial }: { room: Room }) {
     owner: room.owner,
     memberCount: room.memberCount,
     capacity: room.capacity,
+    // The join preview doesn't show it (and a non-member's room view doesn't carry who's inside)
+    inside: room.inside.length,
     rules: room.showRules ? room.rules : null,
     me: room.me,
   };
   return (
     <div className="fixed inset-0 isolate">
-      <Scene roomId={room.id} mapId={room.mapId} className="fixed" emojiClass="text-[9rem]" />
+      <Scene mapId={room.mapId} thumbnail={room.thumbnail} className="fixed" emojiClass="text-[9rem]" />
       <div className="fixed inset-0 -z-10 bg-black/35 backdrop-blur-sm" />
       <JoinRoomDialog room={listed} open onOpenChange={() => router.push('/discover')} />
     </div>

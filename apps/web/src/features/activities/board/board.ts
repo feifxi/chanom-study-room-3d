@@ -3,15 +3,15 @@
  * (0–1 across, 0–1 down), so the panel, the 3D wall and a saved PNG all draw the same picture.
  *
  * It has its own little store, apart from the activity hub: strokes change on every pointer move,
- * and only the board's canvases need to redraw, not the whole room's UI. In a real room the game
- * server relays strokes the same way, a stream of points apart from the room state: your strokes
+ * and only the board's canvases need to redraw, not the whole room's UI. The game server relays
+ * strokes the same way, a stream of points apart from the room state: your strokes
  * draw at once and go out through {@link BoardSink}; everyone else's come in through `put`,
  * `extend`, `remove`, `wipe` and `replace`.
  */
 
 import { BOARD_BG, BOARD_COLORS, BOARD_ERASER, BOARD_SIZES, BOARD_STROKE_MAX, type BoardStroke } from '@connecta/shared';
 
-/** A real room's way to the game server's board (`LiveRoom.connectBoard`) */
+/** The way to the game server's board (`LiveRoom.connectBoard`) */
 export interface BoardSink {
   /** Your session id: your strokes are `<sessionId>:<n>` on every screen */
   sessionId: string;
@@ -41,7 +41,7 @@ export const ASPECT = 16 / 9;
 export class BoardStore {
   strokes: Stroke[] = [];
   rev = 0;
-  /** Set in a real room: the game server's board */
+  /** The game server's board, once connected */
   remote: BoardSink | null = null;
   /** Your strokes' numbers for the server, by the panel's stroke id */
   private mine = new Map<string, number>();

@@ -1,4 +1,4 @@
-/** Chat rules shared by the web app and the API (docs/v2/features/04-chat-and-dms.md). */
+/** Chat rules shared by the web app and the API (docs/features/04-chat-and-dms.md). */
 
 /** Longest message, in characters */
 export const MESSAGE_MAX = 2000;

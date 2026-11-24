@@ -9,7 +9,7 @@ import type * as THREE from 'three';
  *   battery saver, plus one small bone texture.
  * - JS time is ours per frame (scene updates + render submission): 8 ms leaves the rest of a 60 fps
  *   frame to the browser and the GPU.
- * - The map share was 120 draw calls for V1's 20 × 14 m room; the redesigned 26 × 18 m library
+ * - The map share was 120 draw calls for the first 20 × 14 m room; the redesigned 26 × 18 m library
  *   (2026-11-10) measures about 122 after batching, so it is 130 now. Still under a fifth of the
  *   total with 100 people in the room.
  */
@@ -104,9 +104,9 @@ export function usePerfSample() {
   return useSyncExternalStore(perfMeter.subscribe, perfMeter.get, () => null);
 }
 
-// --- Demo toggle: Demo tab → Performance overlay, or ?perf in the address ---
+// --- Toggle: Test tools → Performance overlay, or ?perf in the address ---
 
-const KEY = 'connecta-demo:perf';
+const KEY = 'connecta:perf';
 const toggles = new Set<() => void>();
 
 function readOn() {

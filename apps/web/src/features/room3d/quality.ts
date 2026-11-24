@@ -1,13 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import type { CharacterDetail } from '../avatar/character';
 
 /**
- * Rendering quality. "auto" starts smooth and drops to battery saver by itself if the device can't
- * keep up; "saver" is the viewer's choice. Remembered in this browser (the room page is client-only).
+ * Rendering quality: smooth to start (battery saver on touch screens), dropping to battery saver by
+ * itself if the device can't keep up; the viewer can switch it too (RoomView).
  */
-export type QualityMode = 'auto' | 'saver';
 /** steady: battery saver on a device that still can't keep up, so the frame rate is capped too. */
 export type QualityTier = 'smooth' | 'saver' | 'steady';
 
@@ -30,28 +28,6 @@ export const QUALITY: Record<QualityTier, Quality> = {
   // Only if that's still too slow: a steady 30 beats a stuttering 45
   steady: { dpr: 1, fps: 30, idleFps: 30, shadows: false, characters: 'low' },
 };
-
-const KEY = 'connecta:quality';
-
-function load(): QualityMode {
-  try {
-    return localStorage.getItem(KEY) === 'saver' ? 'saver' : 'auto';
-  } catch {
-    return 'auto';
-  }
-}
-
-export function useQualityMode() {
-  const [mode, setMode] = useState<QualityMode>(load);
-  useEffect(() => {
-    try {
-      localStorage.setItem(KEY, mode);
-    } catch {
-      // Blocked storage: the choice just isn't remembered
-    }
-  }, [mode]);
-  return [mode, setMode] as const;
-}
 
 /** Slow-device detector: true once frames have been much slower than the target for a few seconds. */
 export class SlowFrameDetector {

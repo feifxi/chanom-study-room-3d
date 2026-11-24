@@ -7,7 +7,7 @@ export type PlayerStatus = (typeof PLAYER_STATUSES)[number];
 export type PlayerRole = 'owner' | 'mod' | 'member' | 'guest';
 
 export interface PlayerView {
-  /** Their account, for the people list (profile, add friend); '' for the demo's scripted people */
+  /** Their account, for the people list (profile, add friend); '' for the Test tools' pretend crowd */
   userId: string;
   /** For Message and Add friend in the people list; '' for guests */
   handle: string;
@@ -31,7 +31,7 @@ export interface PlayerView {
   focusSince: number;
   /** Minutes of focus rounds they finished in this room since it opened (in memory; guests too) */
   todayMin: number;
-  /** Has Connecta Plus: an animated name tag (optional for the demo's mock players) */
+  /** Has Connecta Plus: an animated name tag (optional for the pretend crowd) */
   plus?: boolean;
   /** On the Connecta team (Common rooms): a chip by their name */
   team?: boolean;

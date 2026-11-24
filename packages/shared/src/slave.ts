@@ -10,8 +10,7 @@
  *   next game the Slave gives the King their 2 best cards and the King gives 2 back (Queen and the
  *   next-to-last swap 1), and the Slave leads. No straights, bombs or revolution.
  *
- * Plain, serialisable state. The game server plays it (`apps/game/src/slave.ts`); the demo plays it
- * in the browser. `friendlyPlay` is only the demo's scripted players.
+ * Plain, serialisable state. The game server plays it (`apps/game/src/slave.ts`).
  */
 
 /** A card is 0–51: rank × 4 + suit, so a bigger number is a better card. */
@@ -22,7 +21,6 @@ const RANKS = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2']
 export const SUITS = ['♣', '♦', '♥', '♠'];
 export const rankLabel = (c: Card) => RANKS[rankOf(c)]!;
 export const isRed = (c: Card) => suitOf(c) === 1 || suitOf(c) === 2;
-export const cardName = (c: Card) => `${rankLabel(c)}${SUITS[suitOf(c)]}`;
 const THREE_OF_CLUBS = 0;
 
 export type Title = 'king' | 'queen' | 'commoner' | 'slave';
@@ -240,24 +238,4 @@ export function drop(g: SlaveGame, id: string, now: number) {
   else if (g.stage === 'swap' && !g.swap.length) startPlay(g, now);
   else if (g.stage === 'play' && g.turn === id) advance(g, id, now);
   g.rev++;
-}
-
-/**
- * Demo: a simple opponent. Leading, it plays its lowest rank (all of that rank); following, the
- * cheapest set that beats the pile, holding back 2s and aces now and then.
- */
-export function friendlyPlay(g: SlaveGame, id: string): Card[] | null {
-  const hand = g.hands[id]!;
-  const byRank = new Map<number, Card[]>();
-  for (const c of hand) byRank.set(rankOf(c), [...(byRank.get(rankOf(c)) ?? []), c]);
-  if (!g.pile) return byRank.values().next().value ?? null;
-  const need = g.pile.cards.length;
-  for (const [rank, cards] of byRank) {
-    if (cards.length < need) continue;
-    const pick = cards.slice(cards.length - need);
-    if (!canPlay(g, pick)) continue;
-    if (rank >= 11 && hand.length > 4 && Math.random() < 0.4) return null;
-    return pick;
-  }
-  return null;
 }

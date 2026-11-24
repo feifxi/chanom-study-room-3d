@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { COMMON_SAY_MS } from '@connecta/shared';
+import { COMMON_CAPACITY_RANGE, COMMON_SAY_MS } from '@connecta/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { MAPS } from '@/lib/mock';
+import { MAPS } from '@/lib/maps';
 import { AdminTitle, Pill } from '@/features/admin/AdminFrame';
 import { useAdminCommon, useCommonNotice, useCommonSeats, type AdminCommon } from '@/features/admin/useAdmin';
 import { problem } from '@/features/rooms/useRooms';
@@ -94,7 +94,13 @@ function Seats({ data }: { data: AdminCommon }) {
   return (
     <div className="flex flex-col gap-3">
       <h2 className="font-black">How full a copy gets</h2>
-      <Num label="Seats in a copy" value={capacity} min={5} max={50} onChange={setCapacity} />
+      <Num
+        label="Seats in a copy"
+        value={capacity}
+        min={COMMON_CAPACITY_RANGE.min}
+        max={COMMON_CAPACITY_RANGE.max}
+        onChange={setCapacity}
+      />
       <Num label="Kept for people joining a friend" value={friendSeats} min={0} max={20} onChange={setFriendSeats} />
       <p className="text-xs text-muted-foreground">
         Walk in places strangers until a copy has {strangersUpTo}, so the last {friendSeats} seats stay free for people joining a friend. A

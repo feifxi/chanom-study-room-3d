@@ -12,7 +12,7 @@ import { cardSeats, circle, rect, circleSeats, zoneAtIn, type CardTable, type Ma
  * Rugs (decking, gravel, mats) are the areas. Units are metres; +z faces the camera.
  *
  * Not final art: odd props, overlapping rugs and other fixes are listed in the polish backlog in
- * docs/v2/features/07-maps.md.
+ * docs/features/07-maps.md.
  */
 
 export const ROOM = { width: 26, depth: 18 } as const;

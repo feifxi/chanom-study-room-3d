@@ -9,6 +9,7 @@ import type { Room } from '@/features/rooms/useRooms';
 import Link from 'next/link';
 import { RoomShot, SplitScreen } from './SplitScreen';
 import { usePathname } from 'next/navigation';
+import { SIGN_UP_HREF } from '@/features/account/links';
 
 /**
  * The frame around every signed-in page except 3D rooms. Like Gather, there are no servers or
@@ -45,7 +46,7 @@ const PERKS = [
 /**
  * Guests have no account, so no Home, friends or room chats: a guest link lets them into one room in
  * 3D and nothing else (feature 2). Instead of a dead end, the page shows what signing up adds and
- * keeps Discover one tap away. In the real app these pages send them to sign in.
+ * keeps Discover one tap away.
  */
 function GuestWall() {
   return (
@@ -81,7 +82,7 @@ function GuestWall() {
         </ul>
         <div className="mt-6 flex flex-col gap-2">
           <Link
-            href="/login"
+            href={SIGN_UP_HREF}
             className="rounded-full bg-primary px-4 py-2.5 text-center text-sm font-extrabold text-primary-foreground shadow-sm hover:brightness-105"
           >
             Sign up, it’s free

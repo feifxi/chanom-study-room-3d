@@ -4,6 +4,7 @@ import { ArrowRight, ChevronDown, Crown, Flag, Link2, Lock, MessageCircle, Shiel
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { SIGN_UP_HREF } from '@/features/account/links';
 
 const ACTIVITIES = [
   ['📺', 'Watch together', 'bg-sky'],
@@ -82,12 +83,12 @@ export default function Landing() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg" className="h-12 rounded-full px-6 text-base font-extrabold">
-                <Link href="/login">
+                <Link href={SIGN_UP_HREF}>
                   Make your room <ArrowRight />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="h-12 rounded-full bg-card px-6 text-base font-bold">
-                <Link href="/common/cafe">Try a room as a guest</Link>
+                <Link href="/discover">Try a room as a guest</Link>
               </Button>
             </div>
             <p className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -299,7 +300,7 @@ export default function Landing() {
             <h2 className="text-3xl font-black tracking-[-0.03em] sm:text-4xl">Your friends are one link away</h2>
             <p className="max-w-md text-white/70">Make a room in a minute. Pick a map, give it a name, send the link.</p>
             <Button asChild size="lg" className="h-12 rounded-full px-7 text-base font-extrabold">
-              <Link href="/login">
+              <Link href={SIGN_UP_HREF}>
                 Make your room <ArrowRight />
               </Link>
             </Button>
@@ -311,7 +312,7 @@ export default function Landing() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-8 pb-16 text-sm text-muted-foreground sm:px-6">
           <Logo />
           <span>Made for cosy hangouts. 13+.</span>
-          <span className="ml-auto">Music from Pixabay · Demo build</span>
+          <span className="ml-auto">Music from Pixabay</span>
         </div>
       </footer>
     </div>

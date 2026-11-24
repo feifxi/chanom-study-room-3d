@@ -12,7 +12,7 @@ const LOADING_MS = 2500;
  * Connecta team publishes an update (after a 60-second banner), everyone sees a short loading screen
  * and lands at the door of the new map. Voice and chat never stop, since only the 3D scene reloads.
  */
-export function MapMove({ lookId, mapId, onArrive }: { lookId: string; mapId: string; onArrive: () => void }) {
+export function MapMove({ mapId, onArrive }: { mapId: string; onArrive: () => void }) {
   const [shown, setShown] = useState(mapId);
   const [moving, setMoving] = useState<string | null>(null);
   const map = mapById(mapId);
@@ -36,7 +36,7 @@ export function MapMove({ lookId, mapId, onArrive }: { lookId: string; mapId: st
     <>
       {moving && (
         <div className="fixed inset-0 z-[60] isolate grid place-items-center">
-          <Scene roomId={lookId} mapId={mapId} className="blur-sm brightness-75" emojiClass="hidden" />
+          <Scene mapId={mapId} className="blur-sm brightness-75" emojiClass="hidden" />
           <div className="panel flex w-72 flex-col items-center gap-3 p-6 text-center">
             <span className="text-5xl">{map.emoji}</span>
             <p className="text-lg font-black">{moving}</p>

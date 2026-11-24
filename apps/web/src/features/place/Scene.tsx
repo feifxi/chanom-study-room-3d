@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { mapById, useRoomLook } from './roomLook';
+import { mapById } from './roomLook';
 
 /** A soft scene gradient per template, for maps without a real picture yet. */
 const SCENE: Record<string, string> = {
@@ -14,24 +14,24 @@ const SCENE: Record<string, string> = {
  * (the real screenshot for the Library, a soft gradient for templates that don't have one yet).
  */
 export function Scene({
-  roomId,
   mapId,
+  thumbnail,
   className,
   emojiClass,
 }: {
-  roomId: string;
   mapId: string;
+  /** The room's own picture from the API (Room.thumbnail) */
+  thumbnail?: string | null;
   className?: string;
   emojiClass?: string;
 }) {
-  const look = useRoomLook(roomId, mapId);
-  const src = look.thumb ?? (look.mapId === 'library' ? '/screenshot.png' : undefined);
+  const src = thumbnail ?? (mapId === 'library' ? '/screenshot.png' : undefined);
   if (src)
-    // eslint-disable-next-line @next/next/no-img-element -- a demo still (or a data URL)
+    // eslint-disable-next-line @next/next/no-img-element -- the map's still, or a short-lived storage link
     return <img src={src} alt="" className={cn('absolute inset-0 -z-10 size-full object-cover', className)} />;
   return (
-    <div className={cn('absolute inset-0 -z-10 bg-gradient-to-br', SCENE[look.mapId] ?? SCENE.cafe, className)}>
-      <span className={cn('absolute right-8 bottom-6 text-7xl opacity-80', emojiClass)}>{mapById(look.mapId).emoji}</span>
+    <div className={cn('absolute inset-0 -z-10 bg-gradient-to-br', SCENE[mapId] ?? SCENE.cafe, className)}>
+      <span className={cn('absolute right-8 bottom-6 text-7xl opacity-80', emojiClass)}>{mapById(mapId).emoji}</span>
     </div>
   );
 }

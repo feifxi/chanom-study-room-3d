@@ -50,6 +50,8 @@ function LoginFlow() {
   // Where to go once signed in (an invite link sends people here and back); only paths on this site
   const nextPath = search.get('next');
   const after = nextPath?.startsWith('/') && !nextPath.startsWith('//') ? nextPath : '/home';
+  // Came from a Sign up button (SIGN_UP_HREF): the same flow, welcomed as someone new
+  const joining = search.has('new');
   const [step, setStep] = useState<Step>('loading');
   const [busy, setBusy] = useState(false);
   const [email, setEmail] = useState('');
@@ -200,8 +202,12 @@ function LoginFlow() {
         {step === 'method' && (
           <div className="flex flex-col gap-5">
             <div className="text-center">
-              <h1 className="text-2xl font-black tracking-[-0.03em]">Welcome in ✨</h1>
-              <p className="mt-1 text-sm text-muted-foreground">Sign in or make an account. It takes a minute.</p>
+              <h1 className="text-2xl font-black tracking-[-0.03em]">{joining ? 'Join Connecta ✨' : 'Welcome back 👋'}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {joining
+                  ? 'Free and no passwords. Pick a way in, then make your character.'
+                  : 'Sign in the way you joined. New here? Same buttons, and we’ll set you up.'}
+              </p>
             </div>
             <div className="flex flex-col gap-2.5">
               <Button variant="outline" className="h-12 rounded-2xl text-base font-bold" disabled={busy} onClick={() => social('google')}>
@@ -302,6 +308,7 @@ function LoginFlow() {
           >
             <BackButton onClick={() => void backToStart()} />
             <div>
+              <NewAccount step={1} />
               <h1 className="text-2xl font-black tracking-[-0.03em]">When’s your birthday? 🎂</h1>
               <p className="mt-1 text-sm text-muted-foreground">
                 Connecta is for people {MIN_AGE} and older. We don’t show this to anyone.
@@ -433,6 +440,7 @@ function CharacterStep(props: {
     >
       <BackButton onClick={props.onBack} />
       <div>
+        <NewAccount step={2} />
         <h1 className="text-2xl font-black tracking-[-0.03em]">{props.keptLook ? 'Keep your character?' : 'Make your character'}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {props.keptLook
@@ -486,6 +494,15 @@ function LoginAside() {
         <span>✓ 13+</span>
       </p>
     </>
+  );
+}
+
+/** Over the new-account steps, so a first sign-in reads as making an account, not a stray form. */
+function NewAccount({ step }: { step: 1 | 2 }) {
+  return (
+    <p className="mb-1 text-xs font-black tracking-wider text-primary uppercase">
+      {step === 1 ? 'Nice to meet you' : 'Almost there'} · making your account {step}/2
+    </p>
   );
 }
 

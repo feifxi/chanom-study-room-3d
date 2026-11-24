@@ -30,7 +30,7 @@ export function BoardPanel({
   name: (id: string) => string;
   mini: boolean;
   onMini: (mini: boolean) => void;
-  /** Posts the board to Room chat (members in a real room; unset for guests and the demo) */
+  /** Posts the board to Room chat (members; unset for guests and Common rooms) */
   onShare?: (png: Blob) => Promise<unknown>;
 }) {
   const panel = useDismiss<HTMLElement>(!mini, () => onMini(true));

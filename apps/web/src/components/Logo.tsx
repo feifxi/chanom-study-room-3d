@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 
-/** V1's brand mark: a thick open ring with a milk-tea dot in the gap. */
+/** Connecta's brand mark: a thick open ring with a milk-tea dot in the gap. */
 export function LogoMark({ size = 28, className }: { size?: number; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" className={className}>

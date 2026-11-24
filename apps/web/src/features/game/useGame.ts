@@ -24,7 +24,7 @@ export interface GameState {
   npcs: Map<string, NpcView>;
   /** Watch together's big screen (feature 10) */
   watch?: WatchView;
-  /** The activity spots the game server runs (feature 9): chess for now */
+  /** The activity spots the game server runs (feature 9) */
   spots?: Map<string, SpotView>;
   chess?: ChessView;
   slave?: SlaveView;

@@ -11,8 +11,8 @@ export const TEL_TEXT_MAX = 80;
 export const TEL_POINTS_MAX = 20_000;
 
 /**
- * Draw & Guess at the art corner (feature 11). The game server plays it (`apps/game/src/drawGuess.ts`);
- * the demo plays it in the browser. Everyone plays at once; each player starts a
+ * Draw & Guess at the art corner (feature 11). The game server plays it (`apps/game/src/drawGuess.ts`).
+ * Everyone plays at once; each player starts a
  * chain, and every step each chain moves to the next player.
  *
  * - **Draw & Guess** (`tel`): write a prompt → draw the prompt you got → describe the drawing you
@@ -35,8 +35,6 @@ export interface Entry {
   strokes?: TelStroke[];
   /** Out, or sent nothing. */
   skipped?: boolean;
-  /** Demo: which doodle a scripted player drew, so the next one can guess it. */
-  doodle?: string;
 }
 
 export interface TelGame {

@@ -107,23 +107,6 @@ export function answerDraw(g: ChessGame, id: string, accept: boolean) {
   g.rev++;
 }
 
-/** Demo: a friendly, beatable opponent. Mates when it can, likes captures and checks, otherwise anything. */
-export function friendlyMove(g: ChessGame) {
-  const c = engine(g);
-  const moves = c.moves({ verbose: true });
-  let best = moves[0];
-  let bestScore = -Infinity;
-  for (const m of moves) {
-    let score = Math.random() * 2;
-    if (m.san.includes('#')) score += 100;
-    if (m.captured) score += PIECE_VALUE[m.captured] * 1.5;
-    if (m.san.includes('+')) score += 1;
-    if (m.promotion) score += 6;
-    if (score > bestScore) [best, bestScore] = [m, score];
-  }
-  return best ? { from: best.from, to: best.to, promotion: best.promotion } : null;
-}
-
 export const END_TEXT: Record<EndReason, string> = {
   checkmate: 'by checkmate',
   resigned: 'by resignation',

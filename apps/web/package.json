@@ -2,7 +2,7 @@
   "name": "@connecta/web",
   "version": "0.0.0",
   "private": true,
-  "description": "Connecta web app (Next.js). Starts as a copy of the demo; mock data is replaced by real calls feature by feature.",
+  "description": "Connecta web app (Next.js).",
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",

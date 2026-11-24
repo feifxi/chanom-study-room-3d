@@ -40,11 +40,8 @@ export interface Spot {
   /** Being here is being in: seats for seated spots, otherwise standing on the rug. */
   area: Area;
   seats?: string[];
-  /** Built in the demo's map; the rest arrive with their features. */
-  built: boolean;
-  /** Not every map has every spot yet (the chess table is the Library's for now): absent spots are unlisted. */
-  inMap?: boolean;
-  feature: number;
+  /** In this map (the chess table is only the Library's so far); absent spots are unlisted and inactive. */
+  inMap: boolean;
   tint: string;
 }
 
@@ -68,8 +65,7 @@ export const SPOTS: Spot[] = [
     get seats() {
       return cardSeats(activeMap().cardTables[0]!).map((s) => s.id);
     },
-    built: true,
-    feature: 12,
+    inMap: true,
     tint: 'bg-mint',
   },
   {
@@ -89,13 +85,9 @@ export const SPOTS: Spot[] = [
       const t = activeMap().chessTable;
       return t ? cardSeats(t).map((s) => s.id) : undefined;
     },
-    get built() {
-      return !!activeMap().chessTable;
-    },
     get inMap() {
       return !!activeMap().chessTable;
     },
-    feature: 12,
     tint: 'bg-sky',
   },
 
@@ -114,8 +106,7 @@ export const SPOTS: Spot[] = [
     get area() {
       return activeMap().floorArea;
     },
-    built: true,
-    feature: 11,
+    inMap: true,
     tint: 'bg-secondary',
   },
   {
@@ -129,8 +120,7 @@ export const SPOTS: Spot[] = [
     get area() {
       return activeMap().tvArea;
     },
-    built: true,
-    feature: 10,
+    inMap: true,
     tint: 'bg-sky',
   },
   {
@@ -145,8 +135,7 @@ export const SPOTS: Spot[] = [
     get area() {
       return activeMap().boardArea;
     },
-    built: true,
-    feature: 11,
+    inMap: true,
     tint: 'bg-lavender',
   },
   {
@@ -168,8 +157,7 @@ export const SPOTS: Spot[] = [
       const t = activeMap().artTable;
       return t ? artSeats(t).map((s) => s.id) : undefined;
     },
-    built: true,
-    feature: 11,
+    inMap: true,
     tint: 'bg-peach',
   },
 ];

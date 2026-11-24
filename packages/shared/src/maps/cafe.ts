@@ -12,7 +12,7 @@ import { cardSeats, circle, rect, circleSeats, zoneAtIn, type CardTable, type Ma
  * Rugs are the areas, as in the library. Units are metres; +z faces the camera.
  *
  * Not final art: odd props, overlapping rugs and the café needing more resident cats are listed in
- * the polish backlog in docs/v2/features/07-maps.md.
+ * the polish backlog in docs/features/07-maps.md.
  */
 
 export const ROOM = { width: 26, depth: 18 } as const;

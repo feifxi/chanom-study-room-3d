@@ -54,7 +54,7 @@ export function ZoomBridge({ request, onZoom }: { request: Box<number | null>; o
   return null;
 }
 
-/** Bottom-right "− 100% +" control (V1). Touch screens pinch instead, and the joystick has that corner. */
+/** Bottom-right "− 100% +" control. Touch screens pinch instead, and the joystick has that corner. */
 export function ZoomControl({ percent, onZoom, className }: { percent: number; onZoom: (zoom: number) => void; className?: string }) {
   const current = (percent / 100) * ZOOM.base;
   return (

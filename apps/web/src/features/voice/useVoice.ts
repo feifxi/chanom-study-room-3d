@@ -21,7 +21,7 @@ interface Here {
 }
 
 export interface VoiceOptions {
-  /** A real room; null in the demo and Common rooms (no voice) */
+  /** The room; null for no voice */
   room: LiveRoom | null;
   motion: RefObject<Here>;
   /** Your mic should be on (it's still off while the server says you can't talk) */
@@ -64,7 +64,7 @@ const TALK_HANGOVER_MS = 450;
 const PAN_METRES = 6;
 
 /**
- * Proximity voice over LiveKit (feature 6, build step 4 part 3), lifted from V1 and grown up:
+ * Proximity voice over LiveKit (feature 6), grown up for crowds:
  *
  * - **Hearing:** full volume within 2.5 m, silent at 9 m, panned left and right by where people
  *   stand; only the 12 nearest you can hear are streamed. Talk to everyone is full volume anywhere.

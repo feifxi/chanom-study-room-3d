@@ -5,7 +5,7 @@ import type { NextConfig } from 'next';
 const API_URL = process.env.API_URL ?? 'http://localhost:4000';
 // The live gateway (chat, typing, presence), reached the same way at /live
 const GATEWAY_URL = process.env.GATEWAY_URL ?? 'http://localhost:4001';
-// The game server (walking in, build step 4) at /game: matchmaking over HTTP, then a WebSocket
+// The game server (walking in, activities) at /game: matchmaking over HTTP, then a WebSocket
 const GAME_URL = process.env.GAME_URL ?? 'http://localhost:4002';
 
 const nextConfig: NextConfig = {

@@ -5,7 +5,7 @@ import { MessageCircle, X } from 'lucide-react';
 import { PersonFace } from '@/components/PersonFace';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import type { Server } from '@/lib/mock';
+import type { Server } from '@/lib/roomShape';
 import { DmChat } from '@/features/dms/DmChat';
 import { dmUnread, useDms } from '@/features/dms/useDms';
 import { RoomChat } from '@/features/chat/RoomChat';
@@ -31,7 +31,7 @@ export function ChannelOverlay({ server, target, onClose }: { server: Server; ta
 }
 
 function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
-  // A room has one main chat (the mock servers' first chat stands in for it)
+  // A room has one main chat (asServer puts it first)
   const channels = server.channels.slice(0, 1);
   const [current, setCurrent] = useState(initial);
   const dms = useDms();

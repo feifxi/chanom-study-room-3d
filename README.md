@@ -14,13 +14,9 @@ _Discord is a communication tool; this is a place._
 
 ## Status
 
-Being built. Every feature is designed and approved in `demo/`, a frontend-only prototype with
-mock data; the real app in `apps/` is being built from it, one feature at a time. Nothing is
-deployed yet. The previous app, Chanom Study Room, is kept at tag `v1.0.0`.
+Every feature is built except the map editor; nothing is deployed yet.
 
-- [The plan](docs/v2-plan.md): status, the concept, every feature, what's left
-- [The decision log](docs/v2/decisions.md): why things are the way they are
-- [The feature specs](docs/v2/features/)
+- [The docs](docs/README.md): roadmap, feature specs, decisions, guides
 
 ## Stack
 
@@ -35,12 +31,14 @@ Needs Node 24, pnpm 9 and Docker.
 pnpm install
 docker compose up -d
 cp apps/api/.env.example apps/api/.env
+cp apps/game/.env.example apps/game/.env
+pnpm --filter @connecta/shared build && pnpm --filter @connecta/api generate
 pnpm db:migrate && pnpm db:seed
 pnpm dev          # web http://localhost:3000 · API http://localhost:4000/api/docs
 ```
 
-Sign in with an email code; it lands in the local inbox at http://localhost:8025. The demo people
-sign in as `<handle>@connecta.test`, for example `maimai@connecta.test`.
+Sign in with an email code; it lands in the local inbox at http://localhost:8025. The seed people
+sign in as `<handle>@connecta.test`, for example `fei@connecta.test`.
 
 Developers and coding agents: start at [`AGENTS.md`](AGENTS.md) for commands, layout and the
 working agreements.

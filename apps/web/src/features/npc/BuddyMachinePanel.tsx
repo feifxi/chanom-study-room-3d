@@ -52,7 +52,7 @@ export function BuddyMachinePanel({
   onSummon: (kind: NpcKind) => void;
   onGoodbye: (id: string) => void;
   onClose: () => void;
-  /** Pets you own (real rooms, people with an account) */
+  /** Pets you own (people with an account) */
   pets?: PetOut[];
   myUserId?: string;
   onSummonPet?: (item: string) => void;

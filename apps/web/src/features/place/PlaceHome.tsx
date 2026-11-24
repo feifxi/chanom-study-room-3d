@@ -19,9 +19,9 @@ import { useMe } from '@/features/account/useMe';
 import { notifyWhenSpace, ROOMS_KEY, roomsApi, useListedRooms, useMyRooms, useRoomAction } from '@/features/rooms/useRooms';
 import { api } from '@/lib/api/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { cn } from '@/lib/utils';
+import { cn, ago } from '@/lib/utils';
 import { joinCommonHref, useCommonRooms } from '@/features/common/useCommon';
-import { ago, MAPS } from '@/lib/mock';
+import { MAPS } from '@/lib/maps';
 import { chatHref, placeRoom, walkInHref, type PlaceRoom } from './model';
 import { SizePicker, TemplateCard } from './MapPickers';
 import { PlusEndingBanner } from './PlusEndingBanner';
@@ -300,8 +300,8 @@ function RoomCard({ room, pinned, unread, menu }: { room: PlaceRoom; pinned: boo
   return (
     <article className="group relative isolate flex min-h-64 flex-col overflow-hidden rounded-[2rem] text-white shadow-soft">
       <Scene
-        roomId={room.id}
         mapId={room.map.id}
+        thumbnail={room.room.thumbnail}
         className="transition-transform duration-700 group-hover:scale-105"
         emojiClass="top-6 bottom-auto text-6xl"
       />

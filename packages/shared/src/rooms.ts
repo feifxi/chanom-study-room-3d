@@ -1,6 +1,6 @@
 /**
  * Room rules shared by the web app (what to show) and the API (the final say). Feature 3:
- * docs/v2/features/03-rooms-membership.md.
+ * docs/features/03-rooms-membership.md.
  */
 
 export const ROOM_NAME_MAX = 32;

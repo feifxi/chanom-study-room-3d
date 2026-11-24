@@ -25,7 +25,7 @@ export function ActivitiesPanel({
   watchTitle?: string;
   hostName: (id: string) => string;
   onGo: (spot: Spot) => void;
-  /** Owners and mods in a real room: turn the big screen off from here */
+  /** Owners and mods: turn the big screen off from here */
   onTurnOffTv?: () => void;
 }) {
   return (
@@ -44,30 +44,25 @@ export function ActivitiesPanel({
         const off = notHere || (spot.roomWide && !roomWideGames);
         const live = st.phase === 'gathering' || st.phase === 'playing';
         const place = spot.name.toLowerCase();
-        const status = !spot.built
-          ? `Comes with feature ${spot.feature}`
-          : notHere
-            ? 'Not in Common rooms: they’re text only'
-            : off
-              ? 'Off in this room'
-              : st.phase === 'gathering'
-                ? `${st.game.name} · ${st.players.length} in · ${hostName(st.hostId ?? '')} hosting`
-                : st.phase === 'playing' && spot.kind === 'drop-in'
-                  ? `${watchTitle ?? 'Something’s on'} · ${st.players.length} watching`
-                  : st.phase === 'playing'
-                    ? `${st.game.name} · ${st.players.length} playing`
-                    : st.phase === 'results'
-                      ? `${st.game.name} · just finished`
-                      : spot.seats
-                        ? `At the ${place} · sit down to start`
-                        : spot.kind === 'drop-in'
-                          ? `At the ${place} · press E to watch`
-                          : `At the ${place} · press E to start`;
+        const status = notHere
+          ? 'Not in Common rooms: they’re text only'
+          : off
+            ? 'Off in this room'
+            : st.phase === 'gathering'
+              ? `${st.game.name} · ${st.players.length} in · ${hostName(st.hostId ?? '')} hosting`
+              : st.phase === 'playing' && spot.kind === 'drop-in'
+                ? `${watchTitle ?? 'Something’s on'} · ${st.players.length} watching`
+                : st.phase === 'playing'
+                  ? `${st.game.name} · ${st.players.length} playing`
+                  : st.phase === 'results'
+                    ? `${st.game.name} · just finished`
+                    : spot.seats
+                      ? `At the ${place} · sit down to start`
+                      : spot.kind === 'drop-in'
+                        ? `At the ${place} · press E to watch`
+                        : `At the ${place} · press E to start`;
         return (
-          <div
-            key={spot.id}
-            className={cn('flex items-center gap-3 rounded-2xl border bg-card/70 p-2', (!spot.built || off) && 'opacity-50')}
-          >
+          <div key={spot.id} className={cn('flex items-center gap-3 rounded-2xl border bg-card/70 p-2', off && 'opacity-50')}>
             <span className={cn('relative grid size-10 flex-none place-items-center rounded-xl text-xl', spot.tint)}>
               {spot.emoji}
               {live && (
@@ -89,7 +84,7 @@ export function ActivitiesPanel({
                 Turn off
               </button>
             )}
-            {spot.built && !off && (
+            {!off && (
               <button
                 onClick={() => onGo(spot)}
                 className={cn(
@@ -119,10 +114,8 @@ const ORDER: SpotId[] = ['tv', 'cards', 'chess', 'art', 'floor'];
  */
 function listed(states: Record<SpotId, SpotState>) {
   const rank = (spot: Spot) => {
-    const phase = spot.built ? states[spot.id].phase : 'free';
+    const phase = states[spot.id].phase;
     return phase === 'gathering' ? 0 : phase === 'free' ? 2 : 1;
   };
-  return SPOTS.filter((s) => !s.freeZone && s.inMap !== false).sort(
-    (a, b) => rank(a) - rank(b) || ORDER.indexOf(a.id) - ORDER.indexOf(b.id),
-  );
+  return SPOTS.filter((s) => !s.freeZone && s.inMap).sort((a, b) => rank(a) - rank(b) || ORDER.indexOf(a.id) - ORDER.indexOf(b.id));
 }

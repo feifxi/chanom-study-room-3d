@@ -222,7 +222,7 @@ function FakeQr() {
     </g>
   );
   return (
-    <svg viewBox={`-1 -1 ${n + 2} ${n + 2}`} className="size-44 rounded-xl bg-white" aria-label="PromptPay QR (demo)">
+    <svg viewBox={`-1 -1 ${n + 2} ${n + 2}`} className="size-44 rounded-xl bg-white" aria-label="PromptPay QR (local stand-in)">
       <g fill="#222">
         {finder(0, 0)}
         {finder(n - 7, 0)}

@@ -10,8 +10,9 @@ import { AvatarStack } from '@/components/UserAvatar';
 import { cn } from '@/lib/utils';
 import { personAvatar } from '@/components/PersonFace';
 import type { CommonRoom } from '@/features/common/useCommon';
-import { MAPS } from '@/lib/mock';
+import { MAPS } from '@/lib/maps';
 import { useIsGuest } from '@/features/account/useMe';
+import { SIGN_UP_HREF } from '@/features/account/links';
 
 type Props = { kind: 'open'; room: ListedRoom } | { kind: 'common'; room: CommonRoom };
 
@@ -56,12 +57,12 @@ export function OpenRoomCard(props: Props) {
 
 /**
  * A listed room (Open or Ask to join) opens its preview (rules, who runs it) before you join; one
- * you're already in opens its page. Who's inside comes with presence (build step 3).
+ * you're already in opens its page.
  */
 function OpenCard({ room: o }: { room: ListedRoom }) {
   const [preview, setPreview] = useState(false);
   const map = mapFor(o.mapId);
-  const inside = 0;
+  const { inside } = o;
   const fill = inside / o.capacity;
   const full = inside >= o.capacity;
   const mine = !!o.me.role;
@@ -80,7 +81,7 @@ function OpenCard({ room: o }: { room: ListedRoom }) {
             : 'Join & walk in';
   const body = (
     <>
-      <Picture tint={map.tint} emoji={o.emoji} label={o.visibility === 'request' ? 'Ask to join' : 'Open room'} />
+      <Picture tint={map.tint} emoji={o.emoji} thumbnail={o.thumbnail} label={o.visibility === 'request' ? 'Ask to join' : 'Open room'} />
       <p className="mt-2 truncate font-black">{o.name}</p>
       <p className="line-clamp-1 text-xs text-muted-foreground">
         {o.description || map.mood} · by {o.owner.name}
@@ -116,7 +117,7 @@ function OpenCard({ room: o }: { room: ListedRoom }) {
   );
   if (guest)
     return (
-      <Link href="/login" className={CARD}>
+      <Link href={SIGN_UP_HREF} className={CARD}>
         {body}
       </Link>
     );
@@ -138,10 +139,28 @@ function OpenCard({ room: o }: { room: ListedRoom }) {
 const CARD = 'group flex flex-col rounded-3xl border bg-card p-3 text-left transition-shadow hover:shadow-soft';
 const BUTTON = 'mt-3 rounded-full py-1.5 text-center text-sm font-extrabold';
 
-function Picture({ tint, emoji, label, dark }: { tint: string; emoji: string; label: string; dark?: boolean }) {
+function Picture({
+  tint,
+  emoji,
+  thumbnail,
+  label,
+  dark,
+}: {
+  tint: string;
+  emoji: string;
+  /** The owner's own picture, over the map's colours */
+  thumbnail?: string | null;
+  label: string;
+  dark?: boolean;
+}) {
   return (
-    <span className={cn('relative grid h-24 place-items-center rounded-2xl text-4xl', tint)}>
-      {emoji}
+    <span className={cn('relative grid h-24 place-items-center overflow-hidden rounded-2xl text-4xl', tint)}>
+      {thumbnail ? (
+        // eslint-disable-next-line @next/next/no-img-element -- a short-lived storage link
+        <img src={thumbnail} alt="" className="absolute inset-0 size-full object-cover" />
+      ) : (
+        emoji
+      )}
       <span
         className={cn('absolute top-2 left-2 rounded-full px-2 py-0.5 text-[10px] font-black', dark ? 'bg-cocoa text-white' : 'bg-card/85')}
       >

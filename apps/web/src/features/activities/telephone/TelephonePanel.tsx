@@ -25,7 +25,7 @@ export function TelephonePanel({
   onShare,
 }: {
   hub: ActivityHub;
-  /** Posts a chain to Room chat (members in a real room; unset for guests and the demo) */
+  /** Posts a chain to Room chat (members; unset for guests and Common rooms) */
   onShare?: (png: Blob) => Promise<unknown>;
   game: TelGame;
   st: SpotState;
@@ -71,7 +71,7 @@ function Turn({ hub, game, st, now }: { hub: ActivityHub; game: TelGame; st: Spo
   const sentCount = game.order.filter((id) => game.sent[id] && st.players.includes(id)).length;
   const looking = kind === 'copy' && now < game.lookUntil;
   const send = () =>
-    hub.telSend('me', kind === 'write' || kind === 'describe' ? { kind: 'text', text } : { kind: 'drawing', strokes: [...pad.strokes] });
+    hub.telSend(kind === 'write' || kind === 'describe' ? { kind: 'text', text } : { kind: 'drawing', strokes: [...pad.strokes] });
 
   return (
     <>

@@ -6,12 +6,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { TODO_LIMIT, TODO_MAX } from '@connecta/shared';
-import { formatMinutes, useRoomToday } from '@/lib/focus';
+import { formatMinutes } from '@/lib/focus';
 import { useTodos } from '../focus/useTodos';
-import { ME } from '@/lib/mock';
 import type { TodayRow } from '../focus/useRoomToday';
-import { formatLeft, type usePomodoro } from './usePomodoro';
+import { formatLeft, type FocusTimer } from '../focus/useFocusTimer';
 import { LeaveRoomLink } from './LeaveRoom';
+import { SIGN_UP_HREF } from '@/features/account/links';
 
 type Tab = 'focus' | 'todo' | 'today';
 
@@ -21,7 +21,6 @@ type Tab = 'focus' | 'todo' | 'today';
  * The to-do list is your account's, the same in every room; guests get the timer only.
  */
 export function StudyPanel({
-  roomId,
   guest = false,
   pomo,
   today,
@@ -29,20 +28,17 @@ export function StudyPanel({
   onSubject,
   className,
 }: {
-  roomId: string;
   guest?: boolean;
-  pomo: ReturnType<typeof usePomodoro>;
-  /** A real room's "today" (useRoomToday); null in the demo's mock rooms */
-  today: TodayRow[] | null;
+  pomo: FocusTimer;
+  /** "Focus in this room today" (useRoomToday) */
+  today: TodayRow[];
   subject: string;
   onSubject: (s: string) => void;
   className?: string;
 }) {
   const [tab, setTab] = useState<Tab>('focus');
   const { todos, left, full, add, toggle, remove, clearDone } = useTodos(!guest);
-  const mockRanks = useRoomToday(roomId);
-  const ranks: TodayRow[] =
-    today ?? mockRanks.map((r) => ({ key: r.user.id, name: r.user.name, minutes: r.minutes, me: r.user.id === ME.id }));
+  const ranks = today;
   const [draft, setDraft] = useState('');
 
   return (
@@ -228,10 +224,7 @@ function GuestNote({ what }: { what: string }) {
   return (
     <div className="flex flex-col items-center gap-2 rounded-2xl bg-muted p-4 text-center">
       <p className="text-sm font-semibold">Sign up to keep {what}.</p>
-      <LeaveRoomLink
-        href="/login?from=guest"
-        className="rounded-full bg-primary px-4 py-1.5 text-xs font-extrabold text-primary-foreground"
-      >
+      <LeaveRoomLink href={SIGN_UP_HREF} className="rounded-full bg-primary px-4 py-1.5 text-xs font-extrabold text-primary-foreground">
         Sign up, keep your character
       </LeaveRoomLink>
     </div>

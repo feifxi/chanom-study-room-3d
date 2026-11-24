@@ -32,7 +32,6 @@ export function useRoomDecks(roomId: string | null, member: boolean): DeckShelf 
   return {
     decks: (data ?? []).map(toShelf),
     canAdd: member,
-    ai: false,
     save: async (draft) => {
       const body = {
         name: draft.name,

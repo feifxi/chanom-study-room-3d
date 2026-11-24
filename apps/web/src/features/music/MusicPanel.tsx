@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Pause, Play, Volume1, Volume2, VolumeX } fro
 import { TRACKS } from './tracks';
 import type { Music } from './useMusic';
 
-/** The lo-fi player (kept from V1): one track at a time, ‹ › to switch. Only you hear it. */
+/** The lo-fi player: one track at a time, ‹ › to switch. Only you hear it. */
 export function MusicPanel({ music }: { music: Music }) {
   const t = TRACKS[music.index]!;
   const VolumeIcon = music.volume === 0 ? VolumeX : music.volume < 0.5 ? Volume1 : Volume2;
