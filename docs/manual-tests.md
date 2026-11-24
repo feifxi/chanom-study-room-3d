@@ -41,6 +41,7 @@ Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
       "Welcome back 👋". Either signs an existing account in, and a new one goes through "making
       your account 1/2" (birthday) and "2/2" (character).
 - [ ] Under 13 is refused and stays locked for that browser for a day.
+- [ ] Signed out, the landing page and a Common room log no error for `/api/me` in the console.
 - [ ] A taken @handle is refused with suggestions; Home opens after.
 - [ ] Guest pass (`/g/<code>`, from Chanom Friends → Invite → Guest pass): pick a look, walk in;
       sign up later and keep the look.
@@ -125,12 +126,15 @@ Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
       still get in); Notify me puts "There's space" in the 🔔 once someone leaves.
 - [ ] Bubbles over heads and in everyone's Bubbles tab, typing dots. On the Fireside rug bubbles
       reach only the rug.
-- [ ] 10 quiet minutes (or "Go away now") → 💤; never while focusing.
+- [ ] 10 quiet minutes (or "Go away now") → 💤; never while focusing. Away during a break shows
+      💤 and ☕ on your label, "💤 Away · ☕ on a break" in the list.
 - [ ] Talk to everyone (owner): "📢" by their name; off when they go away.
 - [ ] A new look in Settings shows to everyone at once (max once per 5 s).
 - [ ] People list "…": Add friend, Block, Report; Send a message only for friends. As owner or
       mod: Time out, Make mod, Kick, Ban; kick on a guest ends the pass. Guests see Find and Report.
 - [ ] Everyone leaves and comes back: fresh (no seats, no dots).
+- [ ] Set the computer's clock a few minutes off, then walk in: the focus countdown, Watch
+      together's timeline, Slave's turn bar and an invite card's timer are still right.
 
 ## Voice and screen share
 
@@ -156,10 +160,13 @@ Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
 - [ ] 4 cats → Full. Goodbye from the other person works for both. Guests can do both.
 - [ ] A study buddy cheers when your focus round ends next to it; says hi in a quiet room.
 - [ ] Everyone leaves and returns: summoned ones gone, residents back.
+- [ ] Cats look as before (merged for speed): outlines, blinking, napping eyes, swaying tail,
+      trotting paws, Shop pets' bows, collars and ruffs (also in the Shop's preview).
 
 ## Focus
 
-- [ ] Study session → ▶ 25/5: countdown, "📖 Fei · 0m · Calculus" over your head and in the list;
+- [ ] Study session → ▶ 25/5: countdown, "📖 Fei · just started · Calculus" (then "1m", "2m"…)
+      over your head and in the list;
       chimes at the end of focus and break.
 - [ ] Today tab: your minutes (1+ minute rounds), live; others' too. Under a minute adds nothing.
 - [ ] Leave mid-round: it counts. Reload mid-round: still focusing. Walk into another room: the
@@ -168,8 +175,9 @@ Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
 - [ ] A guest has the timer; their minutes aren't kept.
 - [ ] To-do: add, tick, delete, Clear done; same list after reload, in another room and another
       browser; full at 50; a guest sees "Sign up to keep…"; with the API stopped, changes roll back.
+      A change shows at once in your other open tab.
 - [ ] Focus page: Today, 7 days and chart match; "Calculus" and " calculus " count together.
-      The hero goes back to your last room (or Discover in a fresh browser).
+      The hero goes back to the room you last walked into, on any device (Discover if none).
 - [ ] Rankings: Friends lists only those who focused, plus "N haven't focused"; Everyone shows
       the top 10 and your row; blocked people never appear.
 - [ ] "Show me on Everyone" off removes you at once (same switch in Settings). Under 18 starts off.
@@ -178,7 +186,8 @@ Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
 
 - [ ] **Watch together:** both on the TV rug; a YouTube link plays in sync with YouTube's title.
       Pause, seek, skip and Up next from either (an ended video skips once). Guests too.
-- [ ] A private or non-YouTube link is refused with a toast; a 21st in Up next is refused.
+- [ ] A private or non-YouTube link is refused with a toast and the Put something on card opens
+      again to try another; a 21st in Up next is refused.
 - [ ] Off the rug closes the panel; back on rejoins in sync. 30 s with nobody: the TV turns off.
 - [ ] A TV share pauses the video and it carries on after.
 - [ ] Someone else's TV share shows "… screen is on its way" until the picture arrives, then
@@ -216,6 +225,7 @@ Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
 ## Coins, quests and the Shop
 
 - [ ] A new account has 0 coins and three quests (focus, together, play) in the Shop and 🎯.
+- [ ] A guest's 🎯 has no count and offers "Sign up to earn coins" (it asks before leaving).
 - [ ] Each kind moves live (a stopped focus round counts minutes, not the session; DMs don't count
       as saying things); done → toast "+N 🪙" and coins go up once.
 - [ ] New quests after your midnight. Anonymous guests earn nothing; a guest pass earns.
@@ -255,7 +265,7 @@ Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
       names, handles and room text with a blocked word refused.
 - [ ] Without `OPENAI_API_KEY` pictures still send; with it, flagged ones are dropped.
 - [ ] Report a message (not your own), a person (3D "…" or DM), a room (Room card, Discover; not
-      your own, not Common).
+      your own, not Common). The 11th report within an hour says the team has your reports.
 - [ ] 3 accounts reporting one member in 10 min → muted 15 min (never the owner; one account
       three times doesn't count). 5 in a Common copy in 30 min → out of Common rooms for an hour.
 - [ ] `pnpm --filter @connecta/api team fei` (and `off`). A team account in a Common room has the

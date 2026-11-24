@@ -1,7 +1,6 @@
 import type { RoomRole, Visibility } from '@connecta/shared';
 import type { Person, Room } from '@/features/rooms/useRooms';
 import { MAPS, type MapTemplate } from '@/lib/maps';
-import type { Server } from '@/lib/roomShape';
 
 /**
  * Place layout's model (decided 2026-11-08): no servers, just rooms. A room has one map (from a
@@ -63,39 +62,6 @@ export function placeRoom(room: Room): PlaceRoom {
 
 /** How each role reads in the app. */
 export const ROLE_LABEL: Record<RoomRole, string> = { owner: 'Owner', mod: 'Mod', member: 'Member' };
-
-/**
- * The room in the older `Server` shape the room screen still takes (lib/roomShape.ts). Goes in the
- * cleanup listed in docs/open-issues.md.
- */
-export function asServer(room: Room): Server {
-  const role = room.me.role === 'owner' ? 'Owner' : room.me.role === 'mod' ? 'Mod' : undefined;
-  return {
-    id: room.id,
-    name: room.name,
-    emoji: room.emoji,
-    tint: mapFor(room.mapId).tint,
-    banner: 'from-[#ffe9d6] via-[#efe4ff] to-[#dfeeff]',
-    description: room.description,
-    visibility: room.visibility === 'open' ? 'public' : room.visibility,
-    members: ['me'],
-    memberCount: room.memberCount,
-    roles: role ? { me: role } : {},
-    channels: [{ id: 'chat', name: 'chat', topic: '' }],
-    rooms: [
-      {
-        id: room.mapId,
-        name: room.name,
-        mapId: room.mapId,
-        capacity: room.capacity,
-        allowGuests: room.allowGuests,
-        roomWideGames: room.roomWideGames,
-        people: [],
-      },
-    ],
-    ownerPlus: room.ownerPlus,
-  };
-}
 
 export const walkInHref = (r: Pick<PlaceRoom, 'id'>) => `/r/${r.id}/walk`;
 export const chatHref = (r: Pick<PlaceRoom, 'id'>) => `/r/${r.id}`;

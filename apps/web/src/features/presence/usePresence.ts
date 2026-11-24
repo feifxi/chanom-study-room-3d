@@ -49,7 +49,7 @@ export function PresenceReporter() {
     const socket = liveSocket();
     const send = () => {
       // How active you are; the room comes from the game server's own connection
-      if (socket.connected) socket.emit('presence', { roomId: null, idleMs: Date.now() - lastInput });
+      if (socket.connected) socket.emit('presence', { idleMs: Date.now() - lastInput });
     };
     // Back after a quiet minute or more: tell friends now, not at the next minute
     const onInput = () => {

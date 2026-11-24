@@ -2797,6 +2797,13 @@ export interface operations {
                     "application/json": components["schemas"]["Me"];
                 };
             };
+            /** @description Signed out */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     MeController_birthday: {

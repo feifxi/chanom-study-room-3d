@@ -5,7 +5,7 @@ import { ChevronLeft, Maximize2, X } from 'lucide-react';
 import { Composer } from '@/components/chat/Chat';
 import { BUBBLE_MAX } from '../room3d/roomSession';
 import { cn } from '@/lib/utils';
-import type { Server } from '@/lib/roomShape';
+import type { RoomHere } from './here';
 import { PersonFace } from '@/components/PersonFace';
 import { FriendFace } from '@/features/presence/FriendFace';
 import { DmChat } from '@/features/dms/DmChat';
@@ -13,7 +13,7 @@ import { dmUnread as dmUnreadOf, lastLine, useDms } from '@/features/dms/useDms'
 import { useFriends } from '@/features/friends/useFriends';
 import { MiniRoomChat } from '@/features/chat/MiniRoomChat';
 import { useRoom } from '@/features/rooms/useRooms';
-import type { ChatTarget } from './ChannelOverlay';
+import type { ChatTarget } from './ChatOverlay';
 
 /** A line of Bubbles: what someone said out loud in the room (it also pops over their head). */
 export interface RoomLine {
@@ -39,7 +39,7 @@ type Tab = 'room' | 'bubbles' | 'dms';
  * Photos show inline, like a chat bubble on the web; tap one (or ⤢) for the big chat window.
  */
 export function ChatPanel({
-  server,
+  here,
   guest,
   lines,
   onSay,
@@ -48,7 +48,7 @@ export function ChatPanel({
   onClose,
   className,
 }: {
-  server: Server;
+  here: RoomHere;
   /** Guests have no account: Bubbles only (no saved room chat, no DMs). */
   guest?: boolean;
   lines: RoomLine[];
@@ -59,7 +59,8 @@ export function ChatPanel({
   onClose?: () => void;
   className?: string;
 }) {
-  const roomChat = server.id === 'public' || guest ? undefined : server.channels[0];
+  // The room's saved chat (Common rooms and guests: Bubbles only)
+  const roomChat = !here.common && !guest;
   const [tab, setTab] = useState<Tab>('bubbles');
   // The open DM, by the other person's @handle
   const [dmWith, setDmWith] = useState<string | null>(null);
@@ -74,7 +75,7 @@ export function ChatPanel({
     : undefined;
 
   // The room's real unread count and @ (looking at the tab marks it read)
-  const room = useRoom(server.id, undefined, !!roomChat);
+  const room = useRoom(here.id, undefined, roomChat);
   const roomUnread = roomChat && tab !== 'room' ? (room.data?.me.unread ?? 0) : 0;
   const tabs: [Tab, string, number | boolean][] = [
     ['bubbles', 'Bubbles', tab !== 'bubbles' && lines.length > seenLines],
@@ -87,7 +88,7 @@ export function ChatPanel({
     if (t === 'bubbles') setSeenLines(lines.length);
   };
   const expandTarget: ChatTarget | null =
-    tab === 'room' && roomChat ? { kind: 'channel', id: roomChat.id } : tab === 'dms' && dmWith ? { kind: 'dm', id: dmWith } : null;
+    tab === 'room' && roomChat ? { kind: 'room', id: here.id } : tab === 'dms' && dmWith ? { kind: 'dm', id: dmWith } : null;
 
   return (
     <section className={cn('panel flex flex-col gap-2 p-2', className)} aria-label="Chat">
@@ -135,7 +136,7 @@ export function ChatPanel({
       {tab === 'room' && roomChat && (
         <>
           <p className="px-1.5 text-[11px] text-muted-foreground">Saved · also readable from outside the room</p>
-          <MiniRoomChat roomId={server.id} onOpen={() => onExpand({ kind: 'channel', id: roomChat.id })} />
+          <MiniRoomChat roomId={here.id} onOpen={() => onExpand({ kind: 'room', id: here.id })} />
         </>
       )}
 

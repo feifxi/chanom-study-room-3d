@@ -6,7 +6,8 @@ import { useDismiss } from '../room/useDismiss';
 import { canShareScreen, isTouchScreen } from '@/lib/screen';
 import { cn } from '@/lib/utils';
 import { WATCH_DRIFT_S, parseYouTube } from '@connecta/shared';
-import { watchPosition, type ScreenShare, type Video, type WatchState } from './hub';
+import { watchPosition, type ScreenShare, type WatchState } from './hub';
+import { serverNow } from '@/lib/serverClock';
 import { myShareStream } from './screenShare';
 
 /**
@@ -16,16 +17,6 @@ import { myShareStream } from './screenShare';
  */
 
 // --- YouTube links and the IFrame API ---
-
-async function titleOf(id: string): Promise<string> {
-  try {
-    const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(`https://youtu.be/${id}`)}&format=json`);
-    if (res.ok) return ((await res.json()) as { title?: string }).title ?? 'YouTube video';
-  } catch {
-    // No title (offline, blocked): it still plays
-  }
-  return 'YouTube video';
-}
 
 interface YTPlayer {
   loadVideoById(o: { videoId: string; startSeconds?: number }): void;
@@ -123,7 +114,7 @@ export function WatchPanel({
   onSeek: (seconds: number) => void;
   onSkip: () => void;
   onEnded: (videoId: string) => void;
-  onAdd: (v: Omit<Video, 'by'>) => void;
+  onAdd: (videoId: string) => void;
   onRemove: (i: number) => void;
   onShare: () => void;
   onStopShare: () => void;
@@ -163,7 +154,14 @@ export function WatchPanel({
       loaded.current = w.now?.id ?? null;
       player.current = new YT.Player(el, {
         videoId: w.now?.id ?? '',
-        playerVars: { controls: 0, rel: 0, playsinline: 1, modestbranding: 1, disablekb: 1, start: Math.floor(watchPosition(w)) },
+        playerVars: {
+          controls: 0,
+          rel: 0,
+          playsinline: 1,
+          modestbranding: 1,
+          disablekb: 1,
+          start: Math.floor(watchPosition(w, serverNow())),
+        },
         events: {
           onReady: () => setReady(true),
           onStateChange: (e) => {
@@ -191,7 +189,7 @@ export function WatchPanel({
       const p = player.current;
       const w = watchRef.current;
       if (!p || !w.now) return;
-      const target = watchPosition(w);
+      const target = watchPosition(w, serverNow());
       if (loaded.current !== w.now.id) {
         loaded.current = w.now.id;
         p.loadVideoById({ videoId: w.now.id, startSeconds: target });
@@ -224,7 +222,7 @@ export function WatchPanel({
     }
   }, [volume, ready]);
 
-  const pos = watchPosition(watch);
+  const pos = watchPosition(watch, serverNow());
   const live = duration === 0 || !Number.isFinite(duration);
   const share = watch.share;
   const mine = share?.by === 'me';
@@ -483,17 +481,17 @@ function IconBtn({ label, onClick, children }: { label: string; onClick: () => v
   );
 }
 
-/** Paste a YouTube link (Shorts work too). Search would cost YouTube API quota; pasting is free. */
-export function AddVideo({ onAdd, compact }: { onAdd: (v: Omit<Video, 'by'>) => void; compact?: boolean }) {
+/**
+ * Paste a YouTube link (Shorts work too). Search would cost YouTube API quota; pasting is free. The
+ * game server looks the title up and refuses private or unembeddable videos (room.onWatchRefused).
+ */
+export function AddVideo({ onAdd, compact }: { onAdd: (videoId: string) => void; compact?: boolean }) {
   const [text, setText] = useState('');
   const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
-  const submit = async () => {
+  const submit = () => {
     const id = parseYouTube(text);
     if (!id) return setError('That doesn’t look like a YouTube link');
-    setBusy(true);
-    onAdd({ id, title: await titleOf(id) });
-    setBusy(false);
+    onAdd(id);
     setText('');
     setError('');
   };
@@ -502,7 +500,7 @@ export function AddVideo({ onAdd, compact }: { onAdd: (v: Omit<Video, 'by'>) => 
       className="flex flex-col gap-1"
       onSubmit={(e) => {
         e.preventDefault();
-        void submit();
+        submit();
       }}
     >
       <div className="flex gap-1">
@@ -517,7 +515,7 @@ export function AddVideo({ onAdd, compact }: { onAdd: (v: Omit<Video, 'by'>) => 
           className={cn('min-w-0 flex-1 rounded-full border bg-card px-3 text-xs', compact ? 'h-8' : 'h-9')}
         />
         <button
-          disabled={busy || !text.trim()}
+          disabled={!text.trim()}
           className={cn(
             'flex flex-none items-center gap-1 rounded-full bg-primary px-3 text-xs font-extrabold text-primary-foreground disabled:opacity-45',
             compact ? 'h-8' : 'h-9',

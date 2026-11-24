@@ -1,10 +1,12 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { TODO_LIMIT, TODO_MAX } from '@connecta/shared';
 import { api, type Schemas } from '@/lib/api/client';
 import { problem } from '@/features/rooms/useRooms';
+import { liveSocket } from '@/features/chat/live';
 
 export type Todo = Schemas['Todo'];
 const KEY = ['todos'] as const;
@@ -29,6 +31,16 @@ export function useTodos(enabled = true) {
     queryFn: async () => ok(await api.GET('/api/todos')).todos,
   });
   const todos = data ?? [];
+  // A change in another tab or device: fetch the list again
+  useEffect(() => {
+    if (!enabled) return;
+    const socket = liveSocket();
+    const refresh = () => void client.invalidateQueries({ queryKey: KEY });
+    socket.on('todos', refresh);
+    return () => {
+      socket.off('todos', refresh);
+    };
+  }, [enabled, client]);
 
   const add = useMutation(
     optimistic(

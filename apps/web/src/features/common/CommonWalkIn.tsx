@@ -11,7 +11,7 @@ import { Scene } from '@/features/place/Scene';
 import { useInRoom } from '@/features/presence/usePresence';
 import { RoomLoader } from '@/features/room/RoomLoader';
 import { api } from '@/lib/api/client';
-import { PUBLIC_SERVER, type Server } from '@/lib/roomShape';
+import type { RoomHere } from '@/features/room/here';
 
 interface Copy {
   place: string;
@@ -56,22 +56,17 @@ export function CommonWalkIn({ type, withId, guestName }: { type: CommonType; wi
   }
   if (game.status === 'out')
     return <CantWalkIn type={type} why={game.why} guest={guestName !== null} onRetry={() => setAttempt((n) => n + 1)} />;
-  const server: Server = {
-    ...PUBLIC_SERVER,
-    rooms: [
-      {
-        id: copy!.place,
-        name: copy!.name,
-        mapId: type.mapId,
-        capacity: copy!.capacity,
-        allowGuests: true,
-        roomWideGames: type.roomWideGames,
-        people: [],
-        happening: type.vibe,
-      },
-    ],
+  const here: RoomHere = {
+    id: copy!.place,
+    name: copy!.name,
+    emoji: '🌏',
+    tint: 'bg-sky',
+    mapId: type.mapId,
+    roomWideGames: type.roomWideGames,
+    common: true,
+    moderator: false,
   };
-  return <RoomLoader key={copy!.place} server={server} roomId={copy!.place} guestName={guestName} game={game.room} />;
+  return <RoomLoader key={copy!.place} here={here} guestName={guestName} game={game.room} />;
 }
 
 function Shade({ mapId, children }: { mapId: string; children: React.ReactNode }) {

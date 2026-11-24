@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
-import type { Presence, User } from '@/lib/roomShape';
+
+export type Presence = 'online' | 'idle' | 'focus' | 'offline';
 
 const PRESENCE: Record<Presence, string> = {
   online: 'bg-online',
@@ -25,7 +26,7 @@ export function UserAvatar({
   className,
   ring,
 }: {
-  user: Pick<User, 'name' | 'color' | 'presence'>;
+  user: { name: string; color: string; presence: Presence };
   size?: number;
   presence?: boolean;
   className?: string;
@@ -60,7 +61,7 @@ export function AvatarStack({
   max = 4,
   size = 24,
 }: {
-  users: Pick<User, 'id' | 'name' | 'color' | 'presence'>[];
+  users: { id: string; name: string; color: string; presence: Presence }[];
   max?: number;
   size?: number;
 }) {

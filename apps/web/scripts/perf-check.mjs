@@ -1,4 +1,5 @@
-// Performance check for the 3D room: loads every map with nobody, 50 and 100 extra people, in smooth
+// Performance check for the 3D room: loads every map with nobody, 50 and 100 extra people (with them,
+// a full Buddy Machine: 9 cats and study buddies and 4 pets), in smooth
 // and battery-saver mode, zoomed all the way out, and fails if a frame goes over the budget
 // (src/features/room3d/perf.ts). Zoomed out is the worst case: the whole map is on screen, so nothing
 // is culled (at the opening zoom the maps once passed while costing ~70 draw calls more zoomed out).

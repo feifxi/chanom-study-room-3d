@@ -153,6 +153,7 @@ decision changes, edit its line ("reversed on …") instead of adding a contradi
 - **Pets are room cats in Shop coats** (2026-11-23, the owner's idea): they reuse the server's cats
   instead of trailing you; only the owner sends one home.
 - **The game server takes looks and pets only from the API**, so nobody wears what they didn't buy.
+  The 5 s look cooldown is the API's too (2026-11-24), not only the browser's.
 - **Stripe, with a local stand-in until the owner adds keys** (2026-11-23).
 - **Gift Plus starts at once** (a gift waiting to be opened gets forgotten); friends only.
 - **When Plus ends, nobody is sent out** (2026-11-23): rooms keep 7 days of grace, then new people
@@ -169,6 +170,8 @@ decision changes, edit its line ("reversed on …") instead of adding a contradi
   watch every copy. 25 per copy, 5 kept for friends.
 - **Cheap layers first:** a word filter that **masks** messages but **refuses** names (a name of
   asterisks helps nobody); OpenAI's free picture check behind a key.
+- **10 reports an hour per person** (2026-11-24): plenty for a bad night, not enough to flood the
+  team. **The whiteboard has a per-person budget** like movement's, sized so a fast pen never hits it.
 - **Report steps count only accounts that are there, once each** (2026-11-24): guests are free to
   make, so five guests can't push someone out. Only the team sees reports; mods may be the problem.
 - **No vote-kick** (groups bully with it), **no automatic strikes**, **no voice recording, ever.**
@@ -205,6 +208,12 @@ decision changes, edit its line ("reversed on …") instead of adding a contradi
 - **`node-linker=hoisted`**: an isolated layout installs two `@colyseus/core` copies.
 - **One seed for the whole app** (2026-11-24): the approved designs' people and rooms, so the app
   looks like what was approved; a rerun clears only seed rows.
+- **Old rows go on a timer** (2026-11-24): guests 30 days after their last session expires (a
+  returning guest is a new account anyway), quest progress after a week.
+- **Which room you're in is only ever the game server's to say** (2026-11-24): the browser's
+  presence sends only how long it's been idle. Signed out, `/api/me` answers 204, not 401.
+- **Countdowns use the game server's clock** (2026-11-24), learned with a ping on joining (the
+  fastest of three), not the computer's.
 - **Test tools, development only** (2026-11-24): "View as" and scripted fakes showed things the
   server wasn't doing, so only what a tester can't get otherwise stayed.
 

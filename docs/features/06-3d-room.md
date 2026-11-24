@@ -72,11 +72,15 @@ Checked while building. Budget per frame (`apps/web/src/features/room3d/perf.ts`
 | Our JS     | 8 ms total  |                         |
 | Shaders    | 40 total    |                         |
 
-- Characters are merged into skinned meshes (~4 meshes each); furniture into a few static batches.
+- Characters and cats are merged into skinned meshes (~4 meshes each); furniture into a few static
+  batches.
 - **Battery saver:** half-detail characters, no shadows, 60 fps while you're active and 30 while
   you're still. On by default on touch screens; a slow device steps down quietly.
 - **Check:** `pnpm --filter @connecta/web perf` loads every map zoomed out with 3, 52 and 102
-  people and fails over budget. Overlay: `?perf` or Test tools.
+  people and fails over budget; the crowd runs add a full Buddy Machine (4 cats, 5 buddies, 4
+  pets). Overlay: `?perf` or Test tools.
+- **Clocks:** countdowns and timers read the game server's clock (the room asks it on joining,
+  `lib/serverClock.ts`), so a computer clock that's off doesn't show them off.
 
 ## In the code
 
@@ -94,6 +98,5 @@ Checked while building. Budget per frame (`apps/web/src/features/room3d/perf.ts`
 
 ## Not built yet
 
-- Merging each cat into skinned meshes (the biggest map cost left, ~25–30 draw calls each).
 - Baked lighting with the Blender maps; full detail only for the ~30 nearest people.
 - A test on a mid-range Android phone before launch; the perf check in CI.

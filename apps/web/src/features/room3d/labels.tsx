@@ -5,7 +5,8 @@ import { HeadphoneOff } from 'lucide-react';
 import * as THREE from 'three';
 import type { NpcView, PlayerView } from '@connecta/shared';
 import { npcKey, type Bubble, type Reaction } from './roomSession';
-import { minutesSince, useNow } from '@/lib/time';
+import { focusedFor, useNow } from '@/lib/time';
+import { toServerTime } from '@/lib/serverClock';
 import { STATUS_ICON } from '../focus/status';
 import { activeMap } from '../map/active';
 import { inArea, type Area, type Zone } from '../map/types';
@@ -70,7 +71,6 @@ interface LayerProps {
     /** Owner or mod talking to everyone: heard at full volume anywhere in the room. */
     stage?: Set<string>;
   };
-  clockOffset: number;
   npcIds: string[];
   npcs: Map<string, NpcView> | undefined;
   reactions: Reaction[];
@@ -112,7 +112,6 @@ export function LabelLayer({
   localId,
   bubbles,
   voice,
-  clockOffset,
   npcIds,
   npcs,
   reactions,
@@ -121,7 +120,8 @@ export function LabelLayer({
 }: LayerProps) {
   // Re-render every second: status/subject come from synced state, which React doesn't watch
   const now = useNow(1000);
-  const serverNow = now + clockOffset;
+  // Focus times are the server's
+  const serverNow = toServerTime(now);
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
       {/* First, so people's names draw over a zone's name */}
@@ -179,6 +179,8 @@ export function LabelLayer({
               {/* Taking a photo (feature 10), so people can pose */}
               {player.photo && <span className="mr-1">📸</span>}
               {STATUS_ICON[player.status] && <span className="mr-1">{STATUS_ICON[player.status]}</span>}
+              {/* Away during a break: the break still runs, so the cup stays too */}
+              {player.status === 'away' && player.statusEndsAt > 0 && <span className="mr-1">{STATUS_ICON.break}</span>}
               {/* Plus: a shimmering name (feature 15) */}
               {player.plus ? <span className="shimmer">✨{player.name}</span> : player.name}
               {isLocal && ' (you)'}
@@ -187,7 +189,8 @@ export function LabelLayer({
               {/* How long they've been focusing, so others know not to interrupt */}
               {player.status === 'focus' && (
                 <span className="ml-1 font-semibold opacity-75">
-                  · {minutesSince(player.focusSince, serverNow)}m{player.subject && ` · ${player.subject}`}
+                  · {focusedFor(player.focusSince, serverNow)}
+                  {player.subject && ` · ${player.subject}`}
                 </span>
               )}
             </div>
@@ -219,7 +222,8 @@ export function LabelLayer({
               {npc.ownerName && <span className="font-semibold opacity-75">· {npc.ownerName}’s cat</span>}
               {npc.kind === 'buddy' && npc.status === 'focus' && (
                 <span className="font-semibold opacity-75">
-                  · {minutesSince(npc.focusSince, serverNow)}m{npc.subject && ` · ${npc.subject}`}
+                  · {focusedFor(npc.focusSince, serverNow)}
+                  {npc.subject && ` · ${npc.subject}`}
                 </span>
               )}
               {!npc.owner && <span className="rounded bg-white/80 px-1 text-[9px] tracking-wide">NPC</span>}

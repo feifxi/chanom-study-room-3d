@@ -48,6 +48,7 @@ switched on or off on the admin site:
   card, the Discover preview; not Common rooms). Reasons from a fixed list, optional details, "Also
   block".
 - **Only the Connecta team sees reports**, never the room's mods, and nobody learns who reported.
+- **10 reports an hour** per person; past that, "the team has your reports" until the hour passes.
 - A report keeps the context: messages around it, the person's recent messages, and the bubbles the
   reporter's screen showed (bubbles aren't stored).
 - **No voice recording, ever.**

@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { COAT_BY_ID, CAT_COATS, type CatCoat } from '@connecta/shared';
+import { getGradientMap, OUTLINE } from '../avatar/character';
+import { show, skinCharacter } from '../avatar/skin';
 
 /** A flat five-pointed star, a little thick */
 function starGeometry(outer: number, inner: number, depth: number) {
@@ -18,18 +20,9 @@ function starGeometry(outer: number, inner: number, depth: number) {
 /*
  * A chibi cat in the same cel-shaded, ink-outlined style as the characters:
  * big head, tiny body, swaying tail. Animations: idle, walk, groom, nap (loaf).
+ * Built from ~35 parts, then merged like the characters (avatar/skin.ts): ~4 draw calls, not ~60.
  */
 
-let gradientMap: THREE.DataTexture | null = null;
-function getGradientMap() {
-  if (!gradientMap) {
-    gradientMap = new THREE.DataTexture(new Uint8Array([110, 190, 255]), 3, 1, THREE.RedFormat);
-    gradientMap.minFilter = gradientMap.magFilter = THREE.NearestFilter;
-    gradientMap.needsUpdate = true;
-  }
-  return gradientMap;
-}
-const OUTLINE = new THREE.MeshBasicMaterial({ color: '#3a2a40', side: THREE.BackSide });
 const INK = '#2b2140';
 const toon = (color: THREE.ColorRepresentation, opts: THREE.MeshToonMaterialParameters = {}) =>
   new THREE.MeshToonMaterial({ color, gradientMap: getGradientMap(), ...opts });
@@ -65,6 +58,7 @@ export class CatRig {
   private paws: THREE.Mesh[] = [];
   private eyes: THREE.Group[] = [];
   private sleepyEyes: THREE.Mesh[] = [];
+  private skinned: THREE.SkinnedMesh[];
   private phase = Math.random() * 10;
   private blinkIn = 2 + Math.random() * 3;
   private loaf = 0;
@@ -165,6 +159,14 @@ export class CatRig {
       }
     }
     if (coat.extra) this.dressUp(coat.extra);
+
+    this.skinned = skinCharacter(
+      this.group,
+      [this.body, this.head, ...this.tail, ...this.paws, ...this.eyes, ...this.sleepyEyes],
+      getGradientMap(),
+      OUTLINE,
+    );
+    this.sleepyEyes.forEach((e) => show(e, false));
   }
 
   /** A pet's little extra (Shop pets): a bow, or a collar with a star tag, a bow tie or a bell */
@@ -239,18 +241,16 @@ export class CatRig {
     this.blinkIn -= dt;
     if (this.blinkIn < -0.12) this.blinkIn = 2 + Math.random() * 4;
     this.eyes.forEach((eye, i) => {
-      eye.visible = !napping;
-      eye.scale.y = this.blinkIn < 0 ? 0.15 : 1;
-      this.sleepyEyes[i]!.visible = napping;
+      show(eye, !napping, this.blinkIn < 0 ? 0.15 : 1);
+      show(this.sleepyEyes[i]!, napping);
     });
   }
 
+  /** The merged meshes' geometry is this cat's own; the materials are shared by everyone. */
   dispose() {
-    this.group.traverse((o) => {
-      if (o instanceof THREE.Mesh) {
-        o.geometry.dispose();
-        if (o.material !== OUTLINE) (o.material as THREE.Material).dispose();
-      }
-    });
+    for (const m of this.skinned) {
+      m.geometry.dispose();
+      m.skeleton.dispose();
+    }
   }
 }

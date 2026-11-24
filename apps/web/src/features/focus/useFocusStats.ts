@@ -40,22 +40,3 @@ export function useShowOnEveryone() {
   };
   return [me?.showOnEveryone ?? false, set] as const;
 }
-
-const LAST_ROOM = 'connecta:last-room';
-
-/** The room you last walked into, remembered in this browser for the Focus page's way back in. */
-export function rememberRoom(id: string) {
-  try {
-    localStorage.setItem(LAST_ROOM, id);
-  } catch {
-    // Blocked storage: the Focus page offers Discover instead
-  }
-}
-
-export function lastRoomId(): string | null {
-  try {
-    return localStorage.getItem(LAST_ROOM);
-  } catch {
-    return null;
-  }
-}

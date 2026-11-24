@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useSyncExternalStore } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { DAILY_RANK_CAP_MIN } from '@connecta/shared';
 import { PersonFace } from '@/components/PersonFace';
@@ -11,15 +11,7 @@ import { formatMinutes } from '@/lib/focus';
 import { useMe } from '@/features/account/useMe';
 import { useMyRooms } from '@/features/rooms/useRooms';
 import { walkInHref } from '@/features/place/model';
-import {
-  lastRoomId,
-  useMyFocus,
-  useRanking,
-  useShowOnEveryone,
-  type MyFocus,
-  type RankPeriod,
-  type RankScope,
-} from '@/features/focus/useFocusStats';
+import { useMyFocus, useRanking, useShowOnEveryone, type MyFocus, type RankPeriod, type RankScope } from '@/features/focus/useFocusStats';
 
 const NO_FOCUS: MyFocus = { today: 0, week: 0, dailyAverage: 0, days: [], subjects: [] };
 
@@ -85,13 +77,12 @@ function FocusHero({ week }: { week: number }) {
   );
 }
 
-const noStore = () => () => {};
-
-/** The room you were last in (if you're still a member), or Discover to find one */
+/** The room you last walked into (your account's, on any device), or Discover to find one */
 function useBackToRoom() {
   const { data: rooms } = useMyRooms();
-  const lastId = useSyncExternalStore(noStore, lastRoomId, () => null);
-  const room = rooms?.find((r) => r.id === lastId);
+  const room = rooms
+    ?.filter((r) => r.me.visitedAt)
+    .reduce<(typeof rooms)[number] | undefined>((last, r) => (!last || r.me.visitedAt! > last.me.visitedAt! ? r : last), undefined);
   return room
     ? { href: walkInHref(room), emoji: room.emoji, label: `Back to ${room.name}` }
     : { href: '/discover', emoji: '🔎', label: 'Find a room to study in' };

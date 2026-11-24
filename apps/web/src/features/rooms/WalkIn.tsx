@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { Bell, Home, MessageCircle, RotateCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useGame, type GameEnd } from '@/features/game/useGame';
-import { asServer, placeRoom } from '@/features/place/model';
+import { placeRoom } from '@/features/place/model';
+import { roomHere } from '@/features/room/here';
 import { Scene } from '@/features/place/Scene';
 import { useInRoom } from '@/features/presence/usePresence';
 import { RoomLoader } from '@/features/room/RoomLoader';
 import { notifyWhenSpace, roomsApi, useRoom, type Room } from './useRooms';
-import { rememberRoom } from '@/features/focus/useFocusStats';
 
 /**
  * A room from the API, in 3D: you walk in through the game server, which also tells friends you're
@@ -28,10 +28,6 @@ export function WalkIn({ room: initial, guestName }: { room: Room; guestName: st
   }, [room.id, room.me.role]);
   // Inside: inbox items and DMs arrive as toasts
   useInRoom(game.status === 'in' ? room.id : null);
-  // The Focus page's "Back to …" takes you to the room you were last in
-  useEffect(() => {
-    if (game.status === 'in') rememberRoom(room.id);
-  }, [game.status, room.id]);
 
   if (game.status === 'connecting') {
     return (
@@ -46,9 +42,8 @@ export function WalkIn({ room: initial, guestName }: { room: Room; guestName: st
   return (
     <RoomLoader
       key={room.id}
-      server={asServer(room)}
+      here={roomHere(room)}
       place={room.me.role ? placeRoom(room) : undefined}
-      roomId={room.mapId}
       guestName={guestName}
       time={room.time}
       game={game.room}

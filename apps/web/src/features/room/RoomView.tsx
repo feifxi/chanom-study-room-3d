@@ -9,7 +9,7 @@ import { areaEdgePoint, areaInnerPoint, inArea, type Area } from '../map/types';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SettingsDialog, type SettingsTab } from '@/components/app/SettingsDialog';
-import type { Server } from '@/lib/roomShape';
+import type { RoomHere } from './here';
 import type { PlaceRoom } from '@/features/place/model';
 import { useMe, useMeAsUser } from '@/features/account/useMe';
 import { useWardrobe } from '@/features/shop/useWardrobe';
@@ -17,7 +17,8 @@ import { AWAY_EVENT, crowdPeople, useCrowd } from '@/lib/testCrowd';
 import { GUEST_LOOK, loadGuest } from '@/lib/guest';
 import { getMyLook, useMyLook } from '@/lib/myLook';
 import { useCompactScreen, useTouchScreen, useWideScreen, isTouchScreen } from '@/lib/screen';
-import { useNow } from '@/lib/time';
+import { focusedFor } from '@/lib/time';
+import { useServerNow } from '@/lib/serverClock';
 import { cn } from '@/lib/utils';
 import { useMusic } from '../music/useMusic';
 import type { LocalMotion } from '../room3d/Avatar';
@@ -64,7 +65,7 @@ import { END_TEXT, type ChessGame } from '../activities/chess/game';
 import { SPOTS, isGameSeat, spotById, type Spot } from '../activities/spots';
 import { AddVideo, SharePanel, ShareScreenButton, WatchPanel } from '../activities/WatchPanel';
 import { myShareStream, startMyShare, stopMyShare } from '../activities/screenShare';
-import { ChannelOverlay, type ChatTarget } from './ChannelOverlay';
+import { ChatOverlay, type ChatTarget } from './ChatOverlay';
 import { PhotoMode } from './PhotoMode';
 import { ChatPanel, type RoomLine } from './ChatPanel';
 import { PeoplePill, RoomPeople, type RoomPerson, type RoomRole } from './RoomPeople';
@@ -96,18 +97,16 @@ const AWAY_MS = 10 * 60_000;
  *   that's the only place it works.
  */
 export default function RoomView({
-  server,
+  here,
   place,
-  roomId,
   guestName,
   time = 'clock',
   game,
 }: {
-  /** The room in the older shape (asServer; lib/roomShape.ts) */
-  server: Server;
-  /** The room from the API; none for Common rooms */
+  /** The room, or the Common copy, you're in */
+  here: RoomHere;
+  /** The room from the API, when you're a member (its settings, roles, invites) */
   place?: PlaceRoom;
-  roomId: string;
   guestName: string | null;
   /** The owner's time of day (the API's room); Common rooms follow the clock */
   time?: RoomTime;
@@ -115,14 +114,13 @@ export default function RoomView({
   game: GameRoom;
 }) {
   const router = useRouter();
-  const roomDef = server.rooms.find((r) => r.id === roomId) ?? server.rooms[0]!;
   // Screen shares follow the room's plan: 1080p when its owner has Plus
   const shareHeight = planOf(place?.ownerPlus ?? false).shareHeight;
   // `?guest=Name` from the invite page or a Common room
   const [guestAs] = useState(() => guestName ?? null);
   const guest = guestAs !== null;
   // Common rooms are safe for strangers by design (feature 14): text only, for everyone
-  const common = server.id === 'public';
+  const common = here.common;
   // Your own name from your account
   const account = useMeAsUser();
   const { data: meAccount } = useMe();
@@ -132,9 +130,9 @@ export default function RoomView({
 
   // The map is the game server's (it moves everyone when the owner switches); the time of day is the
   // owner's, from the API (feature 7). Common rooms follow the clock
-  const [mapId, setMapId] = useState(() => game.state?.mapId || roomDef.mapId);
+  const [mapId, setMapId] = useState(() => game.state?.mapId || here.mapId);
   // Your predicted position; the driver snaps it to the server's (the map's door) on its first update
-  const motion = useRef<LocalMotion>({ x: mapDefFor(roomDef.mapId).spawn.x, z: mapDefFor(roomDef.mapId).spawn.z, yaw: 0, moving: false });
+  const motion = useRef<LocalMotion>({ x: mapDefFor(here.mapId).spawn.x, z: mapDefFor(here.mapId).spawn.z, yaw: 0, moving: false });
   // Test tools (development only): fill the room up to a crowd of 50 or 100, in 3D and in the people list
   const crowd = useCrowd();
   const room = useMemo(() => {
@@ -200,13 +198,14 @@ export default function RoomView({
   const compact = useCompactScreen();
   const wide = useWideScreen();
   const touch = useTouchScreen();
-  const now = useNow(1000);
+  // Server time: what it's compared with (focus, invites, games' timers) is the server's
+  const now = useServerNow(1000);
 
   // Activities (feature 9): one framework for every game, run by the game server
   const hub = useMemo(() => new ActivityHub(room, room.watchRemote, room.activityRemote), [room]);
   useSyncExternalStore(hub.subscribe, hub.getVersion, hub.getVersion);
   // Pick a Side's timer and "you're on B" need more than once a second
-  const sideNow = useNow((hub.side && hub.spots.floor.phase === 'playing') || hub.tel ? 250 : 5000);
+  const sideNow = useServerNow((hub.side && hub.spots.floor.phase === 'playing') || hub.tel ? 250 : 5000);
   useEffect(() => {
     const id = setInterval(() => hub.tick(), 250);
     return () => clearInterval(id);
@@ -215,7 +214,7 @@ export default function RoomView({
   const [hint, setHint] = useState<Hint | null>(null);
   const [bubbles, setBubbles] = useState<Record<string, Bubble>>({});
   const [lines, setLines] = useState<RoomLine[]>([
-    { id: 'j', system: true, text: `👋 You walked into ${common ? 'the ' : ''}${roomDef.name}` },
+    { id: 'j', system: true, text: `👋 You walked into ${common ? 'the ' : ''}${here.name}` },
   ]);
   const [findId, setFindId] = useState<string | null>(null);
   const [photo, setPhoto] = useState(false);
@@ -347,9 +346,11 @@ export default function RoomView({
       ),
     );
   }, [room]);
+  // The Put something on card at the free TV
+  const [puttingOn, setPuttingOn] = useState(false);
   // A link the game server wouldn't put on the big screen
   useEffect(() => {
-    return room.onWatchRefused((reason) =>
+    return room.onWatchRefused((reason) => {
       toast(
         reason === 'link'
           ? 'That doesn’t look like a YouTube link'
@@ -358,8 +359,10 @@ export default function RoomView({
             : reason === 'full'
               ? 'Up next is full (20). Skip or remove one first'
               : 'Step onto the rug in front of the screen to put something on',
-      ),
-    );
+      );
+      // A link that can't play: the card again, to try another (it only shows while the TV is free)
+      if (reason === 'link' || reason === 'unavailable') setPuttingOn(true);
+    });
   }, [room]);
   // Owners and mods: everything off the big screen, from anywhere
   const turnOffTv = canStage
@@ -417,7 +420,6 @@ export default function RoomView({
   }, [mutedByMod]);
   const music = useMusic(talking.size > 0 || watchingTv);
   const [watchMini, setWatchMini] = useState(false);
-  const [puttingOn, setPuttingOn] = useState(false);
   const atBoard = hub.mine('me')?.id === 'board';
   // Walking up to the board opens it small in the corner, so passing by never fills your screen; a
   // click makes it big (the board is always on: no E)
@@ -536,9 +538,11 @@ export default function RoomView({
         (id === 'me' && stage) || (id !== 'me' && p.stage)
           ? '📢 Talking to everyone'
           : (id === 'me' && away) || (id !== 'me' && p.status === 'away')
-            ? '💤 Away'
+            ? p.statusEndsAt
+              ? '💤 Away · ☕ on a break'
+              : '💤 Away'
             : p.status === 'focus'
-              ? `📖 Focusing${p.subject ? ` · ${p.subject}` : ''} · ${Math.max(1, Math.round((now - p.focusSince) / 60_000))}m`
+              ? `📖 Focusing${p.subject ? ` · ${p.subject}` : ''} · ${focusedFor(p.focusSince, now)}`
               : p.status === 'break'
                 ? '☕ On a break'
                 : p.seatId
@@ -570,7 +574,7 @@ export default function RoomView({
     });
 
   const people = crowd ? [...realPeople, ...crowdPeople(Math.max(0, crowd - realPeople.length))] : realPeople;
-  const roomName = server.id === 'public' ? roomDef.name : server.name;
+  const roomName = here.name;
   const micIds = new Set(realPeople.filter((p) => p.micOn).map((p) => p.id));
   const seatKind = me.seatId ? activeMap().seatById.get(me.seatId)?.kind : undefined;
   const seated = !!seatKind;
@@ -608,7 +612,7 @@ export default function RoomView({
   const anyLive = SPOTS.some((s) => !s.freeZone && (hub.spots[s.id].phase === 'gathering' || hub.spots[s.id].phase === 'playing'));
   // Standing spots start with E (tables start when you sit): you're in the ring and it's free
   const floor = spotById('floor');
-  const atFreeFloor = !seated && roomDef.roomWideGames && hub.spots.floor.phase === 'free' && inArea(floor.area, me.x, me.z);
+  const atFreeFloor = !seated && here.roomWideGames && hub.spots.floor.phase === 'free' && inArea(floor.area, me.x, me.z);
   const tv = spotById('tv');
   // The screen is click-only (the orange button), so it shows on the sofa too
   const atFreeTv = !common && hub.spots.tv.phase === 'free' && inArea(tv.area, me.x, me.z);
@@ -686,9 +690,10 @@ export default function RoomView({
     findId,
     onFind: find,
     myRole,
-    roomId: server.id,
+    // Common rooms have no room actions (the team's go through the game server)
+    roomId: common ? undefined : here.id,
     // Reports name where it happened: the room, or the Common copy
-    place: common ? roomDef.id : server.id,
+    place: here.id,
     bubblesOf: (id: string) =>
       lines
         .filter((l) => l.by === id && !l.system)
@@ -704,7 +709,7 @@ export default function RoomView({
   };
   const chatEl = (className: string, onClose?: () => void) => (
     <ChatPanel
-      server={server}
+      here={here}
       guest={guest}
       lines={lines}
       onSay={(text) => {
@@ -917,7 +922,7 @@ export default function RoomView({
   );
   return (
     <LeaveRoomGuard
-      roomName={server.name}
+      roomName={here.name}
       focusing={pomo.phase === 'focus'}
       onLeave={leave}
       fallback={guest ? (common ? '/discover' : '/') : '/home'}
@@ -976,7 +981,6 @@ export default function RoomView({
                 away: new Set(ids.filter((id) => (id === 'me' ? away : room.state.players.get(id)?.status === 'away'))),
                 stage: new Set(ids.filter((id) => (id === 'me' ? stage : room.state.players.get(id)?.stage))),
               }}
-              clockOffset={0}
               npcIds={npcIds}
               npcs={room.state.npcs}
               reactions={reactions}
@@ -986,15 +990,14 @@ export default function RoomView({
           </div>
 
           {photo ? (
-            <PhotoMode roomName={roomDef.name} onClose={() => setPhoto(false)} onShare={sharePhoto} />
+            <PhotoMode roomName={here.name} onClose={() => setPhoto(false)} onShare={sharePhoto} />
           ) : (
             <div>
               {/* Room card, top left: the room itself (invite, room settings, Leave) */}
               {!bigView && (
                 <RoomCard
-                  server={server}
+                  room={here}
                   place={place}
-                  room={roomDef}
                   mapId={mapId}
                   here={people.length}
                   guest={guest}
@@ -1007,7 +1010,7 @@ export default function RoomView({
               <div className={cn('absolute right-3 flex items-start gap-2', compact ? 'top-[80px]' : 'top-3', bigView && 'hidden')}>
                 {guest && (
                   <LeaveRoomLink href={SIGN_UP_HREF} className="panel px-3 py-2 text-xs font-extrabold text-primary hover:bg-secondary">
-                    {common ? 'Make an account ✨' : `Join ${server.name} ✨`}
+                    {common ? 'Make an account ✨' : `Join ${here.name} ✨`}
                   </LeaveRoomLink>
                 )}
                 {!compact && <PeoplePill {...peopleProps} />}
@@ -1030,6 +1033,7 @@ export default function RoomView({
               {/* My tools (left rail), and Chat at the bottom left */}
               <RoomTools
                 study={study}
+                guest={guest}
                 pomo={pomo}
                 music={music}
                 touch={touch}
@@ -1153,7 +1157,7 @@ export default function RoomView({
                       }
                       onCall={() => {
                         hub.call();
-                        toast(`📣 Everyone in ${roomDef.name} got an invite`);
+                        toast(`📣 Everyone in ${here.name} got an invite`);
                       }}
                       onStart={() => hub.begin()}
                       onLeave={() => leaveActivity(mySpot)}
@@ -1197,7 +1201,7 @@ export default function RoomView({
                     onSeek={(sec) => hub.seek(sec)}
                     onSkip={() => hub.next()}
                     onEnded={(id) => hub.ended(id)}
-                    onAdd={(v) => hub.putOn({ ...v, by: 'me' })}
+                    onAdd={(id) => hub.putOn(id)}
                     onRemove={(i) => hub.removeQueued(i)}
                     onShare={() => void shareOnTv()}
                     onStopShare={stopLiveShare}
@@ -1320,9 +1324,10 @@ export default function RoomView({
                           <X className="size-3.5" />
                         </button>
                       </div>
+                      {/* A refused link opens the card again (onWatchRefused) */}
                       <AddVideo
-                        onAdd={(v) => {
-                          hub.putOn({ ...v, by: 'me' });
+                        onAdd={(id) => {
+                          hub.putOn(id);
                           setPuttingOn(false);
                           setWatchMini(false);
                         }}
@@ -1436,7 +1441,7 @@ export default function RoomView({
                 <div className="absolute bottom-[96px] left-1/2 z-20 -translate-x-1/2">
                   <ActivitiesPanel
                     states={hub.spots}
-                    roomWideGames={roomDef.roomWideGames}
+                    roomWideGames={here.roomWideGames}
                     common={common}
                     watchTitle={hub.watch.share ? `${who(hub.watch.share.by).name}’s screen` : hub.watch.now?.title}
                     hostName={(id) => who(id).name}
@@ -1470,7 +1475,7 @@ export default function RoomView({
           )}
         </div>
 
-        <ChannelOverlay server={server} target={chatTarget} onClose={() => setChatTarget(null)} />
+        <ChatOverlay here={here} target={chatTarget} onClose={() => setChatTarget(null)} />
 
         {/* Phones: people and chat share one sheet */}
         <Sheet open={sheet} onOpenChange={setSheet}>

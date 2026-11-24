@@ -5,14 +5,14 @@ import { MessageCircle, X } from 'lucide-react';
 import { PersonFace } from '@/components/PersonFace';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import type { Server } from '@/lib/roomShape';
+import type { RoomHere } from './here';
 import { DmChat } from '@/features/dms/DmChat';
 import { dmUnread, useDms } from '@/features/dms/useDms';
 import { RoomChat } from '@/features/chat/RoomChat';
 
-/** What the big chat panel shows: the room's chat, or a DM (by the other person's @handle). */
+/** What the big chat panel shows: the room's chat (by room id), or a DM (by the other person's @handle). */
 export interface ChatTarget {
-  kind: 'channel' | 'dm';
+  kind: 'room' | 'dm';
   id: string;
 }
 
@@ -22,22 +22,22 @@ const key = (t: ChatTarget) => `${t.kind}:${t.id}`;
  * The big chat window: Room chat or a DM opened large (⤢ in the Chat panel) over the dimmed room,
  * for long reads and images. You're still in the room (voice keeps going); close it to be back in 3D.
  */
-export function ChannelOverlay({ server, target, onClose }: { server: Server; target: ChatTarget | null; onClose: () => void }) {
+export function ChatOverlay({ here, target, onClose }: { here: RoomHere; target: ChatTarget | null; onClose: () => void }) {
   return (
     <Dialog open={!!target} onOpenChange={(o) => !o && onClose()}>
-      {target && <Body key={key(target)} server={server} initial={target} />}
+      {target && <Body key={key(target)} here={here} initial={target} />}
     </Dialog>
   );
 }
 
-function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
-  // A room has one main chat (asServer puts it first)
-  const channels = server.channels.slice(0, 1);
+function Body({ here, initial }: { here: RoomHere; initial: ChatTarget }) {
+  // The room's one chat (Common rooms have none: Bubbles only)
+  const chats = here.common ? [] : [{ id: here.id }];
   const [current, setCurrent] = useState(initial);
   const dms = useDms();
   // Switching tabs goes back to the chat you last had open there (or the first one)
   const [last, setLast] = useState<Record<ChatTarget['kind'], string | undefined>>({
-    channel: server.channels[0]?.id,
+    room: chats[0]?.id,
     dm: dms.data?.[0]?.with.handle ?? undefined,
     [initial.kind]: initial.id,
   });
@@ -50,7 +50,6 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
     const id = last[kind] ?? (kind === 'dm' ? dms.data?.[0]?.with.handle : undefined) ?? undefined;
     if (id) setCurrent({ kind, id });
   };
-  const serverUnread = channels.reduce((n, c) => n + (c.unread ?? 0), 0);
   const unreadDms = dmUnread(dms.data);
   const friend = current.kind === 'dm' ? dms.data?.find((d) => d.with.handle === current.id)?.with : undefined;
   const is = (kind: ChatTarget['kind'], id: string) => current.kind === kind && current.id === id;
@@ -64,14 +63,14 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
         {current.kind === 'dm' ? (
           friend && <PersonFace who={friend} size={44} />
         ) : (
-          <span className={cn('grid size-11 place-items-center rounded-2xl text-xl', server.tint)}>{server.emoji}</span>
+          <span className={cn('grid size-11 place-items-center rounded-2xl text-xl', here.tint)}>{here.emoji}</span>
         )}
         <div className="min-w-0 flex-1">
           <DialogTitle className="text-xl font-black">
             {current.kind === 'dm' ? (friend?.name ?? `@${current.id}`) : 'Room chat'}
           </DialogTitle>
           <DialogDescription className="text-sm">
-            {current.kind === 'dm' ? 'Direct message' : server.name} · you’re still in the room
+            {current.kind === 'dm' ? 'Direct message' : here.name} · you’re still in the room
           </DialogDescription>
         </div>
         <DialogClose
@@ -83,11 +82,11 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
       </header>
       <div className="flex min-h-0 flex-1">
         <aside className="hidden w-60 flex-none flex-col gap-2 overflow-y-auto bg-secondary/40 p-3 sm:flex">
-          <Tabs tab={current.kind} onTab={switchTab} server={server} serverUnread={serverUnread} dmUnread={unreadDms} />
+          <Tabs tab={current.kind} onTab={switchTab} here={here} dmUnread={unreadDms} />
           <div className="flex flex-col gap-0.5">
-            {current.kind === 'channel'
-              ? channels.map((c) => (
-                  <SideItem key={c.id} active={is('channel', c.id)} onClick={() => open({ kind: 'channel', id: c.id })} dot={!!c.unread}>
+            {current.kind === 'room'
+              ? chats.map((c) => (
+                  <SideItem key={c.id} active={is('room', c.id)} onClick={() => open({ kind: 'room', id: c.id })}>
                     <MessageCircle className="size-4" />
                     <span className="flex-1 truncate">Room chat</span>
                   </SideItem>
@@ -108,11 +107,11 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Phones: no sidebar, so the tabs sit on top and the list becomes chips */}
           <div className="flex flex-col gap-2 border-b p-2 sm:hidden">
-            <Tabs tab={current.kind} onTab={switchTab} server={server} serverUnread={serverUnread} dmUnread={unreadDms} />
+            <Tabs tab={current.kind} onTab={switchTab} here={here} dmUnread={unreadDms} />
             <div className="flex gap-1 overflow-x-auto">
-              {current.kind === 'channel'
-                ? channels.map((c) => (
-                    <Chip key={c.id} active={is('channel', c.id)} onClick={() => open({ kind: 'channel', id: c.id })}>
+              {current.kind === 'room'
+                ? chats.map((c) => (
+                    <Chip key={c.id} active={is('room', c.id)} onClick={() => open({ kind: 'room', id: c.id })}>
                       Room chat
                     </Chip>
                   ))
@@ -127,8 +126,8 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
                   ))}
             </div>
           </div>
-          {current.kind === 'channel' ? (
-            <RoomChat key={key(current)} roomId={server.id} moderator={!!server.roles.me} />
+          {current.kind === 'room' ? (
+            <RoomChat key={key(current)} roomId={here.id} moderator={here.moderator} />
           ) : (
             <DmChat key={key(current)} handle={current.id} />
           )}
@@ -142,18 +141,17 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
 function Tabs({
   tab,
   onTab,
-  server,
-  serverUnread,
+  here,
   dmUnread,
 }: {
   tab: ChatTarget['kind'];
   onTab: (kind: ChatTarget['kind']) => void;
-  server: Server;
-  serverUnread: number;
+  here: RoomHere;
   dmUnread: number;
 }) {
   const tabs = [
-    ...(server.channels.length ? [['channel', `${server.emoji} Room`, serverUnread] as const] : []),
+    // No count on it: the Chat panel's Room chat tab has it, and looking here reads it
+    ...(here.common ? [] : [['room', `${here.emoji} Room`, 0] as const]),
     ['dm', 'Messages', dmUnread] as const,
   ];
   return (

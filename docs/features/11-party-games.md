@@ -30,7 +30,8 @@ drawing live to the whole room; it stays until Clear or the room empties.
 
 Tools: pen, 6 colours, 3 sizes, eraser, undo (your own last stroke), Clear (anyone, with a
 confirm). **Save as image**, and **Share to Room chat** for members. Anyone in front draws, guests
-too, but not someone timed out.
+too, but not someone timed out. A rate limit per person (`apps/game/src/rules.ts`) lets a fast pen
+draw all day and cuts a flood to a trickle.
 
 ## ✏️ Draw & Guess
 

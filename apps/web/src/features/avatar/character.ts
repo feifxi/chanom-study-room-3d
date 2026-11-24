@@ -20,7 +20,8 @@ const SKIN = '#ffe6da';
 const INK = '#2b2140';
 
 let gradientMap: THREE.DataTexture | null = null;
-function getGradientMap() {
+/** The cel-shading steps, shared with the cats (CatRig) */
+export function getGradientMap() {
   if (!gradientMap) {
     gradientMap = new THREE.DataTexture(new Uint8Array([110, 190, 255]), 3, 1, THREE.RedFormat);
     gradientMap.minFilter = gradientMap.magFilter = THREE.NearestFilter;
@@ -29,7 +30,7 @@ function getGradientMap() {
   return gradientMap;
 }
 
-const OUTLINE = new THREE.MeshBasicMaterial({ color: '#3a2a40', side: THREE.BackSide });
+export const OUTLINE = new THREE.MeshBasicMaterial({ color: '#3a2a40', side: THREE.BackSide });
 
 const toon = (color: THREE.ColorRepresentation, opts: THREE.MeshToonMaterialParameters = {}) =>
   new THREE.MeshToonMaterial({ color, gradientMap: getGradientMap(), ...opts });

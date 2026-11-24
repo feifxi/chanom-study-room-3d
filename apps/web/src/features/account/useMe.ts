@@ -5,15 +5,16 @@ import { api, type Me } from '@/lib/api/client';
 import { authClient } from '@/lib/auth-client';
 import { closeLive } from '@/features/chat/live';
 import { syncTimeZone } from '@/features/focus/useRoomToday';
-import { DEFAULT_LOOK } from '@connecta/shared';
-import type { User } from '@/lib/roomShape';
+import { DEFAULT_LOOK, type AvatarLook } from '@connecta/shared';
+import type { Presence } from '@/components/UserAvatar';
 
 export const ME_KEY = ['me'] as const;
 
 /** Who's signed in: a full account, a guest, or null. */
 export async function fetchMe(): Promise<Me | null> {
   const { data, response } = await api.GET('/api/me');
-  if (response.status === 401) return null;
+  // 204: signed out
+  if (response.status === 204) return null;
   if (!data) throw new Error(`Couldn't load your account (${response.status})`);
   // Quietly, in the background: focus days follow the time zone you're in now
   if (!data.isGuest && typeof window !== 'undefined') void syncTimeZone(data.timeZone).catch(() => {});
@@ -46,7 +47,18 @@ export function useSetMe() {
  * The signed-in account in the User shape the avatar and name tag take: your name, look, Plus, and
  * online unless you chose to appear offline. Empty while it loads.
  */
-export function useMeAsUser(): User {
+/** You, the way avatars and name tags take a person */
+export interface MeAsUser {
+  id: 'me';
+  name: string;
+  handle: string;
+  color: string;
+  look: AvatarLook;
+  presence: Presence;
+  plus: boolean;
+}
+
+export function useMeAsUser(): MeAsUser {
   const { data: me } = useMe();
   const look = me?.look ?? DEFAULT_LOOK;
   return {

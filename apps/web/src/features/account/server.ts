@@ -14,7 +14,8 @@ export async function getMe(): Promise<Me | null> {
   if (!cookie) return null;
   try {
     const res = await fetch(`${API_URL}/api/me`, { headers: { cookie }, cache: 'no-store' });
-    return res.ok ? ((await res.json()) as Me) : null;
+    // 204: signed out
+    return res.status === 200 ? ((await res.json()) as Me) : null;
   } catch {
     return null;
   }

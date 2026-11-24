@@ -12,6 +12,8 @@ import { TRACKS } from '../music/tracks';
 import type { Music } from '../music/useMusic';
 import { useDismiss } from './useDismiss';
 import { formatLeft, type FocusTimer } from '../focus/useFocusTimer';
+import { SIGN_UP_HREF } from '@/features/account/links';
+import { LeaveRoomLink } from './LeaveRoom';
 
 type ToolId = 'study' | 'music' | 'quests' | 'help';
 
@@ -22,12 +24,15 @@ type ToolId = 'study' | 'music' | 'quests' | 'help';
  */
 export function RoomTools({
   study,
+  guest,
   pomo,
   music,
   touch,
   className,
 }: {
   study: ReactNode;
+  /** Guests earn no coins: the quests button invites them to sign up instead */
+  guest: boolean;
   pomo: FocusTimer;
   music: Music;
   touch: boolean;
@@ -57,8 +62,8 @@ export function RoomTools({
     {
       id: 'quests',
       icon: Target,
-      label: `Today’s quests: ${done} of ${quests.length} done`,
-      badge: <span className="font-mono text-[9px] leading-none font-black text-primary">{`${done}/${quests.length}`}</span>,
+      label: guest ? 'Daily quests: sign up to earn coins' : `Today’s quests: ${done} of ${quests.length} done`,
+      badge: !guest && <span className="font-mono text-[9px] leading-none font-black text-primary">{`${done}/${quests.length}`}</span>,
     },
     { id: 'help', icon: CircleHelp, label: 'How to play' },
   ];
@@ -94,7 +99,21 @@ export function RoomTools({
             <MusicPanel music={music} />
           </ToolCard>
         )}
-        {open === 'quests' && (
+        {open === 'quests' && guest && (
+          <ToolCard title="Daily quests" onClose={() => setOpen(null)}>
+            <div className="flex flex-col items-center gap-2 rounded-2xl bg-muted p-4 text-center">
+              <p className="text-2xl">🪙</p>
+              <p className="text-sm font-semibold">Three small quests a day earn coins for outfits and pets in the Shop.</p>
+              <LeaveRoomLink
+                href={SIGN_UP_HREF}
+                className="rounded-full bg-primary px-4 py-1.5 text-xs font-extrabold text-primary-foreground"
+              >
+                Sign up to earn coins
+              </LeaveRoomLink>
+            </div>
+          </ToolCard>
+        )}
+        {open === 'quests' && !guest && (
           <ToolCard title="Today’s quests" note={`🪙 ${coins.toLocaleString()}`} onClose={() => setOpen(null)}>
             <QuestList />
             <p className="text-[11px] text-muted-foreground">New ones at midnight. Coins buy outfits and pets in the Shop.</p>

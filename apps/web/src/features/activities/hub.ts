@@ -280,8 +280,8 @@ export class ActivityHub {
   // --- Watch together (the server's big screen) ---
 
   /** Put a video on: plays now if the screen is off, otherwise joins the queue. */
-  putOn(video: Video) {
-    this.screen.add(video.id);
+  putOn(videoId: string) {
+    this.screen.add(videoId);
   }
 
   setPaused(paused: boolean) {

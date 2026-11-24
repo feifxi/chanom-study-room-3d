@@ -1,5 +1,5 @@
 import { Callbacks } from '@colyseus/sdk';
-import { BOARD_ADD_MAX, WALK_SPEED, randomLook } from '@connecta/shared';
+import { BOARD_ADD_MAX, CAT_COATS, NPC_LIMITS, WALK_SPEED, randomLook } from '@connecta/shared';
 import type {
   AvatarLook,
   FocusPreset,
@@ -28,6 +28,7 @@ import type { SlaveGame, Title } from '../activities/slave/game';
 import type { BoardStore } from '../activities/board/board';
 import { BUILT_IN, deckKindFor, type Deck, type SideGame, type SideMode } from '../activities/pickASide/game';
 import { deckPass } from '../activities/pickASide/useRoomDecks';
+import { learnServerClock } from '@/lib/serverClock';
 import type { Stroke } from '../activities/board/board';
 import type { Entry, TelGame, TelMode } from '../activities/telephone/game';
 import type { PieceSymbol, Square } from 'chess.js';
@@ -147,6 +148,8 @@ export class LiveRoom implements StudyRoom {
   readonly state = { players: new Map<string, PlayerView>(), npcs: new Map<string, NpcView>() };
   /** The Test tools' pretend crowd, walking loops along real paths (in this browser only) */
   private walkers = new Map<string, { path: { x: number; z: number }[]; next: number }>();
+  /** With the pretend crowd, the Buddy Machine is full too (the perf check's worst case) */
+  private readonly fullMachine: boolean;
 
   constructor(
     /** The map the room is in: seats, paths, spots */
@@ -157,6 +160,7 @@ export class LiveRoom implements StudyRoom {
     crowd: { id: string; name: string }[] = [],
   ) {
     const { spawn } = map;
+    this.fullMachine = crowd.length > 0;
     this.state.players.set('me', player({ name: me.name, look: JSON.stringify(me.look), x: spawn.x, z: spawn.z }));
     const { findPath, randomWalkable } = map.nav;
     crowd.forEach((c, i) => {
@@ -246,12 +250,16 @@ export class LiveRoom implements StudyRoom {
         this.telVersion++;
       }),
       game.onMessage('tel:collect', (m: { step: number }) => this.sendTel(m.step, this.telDraftNow)),
+      game.onMessage('clock', (m: { sentAt: number; serverAt: number }) => learnServerClock(m.sentAt, m.serverAt, Date.now())),
     ];
+    // The server's clock: a few asks, a moment apart (the fastest answer is the most exact)
+    const clockAsks = [0, 1000, 3000].map((ms) => setTimeout(() => game.send('clock', { sentAt: Date.now() }), ms));
     // Slave: your cards, in case a game is on (they only come when they change)
     game.send('slave:hand');
     game.send('tel:sync');
     this.sync();
     return () => {
+      clockAsks.forEach(clearTimeout);
       clearTimeout(this.subjectTimer);
       game.onStateChange.remove(sync);
       for (const off of offs) off?.();
@@ -740,8 +748,53 @@ export class LiveRoom implements StudyRoom {
       local.following = following;
     }
     for (const id of [...this.state.npcs.keys()]) {
-      if (!npcs.has(id)) {
+      if (!id.startsWith('crowd-') && !npcs.has(id)) {
         this.state.npcs.delete(id);
+        changed = true;
+      }
+    }
+    if (this.fullMachine) changed = this.topUpNpcs(npcs) || changed;
+    return changed;
+  }
+
+  /**
+   * The Test tools' crowd (development only): pretend cats, study buddies and pets fill each up to the
+   * Buddy Machine's limits beside the server's own, in this browser only. They stand still; drawing
+   * them is what the perf check measures.
+   */
+  private topUpNpcs(real: Map<string, NpcView>) {
+    const kinds = { cat: 0, buddy: 0, pet: 0 };
+    for (const n of real.values()) kinds[n.owner ? 'pet' : n.kind]++;
+    let changed = false;
+    for (const kind of ['cat', 'buddy', 'pet'] as const) {
+      const want = Math.max(0, NPC_LIMITS[kind] - kinds[kind]);
+      for (let i = 0; i < Math.max(want, NPC_LIMITS[kind]); i++) {
+        const id = `crowd-${kind}-${i}`;
+        if (i >= want) {
+          changed = this.state.npcs.delete(id) || changed;
+          continue;
+        }
+        if (this.state.npcs.has(id)) continue;
+        const at = this.map.nav.randomWalkable(Math.random);
+        const coat = CAT_COATS[i % CAT_COATS.length]!.id;
+        this.state.npcs.set(id, {
+          kind: kind === 'buddy' ? 'buddy' : 'cat',
+          name: `${kind === 'buddy' ? 'Buddy' : kind === 'pet' ? 'Pet' : 'Cat'} ${i + 1}`,
+          look: JSON.stringify(kind === 'buddy' ? randomLook() : { coat }),
+          x: at.x,
+          z: at.z,
+          y: 0,
+          yaw: i,
+          moving: false,
+          anim: 'idle',
+          seatId: '',
+          status: kind === 'buddy' ? 'focus' : '',
+          statusEndsAt: 0,
+          focusSince: kind === 'buddy' ? Date.now() : 0,
+          subject: '',
+          following: '',
+          ...(kind === 'pet' ? { owner: `crowd-owner-${i}`, ownerName: 'Aom' } : {}),
+        });
         changed = true;
       }
     }

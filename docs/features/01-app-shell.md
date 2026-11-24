@@ -39,7 +39,7 @@ rooms, a room's page is its chat, and inside 3D everything is a panel over the r
   your settings) under ⋯ More.
 - **Nothing navigates away silently.** Only Leave leaves; links out ask "Leave {room}?" first.
 - Panels close on a press elsewhere or Escape, and that press never walks you.
-- Changing your look is live (no rejoin), at most once every 5 s.
+- Changing your look is live (no rejoin), at most once every 5 s (the API refuses faster).
 - **Phones:** compact HUD, chat as a sheet, joystick and an action button.
 
 ## Room settings

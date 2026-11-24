@@ -35,6 +35,7 @@ is held for you for 30 days.
 
 From a guest pass (`/g/<code>`) or a Common room: pick a name and a look, walk in. Inside they get a
 **Join <room> ✨** / **Make an account ✨** button; signing up from there keeps the look and name.
+A guest account goes after 30 days once its last session has expired (a nightly job).
 
 ## Settings → Account
 

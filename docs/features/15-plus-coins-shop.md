@@ -44,6 +44,7 @@ inside stay, new people wait at the door.
 
 ## Coins and daily quests
 
+- **Guests earn nothing**; their 🎯 in a room invites them to sign up instead.
 - **Coins are earned, never bought.** ~60 a day from **3 quests**, one per group, picked at random
   per person per day at your own midnight:
   - 📖 Focus: focus 1 hour, finish 2 focus sessions
@@ -77,7 +78,8 @@ Only things that **really show on your character in every room**, built in code.
   paid through Stripe only). **Receipt** opens `/receipt/<id>`, which prints or saves as a PDF
   through the browser.
 - Quests: rules and the daily pick in `packages/shared/src/quests.ts`; the game server queues
-  `quest-events`; `apps/api/src/quests/` counts and pays once in one transaction.
+  `quest-events`; `apps/api/src/quests/` counts and pays once in one transaction (progress older
+  than a week is cleaned up nightly; paid coins stay in the ledger).
 - Shop: `apps/api/src/shop/`, items in `packages/shared/src/shop.ts`. **The game server takes looks
   and pets only from the API**, so nobody can wear what they didn't buy.
 - Web: `apps/web/src/features/plus/`, `features/shop/`, `features/quests/`, `app/checkout/`

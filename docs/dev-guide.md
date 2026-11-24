@@ -6,7 +6,8 @@ gotchas that have bitten before.
 ## Test tools
 
 A dashed **Test tools** tab on the right of every page (development only): theme, a pretend
-crowd, the perf overlay, "Go away now" and your Plus.
+crowd (with it, a full Buddy Machine of pretend cats, buddies and pets), the perf overlay, "Go away
+now" and your Plus.
 
 ## Checking UI changes
 

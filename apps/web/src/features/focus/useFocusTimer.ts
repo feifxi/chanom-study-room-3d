@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { FOCUS_PRESETS, type FocusPreset } from '@connecta/shared';
 import type { LiveRoom } from '../room3d/liveRoom';
+import { serverNow } from '@/lib/serverClock';
 import { playChime } from './chime';
 
 export type Phase = 'idle' | 'focus' | 'break';
@@ -30,16 +31,16 @@ export const formatLeft = (ms: number) => {
  */
 export function useFocusTimer(live: LiveRoom, subject: () => string): FocusTimer {
   const me = live.state.players.get('me');
-  // Away hides a break on your label; the countdown still says whether one runs
+  // Away during a break: the break still runs
   const phase: Phase =
     me?.status === 'focus' ? 'focus' : me?.status === 'break' || (me?.status === 'away' && me.statusEndsAt) ? 'break' : 'idle';
   const endsAt = me?.statusEndsAt ?? 0;
   const preset = FOCUS_PRESETS[(me?.focusPreset ?? 0) as FocusPreset];
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState(serverNow);
 
   useEffect(() => {
     if (phase === 'idle') return;
-    const id = setInterval(() => setNow(Date.now()), 500);
+    const id = setInterval(() => setNow(serverNow()), 500);
     return () => clearInterval(id);
   }, [phase]);
 

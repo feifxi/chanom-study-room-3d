@@ -1,14 +1,14 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { DEFAULT_LOOK, type AvatarLook } from '@connecta/shared';
+import { DEFAULT_LOOK, LOOK_COOLDOWN_MS, type AvatarLook } from '@connecta/shared';
 
 /**
  * Your character's look, changeable anywhere, inside a room too (decided 2026-11-09): saving swaps
  * it live for everyone in the room with a little sparkle, no rejoin. At most once every 5 s so nobody
- * flickers outfits. The API saves it, checks you own its Shop items, and tells the game servers.
+ * flickers outfits (the API enforces it; this copy answers at once). The API saves it, checks you own
+ * its Shop items, and tells the game servers.
  */
-export const LOOK_COOLDOWN_MS = 5000;
 
 const EVENT = 'connecta:my-look';
 // Until the account's look arrives (initMyLook)

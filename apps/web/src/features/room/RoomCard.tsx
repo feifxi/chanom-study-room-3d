@@ -11,7 +11,7 @@ import { AboutRoomDialog } from '@/features/place/RoomMenu';
 import { ReportRoomDialog } from '@/features/place/ReportRoomDialog';
 import { cn } from '@/lib/utils';
 import { mapById } from '@/features/place/roomLook';
-import type { Room, Server } from '@/lib/roomShape';
+import type { RoomHere } from './here';
 import { useDismiss } from './useDismiss';
 
 /**
@@ -24,19 +24,17 @@ import { useDismiss } from './useDismiss';
  */
 
 export function RoomCard({
-  server,
-  place,
   room,
+  place,
   mapId,
   here,
   guest,
   onLeave,
   className,
 }: {
-  server: Server;
-  /** The room from the API (none in Common rooms) */
+  room: RoomHere;
+  /** The room from the API, when you're a member (none in Common rooms) */
   place?: PlaceRoom;
-  room: Room;
   /** The map it's in now (the owner can switch it while you're inside) */
   mapId: string;
   /** How many people are in this room right now, you included. */
@@ -45,7 +43,7 @@ export function RoomCard({
   onLeave: () => void;
   className?: string;
 }) {
-  const isPublic = server.id === 'public';
+  const isPublic = room.common;
   const [open, setOpen] = useState(false);
   const ref = useDismiss<HTMLDivElement>(open, () => setOpen(false));
   const [invite, setInvite] = useState(false);
@@ -54,7 +52,7 @@ export function RoomCard({
   const [report, setReport] = useState(false);
   const canEdit = !guest && !!place?.canEdit;
   const map = mapById(mapId);
-  const name = isPublic ? room.name : server.name;
+  const name = room.name;
 
   return (
     // items-start: the collapsed card hugs the room's name instead of a fixed width
@@ -65,8 +63,8 @@ export function RoomCard({
         aria-label={`Room: ${name}`}
         className={cn('panel flex max-w-full items-center gap-2.5 p-2 pr-4 text-left', open && 'bg-secondary')}
       >
-        <span className={cn('grid size-11 flex-none place-items-center rounded-2xl text-xl', server.tint)}>
-          {isPublic ? map.emoji : server.emoji}
+        <span className={cn('grid size-11 flex-none place-items-center rounded-2xl text-xl', room.tint)}>
+          {isPublic ? map.emoji : room.emoji}
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1 text-[15px] font-black">
@@ -143,7 +141,7 @@ export function RoomCard({
           )}
         </div>
       )}
-      <ReportRoomDialog roomId={server.id} name={name} open={report} onOpenChange={setReport} />
+      <ReportRoomDialog roomId={room.id} name={name} open={report} onOpenChange={setReport} />
 
       {!isPublic && !guest && (
         <>

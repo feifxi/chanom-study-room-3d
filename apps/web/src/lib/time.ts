@@ -20,3 +20,9 @@ export function useNow(ms: number) {
 export function minutesSince(serverMs: number, serverNow: number) {
   return serverMs ? Math.max(0, Math.floor((serverNow - serverMs) / 60_000)) : 0;
 }
+
+/** How long a focus round has run, for labels: "just started" in its first minute, then "12m" */
+export function focusedFor(serverMs: number, serverNow: number) {
+  const m = minutesSince(serverMs, serverNow);
+  return m < 1 ? 'just started' : `${m}m`;
+}

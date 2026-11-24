@@ -14,30 +14,14 @@ adds a line here; a fix removes it. Bigger planned work is in the [roadmap](road
 
 ## Code cleanup
 
-- The room screen still takes the older `Server` shape (`lib/roomShape.ts`, filled by `asServer()`
-  in `features/place/model.ts`, and `PUBLIC_SERVER` for Common rooms) and old names (`serverId`,
-  `ChatTarget.kind: 'channel'`). Users never see it. Search for "server" and "channel" afterwards;
-  only game-server and networking code should keep them.
-- Signed-out pages that ask `useMe` (the landing page, Common rooms) log a 401 for `/api/me` in the
-  browser console. Harmless; an `@OptionalAuth` answer of `null` would quiet it.
 - The perf check isn't in CI (it needs the whole app and the seed).
-- The gateway's presence handler still accepts a `roomId` from browsers (they send `null`; the
-  game server reports rooms).
-- Guests who never come back aren't cleaned up; old quest progress rows are never cleaned up.
-- The browser's Watch together panel still looks a video's title up too, though the server's is used.
-
-## Clocks
-
-The focus countdown, Watch together's timeline, Slave's turn bar, Draw & Guess's timers and the
-invite card all use the browser's clock against the server's times. A computer clock that's off
-shows them off (what counts is the server's). A server time sync would fix them all.
+- The game test "a reload mid-game keeps your cards" (Slave) sometimes times out in a full
+  `pnpm check` (about 1 run in 5 on a busy machine); it passes alone. Its 5 s wait is tight.
 
 ## Moderation
 
 - Room deck text and Draw & Guess prompts aren't run through the word filter.
 - Room mod actions (kick, ban, Mute for everyone) aren't in an audit log; only team actions are.
-- The whiteboard has no rate limit beyond its size caps.
-- No limit on how often one account reports (repeats count once).
 - A muted person sees the usual "You're timed out", not why. A guest's automatic mute ends when
   they walk back in.
 - People inside a room when it's closed see "isn't there any more", not why.
@@ -70,11 +54,9 @@ shows them off (what counts is the server's). A server time sync would fix them 
 
 ## 3D and performance
 
-- A full Buddy Machine (9 NPCs, plus up to 4 pets) isn't measured by the perf check and likely
-  goes over the draw-call budget until cats are merged.
 - The perf check doesn't dress the crowd in Shop items.
-- A saved look is sent to every room on every game server; the 5 s look cooldown is only in the
-  browser.
+- A saved look is sent to every room on every game server.
+- The perf check's pretend Buddy Machine stands still (drawing is what it measures, not their walking).
 - A cat napping on a high shelf may be out of reach to pet.
 - On phones, the small chess and Slave watch views cover the "Press E" hint; a headless phone test
   couldn't sit by tapping the hint (check on a real phone).
@@ -85,11 +67,7 @@ shows them off (what counts is the server's). A server time sync would fix them 
 
 - Invite and friend links say "Sign in to join" and open "Welcome back"; "Join Connecta" may read
   better there.
-- A refused YouTube link closes the Put something on card; trying another means reopening it.
-- A focus label says "0m" for the first minute.
-- To-dos don't update live in other tabs; no reordering.
-- Away during a break hides the ☕ on your label.
-- "Back to <room>" on the Focus page is remembered per browser, not per account.
+- To-dos can't be reordered.
 - Focus minutes count toward the quest when a round ends, not minute by minute.
 - The Everyone ranking's cache lives in each API process (fine with one).
 - Bubbles in seeded reports are made up; the seeded picture is lost when the AWS Emulator

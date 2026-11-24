@@ -26,8 +26,8 @@ items clear after 7 days. No due dates, no sharing.
 
 ## The Focus page (`/home/focus`)
 
-- **Hero:** this week's minutes, your place among friends, and a button back to the room you were
-  last in (else "Find a room to study in" → Discover).
+- **Hero:** this week's minutes, your place among friends, and a button back to the room you last
+  walked into on any device (else "Find a room to study in" → Discover).
 - **My numbers:** Today, Last 7 days, daily average, a 7-day chart, minutes by subject.
 - **Rankings:** Friends / Everyone × Today / This week. Friends lists only those who focused, plus
   you. Everyone shows the top 10 and your rank; people you blocked or who blocked you are hidden.
@@ -40,7 +40,8 @@ items clear after 7 days. No due dates, no sharing.
 - Timer: `apps/game/src/focus.ts` (`focus:start`, `focus:stop`, `focus:subject`); a finished round
   goes to the `focus-rounds` BullMQ queue so it survives an API restart.
 - `apps/api/src/focus/` (`focus_sessions`, rankings; Everyone cached 5 minutes), to-dos in the same
-  module (`/api/todos`, a 3 am cleanup job). Shared rules: `packages/shared/src/focus.ts`.
+  module (`/api/todos`, a 3 am cleanup job; each change tells your other tabs live). Shared rules:
+  `packages/shared/src/focus.ts`.
 - Web: `apps/web/src/features/focus/`, `app/(app)/(home)/home/focus/`
 
 ## Not doing
