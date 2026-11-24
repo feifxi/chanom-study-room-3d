@@ -9,6 +9,9 @@ decision changes, edit its line ("reversed on …") instead of adding a contradi
 - **Feature by feature.** Each feature is discussed with the owner, built, and approved from
   screenshots. The design sandbox (`demo/`) was removed on 2026-11-24 once everything in it was
   in the app: two copies of every page confused the team.
+- **Three releases** (2026-11-24): core first (study with friends), then fun (hang out and play),
+  then scale (open to strangers, and paying for itself), each usable on its own. Every feature is
+  split into PBIs in [releases.md](releases.md).
 - **No mock data in the app** (2026-11-24): every room, Common rooms too, runs on the game server, so
   the browser copies of the games, the scripted people and the mock room went with the demo. The
   Test tools' pretend crowd (development only) is the one stand-in left. Every button does what
