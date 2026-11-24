@@ -16,7 +16,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:seed": "prisma db seed",
-    "db:reset": "prisma migrate reset",
+    "db:reset": "prisma migrate reset && prisma db seed",
     "team": "tsx scripts/team.ts",
     "openapi": "nest build && node dist/openapi.js",
     "start:gateway": "node dist/gateway.js"
