@@ -9,7 +9,6 @@ import { UserAvatar } from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { BLOCKED, ME, userById, type Message } from '@/lib/mock';
 
 /** Quick reactions on hover; the smiley opens the rest. */
 const QUICK = ['❤️', '😂', '👍'];
@@ -252,101 +251,6 @@ export function ChatView({
         )}
       </div>
     </div>
-  );
-}
-
-type ThreadProps = {
-  /** Messages so far (mock). The thread keeps its own copy: sends, edits, deletes, reactions. */
-  initial: Message[];
-  placeholder: string;
-  /** Who the @ picker offers (ids). */
-  members: string[];
-  moderator?: boolean;
-  /** How many of the last messages are unread: a "New messages" line goes above them. */
-  unread?: number;
-  intro?: ReactNode;
-  locked?: ReactNode;
-  /** Demo: after you send, this person "types" and answers, to show the typing line. */
-  replier?: { id: string; text: string };
-  className?: string;
-};
-
-/** The demo's chat on mock data (DMs until they move to the API): its own copy of the messages. */
-export function ChatThread({ initial, placeholder, members, moderator, unread = 0, intro, locked, replier, className }: ThreadProps) {
-  const [messages, setMessages] = useState(initial);
-  const [typing, setTyping] = useState<string | null>(null);
-  const update = (id: string, change: (m: Message) => Message) => setMessages((all) => all.map((m) => (m.id === id ? change(m) : m)));
-
-  const view = (m: Message): ChatMessageView => {
-    const u = userById(m.author);
-    const quoted = m.replyTo ? messages.find((x) => x.id === m.replyTo) : undefined;
-    return {
-      id: m.id,
-      author: { id: u.id, name: u.name, color: u.color },
-      mine: m.author === 'me',
-      at: m.at,
-      text: m.text,
-      image: m.image,
-      images: m.images,
-      reactions: (m.reactions ?? []).map((r) => ({ ...r, mine: !!r.mine })),
-      quote: quoted && { name: userById(quoted.author).name, text: quoted.text || 'a picture' },
-      edited: m.edited,
-      system: m.system,
-      gift: m.gift,
-      mentionsMe: m.author !== 'me' && (m.text.includes(`@${ME.handle}`) || m.text.includes('@room')),
-      blocked: BLOCKED.has(m.author),
-    };
-  };
-
-  return (
-    <ChatView
-      className={className}
-      messages={messages.map(view)}
-      placeholder={placeholder}
-      mentionables={members
-        .filter((id) => id !== 'me')
-        .map((id) => userById(id))
-        .map((u) => ({ id: u.id, handle: u.handle, name: u.name, color: u.color }))}
-      moderator={moderator}
-      dividerAt={unread > 0 ? (initial[initial.length - unread]?.id ?? null) : null}
-      typing={typing && userById(typing).name}
-      intro={intro}
-      locked={locked}
-      onSend={(text, images, replyTo) => {
-        setMessages((all) => [
-          ...all,
-          { id: `${Date.now()}`, author: 'me', at: 'Now', text, images: images.length ? images : undefined, replyTo: replyTo?.id },
-        ]);
-        if (replier) {
-          setTimeout(() => setTyping(replier.id), 700);
-          setTimeout(() => {
-            setTyping(null);
-            setMessages((all) => [...all, { id: `${Date.now()}r`, author: replier.id, at: 'Now', text: replier.text }]);
-          }, 2600);
-        }
-      }}
-      onEdit={(m, text) => update(m.id, (x) => ({ ...x, text, edited: true }))}
-      onDelete={(m) => {
-        const index = messages.findIndex((x) => x.id === m.id);
-        const original = messages[index]!;
-        setMessages((all) => all.filter((x) => x.id !== m.id));
-        toast(m.mine ? 'Message deleted' : `Deleted ${m.author.name}’s message`, {
-          action: { label: 'Undo', onClick: () => setMessages((all) => [...all.slice(0, index), original, ...all.slice(index)]) },
-        });
-      }}
-      onReact={(m, emoji) =>
-        update(m.id, (x) => {
-          const list = x.reactions ?? [];
-          const found = list.find((r) => r.emoji === emoji);
-          const next = found
-            ? list
-                .map((r) => (r.emoji === emoji ? { ...r, mine: !r.mine, count: r.count + (r.mine ? -1 : 1) } : r))
-                .filter((r) => r.count > 0)
-            : [...list, { emoji, count: 1, mine: true }];
-          return { ...x, reactions: next };
-        })
-      }
-    />
   );
 }
 

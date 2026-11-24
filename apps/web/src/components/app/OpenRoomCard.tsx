@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import { personAvatar } from '@/components/PersonFace';
 import type { CommonRoom } from '@/features/common/useCommon';
 import { MAPS } from '@/lib/mock';
-import { useViewer } from '@/lib/viewer';
+import { useIsGuest } from '@/features/account/useMe';
 
 type Props = { kind: 'open'; room: ListedRoom } | { kind: 'common'; room: CommonRoom };
 
@@ -66,7 +66,7 @@ function OpenCard({ room: o }: { room: ListedRoom }) {
   const full = inside >= o.capacity;
   const mine = !!o.me.role;
   // Guests can look, but listed rooms have members, and members need an account
-  const guest = useViewer() === 'guest';
+  const guest = useIsGuest();
   const action = guest
     ? 'Sign up to join'
     : mine

@@ -10,6 +10,37 @@ way and what's still open are in the [review notes](review-notes.md).
 (or one normal and one private window) as two people; email codes arrive in Mailpit
 (http://localhost:8025). Check pages at phone width and desktop, light and dark, and as a guest.
 
+## The seed
+
+`pnpm db:seed` (or `pnpm db:reset`) fills the app; rerun it any time to start over. Everyone signs in
+as `<handle>@connecta.test`.
+
+| Who   | Handle    | What's special                                                                                                              |
+| ----- | --------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Fei   | `fei`     | On the Connecta team (the admin site); Plus monthly by card; owns Chanom Friends; Bow's friend request and an inbox to read |
+| Ter   | `ter`     | Owns CPE Year 3 (Pim's request waits); mod in Chanom Friends                                                                |
+| View  | `view`    | Owns Lo-fi Study Hall; banned from Chanom Friends; an urgent open report                                                    |
+| Ploy  | `ployy`   | Owns Game Night Club (two Pick a Side decks of its own); a pet                                                              |
+| Nam   | `namwhan` | Member of three rooms                                                                                                       |
+| Bow   | `bowbow`  | 16 (under-18 rules)                                                                                                         |
+| Pim   | `pimmy`   | Warned a week ago; a message reported for selling                                                                           |
+| Mook  | `mookie`  | Mod in Game Night Club; a pet                                                                                               |
+| Earth | `earth.k` | Plus as Fei's gift (the card in their DM); mod in Lo-fi Study Hall                                                          |
+
+Rooms: **Chanom Friends** (private, Library, Big), **CPE Year 3** (ask to join, Library), **Game
+Night Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
+
+- [ ] After `pnpm db:reset`, sign in as Fei: Home shows her four rooms (Chanom Friends with "4
+      new"), the 🔔 has four unread, Messages has Ter's two, Focus shows two weeks, the Shop shows her
+      coins with the flower crown and hoodie worn, and the admin site has reports and payments.
+- [ ] Run `pnpm db:seed` again: the same data, no doubles; anything you did as a seed person is
+      reset, your own accounts stay.
+- [ ] **Test tools** (the dashed "Test" tab on the right edge, development only): the theme
+      switches; in a room, "100 people" fills it with a pretend crowd that walks around (yours only;
+      nobody else sees it); the performance overlay shows; "Go away now" puts 💤 over your head;
+      "Your Plus" changes Plus on your account. `pnpm build && pnpm --filter @connecta/web start`
+      has no Test tab.
+
 ## Step 2: accounts and rooms
 
 ### Sign-in and sign-up (feature 2)
@@ -17,8 +48,8 @@ way and what's still open are in the [review notes](review-notes.md).
 - [ ] Sign in with an email code; with Google and Discord (needs their keys in `apps/api/.env`).
 - [ ] A new account asks for a birthday; under 13 is refused and stays locked for that browser.
 - [ ] Pick a character, a name and an @handle; a taken handle is refused; Home opens after.
-- [ ] Guest from an invite link (`/invite/cafe-chanom`): pick a character, walk in; later sign up
-      and keep the character.
+- [ ] Guest from a guest pass (`/g/<code>`; make one as Fei in Chanom Friends → Invite → Guest pass):
+      pick a character, walk in; later sign up and keep the character.
 - [ ] My profile: change the name; change the @handle (then a second change is refused for 30
       days, and the old handle is held).
 - [ ] My character: change it; the change shows everywhere.
@@ -156,7 +187,7 @@ Three people in a room: the owner and two members.
 - [ ] Inside a private zone (the Fireside rug), your bubbles reach only people on the same rug; a
       bubble from outside still reaches you there. The owner talking to everyone reaches the rug
       too.
-- [ ] No input for 10 minutes (or Demo tab → "Go away now"): others see 💤 over your head and
+- [ ] No input for 10 minutes (or Test tools → "Go away now"): others see 💤 over your head and
       "💤 Away" in the people list; moving brings you back. With a focus timer running you never
       go away.
 - [ ] The owner: 🛡️ Room → Talk to everyone: everyone sees "📢 Talking to everyone" by their name;
@@ -186,7 +217,7 @@ in `docker compose`.
       it don't hear you. The owner talking to everyone is heard on the rug too.
 - [ ] Sound (deafen): you hear nobody, your mic goes off, others see "· deafened" by your name;
       undeafen brings the mic back as it was.
-- [ ] Go away (Demo tab → "Go away now"): your mic turns off and stays off when you come back.
+- [ ] Go away (Test tools → "Go away now"): your mic turns off and stays off when you come back.
 - [ ] "…" → Mute for me on someone: you stop hearing them, only you; it's still on after a reload.
 - [ ] As the owner or a mod, "…" → Mute for everyone: their mic goes off and its button greys out
       ("A mod turned your mic off…"); walking out and back in keeps it; unticking lets them talk.
@@ -226,13 +257,13 @@ Two people in a room on the Cosy Library.
 - [ ] At the pink machine by the door: "Press E: Buddy Machine" opens the panel beside it (right on
       a computer, top on a phone; check light and dark). Walking away closes it.
 - [ ] **Summon** a cat: the knob turns and a capsule rolls out on both screens; about 2 s later the
-      cat steps out, the panel says "… is here ✨", and both Bubbles logs say "✨ Mai summoned a …
+      cat steps out, the panel says "… is here ✨", and both Bubbles logs say "✨ Fei summoned a …
       cat, …!". The button counts down 2 s before the next pull.
 - [ ] Summon a study buddy: it appears at a free desk, focusing (📖 and a subject on its label).
       Sit in its seat: it says something like "Oh, take my seat! 😊" and finds another desk.
 - [ ] With 4 cats in the room the cat button says **Full**; the counts match on both screens.
 - [ ] The other person presses **Goodbye 👋** on one: it waves, walks back to the machine and is
-      gone for both; both logs say "👋 Jod said goodbye to …".
+      gone for both; both logs say "👋 Ter said goodbye to …".
 - [ ] A guest can summon and say goodbye too.
 - [ ] Start a focus timer at a desk next to a study buddy and let the round end (or end it): the
       study buddy cheers you by name. With 3 or fewer people in the room, a study buddy says hi
@@ -244,10 +275,10 @@ Two people in a room on the Cosy Library.
 
 ### Focus, part 1: the timer
 
-Two people (Mai and Jod, friends) in a room; a third browser as a guest with a pass.
+Two people (Fei and Ter, friends) in a room; a third browser as a guest with a pass.
 
 - [ ] My tools → 📖 Study session → **▶ 25 / 5 min**: the ring and the countdown run, the tool
-      button shows the time left, and the other person sees "📖 Mai · 0m · Calculus" over your head
+      button shows the time left, and the other person sees "📖 Fei · 0m · Calculus" over your head
       (type a subject first, or while it runs) and "📖 Focusing · Calculus · …m" in the people list.
 - [ ] Let a round run out (or check with a short wait and **Stop**): a chime at the end of focus,
       ☕ Break time with its own countdown, another chime at the end of the break, then "Not
@@ -262,8 +293,8 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
       another room" and the round's minutes count (Today in the first room shows them).
 - [ ] Leave the keyboard alone for 10+ minutes while focusing: no 💤, your mic isn't turned off.
       After stopping, 10 quiet minutes make you Away as before.
-- [ ] Jod's Friends page: Mai shows "Focusing · Calculus" while her round runs and never "Away".
-      Mai turns off Settings → Privacy & safety → "Show what I'm doing": Jod sees just Online and
+- [ ] Ter's Friends page: Fei shows "Focusing · Calculus" while her round runs and never "Away".
+      Fei turns off Settings → Privacy & safety → "Show what I'm doing": Ter sees just Online and
       the room.
 - [ ] The guest gets the timer and shows in Today while they're in the room; their minutes aren't
       kept (Today after the room empties and fills again doesn't list them). The To-do tab still
@@ -337,10 +368,10 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
 
 ### Party and table games, part 1: the round flow and chess
 
-- [ ] Two people in a real Library room. Mai sits at the chess table: the lobby card opens with her
-      as host (👑). 📣 **Call everyone**: Jod gets "Mai is starting Chess · Go there" (it goes after
+- [ ] Two people in a real Library room. Fei sits at the chess table: the lobby card opens with her
+      as host (👑). 📣 **Call everyone**: Ter gets "Fei is starting Chess · Go there" (it goes after
       ~20 s or when closed); Go there runs him over.
-- [ ] Jod sits: "You're in. Mai starts the game." Only Mai has Start; it counts down 3 s.
+- [ ] Ter sits: "You're in. Fei starts the game." Only Fei has Start; it counts down 3 s.
 - [ ] The board opens big for both, your colour at the bottom; only the player to move can move,
       illegal moves don't go; the other sees each move at once (last move tinted, check glows).
 - [ ] Offer a draw (Accept / Decline), Resign ("Resign this game?"), checkmate: each ends it with
@@ -364,7 +395,7 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
       there, **E**). The host's **Start** deals: 18/17/17 (with 4: 13 each); each sees only their
       own hand, the others as chips with their card counts.
 - [ ] Whoever holds the **3♣** leads; only the player whose turn it is can pick cards, **Play**
-      lights up only for a legal play, and the pile shows on everyone's felt ("Mai played a pair").
+      lights up only for a legal play, and the pile shows on everyone's felt ("Fei played a pair").
 - [ ] **Pass** sits you out of that trick; when everyone else has passed, the last player leads
       anything. You can't pass when leading.
 - [ ] Let the turn bar run out: you pass, or when leading, your lowest card is played.
@@ -373,7 +404,7 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
 - [ ] **Play again** with the same group: the swap. The Slave's 2 best go to the King, who picks 2
       to give back (Give back 2/2); with a Queen, the same with 1. Let 20 s run out: the lowest cards
       go back. Then the Slave leads. Someone new at the table: a fresh deal, no swap.
-- [ ] Mid-game **Leave** (or walk away 30 s): "Jod left" on the chips, the others play on; with
+- [ ] Mid-game **Leave** (or walk away 30 s): "Ter left" on the chips, the others play on; with
       one left holding cards, it ends.
 - [ ] Mid-game reload: back at the door with your same cards; sit back within 30 s and play on.
 - [ ] Someone standing on the card table's rug sees the small view (turn, pile, counts) and never
@@ -495,7 +526,7 @@ Two people (Mai and Jod, friends) in a room; a third browser as a guest with a p
 
 ### Plus, part 1: Plus on the account
 
-Turn Plus on and off with the Demo tab → Your Plus (or by finishing the stand-in checkout).
+Turn Plus on and off with Test tools → Your Plus (or by finishing the stand-in checkout).
 
 - [ ] Free: the Plus page says Get Plus; your room says 25 people at once and 150 members; Room
       settings won't pick a Big map.
@@ -532,15 +563,15 @@ You need two people who are friends (sign in as each in two browsers).
       gift and its price.
 - [ ] Pay → you land in your DM with them: "Gift sent to …", and a 🎁 card "You gifted 3 months of
       Plus ✨" with your note.
-- [ ] Your friend: a 🔔 notice "Mai gifted you 3 months of Plus ✨" (opening it shows the DM), the
-      card "Mai gifted you…", Plus on (✨ name in rooms), and no price anywhere.
+- [ ] Your friend: a 🔔 notice "Fei gifted you 3 months of Plus ✨" (opening it shows the DM), the
+      card "Fei gifted you…", Plus on (✨ name in rooms), and no price anywhere.
 - [ ] Gifting someone who has Plus already moves their date on by the months.
 - [ ] Settings → Plus & billing: your receipt "Gift for … · 3 months" and the "Gifts you sent" list.
 - [ ] Someone who isn't your friend can't be gifted (no menu item; the API says friends only).
 
 ### Plus, part 4: when Plus ends
 
-Use the Demo tab → Your Plus (it runs the reminders at once); check the 🔔 inbox and Mailpit
+Use Test tools → Your Plus (it runs the reminders at once); check the 🔔 inbox and Mailpit
 (http://localhost:8025).
 
 - [ ] **Cancelled:** a 🔔 "Your Plus ends on …" and an email; Home shows "Your Plus ends on …" with
@@ -553,7 +584,7 @@ Use the Demo tab → Your Plus (it runs the reminders at once); check the 🔔 i
       and the link pays on top of the date.
 - [ ] After the grace (only reachable by waiting 7 days, or with the API tests): the room is Cosy,
       at most 25 at once; people already inside stay.
-- [ ] **Plus** and **Free** in the Demo tab put you back.
+- [ ] **Plus** and **Free** in Test tools put you back.
 
 ### Moderation, part 1: Common rooms
 
@@ -565,7 +596,7 @@ Use the Demo tab → Your Plus (it runs the reminders at once); check the 🔔 i
       Walk in") and lands in your copy.
 - [ ] Signed out, the landing page's "Try a room as a guest" (or `/common/cafe`) asks for a name and a
       look, then walks you in as a guest; the room offers "Make an account ✨".
-- [ ] Discover's and Home's cards show friends inside ("Mai is here").
+- [ ] Discover's and Home's cards show friends inside ("Fei is here").
 
 ### Moderation, part 2: the word filter
 
@@ -599,7 +630,7 @@ Use the Demo tab → Your Plus (it runs the reminders at once); check the 🔔 i
 
 ### Moderation, part 4: team accounts in Common rooms
 
-- [ ] `pnpm --filter @connecta/api team maimai` → "@maimai is on the Connecta team"; `… team maimai off`
+- [ ] `pnpm --filter @connecta/api team fei` → "@fei is on the Connecta team"; `… team fei off`
       takes it away; an unknown handle says "No one has @…".
 - [ ] As a team account in a Common room: a mint "Connecta team" chip by your name, for everyone
       (name tag and people list). In a normal room there's no chip.
@@ -612,28 +643,28 @@ Use the Demo tab → Your Plus (it runs the reminders at once); check the 🔔 i
 ### Admin site, part 1: the gate, Users and account actions
 
 - [ ] Signed in as anyone off the team, `/admin` (and `/admin/users`) is "page not found", and the
-      avatar menu has no Admin site. `pnpm --filter @connecta/api team maimai`, reload: the avatar
+      avatar menu has no Admin site. `pnpm --filter @connecta/api team fei`, reload: the avatar
       menu shows **Admin site** and `/admin` opens.
 - [ ] Users: accounts newest first (no guests), search by name or @handle, the filters (Reported,
       Suspended or banned, Under 18, Plus). Pick one: email, sign-in methods, age, rooms owned,
       reports, earlier actions.
-- [ ] The action buttons stay off until there's a reason. **Suspend 1 day** with Jod signed in on
-      another browser: Jod's tab goes to sign-in at once (and leaves a 3D room); signing in again
+- [ ] The action buttons stay off until there's a reason. **Suspend 1 day** with Ter signed in on
+      another browser: Ter's tab goes to sign-in at once (and leaves a 3D room); signing in again
       shows "Your account is suspended until … UTC. Reason: … Reply to our email to appeal." Mailpit
       has the email with the reason.
-- [ ] **Lift suspension**: Jod can sign in again (and gets a "back" email). **Ban** reads "Your account
+- [ ] **Lift suspension**: Ter can sign in again (and gets a "back" email). **Ban** reads "Your account
       is banned…". **Warn** shows "warned" for 30 days. **Reset name** sets the name to their @handle.
 - [ ] A team account shows "On the Connecta team" with no actions.
 
 ### Admin site, part 2: Reports
 
-- [ ] Put Mai on the team. As two other people, report the same person (or message) from a room or
+- [ ] Put Fei on the team. As two other people, report the same person (or message) from a room or
       a Common room: Reports shows **one** case with "2 different accounts reported", both reasons,
       the notes, where, and what was said around it (or the bubbles reporters saw). The nav badge
       counts open cases.
 - [ ] A Sexual content report, or a case where the automatic step already muted or put them out,
       shows **urgent** and goes to the top (with "Already done automatically").
-- [ ] Decide a person case with **Warn** and a reason: the case moves to Done ("Warned by Mai"), the
+- [ ] Decide a person case with **Warn** and a reason: the case moves to Done ("Warned by Fei"), the
       person gets the email with that reason, and Users shows the warning. With the reason left
       empty, the email uses the report reasons.
 - [ ] A message case: **Delete + warn** removes the message for everyone in the chat at once.

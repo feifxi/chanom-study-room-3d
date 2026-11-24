@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -58,9 +59,18 @@ const when = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'nume
  * and mods.
  */
 export default function UsersPage() {
+  return (
+    <Suspense>
+      <Users />
+    </Suspense>
+  );
+}
+
+function Users() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<AccountFilter>('all');
-  const [picked, setPicked] = useState<string | null>(null);
+  // "Open in the admin site" from a person's menu in a room links here with ?user=<id>
+  const [picked, setPicked] = useState<string | null>(useSearchParams().get('user'));
   const list = useAdminAccounts(query.trim(), filter);
   const accounts = list.data?.accounts ?? [];
   const current = useAdminAccount(picked).data;

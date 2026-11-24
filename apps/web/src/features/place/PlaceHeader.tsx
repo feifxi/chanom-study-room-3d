@@ -18,12 +18,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { useMe, useMeAsUser, useSignOut } from '@/features/account/useMe';
+import { useIsGuest, useMe, useMeAsUser, useSignOut } from '@/features/account/useMe';
 import { FriendFace } from '@/features/presence/FriendFace';
 import { dmUnread, lastLine, useDms } from '@/features/dms/useDms';
 import { useFriendRequests } from '@/features/friends/useFriends';
 import { useQuests } from '@/features/quests/useQuests';
-import { useViewer } from '@/lib/viewer';
 
 const NAV = [
   { href: '/home', label: 'Home', icon: House },
@@ -45,14 +44,14 @@ function useNav() {
  */
 export function PlaceHeader() {
   const path = usePathname();
-  const viewer = useViewer();
+  const guest = useIsGuest();
   // Guests only reach Discover (Common rooms take anyone); everything else needs an account
   const all = useNav();
-  const nav = viewer === 'guest' ? all.filter((n) => n.href === '/discover') : all;
+  const nav = guest ? all.filter((n) => n.href === '/discover') : all;
   return (
     <header className="flex h-14 flex-none items-center gap-2 px-1 sm:gap-4 sm:px-2">
       {/* Guests have no Home (it needs an account), so the logo takes them to Discover */}
-      <Link href={viewer === 'guest' ? '/discover' : '/home'} aria-label="Connecta home" className="flex-none">
+      <Link href={guest ? '/discover' : '/home'} aria-label="Connecta home" className="flex-none">
         <Logo />
       </Link>
       {/* Phones get the tab bar at the bottom instead (PhoneTabs): five tabs don't fit beside the buttons */}
@@ -80,7 +79,7 @@ export function PlaceHeader() {
         })}
       </nav>
       <div className="ml-auto flex flex-none items-center gap-2">
-        {viewer === 'guest' ? (
+        {guest ? (
           <Link href="/login" className="rounded-full bg-primary px-4 py-2 text-sm font-extrabold text-primary-foreground">
             Sign up
           </Link>
@@ -104,7 +103,7 @@ const isActive = (href: string, path: string) => (href === '/home' ? path === '/
  */
 export function PhoneTabs() {
   const path = usePathname();
-  const guest = useViewer() === 'guest';
+  const guest = useIsGuest();
   const nav = useNav();
   // Inside a DM thread the composer owns the bottom edge (Instagram hides its tabs there too)
   if (guest || /^\/home\/messages\/./.test(path)) return null;
@@ -216,7 +215,10 @@ function Me() {
             <UserAvatar user={me} size={36} presence />
             <span>
               <span className="block font-black">{me.name}</span>
-              <span className="block text-xs font-semibold text-muted-foreground">Online · Plus ✨</span>
+              <span className="block text-xs font-semibold text-muted-foreground">
+                {me.presence === 'offline' ? 'Appearing offline' : 'Online'}
+                {me.plus && ' · Plus ✨'}
+              </span>
             </span>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />

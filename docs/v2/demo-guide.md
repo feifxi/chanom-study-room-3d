@@ -23,7 +23,9 @@ dark. Typecheck and lint don't catch layout problems.
 
 ## The Demo tab
 
-The dashed **Demo** tab on the right edge of every page is demo-only chrome:
+The dashed **Demo** tab on the right edge of every page is demo-only chrome. In `apps/web` it became
+**Test tools** (development only: theme, the pretend crowd, the perf overlay, "Go away now" and your
+Plus); the rest below is the demo's.
 
 - **View as** (`lib/viewer.ts`): the mock's own roles, Guest, Member, Mod, Owner, or Connecta team
   (the admin site). Most UI differs by role, so check the roles a change touches.

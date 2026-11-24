@@ -10,7 +10,7 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SettingsDialog, type SettingsTab } from '@/components/app/SettingsDialog';
 import { setConnection } from '@/lib/connection';
-import { DMS, ME, USERS, type Server } from '@/lib/mock';
+import { DMS, USERS, type Server } from '@/lib/mock';
 import type { PlaceRoom } from '@/features/place/model';
 import { useMe, useMeAsUser } from '@/features/account/useMe';
 import { useWardrobe } from '@/features/shop/useWardrobe';
@@ -64,7 +64,6 @@ import { SlavePanel } from '../activities/slave/SlavePanel';
 import { TITLE, type SlaveGame } from '../activities/slave/game';
 import { END_TEXT, type ChessGame } from '../activities/chess/game';
 import { SPOTS, isGameSeat, spotById, type Spot } from '../activities/spots';
-import { BOARD_EVENT, PICK_A_SIDE_EVENT, SHARE_EVENT, TELEPHONE_EVENT, WATCH_EVENT, CHESS_EVENT, SLAVE_EVENT } from '@/lib/demoCrowd';
 import { AddVideo, SharePanel, ShareScreenButton, WatchPanel } from '../activities/WatchPanel';
 import { myShareStream, startMyShare, stopMyShare } from '../activities/screenShare';
 import { ChannelOverlay, type ChatTarget } from './ChannelOverlay';
@@ -81,7 +80,6 @@ import { useFocusTimer } from '../focus/useFocusTimer';
 import { useRoomToday } from '../focus/useRoomToday';
 import { RoomCard } from './RoomCard';
 import { MoreMenu } from './MoreMenu';
-import { isGuestViewer, isTeam, roleIn } from '@/lib/viewer';
 import { postPhoto } from '@/features/chat/useRoomChat';
 import { problem } from '@/features/rooms/useRooms';
 
@@ -137,16 +135,13 @@ export default function RoomView({
   const roomDef = server.rooms.find((r) => r.id === roomId) ?? server.rooms[0]!;
   // Screen shares follow the room's plan: 1080p when its owner has Plus
   const shareHeight = planOf(place?.ownerPlus ?? false).shareHeight;
-  // `?guest=Name` from the invite page, or the Demo tab's "View as: Guest"
-  const [guestAs] = useState(() => guestName ?? (isGuestViewer() ? (loadGuest()?.name ?? 'Guest') : null));
+  // `?guest=Name` from the invite page or a Common room
+  const [guestAs] = useState(() => guestName ?? null);
   const guest = guestAs !== null;
   // Common rooms are safe for strangers by design (feature 14): text only, for everyone
   const common = server.id === 'public';
-  // "View as" (Demo tab) changes your role; switching remounts the room, so reading it once is enough.
-  // In a real room your role comes from the game server (live when the owner makes you a mod)
-  const [demoRole] = useState<RoomRole | undefined>(() =>
-    guestAs !== null ? undefined : server.id === 'public' ? (isTeam() ? 'Team' : undefined) : roleIn(server),
-  );
+  // Your role before the game server says (it's live after: the owner can make you a mod)
+  const [demoRole] = useState<RoomRole | undefined>(() => (guestAs !== null || server.id === 'public' ? undefined : server.roles.me));
   // Your own name from your account; the people around you are still mock until walking in is ported (step 4)
   const account = useMeAsUser();
   const { data: meAccount } = useMe();
@@ -159,12 +154,19 @@ export default function RoomView({
   const look = useRoomLook(lookId, roomDef.mapId);
   // Your predicted position; the driver snaps it to the server's (the map's door) on its first update
   const motion = useRef<LocalMotion>({ x: mapDefFor(roomDef.mapId).spawn.x, z: mapDefFor(roomDef.mapId).spawn.z, yaw: 0, moving: false });
-  // Demo only: fill the room up to a crowd of 50 or 100, in 3D and in the people list
+  // Test tools (development only): fill the room up to a crowd of 50 or 100, in 3D and in the people list
   const crowd = useCrowd();
   const room = useMemo(() => {
     // The map first: seats, paths and the scene all come from it (a live map change rebuilds the room)
     const map = setActiveMap(look.mapId);
-    if (game) return new LiveRoom(map, game, { name: myName, look: guest ? (loadGuest()?.look ?? GUEST_LOOK) : getMyLook() });
+    // The Test tools' pretend crowd tops the room up to 50 or 100 (you and the server's people aside)
+    if (game)
+      return new LiveRoom(
+        map,
+        game,
+        { name: myName, look: guest ? (loadGuest()?.look ?? GUEST_LOOK) : getMyLook() },
+        crowd ? crowdPeople(Math.max(0, crowd - (game.state?.players?.size ?? 1))) : [],
+      );
     const regulars = roomDef.people.length ? roomDef.people : ['ploy', 'ken'];
     const people: MockPerson[] = regulars.map((id) => ({ id, name: USERS[id]!.name, look: USERS[id]!.look, ...PRESETS[id] }));
     if (roomDef.allowGuests && !guest)
@@ -257,40 +259,17 @@ export default function RoomView({
   const sideNow = useNow((hub.side && hub.spots.floor.phase === 'playing') || hub.tel ? 250 : 5000);
   useEffect(() => {
     const id = setInterval(() => hub.tick(Date.now()), 250);
-    // Demo: someone starts Pick a Side a little after you arrive (or from the Demo tab), unless you're
-    // already at a game: it would take the friends you're gathering
-    const t = setTimeout(() => !game && !hub.mine('me') && hub.scriptPickASide(), 25_000);
-    const onDemo = () => hub.scriptPickASide();
-    const onWatch = () => hub.scriptWatch();
-    const onShare = () => hub.scriptShare();
-    const onDraw = () => hub.scriptDraw();
-    const onTel = () => hub.scriptTelephone();
-    const onChess = () => hub.scriptChess();
-    window.addEventListener(CHESS_EVENT, onChess);
-    const onSlave = () => hub.scriptSlave3();
-    window.addEventListener(SLAVE_EVENT, onSlave);
-    window.addEventListener(PICK_A_SIDE_EVENT, onDemo);
-    window.addEventListener(TELEPHONE_EVENT, onTel);
-    window.addEventListener(WATCH_EVENT, onWatch);
-    window.addEventListener(SHARE_EVENT, onShare);
-    window.addEventListener(BOARD_EVENT, onDraw);
     return () => {
       clearInterval(id);
-      clearTimeout(t);
-      window.removeEventListener(PICK_A_SIDE_EVENT, onDemo);
-      window.removeEventListener(WATCH_EVENT, onWatch);
-      window.removeEventListener(SHARE_EVENT, onShare);
-      window.removeEventListener(BOARD_EVENT, onDraw);
-      window.removeEventListener(TELEPHONE_EVENT, onTel);
-      window.removeEventListener(CHESS_EVENT, onChess);
-      window.removeEventListener(SLAVE_EVENT, onSlave);
       hub.dispose();
     };
-  }, [hub, game]);
+  }, [hub]);
 
   const [hint, setHint] = useState<Hint | null>(null);
   const [bubbles, setBubbles] = useState<Record<string, Bubble>>({});
-  const [lines, setLines] = useState<RoomLine[]>([{ id: 'j', system: true, text: `👋 You walked into the ${roomDef.name}` }]);
+  const [lines, setLines] = useState<RoomLine[]>([
+    { id: 'j', system: true, text: `👋 You walked into ${common ? 'the ' : ''}${roomDef.name}` },
+  ]);
   const [findId, setFindId] = useState<string | null>(null);
   const [photo, setPhoto] = useState(false);
   const [activities, setActivities] = useState(false);
@@ -685,7 +664,7 @@ export default function RoomView({
       return {
         id,
         name: p.name,
-        color: id === 'me' ? (guest ? GUEST_COLOR : ME.color) : (USERS[id]?.color ?? GUEST_COLOR),
+        color: id === 'me' ? (guest ? GUEST_COLOR : account.color) : (USERS[id]?.color ?? GUEST_COLOR),
         status,
         guest: isGuest,
         you: id === 'me',
@@ -716,7 +695,7 @@ export default function RoomView({
     const p = room.state.players.get(id);
     return {
       name: p?.name ?? 'Someone',
-      color: id === 'me' ? (guest ? GUEST_COLOR : ME.color) : (USERS[id]?.color ?? GUEST_COLOR),
+      color: id === 'me' ? (guest ? GUEST_COLOR : account.color) : (USERS[id]?.color ?? GUEST_COLOR),
     };
   };
   const mySpot = hub.mine('me');

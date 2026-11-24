@@ -333,6 +333,18 @@ decision is made or changed: one line, a date, and the reason.
 - **API tests use a real Postgres** (2026-11-21): sign-in is mostly database work (sessions, codes,
   locks, unique handles), and faking Prisma would test the fake. A `connecta_test` database in the
   compose Postgres, a service in CI; only email is faked.
+- **The seed's contents** (2026-11-24, the owner agreed): the demo's world, so the real app looks
+  like the approved demo: its nine people (Mai on the team, Bow under 18), four rooms (one of each
+  kind), and some of every feature's data, timed relative to the run so "today" always has
+  something. Live state (who's inside, presence, Common copies) isn't seeded: it comes from people
+  being there. A rerun clears the seed's rows and anything owned by a seed person, never your own
+  accounts. From now on, a feature that adds data adds it to the seed in the same change.
+- **The Demo tab became Test tools, development only** (2026-11-24, the audit before the owner's
+  hand tests): in the real app, "View as" and the scripted fakes (a pretend video, share, drawing,
+  game starts, map update) showed things that weren't happening on the server, and roles come from
+  the session. What stays is what a tester needs and can't get otherwise: the theme, a pretend crowd
+  for the 3D budget (in your browser only), the perf overlay, "Go away now" and your Plus (the API's
+  dev switch). A production build never shows it.
 - **One seed for the whole app, written at the end** (2026-11-22, the owner): it's for the owner
   to test once everything is built, a one-time fill of all the data (people, rooms, friends,
   DMs…), not something each build step grows. Until then it has only the demo people and the S3

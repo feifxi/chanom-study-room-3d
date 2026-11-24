@@ -122,8 +122,10 @@ export class LiveRoom extends MockRoom {
     map: MapDef,
     private readonly game: GameRoom,
     me: { name: string; look: AvatarLook },
+    /** The Test tools' pretend crowd (development only): in your browser, never on the server */
+    crowd: { id: string; name: string }[] = [],
   ) {
-    super(map, me, [], []);
+    super(map, me, [], crowd);
     // The mock's own cats give way to the server's
     this.state.npcs.clear();
     this.sync();
@@ -644,7 +646,7 @@ export class LiveRoom extends MockRoom {
       for (const f of FIELDS) (local as unknown as Record<string, unknown>)[f] = remote[f];
     }
     for (const id of [...this.state.players.keys()]) {
-      if (id !== 'me' && !seen.has(id)) {
+      if (id !== 'me' && !id.startsWith('crowd-') && !seen.has(id)) {
         this.state.players.delete(id);
         changed = true;
       }

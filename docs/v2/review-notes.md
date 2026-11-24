@@ -12,17 +12,17 @@ Tick or strike these as they're dealt with.
 
 **Tooling and setup**
 
-- [ ] `pnpm --filter @connecta/web perf` defaults to `/servers/chanom/rooms/…`, a 404 in
+- [x] `pnpm --filter @connecta/web perf` defaults to `/servers/chanom/rooms/…`, a 404 in
       `apps/web`; run it with `WEB_URL=http://localhost:3000/common/`. All three maps give
-      near-identical numbers at `/common/<map>`, so those copies may all render the library.
+      near-identical numbers at `/common/<map>`, so those copies may all render the library. _Fixed in the audit: it signs in as Mai and walks into a seed room on each map._
 - [ ] No Dockerfile for the game server (`apps/game`) yet; needed before any deploy.
 - [ ] LiveKit must be running for voice: `docker compose up -d` (it wasn't, locally, until part 3).
 
 **Docs**
 
-- [ ] [Manual tests](manual-tests.md), Step 2: the guest check still says `/invite/cafe-chanom`; real
+- [x] [Manual tests](manual-tests.md), Step 2: the guest check still says `/invite/cafe-chanom`; real
       links are `/i/<code>` (member) and `/g/<code>` (guest). Its "kick" line doesn't say kick now
-      works on guests (ends their pass).
+      works on guests (ends their pass). _Fixed in the audit (the guest pass check)._
 
 **App**
 
@@ -36,8 +36,8 @@ Tick or strike these as they're dealt with.
       only proves who's connected to whom. Covered by the manual voice checks.
 - [ ] **LiveKit logs console errors** ("DataChannel error … User-Initiated Abort") in the browser of
       someone taken out of voice (kicked, room deleted). Harmless, but noisy.
-- [ ] **The Demo tab's fakes still run inside real rooms** (e.g. "Someone shares their screen on the
-      TV" puts a pretend share on your TV only).
+- [x] **The Demo tab's fakes still run inside real rooms** (e.g. "Someone shares their screen on the
+      TV" puts a pretend share on your TV only). _Fixed in the audit: the Demo tab became Test tools, without the fakes._
 - [ ] The gateway's presence handler still accepts a `roomId` from browsers; they send `null` now
       (the game server reports rooms), so it's a leftover.
 - [ ] Guests who never come back aren't cleaned up (needs a background job).
@@ -57,8 +57,8 @@ Tick or strike these as they're dealt with.
       enforce it. Fine while it's about bandwidth, not fairness.
 - [ ] **A room's new limits reach a running game room with the next join** (capacity comes in the
       join ticket), so turning Plus off doesn't push anyone out; part 4 handles the end of Plus.
-- [ ] **Pick a Side's AI deck count still reads the demo's `ME.plus`** (`AI_PER_DAY`); AI decks
-      aren't built.
+- [x] **Pick a Side's AI deck count still reads the demo's `ME.plus`** (`AI_PER_DAY`); AI decks
+      aren't built. _Not reachable: the AI tab is hidden in real rooms until AI decks are built._
 - [ ] **Pets add up to 4 more cats** to a full Buddy Machine (13 NPCs); the perf check doesn't
       measure that either (see the next item).
 - [ ] **A full Buddy Machine isn't measured by the perf check:** it runs a mock room with the two
@@ -69,13 +69,13 @@ Tick or strike these as they're dealt with.
       and some nap spots are higher than the floor next to them (as in V1). Not seen in the test.
 - [ ] **NPC bubbles and summon notes aren't in Room chat**, only in Bubbles (like people's bubbles).
       Fine by design, worth a look when you review.
-- [ ] **Petting quests still count in this browser only** (the "pet a cat" and "use the Buddy
-      Machine" quests), until coins and quests move to the API in step 5.
+- [x] **Petting quests still count in this browser only** (the "pet a cat" and "use the Buddy
+      Machine" quests), until coins and quests move to the API in step 5. _Done with coins and quests (the game server reports, the API counts)._
 - [ ] **The countdown uses the browser's clock** against the server's end time: a computer clock
       that's off by a minute shows the countdown off by a minute (the minutes saved are the
       server's, so rankings are right). The labels' `clockOffset` is 0 everywhere; a server time
       sync would fix both.
-- [ ] **The focus quests still count in this browser only** until coins and quests.
+- [x] **The focus quests still count in this browser only** until coins and quests. _Done with coins and quests._
 - [ ] **Watch together's timeline uses each browser's clock** against the server's `startedAt`, like
       the focus countdown: a computer clock that's a few seconds off plays a few seconds off (and
       keeps seeking if it's more than 2 s off). A server time sync would fix both.
@@ -83,8 +83,8 @@ Tick or strike these as they're dealt with.
       link means opening it again. The card could stay open until the server answers.
 - [ ] **The browser still looks the title up too** (the panel's old oEmbed call) before sending the
       link, though the server's title is the one used: one extra request per link.
-- [ ] **Common rooms keep the demo's local TV** until moderation and open rooms; photo mode
-      there has no Share (they're text only until feature 14).
+- [x] **Common rooms keep the demo's local TV** until moderation and open rooms; photo mode
+      there has no Share (they're text only until feature 14). _Done: every real room, Common ones too, uses the game server's screen; Common rooms have no TV._
 - [ ] **The 3D budget check doesn't dress anyone in Shop items** (its crowd picks free looks), so a
       room full of witch hats and flower crowns isn't measured. The crown was cut to about 1,500
       triangles; the café at 52 people had ~170k triangles to spare.
@@ -571,8 +571,8 @@ her, and a signed-out visitor picked a name and walked in as a guest: three in C
 
 **Open:**
 
-- [ ] **The admin site's Common page is still mock** (copies, seats and the notice banner), until
-      the admin site step.
+- [x] **The admin site's Common page is still mock** (copies, seats and the notice banner), until
+      the admin site step. _Done in admin site part 3._
 - [ ] **Room capacity settings for Common rooms** (25 and 5) are constants, not admin settings yet.
 - [ ] **A Common copy's look is the map's default** and the 3D room still takes the mock
       `PUBLIC_SERVER` shape, with the copy as its one room.
@@ -629,8 +629,8 @@ everyone" → the report was stored with the message, the room's name and counte
 
 **Open:**
 
-- [ ] **Nobody reads reports yet**: the admin site's Reports page (next step) is still mock; until
-      then they're in `pnpm db:studio`.
+- [x] **Nobody reads reports yet**: the admin site's Reports page (next step) is still mock; until
+      then they're in `pnpm db:studio`. _Done in admin site part 2._
 - [ ] **A guest's automatic mute lasts only while they're inside**: guests have no membership to
       hold a timeout, so walking back in clears it (they can't use room chat anyway).
 - [ ] **No limit on how often one account reports**: repeats are kept but count once; the admin
@@ -658,8 +658,8 @@ team and Jod's hour cleared afterwards.
 
 **Open:**
 
-- [ ] **No audit log of team actions** (only the API's log), until the admin site.
-- [ ] **"Open in the admin site"** still opens the mock admin site.
+- [x] **No audit log of team actions** (only the API's log), until the admin site. _Done in admin site part 1._
+- [x] **"Open in the admin site"** still opens the mock admin site. _Fixed in the audit: it opens that person on the Users page._
 - [ ] **A team account has no powers in people's own rooms** (by design for now); suspensions and
       bans come with the admin site.
 
@@ -685,8 +685,8 @@ suspension, its end and the reason; the email arrived. Undone afterwards.
 
 **Open:**
 
-- [ ] **The other admin pages are still mock** (Overview, Reports with its badge, Rooms, Common rooms,
-      Money, Moderation, Maps, Audit log), parts 2–4.
+- [x] **The other admin pages are still mock** (Overview, Reports with its badge, Rooms, Common rooms,
+      Money, Moderation, Maps, Audit log), parts 2–4. _Done in admin site parts 2–4 (Maps waits for the editor)._
 - [ ] **Google or Discord sign-in while suspended** shows only "This account can't sign in right
       now. The Connecta team emailed you why." (Better Auth passes back a code, not the message).
 - [ ] **The Users list shows the newest 50** with search, no paging.
@@ -757,8 +757,8 @@ Common room, where the banner showed. Checked at phone width. Undone afterwards.
       unlike the settings: tests and a running dev server share them.
 - [ ] **The Rooms list shows the newest 50** with search, no paging; "people inside" counts only
       those shown.
-- [ ] **The mock lists the new pages replaced** (`ADMIN_ROOMS`, `WORDS`, the Common copies in
-      `lib/mock.ts`) are still in the web app; part 4 can clear `adminData.ts`.
+- [x] **The mock lists the new pages replaced** (`ADMIN_ROOMS`, `WORDS`, the Common copies in
+      `lib/mock.ts`) are still in the web app; part 4 can clear `adminData.ts`. _Fixed in the audit: the unused mock data is gone._
 
 ### Admin site, part 4: Overview, Money, Audit log (`d32db42`)
 
@@ -791,3 +791,89 @@ Stripe refund itself is untested: there are no test keys yet.
 - [ ] **The health strip has no history or alerts**: that's the monitoring server's job (spec 15).
 - [ ] **A refund doesn't touch Plus**, as decided; if a refunded renewal should also end Plus, the
       person cancels it themselves for now.
+
+## Step 6: the seed
+
+**Changed:** `apps/api/prisma/seed/` now fills every feature's data, one file per area (`kit.ts`
+holds the people's and rooms' fixed ids and time-ordered ids the seed can find again):
+the nine demo people (Mai on the Connecta team, Bow 16, all in Bangkok time), four rooms (one of
+each kind) with members, an invite, a ban and a waiting request, 16 friendships and a request, 67
+chat messages in rooms and DMs (mentions, replies, reactions, a picture drawn into the files bucket),
+two weeks of focus and to-dos, two months of quest coins with Shop buys and three pets, Mai's Plus
+with a refunded double charge and her gift to Earth, two Pick a Side decks, five report cases with a
+warning and the audit log, and the 🔔 inbox. A rerun clears it first (`reset.ts`), including rooms a
+seed person owns. AGENTS.md now says a feature that adds data adds it to the seed.
+
+**Bugs found and fixed while building:**
+
+- Seed people first made days ago kept that sign-up date, so no coin history fit before it; the
+  seed sets the date on every run.
+- In months with 31 days the refund could land in the future; it's never later than now.
+- Mai's Home showed five leftover test rooms from earlier browser runs; the rerun now clears rooms a
+  seed person owns.
+- **`pnpm db:reset` didn't seed** (Prisma 7's `migrate reset` no longer runs it): the owner reset,
+  signed in as Mai and got a blank new account. `db:reset` now runs the seed after the reset, and
+  the seed clears an unfinished sign-up holding a seed person's email.
+- Removed stale files: a stray `undefined/` folder with two test screenshots (committed by mistake in
+  `e4ee6db`), old `apps/web/.screens` output, and 137 leftover test-run job keys in local Redis.
+
+Run twice in a row (same counts, no doubles), then a headless run as Mai (Home, a room's chat with
+"New messages", Focus, the Shop, Discover, the admin Overview, Reports and Money) and as Earth at
+phone width (the gift card).
+
+**Open:**
+
+- [ ] **The picture lives in the AWS Emulator, which forgets on restart:** rerun `pnpm db:seed`
+      after restarting it (as for the bucket).
+- [ ] **Bubbles in reports are made up** (they're never stored); fine for the queue.
+
+## The audit before the owner's hand tests
+
+**Changed:**
+
+- **The Demo tab became Test tools** (`components/TestTools.tsx`, development only: a production
+  build never shows it): theme, the pretend crowd, the perf overlay, "Go away now" and your Plus. Gone:
+  "View as" (`lib/viewer.ts`; guests now come from `useIsGuest()`), the page list, "100 rooms on
+  Home", and the scripted fakes that showed a video, a share, a drawing, game starts or a map update
+  on your screen only.
+- **Dead demo code removed:** about 360 lines of mock data nothing used (the mock servers, channels,
+  DMs, friend lists, Common copies, open rooms, `MANY_ROOMS`), the activity hub's seven scripted
+  games and the doodle they drew, the unused mock `ChatThread`, and the map-update countdown.
+- **The admin Maps page** showed the demo's map editor with made-up versions and a Publish that did
+  nothing; it now lists the three maps (the Library main, the Café and Rooftop temporary) and says
+  the editor comes with the Blender models.
+- **The page title** said "Connecta (V2 demo)", "Frontend-only demo…"; it's "Connecta" now.
+- **Three seed people renamed** (the owner): Mai is now Fei (`fei`), Jod is Ter (`ter`), Ken is View
+  (`view`). The seed removes seed accounts it no longer lists, so the old three go on the next run.
+- `screens` and `perf` sign in as a seed person (`scripts/sign-in.mjs`) and use real room links.
+
+**Bugs found and fixed:**
+
+- **The perf check measured 3 people in every run:** the crowd only reached the demo's mock room,
+  so 50 and 100 were never measured in the real app (and its default link was a 404). Live rooms
+  now take the pretend crowd too; all maps pass with 3, 52 and 102 people (one Café 100-person run
+  spiked to 11.5 ms of JS once, then passed twice at 3.8).
+- **The avatar menu always said "Online · Plus ✨"**, for free accounts and when appearing
+  offline; it shows your real state.
+- **"Open in the admin site"** on a person opened the Users list; it opens that person
+  (`/admin/users?user=<id>`).
+- **"You walked into the Chanom Friends"**: room names are people's own now, so only Common rooms
+  keep "the".
+- The API warned at start-up that `enableRawBodyParser` is deprecated; it uses
+  `bodyParser.rawBody` now.
+- Closed 13 Open items above that later parts or this audit had already dealt with.
+
+Checked: `pnpm check` and `pnpm build` pass; every page as Mai (desktop and phone) and signed out
+shows no errors; a two-person run (Mai and Jod) of DMs with the word filter, room chat, the Shop,
+the stand-in checkout and cancel, the admin site's gate, and walking into one room together with a
+bubble; the reseed puts Jod's test purchase and Plus back.
+
+**Open:**
+
+- [ ] **Discover isn't open to signed-out visitors**, though spec 14 says guests can browse it: it
+      sits behind the account gate, and `/api/common` needs a session. Asked the owner.
+- [ ] **The 3D room still takes the demo's `Server` shape** (`asServer()`), with leftovers that
+      only the mock path used (`!game` branches in RoomView, StudyPanel's mock ranks, `decks.ts`'s
+      `ME`), and the old `serverId` and `'channel'` names (port checklist). Nothing users see; a
+      refactor of its own.
+- [ ] **The perf check isn't in CI** (it needs the whole app running and the seed).

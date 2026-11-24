@@ -1,6 +1,6 @@
 import { watchPosition } from '@connecta/shared';
 import type { MockRoom } from '../room3d/mockRoom';
-import { BoardStore, catDoodle, type Stroke } from './board/board';
+import { BoardStore, type Stroke } from './board/board';
 import { DOODLES, FUNNY_GUESSES, randomPrompt, wobble } from './telephone/content';
 import {
   CHAIN_GAP,
@@ -219,8 +219,6 @@ export class ActivityHub {
   private timers: ReturnType<typeof setTimeout>[] = [];
   /** Where scripted people were sitting before a game, so they can go back. */
   private home = new Map<string, string>();
-  private scripted = 0;
-  private scriptedTel = 0;
   constructor(
     private readonly room: MockRoom,
     readonly roomWideGames: boolean,
@@ -620,37 +618,6 @@ export class ActivityHub {
     if (Math.random() < 0.55) this.later(600 + Math.random() * 1500, () => this.telReact(chain, entry, Math.random() < 0.7 ? '😂' : '😍'));
   }
 
-  /** Demo: someone opens the art corner, calls everyone, two friends come, and it starts once you're in. */
-  scriptTelephone() {
-    const spot = spotById('art');
-    if (this.spots.art.phase !== 'free') return;
-    const [host, ...rest] = this.freePeople();
-    if (!host) return;
-    const go = (id: string, i: number) => {
-      const p = this.room.state.players.get(id);
-      if (p?.seatId) this.home.set(id, p.seatId);
-      // An art table: take a free stool (sitting is joining); otherwise stand on the rug
-      const seat = spot.seats?.find((s) => this.room.seatFree(s));
-      this.room.sendTo(id, ringSpot(spot, i), seat);
-    };
-    go(host, 0);
-    this.start('art', host);
-    this.pickGame('art', this.scriptedTel++ % 2 ? 'copycat' : 'tel');
-    this.call('art', host);
-    rest.slice(0, 2).forEach((id, i) => this.later(2500 + i * 2000, () => go(id, i + 1)));
-    const startedAt = Date.now();
-    const wait = setInterval(() => {
-      const st = this.spots.art;
-      if (st.phase !== 'gathering' || st.hostId !== host) return clearInterval(wait);
-      const ready = st.players.length >= st.game.min;
-      if (ready && (st.players.includes('me') || Date.now() - startedAt > 30_000)) {
-        clearInterval(wait);
-        this.later(4000, () => this.spots.art.phase === 'gathering' && this.begin('art'));
-      }
-    }, 500);
-    this.timers.push(wait as unknown as ReturnType<typeof setTimeout>);
-  }
-
   // --- Chess (feature 12) ---
 
   private chessStart() {
@@ -716,37 +683,6 @@ export class ActivityHub {
       const m = friendlyMove(g);
       if (m) this.chessMove(id, m.from, m.to, m.promotion);
     });
-  }
-
-  /** Demo: two friends sit down at the chess table and play; you can stand by the table and watch. */
-  scriptChess() {
-    this.scriptTableGame('chess', 2);
-  }
-
-  /** Demo: three friends sit down at the card table and play Slave; stand by the table to watch. */
-  scriptSlave3() {
-    this.scriptTableGame('cards', 3);
-  }
-
-  private scriptTableGame(spotId: 'chess' | 'cards', n: number) {
-    const spot = spotById(spotId);
-    if (!spot.built || this.spots[spotId].phase !== 'free') return;
-    const people = this.freePeople().slice(0, n);
-    if (people.length < n) return;
-    const seats = spot.seats!.filter((s) => this.room.seatFree(s));
-    people.forEach((id, i) => {
-      const p = this.room.state.players.get(id);
-      if (p?.seatId) this.home.set(id, p.seatId);
-      this.later(i * 1500, () => this.room.sendTo(id, ringSpot(spot, i), seats[i]));
-    });
-    const wait = setInterval(() => {
-      const st = this.spots[spotId];
-      if (st.phase === 'gathering' && st.players.length >= n) {
-        clearInterval(wait);
-        this.later(2500, () => this.spots[spotId].phase === 'gathering' && this.begin(spotId));
-      }
-    }, 500);
-    this.timers.push(wait as unknown as ReturnType<typeof setTimeout>);
   }
 
   // --- Slave (feature 12) ---
@@ -836,51 +772,6 @@ export class ActivityHub {
   }
 
   // --- Whiteboard ---
-
-  /** Demo: someone walks to the board and doodles a cat, a few points at a time. */
-  scriptDraw() {
-    const id = this.freePeople()[0];
-    if (!id) return;
-    const spot = spotById('board');
-    this.room.sendTo(id, ringSpot(spot, 1));
-    this.later(3000, () => {
-      let t = 0;
-      catDoodle().forEach((s, k) => {
-        const sid = `${id}-${Date.now()}-${k}`;
-        this.later((t += 500), () => this.board.start({ id: sid, by: id, color: s.color, size: s.size, pts: s.pts.slice(0, 2) }));
-        for (let i = 2; i < s.pts.length; i += 6) {
-          const chunk = s.pts.slice(i, i + 6);
-          this.later((t += 45), () => this.board.add(sid, chunk));
-        }
-      });
-    });
-  }
-
-  /** Demo: someone walks to the big screen and puts something on. */
-  scriptWatch() {
-    if (this.watch.now) return;
-    const id = this.freePeople()[0];
-    if (!id) return;
-    const tv = spotById('tv');
-    this.room.sendTo(id, ringSpot(tv, 0));
-    this.later(2500, () => this.putOn({ id: 'lTRiuFIWV54', title: '1 A.M Study Session 📚 [lofi hip hop]', by: id }));
-  }
-
-  /** Demo: someone walks to the big screen and shares their screen for a while. */
-  scriptShare() {
-    if (this.watch.share) return;
-    const id = this.freePeople()[0];
-    if (!id) return;
-    const tv = spotById('tv');
-    this.room.sendTo(id, ringSpot(tv, 1));
-    // Share once they're on the rug (walking off it ends a share), then stop after a minute
-    const share = (tries: number) => {
-      if (!this.inArea(tv, id)) return void (tries && this.later(500, () => share(tries - 1)));
-      this.startShare({ by: id, audio: true });
-      this.later(60_000, () => this.stopShare(id));
-    };
-    share(30);
-  }
 
   /** E at a standing spot: open a lobby there, with you as host. */
   start(spotId: SpotId, by: string, now = Date.now()) {
@@ -1068,42 +959,6 @@ export class ActivityHub {
           this.room.sendTo(id, ringSpot(spot, i), seat);
         }),
       );
-  }
-
-  /** Someone else starts Pick a Side and calls the room; a friend joins; they start once you're in (or anyway). */
-  scriptPickASide() {
-    const spot = spotById('floor');
-    if (this.spots.floor.phase !== 'free' || !this.roomWideGames) return;
-    const free = this.freePeople();
-    // Mai if she's here (she's focusing: people who study still join in), then whoever else
-    const host = free.includes('mai') ? 'mai' : free[0];
-    const friend = free.find((id) => id !== host && id === 'jod') ?? free.find((id) => id !== host);
-    if (!host) return;
-    const go = (id: string, i: number) => {
-      const p = this.room.state.players.get(id);
-      if (p?.seatId) this.home.set(id, p.seatId);
-      this.room.sendTo(id, ringSpot(spot, i));
-    };
-    go(host, 0);
-    this.start('floor', host);
-    // A different mode each time the demo runs it, with a deck to match
-    const mode = (['wyr', 'quiz'] as const)[this.scripted++ % 2]!;
-    this.pickGame('floor', mode);
-    const decks = BUILT_IN.filter((d) => d.kind === deckKindFor(mode));
-    this.pickDeck(decks[Math.floor(Math.random() * decks.length)]!);
-    this.call('floor', host);
-    if (friend) this.later(2500, () => go(friend, 1));
-    const startedAt = Date.now();
-    const wait = setInterval(() => {
-      const st = this.spots.floor;
-      if (st.phase !== 'gathering' || st.hostId !== host) return clearInterval(wait);
-      const ready = st.players.length >= st.game.min;
-      if (ready && (st.players.includes('me') || Date.now() - startedAt > 30_000)) {
-        clearInterval(wait);
-        this.later(4000, () => this.spots.floor.phase === 'gathering' && this.begin('floor'));
-      }
-    }, 500);
-    this.timers.push(wait as unknown as ReturnType<typeof setTimeout>);
   }
 
   /** After the floor game, scripted people go back to where they were. */

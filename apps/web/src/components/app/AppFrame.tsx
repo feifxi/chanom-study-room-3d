@@ -1,5 +1,7 @@
 'use client';
 
+import { useIsGuest } from '@/features/account/useMe';
+
 import { PhoneTabs, PlaceHeader } from '@/features/place/PlaceHeader';
 import { PlaceChat } from '@/features/place/PlaceChat';
 import { RoomPreview } from '@/features/rooms/RoomPreview';
@@ -7,7 +9,6 @@ import type { Room } from '@/features/rooms/useRooms';
 import Link from 'next/link';
 import { RoomShot, SplitScreen } from './SplitScreen';
 import { usePathname } from 'next/navigation';
-import { useViewer } from '@/lib/viewer';
 
 /**
  * The frame around every signed-in page except 3D rooms. Like Gather, there are no servers or
@@ -15,7 +16,7 @@ import { useViewer } from '@/lib/viewer';
  * gradient), and a room's own page is its permanent chat outside 3D (PlaceChat).
  */
 export function HomeFrame({ children }: { children: React.ReactNode }) {
-  const guest = useViewer() === 'guest';
+  const guest = useIsGuest();
   // Guests may browse Discover: Common rooms take anyone, no account needed
   const discover = usePathname() === '/discover';
   if (guest && !discover) return <GuestWall />;

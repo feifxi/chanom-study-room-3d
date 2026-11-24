@@ -5,7 +5,8 @@ import { api, type Me } from '@/lib/api/client';
 import { authClient } from '@/lib/auth-client';
 import { closeLive } from '@/features/chat/live';
 import { syncTimeZone } from '@/features/focus/useRoomToday';
-import { ME as MOCK_ME, type User } from '@/lib/mock';
+import { DEFAULT_LOOK } from '@connecta/shared';
+import type { User } from '@/lib/mock';
 
 export const ME_KEY = ['me'] as const;
 
@@ -42,14 +43,28 @@ export function useSetMe() {
 }
 
 /**
- * The signed-in account in the mock User shape the not-yet-ported screens use (avatar, name tag).
- * Only the account's own fields are real; presence, Plus and the rest stay mock until their features
- * move to the API.
+ * The signed-in account in the User shape the avatar and name tag take: your name, look, Plus, and
+ * online unless you chose to appear offline. Empty while it loads.
  */
 export function useMeAsUser(): User {
   const { data: me } = useMe();
-  if (!me) return MOCK_ME;
-  return { ...MOCK_ME, name: me.name, handle: me.handle ?? MOCK_ME.handle, look: me.look ?? MOCK_ME.look };
+  const look = me?.look ?? DEFAULT_LOOK;
+  return {
+    id: 'me',
+    name: me?.name ?? '',
+    handle: me?.handle ?? '',
+    // The avatar's circle takes your outfit colour
+    color: look.outfit,
+    look,
+    presence: me?.appearOffline ? 'offline' : 'online',
+    plus: !!me?.plus,
+  };
+}
+
+/** No finished account here: signed out, or a guest let in by a link or a Common room */
+export function useIsGuest(): boolean {
+  const { data: me } = useMe();
+  return !me || me.isGuest || !me.signedUp;
 }
 
 /** Signs out here and forgets everything cached about the account. */

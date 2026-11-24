@@ -47,8 +47,10 @@ keys, Gift Plus, and when Plus ends). **Moderation with Common and open rooms** 
 rooms, the word filter, reports, team accounts in Common rooms). **The admin site** is done (the gate and Users, Reports, Rooms, Common
 rooms and Moderation with settings in the database, Overview, Money and the Audit log). **Step 5 is
 done**, except the map editor, which waits for the Blender work (it starts with the Library, the one
-main map; the Café and Rooftop are temporary demo maps). Next is **step 6, the seed**: one fill of
-all the data for the owner to test with; agree what it holds with the owner first.
+main map; the Café and Rooftop are temporary demo maps). **Step 6, the seed**, is done: `pnpm db:seed`
+fills every feature's data (who's who is in [manual tests](docs/v2/manual-tests.md#the-seed)).
+Next is step 7: infra on AWS when the owner says to deploy, then a playtest; the owner's hand tests
+come first.
 Steps 1–4 are done: the skeleton; accounts and rooms; the gateway
 (friends, chat, pictures, DMs, presence and the 🔔 inbox); walking in a room (the Colyseus game
 server `apps/game` with movement, capacity and live room changes, bubbles, Away, the people list,
@@ -69,10 +71,10 @@ The plan's [What's left](docs/v2-plan.md#whats-left) is the source of truth.
 - **Review notes in the same change:** each build part adds its entry to
   [`docs/v2/review-notes.md`](docs/v2/review-notes.md) (what changed, bugs found and fixed while
   building) and puts anything you noticed but didn't fix in its Open list, not only in your summary.
-- **The seed is written once, at the end:** when every feature is on the API, one seed fills all
-  the data (people, rooms, members, friends, DMs…) for the owner to test with. Don't grow it feature
-  by feature; until then it holds only the demo people (to sign in) and the S3 bucket. Test a new
-  feature with the API tests and by hand.
+- **One seed for the whole app** (`apps/api/prisma/seed/`, one file per area): it fills every
+  feature's data for the owner to test with. A feature that adds data adds it to the seed in the
+  same change, and the seed's rerun clears it (`reset.ts`). Test a new feature with the API tests
+  and by hand as well.
 - **Record decisions in the same change:** update the feature's spec, add a dated line to
   `docs/v2/decisions.md`, and update `docs/v2-plan.md` if the status or a one-line summary changed.
 - **Each fact lives in one place:** specs hold the what, the decision log the why, the plan the
@@ -147,7 +149,8 @@ docker compose up -d                 # Postgres :5433, Redis :6379, LiveKit :788
                                      # AWS Emulator :9297 (the first run builds its image)
 cp apps/api/.env.example apps/api/.env
 cp apps/game/.env.example apps/game/.env   # same GAME_SECRET as the API's
-pnpm db:migrate && pnpm db:seed      # schema, then the demo people and the S3 bucket
+pnpm --filter @connecta/shared build && pnpm --filter @connecta/api generate   # a fresh clone: the seed needs both
+pnpm db:migrate && pnpm db:seed      # schema, then the test data (people, rooms, chat…) and the S3 bucket
 pnpm dev                             # web :3000, API :4000 (Swagger UI at /api/docs), gateway :4001,
                                      # game server :4002 (the web app proxies /api, /live and /game)
 pnpm check                           # what CI runs: prettier --check, then typecheck + lint + tests
@@ -164,7 +167,7 @@ pnpm --filter @connecta/web perf                     # 3D budget check; needs th
 ```
 
 Signing in locally: use the email code; it arrives in Mailpit (http://localhost:8025). The seed
-people sign in as `<handle>@connecta.test` (`maimai@connecta.test`). Google and Discord need
+people sign in as `<handle>@connecta.test` (`fei@connecta.test`, who's on the Connecta team). Google and Discord need
 their keys in `apps/api/.env` (see `.env.example`).
 
 Single tests: `cd apps/api && npx vitest run src/accounts`, `cd packages/shared && npx vitest run

@@ -15,7 +15,7 @@ what each feature is, and what's left. The details are in one spec per feature
   it's at tag `v1.0.0`). Steps 1 and 2 (the skeleton; accounts and rooms) are done; step 3, the
   gateway, is done too; so is step 4, walking in a room (all five parts). Step 5, the rest of the
   features one at a time, is done: every feature is on the API, except the map editor, which waits
-  for the Blender work. Next is step 6, the seed. Nothing is deployed.
+  for the Blender work. Step 6, the seed, is done too. Nothing is deployed.
 
 | #   | Feature                                 | Status  | Spec                                                                   |
 | --- | --------------------------------------- | ------- | ---------------------------------------------------------------------- |
@@ -132,8 +132,10 @@ moves the matching screens in `apps/web` from mock data onto the real backend, w
      (the word list moves into the database); ~~Overview, Money and the Audit log page~~ done
      2026-11-24 (a health strip, refunds through Stripe). **The admin site is done.** **The map editor
      waits for the Blender work** ([why](v2/decisions.md#in-the-3d-room)).
-6. **The seed:** one fill of all the data (people, rooms, members, friends, DMs…) for testing the
-   whole app ([why at the end](v2/decisions.md#engineering-and-infra)).
+6. ~~**The seed:** one fill of all the data for testing the whole app~~ done 2026-11-24: the nine
+   demo people, four rooms with chat, friends, DMs, two weeks of focus, coins and Shop items, Plus
+   and its payments, reports and the inbox; rerunnable ([what's in it](v2/manual-tests.md#the-seed),
+   [why at the end](v2/decisions.md#engineering-and-infra)).
 7. **Infra** on AWS ([spec 15](v2/features/15-business-infra.md#architecture)), then a playtest, then launch.
 
 Deferred on purpose, no date yet:
@@ -238,13 +240,17 @@ Users never see them, but the real app must not inherit them. When porting:
       (with the copy as its one room) until `asServer()` goes.
 - [ ] **Maps:** the data files in `features/map/` become the map file format (spec 7); the active-map
       switch becomes part of the live map change.
-- [ ] **"View as"** (`lib/viewer.ts`, `roleIn`) is demo-only: roles come from the session.
+- [x] **"View as"** (`lib/viewer.ts`, `roleIn`) is gone: roles come from the session, guests from
+      `useIsGuest()` (2026-11-24).
 - [ ] **Names:** ~~`components/server/` (InviteDialog)~~, ~~`ServerFrame` in `AppFrame.tsx`~~,
-      `serverById`, `serverId` params, `ChatTarget.kind: 'channel'`.
-- [ ] **Leave behind:** `DemoToolbar`, `lib/demoCrowd.ts`, `MANY_ROOMS`, `extraRooms()`,
-      `insideCount`.
+      ~~`serverById`~~, `serverId` params, `ChatTarget.kind: 'channel'`.
+- [x] **Leave behind:** the Demo tab became **Test tools** (`components/TestTools.tsx`, development
+      only: theme, the pretend crowd, the perf overlay, "Go away now", your Plus); `MANY_ROOMS`,
+      `extraRooms()`, `insideCount`, the mock servers, the scripted activity starts and the map editor
+      mock are gone (2026-11-24). `lib/demoCrowd.ts` keeps only what Test tools and the perf check use.
 - [ ] **Performance:** port the skinned characters, StaticBatch, the perf meter and overlay, the auto
-      battery saver, and `demo:perf` as a CI check (spec 6).
+      battery saver, and `demo:perf` as a CI check (spec 6). `pnpm --filter @connecta/web perf` now
+      signs in as Mai and walks into the seed rooms (2026-11-24); it isn't in CI yet.
 - [ ] **Search the port** for "server" and "channel" once more; only game-server and networking code
       should keep them.
 

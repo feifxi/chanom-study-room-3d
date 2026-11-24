@@ -167,35 +167,3 @@ export function boardPng(strokes: Stroke[]): Promise<Blob | null> {
   drawBoard(c.getContext('2d')!, strokes, c.width, c.height);
   return new Promise((r) => c.toBlob(r, 'image/png'));
 }
-
-// --- Demo: a doodle someone else draws, as strokes to play back a few points at a time ---
-
-const circle = (cx: number, cy: number, rx: number, ry: number, from = 0, to = Math.PI * 2, n = 40) =>
-  Array.from({ length: n + 1 }, (_, i) => {
-    const a = from + ((to - from) * i) / n;
-    return [cx + Math.cos(a) * rx, cy + Math.sin(a) * ry];
-  }).flat();
-
-/** A cat face and a heart, in board coordinates. */
-export function catDoodle(): { color: string; size: number; pts: number[] }[] {
-  const ink = COLORS[0]!;
-  const heart = Array.from({ length: 50 }, (_, i) => {
-    const t = (i / 49) * Math.PI * 2;
-    const x = 16 * Math.sin(t) ** 3;
-    const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
-    return [0.74 + x * 0.006, 0.42 - y * 0.0105];
-  }).flat();
-  return [
-    { color: ink, size: SIZES[1]!, pts: circle(0.38, 0.55, 0.15, 0.26) },
-    { color: ink, size: SIZES[1]!, pts: [0.26, 0.4, 0.27, 0.16, 0.34, 0.31] },
-    { color: ink, size: SIZES[1]!, pts: [0.42, 0.31, 0.49, 0.16, 0.5, 0.4] },
-    { color: ink, size: SIZES[2]!, pts: [0.33, 0.52] },
-    { color: ink, size: SIZES[2]!, pts: [0.43, 0.52] },
-    { color: COLORS[1]!, size: SIZES[1]!, pts: [0.37, 0.6, 0.38, 0.62, 0.39, 0.6] },
-    { color: ink, size: SIZES[0]!, pts: [0.29, 0.6, 0.19, 0.58] },
-    { color: ink, size: SIZES[0]!, pts: [0.29, 0.64, 0.19, 0.67] },
-    { color: ink, size: SIZES[0]!, pts: [0.47, 0.6, 0.57, 0.58] },
-    { color: ink, size: SIZES[0]!, pts: [0.47, 0.64, 0.57, 0.67] },
-    { color: COLORS[1]!, size: SIZES[2]!, pts: heart },
-  ];
-}

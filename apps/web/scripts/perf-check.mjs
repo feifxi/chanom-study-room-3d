@@ -2,15 +2,18 @@
 // and battery-saver mode, zoomed all the way out, and fails if a frame goes over the budget
 // (src/features/room3d/perf.ts). Zoomed out is the worst case: the whole map is on screen, so nothing
 // is culled (at the opening zoom the maps once passed while costing ~70 draw calls more zoomed out).
-// Needs the web app running (pnpm --filter @connecta/web dev). Draw calls, triangles and JS time are
+// Needs the web app running (pnpm dev) and the seed: it signs in as Fei and walks into a seed room on
+// each map (the pretend crowd is the Test tools' one, in this browser only). Draw calls, triangles and JS time are
 // what we check; fps in a headless browser says little about a phone, so it's only printed.
 //
 //   pnpm --filter @connecta/web perf            (Chrome with the GPU if it can, else Chromium)
 //   MAPS=cafe pnpm --filter @connecta/web perf  (one map)
 import { chromium } from 'playwright';
+import { signIn } from './sign-in.mjs';
 
-const BASE = process.env.WEB_URL ?? 'http://localhost:3000/servers/chanom/rooms/';
-// The Chanom Friends room ids match the map ids
+const BASE = process.env.WEB_URL ?? 'http://localhost:3000';
+// A seed room Fei is in, on each map (Chanom Friends is Big, the worst case for the Library)
+const ROOM_ON = { library: 'seedchanom', cafe: 'seedgamenc', rooftop: 'seedlofish' };
 const MAPS = (process.env.MAPS ?? 'library,cafe,rooftop').split(',');
 const CROWDS = [0, 50, 100];
 const launch = () =>
@@ -19,17 +22,19 @@ const launch = () =>
     .catch(() => chromium.launch({ args: ['--mute-audio', '--use-gl=swiftshader'] }));
 
 const browser = await launch();
+const ctx = await browser.newContext({ viewport: { width: 1280, height: 860 } });
+await signIn(ctx, BASE, process.env.PERF_AS ?? 'fei@connecta.test');
 const rows = [];
 let failed = false;
 for (const map of MAPS)
   for (const mode of ['smooth', 'saver'])
     for (const crowd of CROWDS) {
-      const page = await browser.newPage({ viewport: { width: 1280, height: 860 } });
+      const page = await ctx.newPage();
       await page.addInitScript((c) => {
         localStorage.setItem('connecta-demo:crowd', String(c));
         localStorage.setItem('connecta-demo:perf', '1');
       }, crowd);
-      await page.goto(BASE + map);
+      await page.goto(`${BASE}/r/${ROOM_ON[map]}/walk`);
       await page.waitForFunction(() => window.__perf?.sample(), null, { timeout: 30_000 });
       if (mode === 'saver') {
         // Battery saver lives under the dock's More button

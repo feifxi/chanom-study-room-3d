@@ -9,7 +9,6 @@ import type { Server } from '@/lib/mock';
 import { DmChat } from '@/features/dms/DmChat';
 import { dmUnread, useDms } from '@/features/dms/useDms';
 import { RoomChat } from '@/features/chat/RoomChat';
-import { roleIn } from '@/lib/viewer';
 
 /** What the big chat panel shows: the room's chat, or a DM (by the other person's @handle). */
 export interface ChatTarget {
@@ -129,7 +128,7 @@ function Body({ server, initial }: { server: Server; initial: ChatTarget }) {
             </div>
           </div>
           {current.kind === 'channel' ? (
-            <RoomChat key={key(current)} roomId={server.id} moderator={!!roleIn(server)} />
+            <RoomChat key={key(current)} roomId={server.id} moderator={!!server.roles.me} />
           ) : (
             <DmChat key={key(current)} handle={current.id} />
           )}

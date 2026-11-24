@@ -3,8 +3,9 @@
 import { useSyncExternalStore } from 'react';
 
 /**
- * Demo-only: fill a room with 50 or 100 people to see how the people panel and the 3D room cope.
- * They walk around in 3D (two in three wander) and fill the people list.
+ * Test tools (development only): fill a room with 50 or 100 pretend people to see how the people
+ * panel and the 3D room cope; the perf check (`pnpm --filter @connecta/web perf`) sets it too. They
+ * walk around in 3D (two in three wander) and fill the people list, in your browser only.
  */
 export const CROWDS = [0, 50, 100] as const;
 export type Crowd = (typeof CROWDS)[number];
@@ -113,88 +114,8 @@ export function crowdPeople(n: number) {
   });
 }
 
-/** Demo-only: show Home with about 100 rooms (adds MANY_ROOMS from the mock). */
-const ROOMS_KEY = 'connecta-demo:many-rooms';
-const roomListeners = new Set<() => void>();
-
-function readMany(): boolean {
-  try {
-    return localStorage.getItem(ROOMS_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
-export function setManyRooms(on: boolean) {
-  try {
-    localStorage.setItem(ROOMS_KEY, on ? '1' : '0');
-  } catch {
-    // Not remembered, still applied for this page
-  }
-  roomListeners.forEach((l) => l());
-}
-
-export function useManyRooms(): boolean {
-  return useSyncExternalStore(
-    (l) => {
-      roomListeners.add(l);
-      return () => roomListeners.delete(l);
-    },
-    readMany,
-    () => false,
-  );
-}
-
-/** Demo: skip the 10-minute wait and mark yourself away right now (the room listens for this). */
+/** Test tools: skip the 10-minute wait and go away right now (the room listens for this). */
 export const AWAY_EVENT = 'connecta-demo:away';
 export function goAwayNow() {
   window.dispatchEvent(new Event(AWAY_EVENT));
-}
-
-/** Demo: the Connecta team just published an update to this room's map (feature 7's live switch). */
-export const MAP_UPDATE_EVENT = 'connecta-demo:map-update';
-export function publishMapUpdate() {
-  window.dispatchEvent(new Event(MAP_UPDATE_EVENT));
-}
-
-/** Demo: someone in the room starts Pick a Side and calls everyone (feature 9's invite card). */
-export const PICK_A_SIDE_EVENT = 'connecta-demo:pick-a-side';
-export function startPickASide() {
-  window.dispatchEvent(new Event(PICK_A_SIDE_EVENT));
-}
-
-/** Demo: someone draws on the whiteboard (feature 11). */
-export const BOARD_EVENT = 'connecta-demo:board';
-export function drawOnBoard() {
-  window.dispatchEvent(new Event(BOARD_EVENT));
-}
-
-/** Demo: someone starts Draw & Guess at the art corner and calls everyone (feature 11). */
-export const TELEPHONE_EVENT = 'connecta-demo:telephone';
-export function startTelephone() {
-  window.dispatchEvent(new Event(TELEPHONE_EVENT));
-}
-
-/** Demo: two friends sit down at the chess table and play (feature 12; maps with a chess table). */
-export const CHESS_EVENT = 'connecta-demo:chess';
-export function startChess() {
-  window.dispatchEvent(new Event(CHESS_EVENT));
-}
-
-/** Demo: three friends sit down at the card table and play Slave (feature 12). */
-export const SLAVE_EVENT = 'connecta-demo:slave';
-export function startSlave() {
-  window.dispatchEvent(new Event(SLAVE_EVENT));
-}
-
-/** Demo: someone walks to the big screen and puts a video on (feature 10). */
-export const WATCH_EVENT = 'connecta-demo:watch';
-export function putOnVideo() {
-  window.dispatchEvent(new Event(WATCH_EVENT));
-}
-
-/** Demo: someone walks to the big screen and shares their screen on it for a minute (feature 10). */
-export const SHARE_EVENT = 'connecta-demo:share';
-export function shareOnTv() {
-  window.dispatchEvent(new Event(SHARE_EVENT));
 }

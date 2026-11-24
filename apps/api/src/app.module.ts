@@ -47,7 +47,7 @@ import { PrismaService } from './prisma/prisma.service.js';
       useFactory: (config: ConfigService<Env, true>, prisma: PrismaService, mail: MailService) => ({
         auth: authFromConfig(config, prisma, mail),
         // Keeps each JSON body's bytes too: Stripe's webhook signature is over the raw body
-        enableRawBodyParser: true,
+        bodyParser: { rawBody: true },
       }),
     }),
     // Per-route limits (@Throttle) on endpoints people could hammer. In memory: one API process for now

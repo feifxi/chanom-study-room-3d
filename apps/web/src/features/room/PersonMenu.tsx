@@ -200,8 +200,8 @@ export function PersonMenu({
                 >
                   <UserMinus /> Remove from Common rooms (1 h)
                 </DropdownMenuItem>
-                {!p.guest && (
-                  <DropdownMenuItem onSelect={() => window.open('/admin/users', '_blank')}>
+                {!p.guest && p.userId && (
+                  <DropdownMenuItem onSelect={() => window.open(`/admin/users?user=${encodeURIComponent(p.userId!)}`, '_blank')}>
                     <ShieldCheck /> Open in the admin site
                   </DropdownMenuItem>
                 )}

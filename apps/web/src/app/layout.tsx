@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { IBM_Plex_Sans_Thai, JetBrains_Mono, Nunito } from 'next/font/google';
-import { DemoToolbar } from '@/components/DemoToolbar';
+import { TestTools } from '@/components/TestTools';
 import { Providers } from '@/components/Providers';
 import './globals.css';
 
@@ -9,8 +9,8 @@ const thai = IBM_Plex_Sans_Thai({ variable: '--font-thai', subsets: ['thai'], we
 const mono = JetBrains_Mono({ variable: '--font-mono-face', subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Connecta (V2 demo)',
-  description: 'Frontend-only demo of the V2 design: cosy 3D rooms with their own chat.',
+  title: 'Connecta',
+  description: 'Cosy 3D rooms where your friends hang out, study and play together.',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
@@ -19,7 +19,8 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       <body className="app-bg min-h-full">
         <Providers>
           {children}
-          <DemoToolbar />
+          {/* Shortcuts for testing by hand; never in production */}
+          {process.env.NODE_ENV !== 'production' && <TestTools />}
         </Providers>
       </body>
     </html>
