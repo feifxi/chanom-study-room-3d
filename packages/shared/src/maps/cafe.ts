@@ -2,7 +2,7 @@ import { createNavigator, resolveCollisions as resolveIn, type Obstacle, type Se
 import { cardSeats, circle, rect, circleSeats, zoneAtIn, type CardTable, type MapData, type CushionCircle, type Zone } from './types.js';
 
 /**
- * The Cat Café map (feature 7, built 2026-11-10): the same 26 × 18 m footprint and standard kit as
+ * The Cat Café map (docs/features/06-maps.md, built 2026-11-10): the same 26 × 18 m footprint and standard kit as
  * the library, with its own layout (every map has one). You come in through a door in the glass
  * front on the left. The bar runs along the back wall with the Buddy Machine by the till, the
  * open floor is the dance floor in front of it, the TV lounge sits in the back-left corner by the
@@ -12,7 +12,7 @@ import { cardSeats, circle, rect, circleSeats, zoneAtIn, type CardTable, type Ma
  * Rugs are the areas, as in the library. Units are metres; +z faces the camera.
  *
  * Not final art: odd props, overlapping rugs and the café needing more resident cats are listed in
- * the polish backlog in docs/features/07-maps.md.
+ * the polish backlog in docs/features/06-maps.md.
  */
 
 export const ROOM = { width: 26, depth: 18 } as const;

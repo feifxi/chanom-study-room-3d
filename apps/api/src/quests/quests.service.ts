@@ -10,7 +10,7 @@ const STEP_MAX = 120;
 const dateOf = (day: string) => new Date(`${day}T00:00:00Z`);
 
 /**
- * Daily quests and coins (spec 15): the game server reports what it sees (a job each), Room chat is
+ * Daily quests and coins (docs/features/14-coins-and-shop.md): the game server reports what it sees (a job each), Room chat is
  * counted here, and a quest pays out once, in the same transaction as the coins it adds.
  */
 @Injectable()

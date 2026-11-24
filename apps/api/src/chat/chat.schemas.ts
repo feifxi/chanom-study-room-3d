@@ -40,9 +40,9 @@ export const PictureUploadSchema = z
   .meta({ id: 'PictureUpload' });
 
 /**
- * A card in a DM instead of plain text (feature 5): "ask" (the author wants to join the other
+ * A card in a DM instead of plain text (docs/features/03-friends.md): "ask" (the author wants to join the other
  * person's room; they answer Send invite or Not now), "invite" (a link to a room) or "gift" (the
- * author gave the other person Plus, already added; spec 15).
+ * author gave the other person Plus, already added; docs/features/15-plus.md).
  */
 export const CARD_KINDS = ['text', 'ask', 'invite', 'gift'] as const;
 export type CardKind = Exclude<(typeof CARD_KINDS)[number], 'text'>;

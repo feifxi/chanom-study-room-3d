@@ -3,7 +3,7 @@ import { GameModule } from '../game/game.module.js';
 import { DecksController } from './decks.controller.js';
 import { DecksService } from './decks.service.js';
 
-/** Pick a Side's room decks (feature 11). */
+/** Pick a Side's room decks (docs/features/10-party-games.md). */
 @Module({
   imports: [GameModule],
   controllers: [DecksController],

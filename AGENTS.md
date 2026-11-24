@@ -15,7 +15,8 @@ stale.
 Start at [`docs/README.md`](docs/README.md). In short:
 
 1. [`docs/roadmap.md`](docs/roadmap.md): where things stand and what's next.
-2. [`docs/features/`](docs/features/README.md): what each feature does and where its code lives.
+2. [`docs/features/`](docs/features/README.md): what each feature does and where its code lives,
+   in build order. The app's layout is in [`docs/design.md`](docs/design.md).
 3. [`docs/decisions.md`](docs/decisions.md): why. Check it before proposing something "new".
 4. [`docs/dev-guide.md`](docs/dev-guide.md): UI checks, maps, gotchas.
 5. [`docs/manual-tests.md`](docs/manual-tests.md) and [`docs/open-issues.md`](docs/open-issues.md).
@@ -63,7 +64,7 @@ deploy. [The roadmap](docs/roadmap.md) is the source of truth.
 - **Comments explain why.** Match the surrounding style (Prettier, small modules).
 - **Rooms are the top level.** Don't use "server" or "channel" for rooms in new code.
 - **3D work runs the perf check** and stays within the budget in
-  [06-3d-room.md](docs/features/06-3d-room.md#performance).
+  [room-3d.md](docs/features/05-room-3d.md#performance).
 - **Next.js 16 differs from older versions:** read `node_modules/next/dist/docs/` before using an
   unfamiliar Next API (`apps/web/AGENTS.md`).
 - **NestJS 12 is ESM-only and newer than most training data:** relative imports end in `.js`,

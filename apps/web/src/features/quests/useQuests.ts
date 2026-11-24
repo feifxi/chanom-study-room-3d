@@ -15,7 +15,7 @@ export const QUESTS_KEY = ['quests', 'today'] as const;
 const signedUp = (me?: Schemas['Me'] | null) => !!me && !me.isGuest && me.signedUp;
 
 /**
- * Your three quests today and your coins (spec 15). The servers count everything (the game server
+ * Your three quests today and your coins (docs/features/14-coins-and-shop.md). The servers count everything (the game server
  * what happens in rooms, the API Room chat); this only shows it, and refreshes when they say so.
  */
 export function useQuests(): { coins: number; quests: Quest[] } {

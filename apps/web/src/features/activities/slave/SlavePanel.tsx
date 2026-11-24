@@ -8,7 +8,7 @@ import { Face, type Who } from '../ActivityHud';
 import { SUITS, TITLE, canPlay, isRed, rankLabel, suitOf, turnMs, SWAP_MS, type Card, type SlaveGame } from './game';
 
 /**
- * Slave up close (feature 12), a theater while you play: the others around the top with their card
+ * Slave up close (docs/features/11-table-games.md), a theater while you play: the others around the top with their card
  * counts, the pile on the felt in the middle, your hand fanned along the bottom. Tap cards to pick
  * them; Play lights up only when they make a legal play. People standing by the table watch: a
  * small view in the corner (whose turn, the pile), a click makes it big. Watchers never see a hand.

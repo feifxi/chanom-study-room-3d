@@ -1,6 +1,6 @@
 import type { Prisma, User } from '../generated/prisma/client.js';
 
-/** The Everyone ranking lists 18+ by default and under-18s only if they turn it on (spec 08). */
+/** The Everyone ranking lists 18+ by default and under-18s only if they turn it on (docs/features/07-study-tools.md). */
 export const EVERYONE_DEFAULT_AGE = 18;
 
 const adultBornBy = (now: Date) => {

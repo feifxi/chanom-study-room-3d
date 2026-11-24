@@ -68,7 +68,7 @@ export function lastLine(d: DmSummary) {
 }
 
 /**
- * The DM cards (feature 5): asking a friend to let you into their room, answering, and sending a
+ * The DM cards (docs/features/03-friends.md): asking a friend to let you into their room, answering, and sending a
  * friend a link to one of yours. Each lands in your DM with them.
  */
 export const dmCards = {

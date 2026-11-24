@@ -7,7 +7,7 @@ import { useMyRooms } from '@/features/rooms/useRooms';
 import { resumePlus, usePlus } from '@/lib/plus';
 
 /**
- * Home's heads-up when Plus is running out (feature 15), so an owner hears it before their rooms
+ * Home's heads-up when Plus is running out (docs/features/15-plus.md), so an owner hears it before their rooms
  * shrink: once cancelled (Plus until the date), and during the 7-day grace after it ends (rooms keep
  * their space, then go back to 25 at once and Big maps switch to Cosy). Nothing is deleted, and
  * nobody inside is sent out.

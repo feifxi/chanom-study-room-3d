@@ -28,7 +28,7 @@ export const COLLECT_MS = 2_000;
 export const telTiming = { turn: { ...TURN_MS } as Record<StepKind, number>, look: LOOK_MS, collect: COLLECT_MS, gapScale: 1 };
 
 /**
- * Draw & Guess at the art corner (feature 11), run here: the order, the steps and their timers, who
+ * Draw & Guess at the art corner (docs/features/10-party-games.md), run here: the order, the steps and their timers, who
  * sent, the chains and the album. **Entries never go into the room state**: each player gets only
  * what they work from (`tel:turn`), and the whole chains go out when the album starts (`tel:album`),
  * so nobody can peek.

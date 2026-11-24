@@ -42,7 +42,7 @@ interface Pending {
 }
 
 /**
- * The room's cats and study buddies (feature 6): the Buddy Machine (limits, cooldown), goodbyes,
+ * The room's cats and study buddies (docs/features/05-room-3d.md): the Buddy Machine (limits, cooldown), goodbyes,
  * petting, and the 10 Hz simulation. Behaviour lives in cat.ts and buddy.ts, movement in motion.ts.
  * Everything is in memory: a room that empties closes, and the next one starts with the map's
  * resident cats again.

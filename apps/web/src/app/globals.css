@@ -359,7 +359,7 @@
   }
 }
 
-/* Map change loading bar (feature 7): fills once over the loading screen */
+/* Map change loading bar (docs/features/06-maps.md): fills once over the loading screen */
 .map-move-bar {
   animation: map-move linear forwards;
 }
@@ -372,7 +372,7 @@
   }
 }
 
-/* Plus's animated name tag (feature 15): a pastel gradient sliding through the letters */
+/* Plus's animated name tag (docs/features/15-plus.md): a pastel gradient sliding through the letters */
 .shimmer {
   background: linear-gradient(90deg, #ffd1e6, #c9b8ff, #a8e6ff, #ffe7a8, #ffd1e6) 0 0 / 200% 100% repeat-x;
   -webkit-background-clip: text;

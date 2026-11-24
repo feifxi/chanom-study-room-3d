@@ -1,25 +1,65 @@
 # Features
 
-One spec per feature, each in the same shape: a summary, how it works, **In the code**, and
-**Not built yet**. Every feature is built and on the real backend unless its spec says otherwise.
+One spec per feature, listed in **build order**: each one needs only what's above it. Read them in
+this order to learn the app. Every feature is built unless its spec says otherwise; the app's
+layout (header, pages, the 3D HUD) is in [Design](../design.md), not here.
 
-| #   | Feature                                                        | In one line                                                                      |
-| --- | -------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| 1   | [App shell](01-app-shell.md)                                   | Gather-style: a slim header over Home, rooms as cards, panels over the 3D room   |
-| 2   | [Accounts](02-accounts.md)                                     | Google, Discord or an email code; 13+; @handles; guests keep their look          |
-| 3   | [Rooms and membership](03-rooms-membership.md)                 | Private, Ask to join or Open; fixed roles; invites and guest passes; kick, ban   |
-| 4   | [Chat and DMs](04-chat-and-dms.md)                             | One saved chat per room, 1-to-1 DMs between friends, pictures                    |
-| 5   | [Friends and presence](05-friends.md)                          | Exact @handle or link; only friends DM and see where you are                     |
-| 6   | [The 3D room](06-3d-room.md)                                   | Click to walk, stereo proximity voice, private zones, bubbles, cats; perf budget |
-| 7   | [Maps](07-maps.md)                                             | The Library and two temporary maps; the editor waits for Blender                 |
-| 8   | [Study tools](08-study-tools.md)                               | Personal focus timer, private to-do list, Focus page and rankings                |
-| 9   | [Activity framework](09-activity-framework.md)                 | One flow for every activity: spot, lobby, play, results                          |
-| 10  | [Watch together and photo mode](10-watch-and-photo.md)         | YouTube or a screen share on the TV, in sync; photos anywhere                    |
-| 11  | [Pick a Side, whiteboard, Draw & Guess](11-party-games.md)     | Walk-to-answer quiz, a free drawing wall, a pass-it-along drawing game           |
-| 12  | [Table games](12-table-games.md)                               | Chess and Slave, in panels                                                       |
-| 14  | [Common rooms, moderation, admin](14-open-rooms-moderation.md) | Text-only Common rooms, word filter, reports, the team's admin site              |
-| 15  | [Plus, coins and the Shop](15-plus-coins-shop.md)              | One subscription, earn-only coins, cosmetics and pets                            |
+Each spec has the same shape: what it is, how it works, **In the code**, then **Not built yet** or
+**Not doing**.
 
-13 (AI flashcards) was dropped. **AI later:** today nothing uses AI but the picture check; AI decks
-for Pick a Side come with Plus. Ideas for after launch: smarter text moderation, talking study
-buddies, an AI game host, "what did I miss" summaries. No AI tutor or chatbot.
+## Foundations: people and rooms
+
+| Feature                                  | In one line                                                                |
+| ---------------------------------------- | -------------------------------------------------------------------------- |
+| [1. Accounts and guests](01-accounts.md) | Google, Discord or an email code; 13+; @handles; guests try rooms first    |
+| [2. Rooms and membership](02-rooms.md)   | Private, Ask to join or Open; three roles; invites, guest passes; Discover |
+
+## Social: talking outside 3D
+
+| Feature                                  | In one line                                                       |
+| ---------------------------------------- | ----------------------------------------------------------------- |
+| [3. Friends and presence](03-friends.md) | exact @handle or link; only friends DM and see where you are      |
+| [4. Chat, DMs and the inbox](04-chat.md) | one saved chat per room, 1-to-1 DMs between friends, the 🔔 inbox |
+
+## The place: being in a room together
+
+| Feature                         | In one line                                                                     |
+| ------------------------------- | ------------------------------------------------------------------------------- |
+| [5. The 3D room](05-room-3d.md) | the game server; walking, proximity voice, private zones, bubbles, cats; budget |
+| [6. Maps](06-maps.md)           | the standard kit every map has; the Library; the editor waits for Blender       |
+
+## Things to do
+
+| Feature                                                   | In one line                                                   |
+| --------------------------------------------------------- | ------------------------------------------------------------- |
+| [7. Study tools](07-study-tools.md)                       | a personal focus timer, a private to-do list, Focus rankings  |
+| [8. Activities](08-activities.md)                         | one flow for every activity: spot, lobby, play, results       |
+| [9. Watch together and photo mode](09-watch-and-photo.md) | YouTube or a screen share on the TV, in sync; photos anywhere |
+| [10. Party games](10-party-games.md)                      | Pick a Side, the whiteboard, Draw & Guess                     |
+| [11. Table games](11-table-games.md)                      | chess and Slave, in panels                                    |
+
+## Safety: open to strangers
+
+| Feature                                        | In one line                                                   |
+| ---------------------------------------------- | ------------------------------------------------------------- |
+| [12. Moderation and reports](12-moderation.md) | word filter, slow mode, automatic report steps, picture check |
+| [13. Common rooms](13-common-rooms.md)         | Connecta's own text-only rooms, in copies, open to guests     |
+
+## Money
+
+| Feature                                                | In one line                                           |
+| ------------------------------------------------------ | ----------------------------------------------------- |
+| [14. Coins, quests and the Shop](14-coins-and-shop.md) | earn-only coins from daily quests; cosmetics and pets |
+| [15. Connecta Plus and payments](15-plus.md)           | one subscription, Stripe (card and PromptPay), gifts  |
+
+## Running Connecta
+
+| Feature                                             | In one line                                                     |
+| --------------------------------------------------- | --------------------------------------------------------------- |
+| [16. Team accounts and the admin site](16-admin.md) | `/admin`: reports, users, rooms, Common rooms, money, audit log |
+
+## AI
+
+Today nothing uses AI but the picture check. AI decks for Pick a Side come with Plus. Ideas for
+after launch: smarter text moderation, talking study buddies, an AI game host, "what did I miss"
+summaries. No AI tutor or chatbot. (AI flashcards were dropped.)

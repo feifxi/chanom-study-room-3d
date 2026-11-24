@@ -70,7 +70,7 @@ export type SignInProviders = { google: boolean; discord: boolean };
 const tooYoung = (until: Date) => new ForbiddenException({ code: 'too_young', until: until.toISOString() });
 
 /**
- * What happens after signing in (docs/features/02-accounts.md): the birthday check, then the
+ * What happens after signing in (docs/features/01-accounts.md): the birthday check, then the
  * character, display name and @handle. Guests only get a name and a character.
  */
 @Injectable()

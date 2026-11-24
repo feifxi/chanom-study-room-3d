@@ -28,7 +28,7 @@ export interface MachineSummon {
 }
 
 /**
- * The Buddy Machine (feature 6): walk up and press E. Summon a cat or a study buddy for the whole
+ * The Buddy Machine (docs/features/05-room-3d.md): walk up and press E. Summon a cat or a study buddy for the whole
  * room (a capsule rolls out of the machine and pops open), or say goodbye to one. Nobody owns them:
  * anyone can summon, anyone can send one home. Up to 4 cats and 5 study buddies, 9 in all; they go
  * home when the room empties. Your pets (Shop) get their own row: one out at a time, up to 4 pets

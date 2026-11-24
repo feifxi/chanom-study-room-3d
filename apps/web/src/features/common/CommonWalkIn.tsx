@@ -22,7 +22,7 @@ interface Copy {
 }
 
 /**
- * Walking into a Common room (feature 14): the API picks the copy (a friend's, the busiest with
+ * Walking into a Common room (docs/features/13-common-rooms.md): the API picks the copy (a friend's, the busiest with
  * space, or a new one) and gives its ticket; the game server makes it text only. "Try again" and a
  * reconnect go back to the same copy while it has a seat.
  */

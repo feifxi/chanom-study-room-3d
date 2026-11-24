@@ -6,7 +6,7 @@ import { QuestsProcessor } from './quests.processor.js';
 import { QuestsCleanup } from './quests-cleanup.js';
 import { QuestsService } from './quests.service.js';
 
-/** Daily quests and coins (spec 15): counted from the game server's events and Room chat. */
+/** Daily quests and coins (docs/features/14-coins-and-shop.md): counted from the game server's events and Room chat. */
 @Module({
   imports: [BullModule.registerQueue({ name: QUESTS_QUEUE })],
   controllers: [QuestsController],

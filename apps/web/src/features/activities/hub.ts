@@ -11,7 +11,7 @@ import type { ChessGame } from './chess/game';
 import { inArea } from '../map/types';
 
 /**
- * The activity framework (feature 9) as this browser sees it. The game server runs every activity;
+ * The activity framework (docs/features/08-activities.md) as this browser sees it. The game server runs every activity;
  * the hub mirrors its spots, games and big screen each tick and passes your actions on. Every
  * activity has the same life, whatever the game:
  *
@@ -87,7 +87,7 @@ export interface Video {
 }
 
 /**
- * The spots the game server runs (feature 9): the hub mirrors their rounds each tick and passes the
+ * The spots the game server runs (docs/features/08-activities.md): the hub mirrors their rounds each tick and passes the
  * host's and players' actions on.
  */
 export interface ActivityRemote {
@@ -124,7 +124,7 @@ export interface ActivityRemote {
   telNext(): void;
 }
 
-/** The game server's big screen (feature 10): the hub mirrors it each tick and passes every action on. */
+/** The game server's big screen (docs/features/09-watch-and-photo.md): the hub mirrors it each tick and passes every action on. */
 export interface WatchRemote {
   /** The server's screen, with its TV share, in the hub's shape (you're 'me') */
   state(): Omit<WatchState, 'resume'>;
@@ -136,7 +136,7 @@ export interface WatchRemote {
 }
 
 /**
- * Watch together (feature 10): one timeline for everyone watching. The server keeps where the video
+ * Watch together (docs/features/09-watch-and-photo.md): one timeline for everyone watching. The server keeps where the video
  * was at `startedAt` (`offset`, seconds) and whether it's paused; each player seeks to match.
  * Anyone watching can play, pause, seek, skip and add to the queue.
  */

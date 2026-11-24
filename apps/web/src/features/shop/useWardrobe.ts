@@ -11,7 +11,7 @@ export const WARDROBE_KEY = ['shop', 'wardrobe'] as const;
 
 const signedUp = (me?: Schemas['Me'] | null) => !!me && !me.isGuest && me.signedUp;
 
-/** Your coins and the Shop items you own (spec 15) */
+/** Your coins and the Shop items you own (docs/features/14-coins-and-shop.md) */
 export function useWardrobe() {
   const { data: me } = useMe();
   const { data } = useQuery({

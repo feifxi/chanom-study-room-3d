@@ -64,7 +64,7 @@ const TALK_HANGOVER_MS = 450;
 const PAN_METRES = 6;
 
 /**
- * Proximity voice over LiveKit (feature 6), grown up for crowds:
+ * Proximity voice over LiveKit (docs/features/05-room-3d.md), grown up for crowds:
  *
  * - **Hearing:** full volume within 2.5 m, silent at 9 m, panned left and right by where people
  *   stand; only the 12 nearest you can hear are streamed. Talk to everyone is full volume anywhere.

@@ -1,5 +1,5 @@
 /**
- * The whiteboard (feature 11): one shared drawing per room's board, relayed by the game server as a
+ * The whiteboard (docs/features/10-party-games.md): one shared drawing per room's board, relayed by the game server as a
  * stream of points, apart from the room state. Points are 0–1 board coordinates (across, down), so
  * every screen, the 3D wall and a saved PNG draw the same picture.
  */

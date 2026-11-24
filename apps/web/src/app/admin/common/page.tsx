@@ -14,7 +14,7 @@ import { problem } from '@/features/rooms/useRooms';
 const RULES = ['Text only, no voice', 'No pictures', 'No watch together', 'No screen share', `Slow mode ${COMMON_SAY_MS / 1000} s`];
 
 /**
- * Common rooms (feature 14): Connecta's own rooms, one per template, with copies that open and close
+ * Common rooms (docs/features/16-admin.md): Connecta's own rooms, one per template, with copies that open and close
  * by themselves. Their rules are fixed (text only, slow mode, no videos); the team watches the
  * copies, sets how full they get, and can post a notice in all of them.
  */

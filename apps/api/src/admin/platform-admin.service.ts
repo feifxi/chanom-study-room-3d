@@ -8,7 +8,7 @@ import type { AdminCommon, Moderation } from './admin.schemas.js';
 import { requireTeam } from './team.js';
 
 /**
- * The admin site's Common rooms and Moderation pages (feature 14): how full a copy gets, the notice,
+ * The admin site's Common rooms and Moderation pages (docs/features/16-admin.md): how full a copy gets, the notice,
  * the moderation switches and our word list. Each change applies everywhere at once (SettingsService)
  * and goes in the audit log.
  */

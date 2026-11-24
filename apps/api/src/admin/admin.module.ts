@@ -13,7 +13,7 @@ import { PlatformAdminService } from './platform-admin.service.js';
 import { ReportsAdminService } from './reports-admin.service.js';
 import { RoomsAdminService } from './rooms-admin.service.js';
 
-/** The admin site's API (feature 14), Connecta team only. */
+/** The admin site's API (docs/features/16-admin.md), Connecta team only. */
 @Module({
   imports: [MailModule, ChatModule, CommonModule, PresenceModule, BillingModule],
   controllers: [AdminController],

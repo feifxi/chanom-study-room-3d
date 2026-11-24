@@ -22,7 +22,7 @@ export interface StripeEvent {
 }
 
 /**
- * Stripe (spec 15, "Paying"): its hosted Checkout, so we never see card details, and its signed
+ * Stripe (docs/features/15-plus.md, "Paying"): its hosted Checkout, so we never see card details, and its signed
  * webhook telling us what happened. Off when STRIPE_SECRET_KEY is unset: the payment page is then a
  * local stand-in (`BillingService.devPay`).
  */

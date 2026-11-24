@@ -18,7 +18,7 @@ export const pictureUrl = (id: string) => `/api/pictures/${id}`;
 export const uploadKey = (id: string) => `uploads/${id}`;
 
 /**
- * Pictures in chat (docs/features/04-chat-and-dms.md): the browser uploads the original
+ * Pictures in chat (docs/features/04-chat.md): the browser uploads the original
  * straight to S3 through a short-lived link, the pictures worker shrinks and checks it
  * (PicturesProcessor), and the message shows once its pictures are ready. Viewing is a short-lived
  * link too, handed only to the room's members, so private rooms' pictures stay private.

@@ -171,7 +171,7 @@ const ACCESSORIES: Partial<Record<AvatarLook['accessory'], Accessory>> = {
       mesh(head, new THREE.OctahedronGeometry(0.065), clip, s * 0.42, 0.18, -0.06, { outline: 0.15 });
     }
   },
-  // --- Shop accessories (spec 15): built from the same primitives, so they cost about what a free one does ---
+  // --- Shop accessories (docs/features/14-coins-and-shop.md): built from the same primitives, so they cost about what a free one does ---
   bunnyEars(head, _look, sway) {
     const fur = toon('#fff8f3');
     const inner = toon('#ffb3c8');
@@ -292,7 +292,7 @@ type Outfit = (b: THREE.Object3D, look: ResolvedLook, m: OutfitMats) => OutfitFe
 const WHITE = '#ffffff';
 const darker = (c: string, k = 0.75) => new THREE.Color(c).multiplyScalar(k);
 
-/** The outfit shapes: the sailor top is free; the rest come from the Shop (spec 15). */
+/** The outfit shapes: the sailor top is free; the rest come from the Shop (docs/features/14-coins-and-shop.md). */
 const OUTFITS: Record<OutfitStyle, Outfit> = {
   sailor(b, _look, { outfit, trim }) {
     mesh(b, new THREE.CylinderGeometry(0.15, 0.25, 0.24, q(20)), outfit, 0, 0.3, 0, { outline: 0.05 });

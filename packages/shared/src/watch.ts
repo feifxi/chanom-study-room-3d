@@ -1,5 +1,5 @@
 /**
- * Watch together (feature 10, docs/features/10-watch-and-photo.md): YouTube on the big screen, in
+ * Watch together (docs/features/09-watch-and-photo.md): YouTube on the big screen, in
  * sync for everyone on its rug. The game server keeps the timeline and Up next; each browser plays
  * the video itself and seeks back in line when it drifts.
  */

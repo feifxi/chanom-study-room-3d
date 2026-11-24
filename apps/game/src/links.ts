@@ -5,7 +5,7 @@ import type { FocusRound, GamePresence, GameRoomEvent, GameWalkedIn, QuestEvent 
  * plain functions in tests), so the room itself never imports a Redis client.
  */
 export interface Links {
-  /** Tell the gateway who's in which room (presence, feature 5) */
+  /** Tell the gateway who's in which room (presence, docs/features/03-friends.md) */
   presence(update: GamePresence): void;
   /** A room that was full has space again ("Full · notify me") */
   space(roomId: string): void;

@@ -2,7 +2,7 @@ import { createNavigator, resolveCollisions as resolveIn, type Obstacle, type Se
 import { cardSeats, circle, rect, circleSeats, zoneAtIn, type CardTable, type MapData, type CushionCircle, type Zone } from './types.js';
 
 /**
- * The Starry Rooftop map (feature 7, built 2026-11-10): a 26 × 18 m terrace with its own layout.
+ * The Starry Rooftop map (docs/features/06-maps.md, built 2026-11-10): a 26 × 18 m terrace with its own layout.
  * The only solid thing is the stairwell block in the back-left corner: you come out of its door,
  * the Buddy Machine and the chalk wall are beside it, and the outdoor cinema sheet hangs on its
  * front. Everything else is open to the sky behind a parapet and railings, with the city beyond.
@@ -12,7 +12,7 @@ import { cardSeats, circle, rect, circleSeats, zoneAtIn, type CardTable, type Ma
  * Rugs (decking, gravel, mats) are the areas. Units are metres; +z faces the camera.
  *
  * Not final art: odd props, overlapping rugs and other fixes are listed in the polish backlog in
- * docs/features/07-maps.md.
+ * docs/features/06-maps.md.
  */
 
 export const ROOM = { width: 26, depth: 18 } as const;

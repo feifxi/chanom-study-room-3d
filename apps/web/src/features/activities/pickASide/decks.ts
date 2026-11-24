@@ -1,7 +1,7 @@
 import type { Deck, DeckKind, Question } from '@connecta/shared/pick-a-side';
 
 /**
- * Pick a Side's question decks (feature 11). A deck is one topic; the game draws the questions.
+ * Pick a Side's question decks (docs/features/10-party-games.md). A deck is one topic; the game draws the questions.
  * - **Opinion** decks (Would you rather): two answers, no right one.
  * - **Quiz** decks: four answers, one right.
  * Decks are built in or the room's own (written by its members); AI decks come with Plus later. The

@@ -18,7 +18,7 @@ import { GUEST_LOOK, saveGuest } from '@/lib/guest';
 import { problem } from '@/features/rooms/useRooms';
 
 /**
- * A Common room for someone without a session (feature 14): pick a name and a character and walk in
+ * A Common room for someone without a session (docs/features/13-common-rooms.md): pick a name and a character and walk in
  * as a guest. Text only for everyone there, so a guest misses nothing but a saved account.
  */
 export function CommonGuestGate({ type }: { type: CommonType }) {
@@ -39,7 +39,7 @@ export function CommonGuestGate({ type }: { type: CommonType }) {
       }
       const { data, error } = await api.PUT('/api/me/guest', { body: { name: guestName, look, over13: !!over13 } });
       if (isTooYoung(error)) return setTooYoung(true);
-      // A name with a blocked word says so (feature 14)
+      // A name with a blocked word says so (docs/features/12-moderation.md)
       if (!data) throw new Error(problem(error, 'guest profile'));
       saveGuest({ name: guestName, look });
       router.refresh();

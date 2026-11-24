@@ -1,7 +1,7 @@
 import type { Accessory, OutfitStyle } from './avatar.js';
 
 /**
- * The Shop (spec 15): only things that really show on your character, bought with earned coins.
+ * The Shop (docs/features/14-coins-and-shop.md): only things that really show on your character, bought with earned coins.
  * Outfits take your outfit colour, so each comes in every colour. Newest last ("New this week").
  */
 export type ShopItem =

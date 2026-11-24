@@ -165,7 +165,7 @@ export function LabelLayer({
               {badges[id] && <span className="mr-1">{badges[id]}</span>}
               {voice.stage?.has(id) && <span className="mr-1">📢</span>}
               {voice.away?.has(id) && <span className="mr-1">💤</span>}
-              {/* In a private zone you're not in: you can see them but can't hear them (feature 6) */}
+              {/* In a private zone you're not in: you can see them but can't hear them (docs/features/05-room-3d.md) */}
               {!isLocal && inOtherZone(player, players.get(localId)) && <span className="mr-1">🔇</span>}
               {/* Deafened (can't hear the room), like Discord's crossed headphones, so nobody talks to them in vain */}
               {voice.deafened?.has(id) && (
@@ -176,15 +176,15 @@ export function LabelLayer({
                 <span className={`mr-1 ${voice.speaking.has(id) ? '' : 'opacity-50'}`}>🎙️</span>
               )}
               {voice.sharing.has(id) && <span className="mr-1">🖥️</span>}
-              {/* Taking a photo (feature 10), so people can pose */}
+              {/* Taking a photo (docs/features/09-watch-and-photo.md), so people can pose */}
               {player.photo && <span className="mr-1">📸</span>}
               {STATUS_ICON[player.status] && <span className="mr-1">{STATUS_ICON[player.status]}</span>}
               {/* Away during a break: the break still runs, so the cup stays too */}
               {player.status === 'away' && player.statusEndsAt > 0 && <span className="mr-1">{STATUS_ICON.break}</span>}
-              {/* Plus: a shimmering name (feature 15) */}
+              {/* Plus: a shimmering name (docs/features/15-plus.md) */}
               {player.plus ? <span className="shimmer">✨{player.name}</span> : player.name}
               {isLocal && ' (you)'}
-              {/* The Connecta team in a Common room (feature 14) */}
+              {/* The Connecta team in a Common room (docs/features/13-common-rooms.md) */}
               {player.team && <span className="ml-1 rounded-full bg-mint px-1.5 text-[10px] font-black text-mint-ink">Connecta team</span>}
               {/* How long they've been focusing, so others know not to interrupt */}
               {player.status === 'focus' && (

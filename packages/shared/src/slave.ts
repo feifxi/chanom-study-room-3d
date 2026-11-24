@@ -1,5 +1,5 @@
 /**
- * Slave (ไพ่สลาฟ) at the card table (feature 12), Thai rules kept simple:
+ * Slave (ไพ่สลาฟ) at the card table (docs/features/11-table-games.md), Thai rules kept simple:
  *
  * - 3 is lowest, 2 highest; suits ♣ < ♦ < ♥ < ♠. One deck, dealt out evenly (with 5 or 6 players
  *   some hold one more card).

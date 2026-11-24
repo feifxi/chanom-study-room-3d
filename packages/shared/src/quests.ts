@@ -1,5 +1,5 @@
 /**
- * Daily quests and coins (spec 15, docs/features/15-plus-coins-shop.md).
+ * Daily quests and coins (docs/features/14-coins-and-shop.md).
  * Coins are earned, never bought. Each quest counts ONE thing the server already sees, so there's
  * nothing to detect ("with a friend" or "3 different people" never appear), and each pays once a day.
  * Three a day, one per group, so someone studying in a quiet room can still earn.

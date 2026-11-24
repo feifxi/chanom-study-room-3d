@@ -845,7 +845,7 @@ export function DmLocked({ name, state, onAction }: { name: string; state: 'unfr
   );
 }
 
-/** A Plus gift in a DM (feature 15). The months are already added; the card just says so. */
+/** A Plus gift in a DM (docs/features/15-plus.md). The months are already added; the card just says so. */
 function GiftCard({ from, gift }: { from: string; gift: { months: number; note?: string } }) {
   return (
     <div className="mt-1 flex w-72 max-w-full flex-col gap-1 rounded-2xl bg-gradient-to-br from-secondary via-peach to-lavender p-4">

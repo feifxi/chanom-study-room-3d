@@ -53,7 +53,7 @@ const day = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'n
 const when = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
 /**
- * Every account (feature 14). Account actions are the team's: warn, suspend 1 or 7 days, ban, lift,
+ * Every account (docs/features/16-admin.md). Account actions are the team's: warn, suspend 1 or 7 days, ban, lift,
  * reset name, each with a reason that's emailed to them (they reply to appeal) and kept in the audit
  * log. A suspension or ban signs them out everywhere at once. Room bans stay with each room's owner
  * and mods.

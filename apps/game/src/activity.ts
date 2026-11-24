@@ -6,7 +6,7 @@ import type { PieceSymbol, Square } from 'chess.js';
 import { Spot, type Chess, type Player } from './state.js';
 
 /**
- * The activity framework (feature 9) on the game server: one flow for every game at a spot. The
+ * The activity framework (docs/features/08-activities.md) on the game server: one flow for every game at a spot. The
  * browser mirrors it (`apps/web/src/features/activities/hub.ts`).
  *
  * - **Being in the area is being in:** the spot's seats for a table, otherwise its rug.
@@ -336,7 +336,7 @@ function remove(arr: { indexOf(v: string): number; splice(i: number, n: number):
   if (i >= 0) arr.splice(i, 1);
 }
 
-/** The chess table (feature 12): two players, the shared rules, every move checked here. */
+/** The chess table (docs/features/11-table-games.md): two players, the shared rules, every move checked here. */
 export class ChessTable implements RoundGame {
   readonly min = 2;
   private game: ChessGame | null = null;

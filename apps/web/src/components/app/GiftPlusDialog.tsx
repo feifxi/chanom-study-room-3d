@@ -13,7 +13,7 @@ import type { Schemas } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 
 /**
- * Gift Plus (feature 15): pick a friend (or come in with one), how long, a note, then pay. Gifts are
+ * Gift Plus (docs/features/15-plus.md): pick a friend (or come in with one), how long, a note, then pay. Gifts are
  * one-off, so card or PromptPay both work. The friend gets a gift card in your DM and a 🔔 notice,
  * and the months add on top of any Plus they already have.
  */

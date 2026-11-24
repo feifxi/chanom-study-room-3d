@@ -119,7 +119,7 @@ export default function RoomView({
   // `?guest=Name` from the invite page or a Common room
   const [guestAs] = useState(() => guestName ?? null);
   const guest = guestAs !== null;
-  // Common rooms are safe for strangers by design (feature 14): text only, for everyone
+  // Common rooms are safe for strangers by design (docs/features/13-common-rooms.md): text only, for everyone
   const common = here.common;
   // Your own name from your account
   const account = useMeAsUser();
@@ -129,7 +129,7 @@ export default function RoomView({
   const myName = guest ? guestAs || 'Guest' : account.name;
 
   // The map is the game server's (it moves everyone when the owner switches); the time of day is the
-  // owner's, from the API (feature 7). Common rooms follow the clock
+  // owner's, from the API (docs/features/06-maps.md). Common rooms follow the clock
   const [mapId, setMapId] = useState(() => game.state?.mapId || here.mapId);
   // Your predicted position; the driver snaps it to the server's (the map's door) on its first update
   const motion = useRef<LocalMotion>({ x: mapDefFor(here.mapId).spawn.x, z: mapDefFor(here.mapId).spawn.z, yaw: 0, moving: false });
@@ -160,7 +160,7 @@ export default function RoomView({
   }, [game]);
 
   const serverRole = room.state.players.get('me')?.role;
-  // In a Common room the Connecta team gets its own actions (feature 14); nobody else runs one
+  // In a Common room the Connecta team gets its own actions (docs/features/13-common-rooms.md); nobody else runs one
   const myRole: RoomRole | undefined = common
     ? meAccount?.team
       ? 'Team'
@@ -201,7 +201,7 @@ export default function RoomView({
   // Server time: what it's compared with (focus, invites, games' timers) is the server's
   const now = useServerNow(1000);
 
-  // Activities (feature 9): one framework for every game, run by the game server
+  // Activities (docs/features/08-activities.md): one framework for every game, run by the game server
   const hub = useMemo(() => new ActivityHub(room, room.watchRemote, room.activityRemote), [room]);
   useSyncExternalStore(hub.subscribe, hub.getVersion, hub.getVersion);
   // Pick a Side's timer and "you're on B" need more than once a second

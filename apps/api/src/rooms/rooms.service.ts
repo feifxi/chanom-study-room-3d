@@ -72,7 +72,7 @@ const roomInclude = (userId: string) =>
 type RoomRow = Prisma.RoomGetPayload<{ include: ReturnType<typeof roomInclude> }>;
 
 /**
- * Rooms and membership (docs/features/03-rooms-membership.md): making and setting up rooms,
+ * Rooms and membership (docs/features/02-rooms.md): making and setting up rooms,
  * the three roles, Ask to join, invites and guest passes, kick, ban and time out. Every action is
  * checked here against the role rules; the web app only hides buttons.
  */
@@ -177,7 +177,7 @@ export class RoomsService {
     // A smaller map or plan lowers the cap with it
     if (input.capacity === undefined && room.capacity !== null && room.capacity > max) data.capacity = max;
     await this.prisma.room.update({ where: { id: roomId }, data });
-    // Live switch (feature 7): everyone inside moves to the new map's door
+    // Live switch (docs/features/06-maps.md): everyone inside moves to the new map's door
     if (input.mapId && input.mapId !== room.mapId) this.game.roomEvent({ roomId, type: 'map', mapId: input.mapId });
     // Guests inside can start or stop talking at once
     if (input.guestVoice !== undefined && input.guestVoice !== room.guestVoice)
@@ -461,7 +461,7 @@ export class RoomsService {
     userId: string,
     input: { kind: 'member' | 'guest'; expiry: InviteExpiry; fresh: boolean },
     now = new Date(),
-    /** A guest pass for a friend from DMs (feature 5): any member may make one if the room takes guests */
+    /** A guest pass for a friend from DMs (docs/features/03-friends.md): any member may make one if the room takes guests */
     forFriend = false,
   ): Promise<InviteView> {
     const me = await this.membership(roomId, userId);
@@ -635,7 +635,7 @@ export class RoomsService {
     });
   }
 
-  // ── Deleting an account (feature 2) ───────────────────────────────────────────────────────────
+  // ── Deleting an account (docs/features/01-accounts.md) ───────────────────────────────────────────────────────────
 
   /** The rooms this person owns, for picking who takes each over. */
   async owned(userId: string) {

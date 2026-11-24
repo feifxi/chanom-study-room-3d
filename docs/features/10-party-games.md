@@ -1,6 +1,6 @@
-# 11. Pick a Side, whiteboard, Draw & Guess
+# 10. Party games: Pick a Side, whiteboard, Draw & Guess
 
-Three party pieces on the shared activity flow ([9](09-activity-framework.md)): a walk-to-answer
+Three party pieces on the shared activity flow ([Activities](08-activities.md)): a walk-to-answer
 game, a free drawing wall, and a pass-it-along drawing game.
 
 ## 🗳️ Pick a Side
@@ -19,6 +19,7 @@ zone** of the rug. Answers lock where people stand when the timer ends.
   them (3–50 questions), the owner and mods can delete any, anyone let in can host with them. Up
   to 100 per room. Decks belong to the room, not the person.
 - No repeats until a deck runs out (remembered while the room is open).
+- Deck text is masked by the room's word filter ([Moderation](12-moderation.md)).
 - **3D:** the floor splits into opaque coloured zones (A–D) with just the letter; answers are read
   in the small HUD, which keeps the room visible.
 
@@ -40,7 +41,7 @@ A pass-it-along drawing game at the **art corner** (3–10 players, sit at the t
 - **Draw & Guess:** write a prompt → the next draws it → the next describes it → …
 - **Copycat:** draw anything → the next sees it for 8 s and redraws it from memory → …
 
-Everyone plays at once; each player starts a chain, chains move on each step (up to 8 steps).
+Writing is masked by the room's word filter. Everyone plays at once; each player starts a chain, chains move on each step (up to 8 steps).
 Timers: write 30 s, draw 60 s, describe 30 s (Copycat: 8 s look + 45 s draw). Time up sends what
 you have; two empty turns in a row, or leaving, puts you out. Then **the album** plays chain by
 chain for everyone (host can pause or skip; reactions; save or share a chain). **No scores.**
@@ -66,7 +67,7 @@ Phone, Telestrations or their mode names.
 
 ## Not built yet
 
-- **✨ AI decks** (a Plus perk, shows as Coming soon): type a topic, AI writes 15 questions, 3 a day
+- **✨ AI decks** (a [Plus](15-plus.md) perk, shows as Coming soon): type a topic, AI writes 15 questions, 3 a day
   Free and 30 Plus. Needs an AI provider key the owner sets up.
 
 ## Not doing

@@ -12,7 +12,7 @@ export const TODOS_EVENT = 'todos';
 const toTodo = (t: Row): Todo => ({ id: t.id, text: t.text, done: t.done });
 
 /**
- * The to-do list (feature 8): one per account, private, the same in every room. Guests have none
+ * The to-do list (docs/features/07-study-tools.md): one per account, private, the same in every room. Guests have none
  * (sign-up keeps their character, not a list). Done items clear themselves after 7 days.
  */
 @Injectable()

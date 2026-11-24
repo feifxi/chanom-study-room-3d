@@ -32,7 +32,7 @@ const TABLE_LOOKS = {
 
 /**
  * The card tables (static, inside the room's StaticBatch): round tables with an inlay, four
- * leather-topped stools each and a shaded lamp hanging over the middle. Feature 12 brings the game.
+ * leather-topped stools each and a shaded lamp hanging over the middle. The game is in docs/features/11-table-games.md.
  */
 export function CardTables({ look = 'felt' }: { look?: keyof typeof TABLE_LOOKS }) {
   const L = TABLE_LOOKS[look];

@@ -1,5 +1,5 @@
 // Puts someone on the Connecta team, or takes them off: `pnpm --filter @connecta/api team <handle> [off]`.
-// The app never sets the flag itself (feature 14): the team acts in Common rooms and, later, the admin site.
+// The app never sets the flag itself (docs/features/13-common-rooms.md): the team acts in Common rooms and, later, the admin site.
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { validateEnv } from '../src/config/env.js';

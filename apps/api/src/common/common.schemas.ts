@@ -2,7 +2,7 @@ import { COMMON_TYPE_IDS, TIMEOUTS } from '@connecta/shared';
 import { z } from 'zod';
 import { PersonSchema } from '../rooms/rooms.schemas.js';
 
-/** A Common room type on Discover and Home (feature 14): everyone across its copies */
+/** A Common room type on Discover and Home (docs/features/13-common-rooms.md): everyone across its copies */
 export const CommonRoomSchema = z
   .object({
     id: z.enum(COMMON_TYPE_IDS as [string, ...string[]]),

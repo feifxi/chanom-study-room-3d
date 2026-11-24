@@ -10,7 +10,7 @@ import type { DeckBody, RoomDeck } from './decks.schemas.js';
 type StoredQuestion = { q: string; answers: string[]; right?: number | null };
 
 /**
- * Pick a Side's room decks (feature 11): a room's own questions. Members write them and change their
+ * Pick a Side's room decks (docs/features/10-party-games.md): a room's own questions. Members write them and change their
  * own; the owner and mods can delete any. Anyone let in (guests too) can play with them, through a
  * signed pass the game server checks.
  */

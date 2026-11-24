@@ -1,5 +1,5 @@
 /**
- * Your own screen share on the big screen (feature 10). The stream stays in this module, never in
+ * Your own screen share on the big screen (docs/features/09-watch-and-photo.md). The stream stays in this module, never in
  * the hub's state: in the app it's a LiveKit track, and room state only says who is sharing.
  *
  * Sound comes with it where the browser allows: Chrome and Edge share a tab's sound everywhere and

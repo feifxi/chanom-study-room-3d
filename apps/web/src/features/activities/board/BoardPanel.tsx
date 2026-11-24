@@ -8,7 +8,7 @@ import { useDismiss } from '../../room/useDismiss';
 import { ASPECT, COLORS, ERASER, SIZES, boardPng, drawBoard, type BoardStore } from './board';
 
 /**
- * The whiteboard up close (feature 11): everyone in front of the board draws on the same picture,
+ * The whiteboard up close (docs/features/10-party-games.md): everyone in front of the board draws on the same picture,
  * live, while the wall shows it to the room. Pen, six colours, three sizes, eraser, undo (your own
  * strokes), clear (asks first), save or share to Room chat.
  *

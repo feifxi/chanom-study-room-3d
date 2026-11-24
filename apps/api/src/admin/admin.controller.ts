@@ -45,7 +45,7 @@ import { PlatformAdminService } from './platform-admin.service.js';
 import { ReportsAdminService } from './reports-admin.service.js';
 import { RoomsAdminService } from './rooms-admin.service.js';
 
-/** The admin site (feature 14): Connecta team only; everyone else gets 404. */
+/** The admin site (docs/features/16-admin.md): Connecta team only; everyone else gets 404. */
 @ApiTags('admin')
 @Controller('admin')
 export class AdminController {

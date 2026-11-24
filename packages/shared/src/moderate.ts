@@ -1,7 +1,7 @@
 import { asteriskCensorStrategy, englishDataset, englishRecommendedTransformers, RegExpMatcher, TextCensor } from 'obscenity';
 
 /**
- * The word filter (feature 14, the first `moderate()` layer): English from `obscenity` (it catches
+ * The word filter (docs/features/12-moderation.md, the first `moderate()` layer): English from `obscenity` (it catches
  * "sh1t" and "f.u.c.k" and leaves "Scunthorpe" alone), plus our own list with Thai. Thai is written
  * without spaces, so Thai words match inside text; the list keeps only words that can't be part of an
  * ordinary word (หี, for one, is in หีบ, a box). Our list lives in the database and the team edits it

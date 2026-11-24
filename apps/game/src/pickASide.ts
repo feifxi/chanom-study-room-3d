@@ -21,7 +21,7 @@ import type { Side } from './state.js';
 export const sideTiming = { ask: ASK_MS as Record<SideMode, number>, reveal: REVEAL_MS };
 
 /**
- * Pick a Side on the open floor (feature 11), run here: the host's deck, the questions drawn from
+ * Pick a Side on the open floor (docs/features/10-party-games.md), run here: the host's deck, the questions drawn from
  * what this room hasn't played yet, the timers, and the answers read from where people stand when
  * the timer ends. The room state shows only the question being asked, and a quiz's right answer
  * only at its reveal.

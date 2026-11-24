@@ -20,7 +20,7 @@ const toShelf = (d: RoomDeck): ShelfDeck => ({
   canDelete: d.canDelete,
 });
 
-/** The room's own Pick a Side decks (feature 11): members write them, everyone let in plays them. */
+/** The room's own Pick a Side decks (docs/features/10-party-games.md): members write them, everyone let in plays them. */
 export function useRoomDecks(roomId: string | null, member: boolean): DeckShelf {
   const qc = useQueryClient();
   const key = ['rooms', roomId, 'decks'];

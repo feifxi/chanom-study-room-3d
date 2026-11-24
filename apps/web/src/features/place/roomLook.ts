@@ -3,7 +3,7 @@
 import { MAPS, type MapSize, type MapTemplate } from '@/lib/maps';
 
 /**
- * How the owner has set up the room (feature 7): template, size and the time of day. One look per room, the same for everyone inside: the time
+ * How the owner has set up the room (docs/features/06-maps.md): template, size and the time of day. One look per room, the same for everyone inside: the time
  * of day is the owner's choice, not each viewer's, so everyone sits in the same evening. (The thumbnail is on the room itself, from the API.)
  * It's stored on the room (the API); a map change reaches people inside through the game server.
  */

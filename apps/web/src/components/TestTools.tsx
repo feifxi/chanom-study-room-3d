@@ -105,7 +105,7 @@ const PLUS_STATES: [PlusState, string][] = [
   ['free', 'Free'],
 ];
 
-/** Your Plus state (feature 15): see the ending banner, grace and the Free Plus page without waiting. */
+/** Your Plus state (docs/features/15-plus.md): see the ending banner, grace and the Free Plus page without waiting. */
 function PlusSwitch() {
   const plus = usePlus();
   return (

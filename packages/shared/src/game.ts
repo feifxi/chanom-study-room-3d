@@ -37,7 +37,7 @@ export interface GameTicket {
   pets?: PetOut[];
   /** You have Plus (your animated name tag) */
   plus?: boolean;
-  /** A Common room copy: text only for everyone, slow mode, no big screen (feature 14) */
+  /** A Common room copy: text only for everyone, slow mode, no big screen (docs/features/13-common-rooms.md) */
   common?: boolean;
   /** On the Connecta team: a chip by their name in Common rooms */
   team?: boolean;
@@ -49,7 +49,7 @@ export interface GameTicket {
 export const TICKET_AUDIENCE = 'connecta-game';
 export const TICKET_SECONDS = 60;
 
-/** Bubbles: said out loud, over your head (feature 6). */
+/** Bubbles: said out loud, over your head (docs/features/05-room-3d.md). */
 export const BUBBLE_MAX = 120;
 /** Fastest you can say bubbles one after another */
 export const SAY_COOLDOWN_MS = 400;
@@ -58,7 +58,7 @@ export const TYPING_TIMEOUT_MS = 6000;
 /** What you're focusing on, shown by your name */
 export const SUBJECT_MAX = 24;
 
-/** Proximity voice (feature 6): full volume within NEAR metres, silent from FAR. */
+/** Proximity voice (docs/features/05-room-3d.md): full volume within NEAR metres, silent from FAR. */
 export const VOICE_NEAR = 2.5;
 export const VOICE_FAR = 9;
 /** Voices streamed at once, the nearest: a phone can't take 100 streams */
@@ -86,7 +86,7 @@ export const GAME_CLOSE = {
 export const GAME_CHANNELS = {
   /** API → game: something about a room changed ({@link GameRoomEvent}) */
   rooms: 'game:rooms',
-  /** Game → gateway: who's in which room, per connection (presence, feature 5) */
+  /** Game → gateway: who's in which room, per connection (presence, docs/features/03-friends.md) */
   presence: 'game:presence',
   /** Game → API: a full room has space again ("Full · notify me") */
   space: 'game:space',

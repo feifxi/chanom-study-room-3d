@@ -15,7 +15,7 @@ export interface ArtPlaces {
 }
 
 /**
- * The art corner's furniture (feature 11): paint splats on the rug, four easels with a stool each, a
+ * The art corner's furniture (docs/features/10-party-games.md): paint splats on the rug, four easels with a stool each, a
  * paint cart and a folding screen along the back whose framed canvases show what people drew. Static
  * on purpose: Draw & Guess happens in the panel, like Gartic Phone, so nothing here changes during a
  * game (and it all merges into the library's static batch). The rug itself is drawn with the others.

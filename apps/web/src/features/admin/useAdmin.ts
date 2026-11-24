@@ -18,7 +18,7 @@ function ok<T>(res: { data?: T; error?: unknown; response: Response }): T {
   return res.data as T;
 }
 
-/** Accounts for the admin site's Users page (feature 14) */
+/** Accounts for the admin site's Users page (docs/features/16-admin.md) */
 export function useAdminAccounts(q: string, filter: AccountFilter) {
   return useQuery({
     queryKey: [...KEY, q, filter],

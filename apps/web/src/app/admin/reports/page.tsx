@@ -50,7 +50,7 @@ export default function ReportsPage() {
 }
 
 /**
- * The reports queue (feature 14): one case per person, message or room, urgent first, then oldest.
+ * The reports queue (docs/features/16-admin.md): one case per person, message or room, urgent first, then oldest.
  * Each shows what the automatic steps already did and what was said around it; voice isn't recorded,
  * so voice reports go by how many people reported. The team decides by hand: no automatic strikes.
  */

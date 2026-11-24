@@ -6,7 +6,7 @@ import { SettingsService } from '../settings/settings.service.js';
 const ENDPOINT = 'https://api.openai.com/v1/moderations';
 
 /**
- * The picture check (feature 14): OpenAI's moderation endpoint, free to use, judges each chat
+ * The picture check (docs/features/12-moderation.md): OpenAI's moderation endpoint, free to use, judges each chat
  * picture before it shows. Off until OPENAI_API_KEY is set. If OpenAI can't be reached the worker
  * tries again, and a picture is never shown unchecked while the key is set.
  */

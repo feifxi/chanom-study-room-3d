@@ -18,7 +18,7 @@ import type { AddFriendResult, Blocked, Friend, FriendRequests } from './friends
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
- * Friends (docs/features/05-friends.md): requests by exact @handle, accepting, ignoring and
+ * Friends (docs/features/03-friends.md): requests by exact @handle, accepting, ignoring and
  * removing (all silent), blocking. A friendship is two rows, one each way.
  */
 @Injectable()
@@ -148,7 +148,7 @@ export class FriendsService {
     await this.prisma.friendRequest.deleteMany({ where: { fromId: userId, toId } });
   }
 
-  /** Remove a friend, silently. The DM stays as history (feature 4). */
+  /** Remove a friend, silently. The DM stays as history (docs/features/04-chat.md). */
   async remove(userId: string, friendId: string): Promise<void> {
     await requireSignedUp(this.prisma, userId);
     await this.unfriend(userId, friendId);

@@ -1,6 +1,7 @@
-# 7. Maps and the map editor
+# 6. Maps
 
-Owners pick a template; only the Connecta team builds templates. **Every map has the same standard
+Owners pick a template; only the Connecta team builds templates. Maps are code-built for now;
+Blender models come later. **Every map has the same standard
 kit** (so every activity works everywhere) **but its own layout**.
 
 **The Library is the one main map.** The Cat Café and Starry Rooftop are temporary maps: still

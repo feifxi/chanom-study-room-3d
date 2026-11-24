@@ -1,7 +1,7 @@
 import { areaRadius, inArea, type Area } from './maps/types.js';
 
 /**
- * Pick a Side (feature 11): a question, a timer, and you answer by standing in a zone of the open
+ * Pick a Side (docs/features/10-party-games.md): a question, a timer, and you answer by standing in a zone of the open
  * floor. When the timer ends the answers lock; the reveal shows for a moment; next question. The
  * game server plays it (`apps/game/src/pickASide.ts`).
  *

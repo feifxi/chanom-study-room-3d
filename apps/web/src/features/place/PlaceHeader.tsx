@@ -198,7 +198,7 @@ function Messages() {
 function Me() {
   const [settings, setSettings] = useState(false);
   const me = useMeAsUser();
-  // The admin site's link only for the Connecta team (set by a script, feature 14)
+  // The admin site's link only for the Connecta team (set by a script, docs/features/16-admin.md)
   const team = !!useMe().data?.team;
   const signOut = useSignOut();
   const router = useRouter();

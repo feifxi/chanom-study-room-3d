@@ -18,7 +18,7 @@ import {
 import { z } from 'zod';
 import { LookSchema } from '../accounts/accounts.schemas.js';
 
-// Room names, descriptions and rules are refused rather than masked (feature 14)
+// Room names, descriptions and rules are refused rather than masked (docs/features/12-moderation.md)
 const RoomName = z
   .string()
   .trim()

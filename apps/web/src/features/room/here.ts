@@ -13,7 +13,7 @@ export interface RoomHere {
   mapId: string;
   /** Can anyone start games that invite the whole room (Pick a Side)? Tables, TV and board always work. */
   roomWideGames: boolean;
-  /** A Common room: run by Connecta, open to everyone, text only (feature 14) */
+  /** A Common room: run by Connecta, open to everyone, text only (docs/features/13-common-rooms.md) */
   common: boolean;
   /** You're its owner or a mod (the chat's moderation) */
   moderator: boolean;

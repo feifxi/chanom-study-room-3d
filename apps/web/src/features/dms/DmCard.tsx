@@ -9,9 +9,9 @@ import { problem } from '@/features/rooms/useRooms';
 import { dmCards } from './useDms';
 
 /**
- * The DM cards (feature 5). **Ask to join:** someone wants into the room you're in; you answer Send
+ * The DM cards (docs/features/03-friends.md). **Ask to join:** someone wants into the room you're in; you answer Send
  * invite (they get a link back) or Not now. **Invite:** a link to a room, a member invite or a
- * 24-hour guest pass. **Gift:** Plus from a friend, already added (feature 15).
+ * 24-hour guest pass. **Gift:** Plus from a friend, already added (docs/features/15-plus.md).
  */
 export function DmCard({ m, mine }: { m: ChatMessage; mine: boolean }) {
   const card = m.card;

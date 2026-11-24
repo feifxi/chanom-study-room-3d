@@ -2,7 +2,7 @@ import type { Mail } from './mail.service.js';
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-/** A Plus heads-up by email (spec 15): the same words as the 🔔 notice, and one button. */
+/** A Plus heads-up by email (docs/features/15-plus.md): the same words as the 🔔 notice, and one button. */
 export function plusMail(to: string, m: { subject: string; line: string; button: string; link: string }): Mail {
   return {
     to,

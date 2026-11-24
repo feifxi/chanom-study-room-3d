@@ -22,7 +22,7 @@ export interface AuthDeps {
 export const GUEST_EMAIL_DOMAIN = 'guest.connecta.invalid';
 
 /**
- * Sign-in (docs/features/02-accounts.md), served by Better Auth under /api/auth/*: Google,
+ * Sign-in (docs/features/01-accounts.md), served by Better Auth under /api/auth/*: Google,
  * Discord, a 6-digit email code, and guests. Sessions are rows in Postgres with an HttpOnly cookie
  * holding only the token. What comes after signing in (birthday, @handle, character) is the
  * accounts module's job.

@@ -5,7 +5,7 @@ import { CommonGuestGate } from '@/features/common/CommonGuestGate';
 import { CommonWalkIn } from '@/features/common/CommonWalkIn';
 
 /**
- * A Common room (feature 14): /common/library walks you into a copy the API picks (?with=<friend's
+ * A Common room (docs/features/13-common-rooms.md): /common/library walks you into a copy the API picks (?with=<friend's
  * id> to join them). Anyone may come in: without a session you pick a name and walk in as a guest.
  */
 export default async function CommonRoomPage({ params, searchParams }: PageProps<'/common/[type]'>) {

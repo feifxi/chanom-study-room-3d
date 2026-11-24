@@ -5,7 +5,7 @@ import { FOCUS_PRESETS, type FocusPreset } from '@connecta/shared';
 export const timing = { minuteMs: 60_000 };
 
 /**
- * One person's focus timer (feature 8): focus → break → idle, each round started by a press. The
+ * One person's focus timer (docs/features/07-study-tools.md): focus → break → idle, each round started by a press. The
  * game server keeps it, so the minutes that reach the rankings are timed here, not by the browser.
  */
 export interface FocusTimer {

@@ -28,7 +28,7 @@ import { problem, useMyRooms } from '@/features/rooms/useRooms';
 import { cn } from '@/lib/utils';
 
 /**
- * Friends (feature 5), sorted by "who can I go hang out with":
+ * Friends (docs/features/03-friends.md), sorted by "who can I go hang out with":
  * - **Out in rooms**: friends inside a room right now, one card per room with Join. A private room
  *   you're not in is never named: "A private room", one card per friend, "Ask to join"
  * - **Online** (not in a room), then **Offline** ("Last seen")
@@ -233,7 +233,7 @@ function FriendRow({ friend }: { friend: Friend }) {
   );
   const rooms = useMyRooms();
   const [gifting, setGifting] = useState(false);
-  // Rooms you can bring someone into: a member invite, or else a guest pass (feature 5)
+  // Rooms you can bring someone into: a member invite, or else a guest pass (docs/features/03-friends.md)
   const invitable = (rooms.data ?? []).filter((r) => r.me.role !== 'member' || r.membersCanInvite || r.allowGuests);
   const status =
     presence.status === 'offline'

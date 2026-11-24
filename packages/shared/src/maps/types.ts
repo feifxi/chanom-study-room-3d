@@ -2,7 +2,7 @@ import type { Navigator } from '../navigation.js';
 import type { Obstacle, Seat, Walker } from '../world.js';
 
 /**
- * What a map is (feature 7): the walkable world, the seats and the standard kit's places (as areas).
+ * What a map is (docs/features/06-maps.md): the walkable world, the seats and the standard kit's places (as areas).
  * Shared by the web app (which adds each map's 3D look) and the game server (seats, collisions, zones).
  * One file per template builds one of these. Once maps are data, the map file becomes JSON and the
  * kit check reads the same fields.
@@ -173,7 +173,7 @@ export interface MapData {
    * the scene. The library has switched; the other maps still hang plaques until their own pass.
    */
   floatingZoneTags?: boolean;
-  /** The standard kit's places (feature 7). */
+  /** The standard kit's places (docs/features/06-maps.md). */
   cardTables: CardTable[];
   circle: CushionCircle;
   floorArea: Area;
@@ -196,7 +196,7 @@ export interface MapData {
 
 export const zoneAtIn = (map: { zones: Zone[] }, x: number, z: number): Zone | undefined => map.zones.find((zn) => inArea(zn.area, x, z));
 
-/** Who receives a screen share: people on the TV rug, or seated at the sharer's table (feature 10). */
+/** Who receives a screen share: people on the TV rug, or seated at the sharer's table (docs/features/09-watch-and-photo.md). */
 export function watchesShare(
   map: Pick<MapData, 'tvArea' | 'seatById'>,
   share: string,

@@ -7,7 +7,7 @@ import { GRACE_MS, INVITE_MS, type Invite, type SpotState } from './hub';
 import type { Spot } from './spots';
 
 /**
- * The framework's UI, the same for every activity (feature 9). Each game adds its own layers on top
+ * The framework's UI, the same for every activity (docs/features/08-activities.md). Each game adds its own layers on top
  * (3D, a small HUD or a big panel), designed in its own feature:
  * - **Lobby card** (above the dock): who's in, the host's game picker, 📣 Call everyone, Start
  * - **Top strip** while playing: "🃏 Slave · 3 playing · Leave", always in the same place

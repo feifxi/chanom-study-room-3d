@@ -2,8 +2,8 @@ import { AdminTitle, Pill } from '@/features/admin/AdminFrame';
 import { MAPS } from '@/lib/maps';
 
 /**
- * Maps (feature 7). The map editor is built with the Blender work, on its map format, starting with
- * the Library; its approved design is noted in docs/features/07-maps.md. Until then the maps are
+ * Maps (docs/features/06-maps.md). The map editor is built with the Blender work, on its map format, starting with
+ * the Library; its approved design is noted in docs/features/06-maps.md. Until then the maps are
  * built in code, and this page says which is which.
  */
 export default function MapsAdminPage() {
@@ -21,7 +21,8 @@ export default function MapsAdminPage() {
         ))}
       </div>
       <p className="mt-4 text-xs text-muted-foreground">
-        Publishing a map update, versions and rollback arrive with the editor. Map polish waiting for it is listed in 07-maps.md.
+        Publishing a map update, versions and rollback arrive with the editor. Map polish waiting for it is listed in
+        docs/features/06-maps.md.
       </p>
     </div>
   );

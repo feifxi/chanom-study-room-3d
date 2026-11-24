@@ -1,7 +1,7 @@
 import { BOARD_STROKE_MAX, BOARD_TOTAL_MAX, boardPen, type BoardStroke } from '@connecta/shared';
 
 /**
- * The room's whiteboard (feature 11): the strokes, kept in memory with the room, so newcomers get
+ * The room's whiteboard (docs/features/10-party-games.md): the strokes, kept in memory with the room, so newcomers get
  * the board as it is. Nothing is stored; the board goes when the room empties or the map changes.
  * Each stroke belongs to its drawer's account, so Undo takes back only your own, even after a reload.
  */

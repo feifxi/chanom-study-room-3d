@@ -5,7 +5,7 @@ import type { RoundGame } from './activity.js';
 import { SlaveSwap, type Slave } from './state.js';
 
 /**
- * Slave at the card table (feature 12): 3–6 players, the shared rules, every play checked here and
+ * Slave at the card table (docs/features/11-table-games.md): 3–6 players, the shared rules, every play checked here and
  * the turn timer run here. The room state carries only the public part; **each player's hand goes
  * to them alone** (`slave:hand`), so no one can read another's cards.
  */

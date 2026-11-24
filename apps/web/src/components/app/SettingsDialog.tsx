@@ -329,7 +329,7 @@ function Toggles({ tab }: { tab: Tab }) {
   );
 }
 
-/** Privacy settings (features 5 and 8): saved at once; friends see presence changes live. */
+/** Privacy settings (docs/features/03-friends.md, study-tools.md): saved at once; friends see presence changes live. */
 function PrivacySwitch({
   field,
   label,
@@ -350,7 +350,7 @@ function PrivacySwitch({
 }
 
 /**
- * Who may send you a friend request (feature 5: by @handle, friend link or a room's people list).
+ * Who may send you a friend request (docs/features/03-friends.md: by @handle, friend link or a room's people list).
  * Plain choices instead of an on/off whose "off" needed explaining. DMs are friends-only either way.
  */
 function FriendRequestsRow() {

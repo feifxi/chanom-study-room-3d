@@ -20,7 +20,7 @@ const include = {
 type RoomRow = Prisma.RoomGetPayload<{ include: typeof include }>;
 
 /**
- * Rooms in the admin site (feature 14). The team doesn't run rooms (owners and mods do); it can only
+ * Rooms in the admin site (docs/features/16-admin.md). The team doesn't run rooms (owners and mods do); it can only
  * take one off Discover or close it for breaking the platform rules, and undo either. The owner gets
  * an email with the reason; everything goes in the audit log.
  */

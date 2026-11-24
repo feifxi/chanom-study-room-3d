@@ -14,7 +14,7 @@ const LIGHT = '#fbeedd';
 const DARK = '#c99a7d';
 
 /**
- * Chess up close (feature 12). Players get the big board in the theater: tap a piece, then one of
+ * Chess up close (docs/features/11-table-games.md). Players get the big board in the theater: tap a piece, then one of
  * its dots (or drag it there); the board turns so your colour is at the bottom. People standing by
  * the table watch: a small read-only board in the corner, a click makes it big.
  */

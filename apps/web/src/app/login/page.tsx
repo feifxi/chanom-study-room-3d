@@ -167,7 +167,7 @@ function LoginFlow() {
     const { data, error, response } = await api.POST('/api/me/sign-up', { body: { name: name.trim(), handle, look } });
     setBusy(false);
     if (response.status === 409 && error) return setTaken(error as HandleCheck);
-    // A name with a blocked word says so (feature 14)
+    // A name with a blocked word says so (docs/features/12-moderation.md)
     if (!data)
       return toast.error(
         response.status === 400 ? problem(error, "Couldn't finish signing up. Try again?") : "Couldn't finish signing up. Try again?",

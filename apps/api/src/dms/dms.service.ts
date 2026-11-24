@@ -13,7 +13,7 @@ import type { DmOpen, DmSummary } from './dms.schemas.js';
 const pairOf = (a: string, b: string) => [a, b].sort().join(':');
 
 /**
- * DMs (docs/features/04-chat-and-dms.md): 1-to-1 chats between friends. The messages
+ * DMs (docs/features/04-chat.md): 1-to-1 chats between friends. The messages
  * themselves are the same as room chat's (ChatService: edit, delete, react, pictures, live); this
  * is who can open and send, the list, and read markers. A DM stays as read-only history when the
  * two stop being friends.
@@ -161,7 +161,7 @@ export class DmsService {
 
   /**
    * A member invite if you may make one there (the owner and mods, or members when "Members can
-   * invite" is on), otherwise a 24-hour guest pass if the room takes guests (feature 5).
+   * invite" is on), otherwise a 24-hour guest pass if the room takes guests (docs/features/03-friends.md).
    */
   private async postInvite(userId: string, dmId: string, roomId: string): Promise<ChatMessage> {
     const [room, me] = await Promise.all([
@@ -188,7 +188,7 @@ export class DmsService {
   }
 
   /**
-   * Gift Plus (spec 15): the gift card in your DM with the friend, once the gift is paid. Paid is
+   * Gift Plus (docs/features/15-plus.md): the gift card in your DM with the friend, once the gift is paid. Paid is
    * paid: if you've stopped being friends since, the card is skipped and the 🔔 notice still goes.
    */
   async giftCard(userId: string, toId: string, gift: { months: number; note: string | null }): Promise<ChatMessage | null> {

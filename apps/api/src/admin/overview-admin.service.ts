@@ -18,9 +18,9 @@ const DAY = 86_400_000;
 type Health = AdminOverview['health'][number];
 
 /**
- * The admin site's Overview (feature 14): how Connecta is doing right now and what needs a person.
+ * The admin site's Overview (docs/features/16-admin.md): how Connecta is doing right now and what needs a person.
  * The health strip asks each part if it's up; deep monitoring waits for the monitoring server
- * (spec 15).
+ * (docs/features/15-plus.md).
  */
 @Injectable()
 export class OverviewAdminService {

@@ -11,7 +11,7 @@ export const TEL_TEXT_MAX = 80;
 export const TEL_POINTS_MAX = 20_000;
 
 /**
- * Draw & Guess at the art corner (feature 11). The game server plays it (`apps/game/src/drawGuess.ts`).
+ * Draw & Guess at the art corner (docs/features/10-party-games.md). The game server plays it (`apps/game/src/drawGuess.ts`).
  * Everyone plays at once; each player starts a
  * chain, and every step each chain moves to the next player.
  *

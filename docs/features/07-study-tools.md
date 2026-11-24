@@ -1,4 +1,4 @@
-# 8. Study tools
+# 7. Study tools
 
 A personal focus timer, a private to-do list, and rankings of real focus minutes. Minimal on
 purpose: two presets, no streaks, no shared sessions.

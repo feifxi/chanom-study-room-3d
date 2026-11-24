@@ -8,7 +8,7 @@ import { useMe } from '@/features/account/useMe';
 import { api } from '@/lib/api/client';
 
 /**
- * Your Connecta Plus (feature 15). Signed in, it's the API's (`/api/billing`: your plan, its date,
+ * Your Connecta Plus (docs/features/15-plus.md). Signed in, it's the API's (`/api/billing`: your plan, its date,
  * renewal, receipts and gifts you sent; paying goes through /checkout, Stripe or its local
  * stand-in), and grace is the 7 days after your Plus date. Signed out, it's Free.
  *

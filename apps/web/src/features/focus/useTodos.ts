@@ -20,7 +20,7 @@ function ok<T>(res: { data?: T; error?: unknown; response: Response }): T {
 }
 
 /**
- * Your to-do list (feature 8): private, the same in every room, on the API. Changes show at once
+ * Your to-do list (docs/features/07-study-tools.md): private, the same in every room, on the API. Changes show at once
  * and roll back with a toast if the API says no. Off for guests (they have no list).
  */
 export function useTodos(enabled = true) {

@@ -1,7 +1,7 @@
 /** The map catalogue the pages show (names, moods, what each piece looks like); the 3D maps themselves live in features/map. */
 
 /**
- * The standard kit (feature 7): every map has every piece, so every activity works in every map.
+ * The standard kit (docs/features/06-maps.md): every map has every piece, so every activity works in every map.
  * Templates differ only in the place, the props and the theme; `look` says how each piece looks.
  */
 export const KIT = [
@@ -98,7 +98,7 @@ export const MAPS: MapTemplate[] = [
   },
 ];
 
-/** Template ideas we liked, for later (feature 7). Same standard kit, different place. */
+/** Template ideas we liked, for later (docs/features/06-maps.md). Same standard kit, different place. */
 export const FUTURE_MAPS = [
   { name: 'Greenhouse', emoji: '🌿', idea: 'Plants, glass roof, a watering-can lamp' },
   { name: 'Bakery Kitchen', emoji: '🥐', idea: 'Flour-dusted counters, oven glow, bread on the shelves' },

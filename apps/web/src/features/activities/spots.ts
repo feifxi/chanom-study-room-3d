@@ -2,8 +2,8 @@ import { activeMap } from '../map/active';
 import { artSeats, cardSeats, rect, type Area } from '../map/types';
 
 /**
- * Activity spots: the places in a map where activities happen (standard kit, feature 7). Every
- * activity follows the same flow (feature 9): Free → Gathering → Playing → Results. Where they are
+ * Activity spots: the places in a map where activities happen (standard kit, docs/features/06-maps.md). Every
+ * activity follows the same flow (docs/features/08-activities.md): Free → Gathering → Playing → Results. Where they are
  * comes from the map the room is in (`features/map/*.ts`, read through getters); this file says what
  * happens there.
  */

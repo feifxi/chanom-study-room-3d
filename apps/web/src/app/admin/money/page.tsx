@@ -17,7 +17,7 @@ const FILTERS: [PaymentFilter, string][] = [
 const REFUND_REASONS: RefundReason[] = ['Charged twice', 'Renewed by mistake (within 48 h)', 'A bug on our side', 'Something else'];
 
 /**
- * Money (spec 15): what Plus brings in against Stripe's fees, how people pay, and every payment.
+ * Money (docs/features/15-plus.md): what Plus brings in against Stripe's fees, how people pay, and every payment.
  * Refunds happen only here, by hand, for real mistakes (charged twice, a renewal asked about within
  * 48 hours, a bug): the money goes back, the person gets an email and it goes in the audit log.
  */

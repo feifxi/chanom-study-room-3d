@@ -47,7 +47,7 @@ export function lightAt(hour: number): DayLight {
   };
 }
 
-/** How the room is lit: follow the clock, or pin it to day or night. The room's owner picks (feature 7). */
+/** How the room is lit: follow the clock, or pin it to day or night. The room's owner picks (docs/features/06-maps.md). */
 export const THEME_MODES = ['auto', 'day', 'night'] as const;
 export type ThemeMode = (typeof THEME_MODES)[number];
 

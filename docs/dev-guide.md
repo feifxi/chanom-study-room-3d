@@ -34,7 +34,7 @@ A map is two halves:
 
 They meet in `apps/web/src/features/map/active.ts`; data files never import their scene (that
 cycle crashed the module loader). The standard kit every map needs is in
-[07-maps.md](features/07-maps.md).
+[maps.md](features/06-maps.md).
 
 ## 3D performance rules
 
@@ -42,7 +42,7 @@ cycle crashed the module loader). The standard kit every map needs is in
   transparent, emissive, instanced and `userData.dynamic` meshes: use those only when something
   must move, glow or be looked up.
 - Many copies of one small thing (books, bulbs, flames) → one `InstancedMesh`.
-- Run the perf check after any 3D change. Budget: [06-3d-room.md](features/06-3d-room.md#performance).
+- Run the perf check after any 3D change. Budget: [room-3d.md](features/05-room-3d.md#performance).
 
 ## Gotchas
 

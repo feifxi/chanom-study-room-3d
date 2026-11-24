@@ -1,6 +1,6 @@
 /**
- * Room rules shared by the web app (what to show) and the API (the final say). Feature 3:
- * docs/features/03-rooms-membership.md.
+ * Room rules shared by the web app (what to show) and the API (the final say). docs/features/02-rooms.md:
+ * docs/features/02-rooms.md.
  */
 
 export const ROOM_NAME_MAX = 32;
@@ -13,7 +13,7 @@ export const REQUEST_COOLDOWN_DAYS = 7;
 /** A guest pass works this long after it's made */
 export const GUEST_PASS_HOURS = 24;
 
-/** The launch templates (feature 7). Every one has the same standard kit. */
+/** The launch templates (docs/features/06-maps.md). Every one has the same standard kit. */
 export const MAP_IDS = ['library', 'cafe', 'rooftop'] as const;
 export type MapId = (typeof MAP_IDS)[number];
 export const MAP_EMOJI: Record<MapId, string> = { library: '📚', cafe: '🐈', rooftop: '🌙' };
@@ -30,7 +30,7 @@ export type RoomTime = (typeof ROOM_TIMES)[number];
 export const VISIBILITIES = ['private', 'request', 'open'] as const;
 export type Visibility = (typeof VISIBILITIES)[number];
 
-/** Discover's fixed lists: free-text tags only get spammed (feature 14). Up to 3 tags. */
+/** Discover's fixed lists: free-text tags only get spammed (docs/features/02-rooms.md). Up to 3 tags. */
 export const ROOM_TAGS = ['Study', 'Chill', 'Games', 'Language exchange', 'Music', 'Art', 'Anime', 'Late night'] as const;
 export const ROOM_TAGS_MAX = 3;
 export const ROOM_LANGUAGES = ['Thai', 'English', 'Japanese', 'Korean', 'Chinese', 'Mixed'] as const;
@@ -38,7 +38,7 @@ export const ROOM_LANGUAGES = ['Thai', 'English', 'Japanese', 'Korean', 'Chinese
 export const DEFAULT_ROOM_RULES = '1. Be kind, no drama.\n2. Quiet at the study tables; chat in the lounge.\n3. No spam or selling.';
 
 /**
- * One subscription, Connecta Plus (spec 15). The numbers wait on the playtest, so they all live here.
+ * One subscription, Connecta Plus (docs/features/15-plus.md). The numbers wait on the playtest, so they all live here.
  * A room follows its owner's plan (`capacity`, `members`, Big maps, `shareHeight` for screen
  * shares); the rest follow your own (`owns`: rooms you can make, `rooms`: rooms you can be in,
  * `uploadMb`, the animated name tag). Members grow with capacity (about 6 per spot inside), so a

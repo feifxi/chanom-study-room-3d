@@ -8,8 +8,8 @@ import { actionLabel, whenShort } from '@/features/admin/auditLabels';
 import { useAdminOverview } from '@/features/admin/useAdmin';
 
 /**
- * Admin overview (feature 14): how Connecta is doing right now and what needs a person. The health
- * strip asks each part if it's up; deep monitoring waits for the monitoring server (spec 15).
+ * Admin overview (docs/features/16-admin.md): how Connecta is doing right now and what needs a person. The health
+ * strip asks each part if it's up; deep monitoring waits for the monitoring server (docs/infra.md).
  */
 export default function AdminOverview() {
   const { data, dataUpdatedAt } = useAdminOverview();

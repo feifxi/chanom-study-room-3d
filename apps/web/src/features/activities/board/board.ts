@@ -1,5 +1,5 @@
 /**
- * The whiteboard (feature 11): one shared drawing per board. Strokes are in board coordinates
+ * The whiteboard (docs/features/10-party-games.md): one shared drawing per board. Strokes are in board coordinates
  * (0–1 across, 0–1 down), so the panel, the 3D wall and a saved PNG all draw the same picture.
  *
  * It has its own little store, apart from the activity hub: strokes change on every pointer move,

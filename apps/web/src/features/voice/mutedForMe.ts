@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from 'react';
 
-/** Mute for me (feature 6): only you stop hearing them, remembered in this browser, by account. */
+/** Mute for me (docs/features/05-room-3d.md): only you stop hearing them, remembered in this browser, by account. */
 const KEY = 'connecta:muted-for-me';
 const listeners = new Set<() => void>();
 let cache: { raw: string | null; set: ReadonlySet<string> } = { raw: null, set: new Set() };

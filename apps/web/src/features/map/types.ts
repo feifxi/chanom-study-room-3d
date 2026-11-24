@@ -3,7 +3,7 @@ import type { MapData } from '@connecta/shared/maps';
 import type { DayLight } from '../room3d/dayCycle';
 
 /**
- * What a map is, to the room code (feature 7). The data half (the walkable world, seats, zones, the
+ * What a map is, to the room code (docs/features/06-maps.md). The data half (the walkable world, seats, zones, the
  * kit's places) lives in `@connecta/shared/maps`, so the game server reads the same map; the web app
  * adds the 3D look. `active.ts` says which one the room is in.
  */

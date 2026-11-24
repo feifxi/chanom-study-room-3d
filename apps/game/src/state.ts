@@ -240,7 +240,7 @@ export const RoomState = schema(
     players: t.map(Player),
     npcs: t.map(Npc),
     watch: t.ref(Watch),
-    /** The activity spots and their rounds (feature 9) */
+    /** The activity spots and their rounds (docs/features/08-activities.md) */
     spots: t.map(Spot),
     chess: t.ref(Chess),
     slave: t.ref(Slave),

@@ -27,7 +27,7 @@ export const youtube = {
 let keys = 0;
 
 /**
- * The big screen's rules (feature 10). The schema is what clients see; the rest is bookkeeping.
+ * The big screen's rules (docs/features/09-watch-and-photo.md). The schema is what clients see; the rest is bookkeeping.
  * A screen share on the TV (a player's `share: 'tv'`) takes over: the video pauses and carries on
  * when it ends. Nobody on the rug for 30 s: the screen turns off and Up next clears.
  */

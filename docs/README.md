@@ -2,15 +2,16 @@
 
 Each fact lives in one place; the others link to it.
 
-| Doc                                | What it's for                                                            |
-| ---------------------------------- | ------------------------------------------------------------------------ |
-| [roadmap.md](roadmap.md)           | Where the project stands and what's next. Start here.                    |
-| [features/](features/README.md)    | **What** each feature does and where it lives in the code, one spec each |
-| [decisions.md](decisions.md)       | **Why** things are the way they are, and ideas turned down               |
-| [dev-guide.md](dev-guide.md)       | Test tools, checking UI, how maps are built, gotchas                     |
-| [infra.md](infra.md)               | The AWS plan (nothing deployed yet)                                      |
-| [manual-tests.md](manual-tests.md) | The owner's hand-test checklist, with who's who in the seed              |
-| [open-issues.md](open-issues.md)   | Things noticed and not fixed                                             |
+| Doc                                | What it's for                                                             |
+| ---------------------------------- | ------------------------------------------------------------------------- |
+| [roadmap.md](roadmap.md)           | Where the project stands and what's next. Start here.                     |
+| [features/](features/README.md)    | **What** each feature does and where it lives in the code, in build order |
+| [design.md](design.md)             | How the app is laid out: pages, the 3D HUD, the look                      |
+| [decisions.md](decisions.md)       | **Why** things are the way they are, and ideas turned down                |
+| [dev-guide.md](dev-guide.md)       | Test tools, checking UI, how maps are built, gotchas                      |
+| [infra.md](infra.md)               | The AWS plan (nothing deployed yet)                                       |
+| [manual-tests.md](manual-tests.md) | The owner's hand-test checklist, with who's who in the seed               |
+| [open-issues.md](open-issues.md)   | Things noticed and not fixed                                              |
 
 Commands, repo layout and working agreements are in [`AGENTS.md`](../AGENTS.md).
 

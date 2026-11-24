@@ -1,11 +1,13 @@
-# 9. Activity framework
+# 8. Activities
 
 **One flow for every activity.** Joining, starting, inviting, leaving and ending work the same
-everywhere; each game only designs what happens while it's played.
+everywhere; each game only designs what happens while it's played. Build this before any game:
+[Watch together](09-watch-and-photo.md), [Party games](10-party-games.md) and
+[Table games](11-table-games.md) all sit on it.
 
 ## Spots
 
-Every activity lives at a **spot** from the map's kit ([7](07-maps.md)). One activity per spot;
+Every activity lives at a **spot** from the map's kit ([Maps](06-maps.md#the-standard-kit)). One activity per spot;
 different spots run at once. The Activities list names what you do, with the place under it.
 
 | Activity       | Spot        | Join by           | Kind    | Room-wide |
@@ -59,7 +61,7 @@ and the board still work.
   other panels; the dock stays. It opens with the chat closed; Chat opens it beside the panel.
 - Games played by moving around (Pick a Side) keep the room visible.
 - **Table games live only in their panels**; watchers step onto the rug for a small view
-  ([12](12-table-games.md)).
+  ([Table games](11-table-games.md)).
 - Spot tags float over each spot (idle ones only near you; live ones from anywhere).
 
 ## In the code
@@ -68,7 +70,7 @@ and the board still work.
   state; games plug in as a `RoundGame` (`start`, `out`, `standing`, `stop`, `tick`). Messages
   `activity:start|game|begin|end|call|leave`, `activity:out`.
 - Shared types: `packages/shared/src/activities.ts`. Web: `apps/web/src/features/activities/`.
-- Results feed quests only; no game history is stored.
+- Results feed quests only ([Coins](14-coins-and-shop.md)); no game history is stored.
 
 ## Not doing
 

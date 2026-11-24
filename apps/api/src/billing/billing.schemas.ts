@@ -23,7 +23,7 @@ export type ReceiptDetail = z.infer<typeof ReceiptDetailSchema>;
 /** Stripe's billing page for a card subscriber */
 export const ManageSchema = z.object({ url: z.string() }).meta({ id: 'Manage' });
 
-/** Settings → Plus & billing (spec 15) */
+/** Settings → Plus & billing (docs/features/15-plus.md) */
 export const BillingSchema = z
   .object({
     plus: z.boolean(),

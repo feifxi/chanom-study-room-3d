@@ -20,7 +20,7 @@ type Step = (typeof STEPS)[number];
 const day = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Bangkok' });
 
 /**
- * When Plus ends (spec 15, Plus part 4). Every few minutes, for everyone whose Plus is near its date
+ * When Plus ends (docs/features/15-plus.md, "When Plus ends"). Every few minutes, for everyone whose Plus is near its date
  * or recently past it:
  * - **soon** (3 days before), unless a card renews it: PromptPay gets a "pay to renew" reminder; a
  *   cancelled plan or a gift gets "Plus ends on …".

@@ -8,7 +8,7 @@ import { MAPS, type MapTemplate } from '@/lib/maps';
  * full; the owner's Plus raises its capacity.
  *
  * `PlaceRoom` is a room from the API plus what the screens show about it. Who's inside is the API's
- * live presence (members see it; feature 5).
+ * live presence (members see it; docs/features/03-friends.md).
  */
 export interface PlaceRoom {
   id: string;

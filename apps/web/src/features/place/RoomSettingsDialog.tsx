@@ -151,7 +151,7 @@ function Overview({ room }: { room: PlaceRoom }) {
   const [name, setName] = useState(r.name);
   const [description, setDescription] = useState(r.description);
   const [vis, setVis] = useState<Visibility>(r.visibility);
-  // A fixed list, up to 3: free-text tags only get spammed (feature 14)
+  // A fixed list, up to 3: free-text tags only get spammed (docs/features/02-rooms.md)
   const [tags, setTags] = useState<string[]>(r.tags);
   const [lang, setLang] = useState<string | null>(r.language);
   const [capacity, setCapacity] = useState(r.capacity);

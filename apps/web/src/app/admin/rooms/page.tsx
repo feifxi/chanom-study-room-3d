@@ -43,7 +43,7 @@ const ASK: Record<RoomActionKind, { title: (name: string) => string; note: strin
 };
 
 /**
- * Every room (feature 14). The team doesn't run rooms (owners and mods do); it can only take a
+ * Every room (docs/features/16-admin.md). The team doesn't run rooms (owners and mods do); it can only take a
  * room out of Discover (delist) or close it for breaking the platform rules, and undo either.
  */
 export default function RoomsPage() {

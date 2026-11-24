@@ -3,7 +3,7 @@ import type { VoicePass } from '@connecta/shared';
 import { log } from './log.js';
 
 /**
- * Proximity voice through LiveKit (feature 6). The LiveKit room is named after the Connecta room and
+ * Proximity voice through LiveKit (docs/features/05-room-3d.md). The LiveKit room is named after the Connecta room and
  * each person joins as their game session id, so voices match characters. This side decides who may
  * talk (guests, Mute for everyone, time outs) and enforces it in LiveKit itself; who hears whom by
  * distance and private zones is each client's job (see apps/web/src/features/voice/useVoice.ts).

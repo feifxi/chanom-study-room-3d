@@ -1,6 +1,6 @@
-# 12. Table games: chess and Slave
+# 11. Table games: chess and Slave
 
-Two table games on the activity flow ([9](09-activity-framework.md)). Both live **only in their
+Two table games on the activity flow ([Activities](08-activities.md)). Both live **only in their
 panels**: the 3D tables are decor, and people who want to follow a game step onto the table's rug
 for a small read-only view that grows when clicked (never anyone's hand).
 

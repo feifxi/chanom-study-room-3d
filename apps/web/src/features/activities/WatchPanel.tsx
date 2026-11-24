@@ -11,7 +11,7 @@ import { serverNow } from '@/lib/serverClock';
 import { myShareStream } from './screenShare';
 
 /**
- * Watch together (feature 10): the big panel layer. The 3D screen only shows what's on for people
+ * Watch together (docs/features/09-watch-and-photo.md): the big panel layer. The 3D screen only shows what's on for people
  * walking past; the video plays here, in sync for everyone in front of the screen. Anyone watching
  * controls it. The video keeps its volume while people talk (decided 2026-11-09).
  */
@@ -530,7 +530,7 @@ export function AddVideo({ onAdd, compact }: { onAdd: (videoId: string) => void;
 }
 
 /**
- * A desk share (feature 6): the same picture and controls as a share on the TV, for the people
+ * A desk share (docs/features/05-room-3d.md): the same picture and controls as a share on the TV, for the people
  * seated at the sharer's table. Big over the room, or small in the corner.
  */
 export function SharePanel({

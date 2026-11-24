@@ -18,7 +18,7 @@ export const LookSchema = z
   })
   .meta({ id: 'Look' });
 
-// Names are refused rather than masked: a name of asterisks helps nobody (feature 14)
+// Names are refused rather than masked: a name of asterisks helps nobody (docs/features/12-moderation.md)
 const DisplayName = z
   .string()
   .trim()

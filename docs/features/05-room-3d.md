@@ -1,8 +1,8 @@
-# 6. The 3D room
+# 5. The 3D room
 
 Walking around a room together: click to walk, stereo proximity voice for crowds, private zones,
-bubbles, away, and an announcement tool for owners and mods. The HUD is in
-[1](01-app-shell.md); the maps in [7](07-maps.md).
+bubbles, Away, and an announcement tool for owners and mods. Everything here runs on the **game
+server**. The HUD layout is in [Design](../design.md#inside-a-room-3d); the maps in [Maps](06-maps.md).
 
 ## Moving
 
@@ -19,7 +19,7 @@ bubbles, away, and an announcement tool for owners and mods. The HUD is in
 - **Mute for me** (remembered per browser) and **Mute for everyone** (mods; lasts until lifted or
   the room empties, survives rejoining).
 - **Screen share:** seated at a desk, to your table (one share per table); or on the TV
-  ([10](10-watch-and-photo.md)). With sound, heard only by that audience. No cameras, ever.
+  ([Watch together](09-watch-and-photo.md)). With sound, heard only by that audience. No cameras, ever.
 
 ## Private zones
 
@@ -52,7 +52,7 @@ so a tampered client outside can't listen in.
 - **The Buddy Machine** (E): summon a cat or a **study buddy** (sits at a free desk and runs 25/5),
   or say Goodbye to one. Anyone can do either, guests too. Up to 4 cats and 5 buddies, 9 in all.
   **Pets** bought in the Shop come out of it too, and only their owner sends them home
-  ([15](15-plus-coins-shop.md)).
+  ([Coins and the Shop](14-coins-and-shop.md)).
 - You walk through cats and buddies, so they never block a doorway.
 
 ## What resets

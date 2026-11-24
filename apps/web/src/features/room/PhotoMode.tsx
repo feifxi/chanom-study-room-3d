@@ -18,7 +18,7 @@ const INSET = { side: 16, top: 16, bottom: 112 };
 const BORDER = 12;
 
 /**
- * Photo mode from anywhere (feature 10): the HUD and name labels hide (photos never show names), a
+ * Photo mode from anywhere (docs/features/09-watch-and-photo.md): the HUD and name labels hide (photos never show names), a
  * frame with the logo appears, you can still drag the camera, then snap now or with a 3 s timer.
  * Others see 📸 over your head so they can pose. Nothing is kept by Connecta: you save it, share it to
  * Room chat, or copy it.

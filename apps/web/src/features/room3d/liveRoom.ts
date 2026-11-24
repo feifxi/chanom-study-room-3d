@@ -272,7 +272,7 @@ export class LiveRoom implements StudyRoom {
     return this.game.state?.mapId ?? '';
   }
 
-  // --- Watch together (feature 10): the game server's big screen ---
+  // --- Watch together (docs/features/09-watch-and-photo.md): the game server's big screen ---
 
   /** The server's screen in the activity hub's shape (you're 'me'; a TV share is a player's) */
   watchState(): Omit<WatchState, 'resume'> {
@@ -309,7 +309,7 @@ export class LiveRoom implements StudyRoom {
     this.game.send('photo', { on });
   }
 
-  // --- Activities (feature 9): the spots the game server runs ---
+  // --- Activities (docs/features/08-activities.md): the spots the game server runs ---
 
   private key(sessionId: string) {
     return sessionId === this.game.sessionId ? 'me' : sessionId;
@@ -552,7 +552,7 @@ export class LiveRoom implements StudyRoom {
   };
 
   /**
-   * The whiteboard (feature 11): your strokes go to the game server, everyone else's come into the
+   * The whiteboard (docs/features/10-party-games.md): your strokes go to the game server, everyone else's come into the
    * board's store. Returns the way to disconnect.
    */
   connectBoard(board: BoardStore) {

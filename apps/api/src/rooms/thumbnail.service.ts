@@ -15,7 +15,7 @@ export const thumbnailUrl = (roomId: string, key: string | null) =>
   key ? `/api/rooms/${roomId}/thumbnail?v=${key.slice(key.lastIndexOf('/') + 1, key.lastIndexOf('.'))}` : null;
 
 /**
- * A room's thumbnail (feature 7): the owner uploads it like a chat picture (a short-lived upload
+ * A room's thumbnail (docs/features/06-maps.md): the owner uploads it like a chat picture (a short-lived upload
  * link), then it's cropped to 16:9, made a WebP and checked here, at once, since it's one small
  * picture. Anyone may see it: it's on Discover and invite pages, like the room's name.
  */

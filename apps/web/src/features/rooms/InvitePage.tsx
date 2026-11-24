@@ -23,7 +23,7 @@ import { Label } from '@/components/ui/label';
 import { problem, roomsApi } from './useRooms';
 
 /**
- * What someone sees when they open a link (feature 3):
+ * What someone sees when they open a link (docs/features/02-rooms.md):
  * - **Member invite** (/i/<code>): join the room. Needs an account, so signed-out people sign in
  *   and come back here.
  * - **Guest pass** (/g/<code>): walk into the room for 24 hours. No account needed: pick a name and
@@ -75,7 +75,7 @@ export function InvitePage({ code, kind }: { code: string; kind: 'member' | 'gue
         setBusy(false);
         return setTooYoung(true);
       }
-      // A name with a blocked word says so (feature 14)
+      // A name with a blocked word says so (docs/features/12-moderation.md)
       if (!data) throw new Error(problem(error, 'guest profile'));
       current = data;
       setMe(current);

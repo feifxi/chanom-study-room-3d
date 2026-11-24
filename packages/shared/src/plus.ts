@@ -1,5 +1,5 @@
 /**
- * Connecta Plus's prices (spec 15): ฿89 a month or ฿890 a year, card or PromptPay. A card renews by
+ * Connecta Plus's prices (docs/features/15-plus.md): ฿89 a month or ฿890 a year, card or PromptPay. A card renews by
  * itself; PromptPay can't be charged without you, so it renews by a reminder (Plus part 4).
  */
 export const PLUS_PLANS = {

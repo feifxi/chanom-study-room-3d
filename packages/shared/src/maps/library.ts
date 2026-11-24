@@ -21,7 +21,7 @@ import {
 } from './types.js';
 
 /**
- * The Cosy Library map (feature 7, redesigned 2026-11-10): a 26 × 18 m reading room laid out in
+ * The Cosy Library map (docs/features/06-maps.md, redesigned 2026-11-10): a 26 × 18 m reading room laid out in
  * bands. Quiet at the back (study tables under the shelves, the window booth), the fireplace and the
  * TV lounge down the left wall, the open floor and the door in front, games and the art corner on the
  * right. Every activity and private zone is a rug: the rug *is* the area, so nothing floats.
@@ -30,7 +30,7 @@ import {
  * this becomes the map file.
  *
  * Not final art: odd props, overlapping rugs and other fixes are listed in the polish backlog in
- * docs/features/07-maps.md.
+ * docs/features/06-maps.md.
  */
 
 export const ROOM = { width: 26, depth: 18 } as const;
@@ -289,7 +289,7 @@ export const BAY_WINDOW = { x: 10.5, width: 4.4 } as const;
 
 // ---------- Private zones ----------
 
-/** Only the people inside hear each other; nobody outside hears in. No locks (feature 6). */
+/** Only the people inside hear each other; nobody outside hears in. No locks (docs/features/05-room-3d.md). */
 export const ZONES: Zone[] = [
   { id: 'fire', name: 'Fireside', emoji: '🔥', area: FIRESIDE.zone },
   { id: 'booth', name: 'Window booth', emoji: '🪟', area: BOOTH.zone },

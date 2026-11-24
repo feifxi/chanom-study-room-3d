@@ -26,7 +26,7 @@ type LiveSocket = Socket<Record<string, never>, Record<string, never>, Record<st
 type Ack = { ok: true } | { ok: false; error: string };
 
 /**
- * The live connection (docs/features/04-chat-and-dms.md): signed-in people's tabs connect here.
+ * The live connection (docs/features/04-chat.md): signed-in people's tabs connect here.
  * It only delivers: writes go through the REST API, which publishes the results via Redis. The one
  * thing that comes in is "typing", which is never stored.
  */
@@ -59,7 +59,7 @@ export class LiveGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   async handleConnection(socket: LiveSocket) {
     await socket.join(liveRoom.user(socket.data.userId));
-    // An open tab is being online (presence, feature 5)
+    // An open tab is being online (presence, docs/features/03-friends.md)
     await this.presence.openTab(socket.data.userId, socket.id).catch((e: unknown) => this.warn(e));
   }
 

@@ -11,12 +11,12 @@ import type { AdminMoney, AdminPayment, PAYMENT_FILTERS, REFUND_REASONS } from '
 import { requireTeam } from './team.js';
 
 const PAGE = 100;
-/** Stripe's rates in Thailand (spec 15; check current rates): cards 3.65% + ฿10, PromptPay 1.65% */
+/** Stripe's rates in Thailand (docs/features/15-plus.md; check current rates): cards 3.65% + ฿10, PromptPay 1.65% */
 const fee = (method: string, amount: number) => (method === 'card' ? amount * 0.0365 + 10 : amount * 0.0165);
 const isGift = (what: string) => what.startsWith('Gift');
 
 /**
- * Money in the admin site (spec 15): what Plus brings in, how people pay, and every payment.
+ * Money in the admin site (docs/features/15-plus.md): what Plus brings in, how people pay, and every payment.
  * Refunds happen only here, by hand, for real mistakes: Stripe gives the money back (the local
  * stand-in only marks it), the person gets an email, and it goes in the audit log. A refund doesn't
  * change their Plus; gifts can't be refunded once received.

@@ -8,7 +8,7 @@ import { mapById } from '@/features/place/roomLook';
 const LOADING_MS = 2500;
 
 /**
- * Live map changes (feature 7): nobody has to leave. When the owner picks another map, or the
+ * Live map changes (docs/features/06-maps.md): nobody has to leave. When the owner picks another map, or the
  * Connecta team publishes an update (after a 60-second banner), everyone sees a short loading screen
  * and lands at the door of the new map. Voice and chat never stop, since only the 3D scene reloads.
  */

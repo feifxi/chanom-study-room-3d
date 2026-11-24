@@ -38,7 +38,7 @@ function Preview({ item, look }: { item: ShopItem | null; look: AvatarLook }) {
 }
 
 /**
- * The Shop (spec 15): only things that really show on your character in every room, bought with
+ * The Shop (docs/features/14-coins-and-shop.md): only things that really show on your character in every room, bought with
  * coins you earn. Try anything on your own character first; what you own joins Settings → My
  * character.
  */

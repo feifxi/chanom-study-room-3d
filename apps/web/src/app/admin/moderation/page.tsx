@@ -13,7 +13,7 @@ import { problem } from '@/features/rooms/useRooms';
 type Layer = 'wordFilter' | 'reportSteps' | 'pictureCheck';
 
 /**
- * The moderation layers (feature 14), cheap first: a word list, report-based steps, and OpenAI's free
+ * The moderation layers (docs/features/16-admin.md), cheap first: a word list, report-based steps, and OpenAI's free
  * moderation for pictures. Each switch applies everywhere at once (the API and the game servers)
  * and goes in the audit log.
  */

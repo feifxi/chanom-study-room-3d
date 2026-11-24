@@ -249,7 +249,7 @@ async function uploadPicture(file: File): Promise<string> {
   return start.id;
 }
 
-/** Photo mode's Share (feature 10): the photo goes to Room chat like any picture; it arrives there live. */
+/** Photo mode's Share (docs/features/09-watch-and-photo.md): the photo goes to Room chat like any picture; it arrives there live. */
 export async function postPhoto(roomId: string, photo: Blob) {
   const pictureId = await uploadPicture(new File([photo], 'photo.png', { type: 'image/png' }));
   ok(await api.POST('/api/rooms/{id}/messages', { params: { path: { id: roomId } }, body: { text: '', pictureIds: [pictureId] } }));

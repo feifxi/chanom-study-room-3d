@@ -14,7 +14,7 @@
 ## Later, no date yet
 
 - **Blender models**, starting with the Library, with baked lighting; then characters. The **map
-  editor** is built with the Blender map format ([7](features/07-maps.md)).
+  editor** is built with the Blender map format ([Maps](features/06-maps.md)).
 - **What happens to the Café and Rooftop** is decided with the Blender work.
 - **Library polish:** odd furniture, overlapping rugs, overlapping name labels.
 - **Cheaper cats:** merge each cat into skinned meshes before adding more.

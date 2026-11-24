@@ -17,7 +17,7 @@ const WARNED_DAYS = 30;
 const PAGE = 50;
 
 /**
- * Accounts in the admin site (feature 14): the list, one account, and the team's actions on it.
+ * Accounts in the admin site (docs/features/16-admin.md): the list, one account, and the team's actions on it.
  * Every action is recorded (account_actions and the audit log) and emailed with its reason; a
  * suspension or ban signs them out everywhere at once and Better Auth refuses new sign-ins.
  */

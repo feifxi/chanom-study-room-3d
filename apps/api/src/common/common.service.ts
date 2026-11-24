@@ -27,7 +27,7 @@ import type { CommonRoomView, CommonTicket } from './common.schemas.js';
 const HOLD_MS = 30_000;
 
 /**
- * Out of Common rooms for a while (feature 14): after enough reports, or the team's Remove. Holds
+ * Out of Common rooms for a while (docs/features/13-common-rooms.md): after enough reports, or the team's Remove. Holds
  * `{ until, by }`; walking in reads it.
  */
 export const commonOutKey = (userId: string) => `common:out:${userId}`;
@@ -51,7 +51,7 @@ const key = {
 };
 
 /**
- * Common rooms (feature 14): copies of three templates, run by Connecta, no rows in the database. A
+ * Common rooms (docs/features/13-common-rooms.md): copies of three templates, run by Connecta, no rows in the database. A
  * copy is a game-server room like any other (`common-library-2`) whose ticket says it's Common, so
  * the game server makes it text only. Who's in each copy comes from presence (the game server
  * reports it); seats a fresh ticket was given are held for 30 s on top.

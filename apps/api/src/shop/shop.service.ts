@@ -16,7 +16,7 @@ function itemsIn(look: Partial<AvatarLook>): string[] {
 }
 
 /**
- * The Shop (spec 15): buy cosmetics with earned coins, and a look may only use what you own. Buying
+ * The Shop (docs/features/14-coins-and-shop.md): buy cosmetics with earned coins, and a look may only use what you own. Buying
  * takes the coins, writes a coin entry and adds the item in one transaction.
  */
 @Injectable()

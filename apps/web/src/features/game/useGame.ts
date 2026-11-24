@@ -22,9 +22,9 @@ export interface GameState {
   mapId: string;
   players: Map<string, PlayerView>;
   npcs: Map<string, NpcView>;
-  /** Watch together's big screen (feature 10) */
+  /** Watch together's big screen (docs/features/09-watch-and-photo.md) */
   watch?: WatchView;
-  /** The activity spots the game server runs (feature 9) */
+  /** The activity spots the game server runs (docs/features/08-activities.md) */
   spots?: Map<string, SpotView>;
   chess?: ChessView;
   slave?: SlaveView;

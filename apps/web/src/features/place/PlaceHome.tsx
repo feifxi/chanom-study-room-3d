@@ -44,7 +44,7 @@ type Filter = 'all' | 'mine' | 'active';
  * "Walk in" enters 3D. The "…" has everything else, including Settings for owners and mods.
  * Below them, a few listed rooms worth dropping into; Discover has the full list.
  *
- * "Friends out right now" is friends in rooms you can walk into (feature 5's presence).
+ * "Friends out right now" is friends in rooms you can walk into (presence, docs/features/03-friends.md).
  */
 export function PlaceHome() {
   const [creating, setCreating] = useState(false);

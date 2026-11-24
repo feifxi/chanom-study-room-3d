@@ -1,4 +1,4 @@
-/** Reports (feature 14): what you can say about a person or a message, and about a room. */
+/** Reports (docs/features/12-moderation.md): what you can say about a person or a message, and about a room. */
 export const PERSON_REASONS = [
   { id: 'harass', label: 'Harassment or bullying' },
   { id: 'hate', label: 'Hate or discrimination' },

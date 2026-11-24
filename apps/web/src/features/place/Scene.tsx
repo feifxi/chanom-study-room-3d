@@ -10,7 +10,7 @@ const SCENE: Record<string, string> = {
 };
 
 /**
- * A still of a room: the owner's thumbnail if they uploaded one (feature 7), else the map's picture
+ * A still of a room: the owner's thumbnail if they uploaded one (docs/features/06-maps.md), else the map's picture
  * (the real screenshot for the Library, a soft gradient for templates that don't have one yet).
  */
 export function Scene({

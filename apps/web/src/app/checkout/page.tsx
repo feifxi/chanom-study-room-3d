@@ -24,7 +24,7 @@ export default function CheckoutPage() {
 }
 
 /**
- * The payment page (feature 15). With Stripe's keys set, "Continue to payment" opens Stripe's hosted
+ * The payment page (docs/features/15-plus.md). With Stripe's keys set, "Continue to payment" opens Stripe's hosted
  * page (we never see card details), Stripe sends you back, and its webhook turns Plus on. Without
  * them (locally, until the owner adds test keys) this page is a stand-in for Stripe's: Pay asks the
  * API to treat the checkout as paid. Every plan and gift takes card or PromptPay; a PromptPay plan

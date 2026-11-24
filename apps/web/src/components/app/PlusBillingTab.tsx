@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { cancelPlus, manageBilling, PLUS_PLANS, REMIND_DAYS, resumePlus, usePlus } from '@/lib/plus';
 
 /**
- * Settings → Plus & billing (feature 15): your plan and its date, how you pay, cancel or turn renewal
+ * Settings → Plus & billing (docs/features/15-plus.md): your plan and its date, how you pay, cancel or turn renewal
  * back on, receipts and the gifts you've sent. No refund button: mistakes go to the team by replying
  * to the receipt email (they refund from the admin site).
  */

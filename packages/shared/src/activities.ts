@@ -1,5 +1,5 @@
 /**
- * The activity framework (feature 9, docs/features/09-activity-framework.md): one flow for every
+ * The activity framework (docs/features/08-activities.md): one flow for every
  * game at a spot in the map.
  *
  *   Free ──sit / E──▶ Gathering ──host: Start──▶ Playing ──ends──▶ Results ──▶ Gathering (or Free)

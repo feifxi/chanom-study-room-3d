@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-/** Your Connecta Plus (spec 15) */
+/** Your Connecta Plus (docs/features/15-plus.md) */
 export const PlusStatusSchema = z
   .object({
     plus: z.boolean(),

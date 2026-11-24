@@ -45,7 +45,7 @@ const PERKS = [
 
 /**
  * Guests have no account, so no Home, friends or room chats: a guest link lets them into one room in
- * 3D and nothing else (feature 2). Instead of a dead end, the page shows what signing up adds and
+ * 3D and nothing else (docs/features/01-accounts.md). Instead of a dead end, the page shows what signing up adds and
  * keeps Discover one tap away.
  */
 function GuestWall() {

@@ -8,7 +8,7 @@ import { TodosCleanup } from './todos-cleanup.js';
 import { TodosController } from './todos.controller.js';
 import { TodosService } from './todos.service.js';
 
-/** Study tools (feature 8): the game server's focus rounds saved, the rankings, and the to-do list. */
+/** Study tools (docs/features/07-study-tools.md): the game server's focus rounds saved, the rankings, and the to-do list. */
 @Module({
   imports: [BullModule.registerQueue({ name: FOCUS_QUEUE })],
   controllers: [FocusController, TodosController],

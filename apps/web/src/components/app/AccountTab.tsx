@@ -23,7 +23,7 @@ const PROVIDERS = [
  * Settings → Account: how you sign in, your (private) birthday, and deleting the account.
  * Deleting waits 7 days; signing in meanwhile offers "Keep my account". Your messages stay as
  * "Deleted user" so conversations still read properly.
- * (Picking new owners for your rooms comes with rooms: docs/features/02-accounts.md.)
+ * (Picking new owners for your rooms comes with rooms: docs/features/01-accounts.md.)
  */
 export function AccountTab() {
   const { data: me } = useMe();

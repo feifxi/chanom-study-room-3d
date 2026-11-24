@@ -21,7 +21,7 @@ const later = (a: Date, b: Date | null | undefined) => (b && b > a ? b : a);
 const DAY_MS = 86_400_000;
 
 /**
- * Paying for Plus (spec 15, "Paying"): start a checkout, learn it was paid (Stripe's webhook, or the
+ * Paying for Plus (docs/features/15-plus.md, "Paying"): start a checkout, learn it was paid (Stripe's webhook, or the
  * local stand-in), cancel or keep renewing. Paying moves `users.plus_until` on; PlusService tells
  * everyone when Plus starts or ends. Every payment is a receipt; a notice delivered twice pays once.
  */

@@ -9,7 +9,7 @@ import type { MapDef } from './types';
 /**
  * The map the room is in. RoomView sets it from the room's look before it builds the room, and
  * everything else (driver, hub, scene, labels) reads it when it needs it, so a live map change
- * (feature 7) swaps every piece at once. Unknown templates fall back to the library.
+ * (docs/features/06-maps.md) swaps every piece at once. Unknown templates fall back to the library.
  *
  * The data files don't import their scenes (the scenes import the data, and a cycle there trips the
  * module loader), so the two halves meet here.

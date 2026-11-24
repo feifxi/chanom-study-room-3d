@@ -1,4 +1,4 @@
-# 10. Watch together and photo mode
+# 9. Watch together and photo mode
 
 Watch YouTube in sync with whoever stands at the big screen, share your screen on it, and take
 photos anywhere. No jukebox: music is personal lo-fi.

@@ -1,7 +1,7 @@
 import { Chess, type PieceSymbol, type Square } from 'chess.js';
 
 /**
- * Chess at the chess table (feature 12): two players, casual, no clock. The rules (legal moves,
+ * Chess at the chess table (docs/features/11-table-games.md): two players, casual, no clock. The rules (legal moves,
  * check, mate, castling, en passant, promotion, the automatic draws) come from chess.js; this file
  * keeps the game's state in a plain, serialisable shape. The game server plays it (and checks every
  * move); the web app uses the same code to show legal squares. Its own entry point

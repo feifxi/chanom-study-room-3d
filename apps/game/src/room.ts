@@ -66,7 +66,7 @@ const NPC_TICK_MS = 100;
 /** Focus timers run out to within this */
 const TIMER_TICK_MS = 250;
 
-/** Owners and mods always fit (spec 01: "the owner and mods always fit"), so the hard cap sits well above capacity. */
+/** Owners and mods always fit (docs/features/02-rooms.md: "the owner and mods always fit"), so the hard cap sits well above capacity. */
 const HARD_CAP = 250;
 
 const finite = z.number().refine(Number.isFinite);
@@ -97,7 +97,7 @@ interface Private {
 type Auth = GameTicket;
 
 /**
- * A Connecta room in 3D (docs/features/06-3d-room.md). Who may come in is decided by
+ * A Connecta room in 3D (docs/features/05-room-3d.md). Who may come in is decided by
  * the API, which signs a join ticket; this checks the ticket, the capacity, and the movement rules.
  */
 export class ConnectaRoom extends Room<{ state: RoomState }> {
@@ -115,7 +115,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
   private turnedAway = false;
   /** Room settings → Guests can use voice (the newest ticket, then live changes) */
   private guestVoice = false;
-  /** A Common room copy (feature 14): text only for everyone, slow mode, no big screen */
+  /** A Common room copy (docs/features/13-common-rooms.md): text only for everyone, slow mode, no big screen */
   private common = false;
   /** Room settings → Filter words (on by default; always in Common rooms) */
   private filterWords = true;
@@ -127,9 +127,9 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
   private npc = this.makeNpcs();
   /** Focus minutes finished here since the room opened, by account (guests too): "This room today" adds the saved ones */
   private focusDone = new Map<string, number>();
-  /** Watch together's big screen (feature 10): in memory, gone when the room empties */
+  /** Watch together's big screen (docs/features/09-watch-and-photo.md): in memory, gone when the room empties */
   private tv = new Tv(this.state.watch);
-  /** The activity spots this server runs (feature 9): the table games so far */
+  /** The activity spots this server runs (docs/features/08-activities.md): the table games so far */
   private chess = new ChessTable(this.state.chess);
   private slave = new SlaveTable(this.state.slave, {
     seatIndex: (sessionId) => {
@@ -146,7 +146,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     broadcast: (type, message) => this.broadcast(type, message),
   });
   private activities = this.makeActivities();
-  /** The whiteboard (feature 11): strokes relayed apart from the state, kept with the room */
+  /** The whiteboard (docs/features/10-party-games.md): strokes relayed apart from the state, kept with the room */
   private board = new Board((id) => this.broadcast('board:undo', { id }));
 
   messages = {
@@ -195,7 +195,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     },
 
     /**
-     * A screen share (feature 10): on the TV while you stand on its rug, or to your table while you
+     * A screen share (docs/features/09-watch-and-photo.md): on the TV while you stand on its rug, or to your table while you
      * sit at a desk. One at a time in each place; it ends when you leave it. The picture and sound go
      * over LiveKit; each sharer's client lets only this audience receive them.
      */
@@ -214,7 +214,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     }),
 
     /**
-     * Watch together (feature 10): anyone on the TV's rug, guests too, puts videos on and controls
+     * Watch together (docs/features/09-watch-and-photo.md): anyone on the TV's rug, guests too, puts videos on and controls
      * them; owners and mods can turn the screen off from anywhere. Skip and "ended" name the video
      * they mean, so two people at once move Up next on by one.
      */
@@ -240,7 +240,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     },
 
     /**
-     * The activity framework (feature 9): the host starts, ends and calls everyone; anyone leaves.
+     * The activity framework (docs/features/08-activities.md): the host starts, ends and calls everyone; anyone leaves.
      * Joining is sitting down (or standing on a spot's rug), so it needs no message.
      */
     'activity:begin': (client: Client) => this.activities.begin(client.sessionId, Date.now()),
@@ -248,7 +248,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     'activity:call': (client: Client) => this.activities.call(client.sessionId, Date.now()),
     'activity:leave': (client: Client) => this.activities.leave(client.sessionId),
 
-    /** Chess (feature 12): every move is checked with the shared rules */
+    /** Chess (docs/features/11-table-games.md): every move is checked with the shared rules */
     'chess:move': validate(
       z.object({ from: z.string().max(2), to: z.string().max(2), promotion: z.enum(['q', 'r', 'b', 'n']).optional() }),
       (client, msg) => this.chess.move(client.sessionId, msg.from, msg.to, msg.promotion),
@@ -335,7 +335,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     /** The browser syncs its clock to ours: countdowns compare against our times */
     clock: validate(z.object({ sentAt: finite }), (client, msg) => client.send('clock', { sentAt: msg.sentAt, serverAt: Date.now() })),
 
-    /** Photo mode (feature 10): 📸 by your name while it's open, so people can pose */
+    /** Photo mode (docs/features/09-watch-and-photo.md): 📸 by your name while it's open, so people can pose */
     photo: validate(z.object({ on: z.boolean() }), (client, msg) => {
       const p = this.state.players.get(client.sessionId);
       if (p) p.photo = msg.on;
@@ -387,7 +387,7 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     }),
 
     /**
-     * The focus timer (feature 8): personal, 25/5 or 50/10, each round started by a press. One timer
+     * The focus timer (docs/features/07-study-tools.md): personal, 25/5 or 50/10, each round started by a press. One timer
      * per account follows from one room at a time.
      */
     'focus:start': validate(z.object({ preset: z.union([z.literal(0), z.literal(1)]), subject: z.string().optional() }), (client, msg) => {
@@ -746,11 +746,11 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     p.todayMin = done;
     this.quest(sessionId, 'focusMinutes', round.minutes);
     if (round.complete) this.quest(sessionId, 'focusRounds');
-    // Guests get the timer, but nothing is saved for them (spec 08)
+    // Guests get the timer, but nothing is saved for them (docs/features/07-study-tools.md)
     if (p.role !== 'guest') links.focusRound({ ...round, userId: s.userId, roomId: this.connectaId, subject: p.subject });
   }
 
-  /** One step towards a daily quest (the API counts it, for accounts; spec 15) */
+  /** One step towards a daily quest (the API counts it, for accounts; docs/features/14-coins-and-shop.md) */
   private quest(sessionId: string, counts: QuestCount, amount = 1) {
     const s = this.priv.get(sessionId);
     if (s) links.quest({ userId: s.userId, counts, amount, at: Date.now() });

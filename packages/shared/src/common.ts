@@ -1,7 +1,7 @@
 import type { MapId } from './rooms.js';
 
 /**
- * Common rooms (feature 14): Connecta's own rooms, one per template, open to anyone, guests too.
+ * Common rooms (docs/features/13-common-rooms.md): Connecta's own rooms, one per template, open to anyone, guests too.
  * Nobody runs them, so they're text only for everyone. Copies open as they fill and close when empty.
  */
 export const COMMON_TYPES = [

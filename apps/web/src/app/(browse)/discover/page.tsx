@@ -19,7 +19,7 @@ const LANGUAGES = ['Any language', ...ROOM_LANGUAGES];
  * voice). Home shows a few under "Open now"; this is the full list.
  *
  * Listed rooms (Open and Ask to join) come from the API: where your friends are first, then the
- * busiest now, then the biggest. Common rooms count everyone across their copies (feature 14).
+ * busiest now, then the biggest. Common rooms count everyone across their copies (docs/features/13-common-rooms.md).
  */
 export default function DiscoverPage() {
   const [tag, setTag] = useState('All');

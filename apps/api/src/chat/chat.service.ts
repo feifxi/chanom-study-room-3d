@@ -64,7 +64,7 @@ export function toMessage(m: MessageRow): ChatMessage {
 }
 
 /**
- * Room chat (docs/features/04-chat-and-dms.md): each room's one saved chat, for members. Writes
+ * Room chat (docs/features/04-chat.md): each room's one saved chat, for members. Writes
  * happen here and go out live through the gateway; reading history is paged by message id. What you
  * do to a message (edit, delete, react) works the same in a DM; DmsService has the DM-only parts.
  */
@@ -210,7 +210,7 @@ export class ChatService {
   }
 
   /**
-   * The word filter (feature 14): blocked words become asterisks. Room chat follows the room's
+   * The word filter (docs/features/12-moderation.md): blocked words become asterisks. Room chat follows the room's
    * "Filter words" setting (on by default); DMs (roomId null) are always filtered.
    */
   async filter(text: string, roomId: string | null): Promise<string> {
