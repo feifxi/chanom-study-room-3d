@@ -28,6 +28,7 @@ import { NotificationsService } from '../notifications/notifications.service.js'
 import { PresenceService } from '../presence/presence.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { toPerson } from './person.js';
+import { thumbnailUrl, ThumbnailService } from './thumbnail.service.js';
 import {
   MOD_SETTINGS,
   type Ban,
@@ -69,7 +70,7 @@ const roomInclude = (userId: string) =>
 type RoomRow = Prisma.RoomGetPayload<{ include: ReturnType<typeof roomInclude> }>;
 
 /**
- * Rooms and membership (docs/v2/features/03-rooms-membership.md): making and setting up rooms,
+ * Rooms and membership (docs/features/03-rooms-membership.md): making and setting up rooms,
  * the three roles, Ask to join, invites and guest passes, kick, ban and time out. Every action is
  * checked here against the role rules; the web app only hides buttons.
  */
@@ -82,6 +83,7 @@ export class RoomsService {
     private readonly presence: PresenceService,
     private readonly inbox: NotificationsService,
     private readonly game: GameService,
+    private readonly thumbnails: ThumbnailService,
   ) {}
 
   // ── Your rooms ────────────────────────────────────────────────────────────────────────────────
@@ -175,6 +177,7 @@ export class RoomsService {
     const room = await this.prisma.room.findUniqueOrThrow({ where: { id: roomId } });
     if (typedName.trim().toLowerCase() !== room.name.toLowerCase()) throw new BadRequestException('Type the room name to confirm');
     await this.prisma.room.delete({ where: { id: roomId } });
+    await this.thumbnails.drop(room.thumbnailKey);
     this.game.roomEvent({ roomId, type: 'deleted' });
   }
 
@@ -504,6 +507,7 @@ export class RoomsService {
         emoji: room.emoji,
         description: room.description,
         mapId: room.mapId as MapId,
+        thumbnail: thumbnailUrl(room.id, room.thumbnailKey),
         memberCount: room._count.members,
         allowGuests: room.allowGuests,
       },
@@ -548,8 +552,10 @@ export class RoomsService {
 
   // ── Discover ──────────────────────────────────────────────────────────────────────────────────
 
-  /** Listed rooms (Ask to join and Open), biggest first until presence can rank them by who's inside. */
-  async listed(userId: string, filter: { q?: string; tag?: string; language?: string }, now = new Date()): Promise<ListedRoom[]> {
+  /** Listed rooms (Ask to join and Open): where your friends are first, then the busiest now, then the biggest. */
+  async listed(viewer: string | null, filter: { q?: string; tag?: string; language?: string }, now = new Date()): Promise<ListedRoom[]> {
+    // Signed out (browsing Discover): no id matches '', so "you" are in no room and asked for none
+    const userId = viewer ?? '';
     const rooms = await this.prisma.room.findMany({
       where: {
         visibility: { in: ['request', 'open'] },
@@ -564,7 +570,16 @@ export class RoomsService {
       orderBy: [{ members: { _count: 'desc' } }, { createdAt: 'desc' }],
       take: 60,
     });
-    return rooms.map((r) => {
+    const friends = new Set(
+      viewer
+        ? (await this.prisma.friendship.findMany({ where: { userId: viewer }, select: { friendId: true } })).map((f) => f.friendId)
+        : [],
+    );
+    const inside = await Promise.all(rooms.map((r) => this.presence.inside(r.id, now.getTime())));
+    const rank = rooms.map((r, i) => ({ r, inside: inside[i]!.length, friends: inside[i]!.filter((id) => friends.has(id)).length }));
+    // Stable: equal rooms keep the database's order (most members, then newest)
+    rank.sort((a, b) => b.friends - a.friends || b.inside - a.inside);
+    return rank.map(({ r, inside }) => {
       const room = this.toRoom(r, userId, now);
       return {
         id: room.id,
@@ -572,12 +587,14 @@ export class RoomsService {
         emoji: room.emoji,
         description: room.description,
         mapId: room.mapId,
+        thumbnail: room.thumbnail,
         visibility: room.visibility as 'request' | 'open',
         tags: room.tags,
         language: room.language,
         owner: room.owner,
         memberCount: room.memberCount,
         capacity: room.capacity,
+        inside,
         rules: room.showRules ? room.rules : null,
         me: room.me,
       };
@@ -620,6 +637,7 @@ export class RoomsService {
       const next = room.members.find((m) => m.userId === room.heirId) ?? room.members.find((m) => m.role === 'mod') ?? room.members[0];
       if (!next) {
         await this.prisma.room.delete({ where: { id: room.id } });
+        await this.thumbnails.drop(room.thumbnailKey);
         continue;
       }
       await this.prisma.$transaction([
@@ -672,6 +690,7 @@ export class RoomsService {
       emoji: room.emoji,
       description: room.description,
       mapId: room.mapId as MapId,
+      thumbnail: thumbnailUrl(room.id, room.thumbnailKey),
       size: room.size as RoomSize,
       time: room.time as Room['time'],
       visibility: room.visibility,

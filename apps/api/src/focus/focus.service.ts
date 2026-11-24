@@ -43,7 +43,7 @@ const rankOf = (sorted: Total[], minutes: number) => sorted.filter((t) => t.minu
 const LONGEST_ROUND = Math.max(...FOCUS_PRESETS.map((p) => p.focus));
 
 /**
- * Focus minutes (feature 8, docs/v2/features/08-study-tools.md): the game server times each round
+ * Focus minutes (feature 8, docs/features/08-study-tools.md): the game server times each round
  * and queues it; this saves it against the person's own day, and reads the rankings.
  */
 @Injectable()

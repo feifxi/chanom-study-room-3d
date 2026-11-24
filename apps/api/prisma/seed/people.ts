@@ -3,7 +3,7 @@ import type { PrismaClient } from '../../src/generated/prisma/client.js';
 import { SEED_USERS, TIME_ZONE, ago, DAY, seedUserId } from './kit.js';
 
 /**
- * The demo's people, as finished accounts. Sign in as any of them with an email code: the address is
+ * The seed people, as finished accounts. Sign in as any of them with an email code: the address is
  * <handle>@connecta.test and the code arrives in Mailpit (http://localhost:8025). Fei is on the
  * Connecta team (the admin site opens for her) and Bow is under 18. Plus, coins and Shop items come
  * from their own seed files; a look only uses what its owner has.

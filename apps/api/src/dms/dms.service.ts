@@ -13,7 +13,7 @@ import type { DmOpen, DmSummary } from './dms.schemas.js';
 const pairOf = (a: string, b: string) => [a, b].sort().join(':');
 
 /**
- * DMs (docs/v2/features/04-chat-and-dms.md): 1-to-1 chats between friends. The messages
+ * DMs (docs/features/04-chat-and-dms.md): 1-to-1 chats between friends. The messages
  * themselves are the same as room chat's (ChatService: edit, delete, react, pictures, live); this
  * is who can open and send, the list, and read markers. A DM stays as read-only history when the
  * two stop being friends.

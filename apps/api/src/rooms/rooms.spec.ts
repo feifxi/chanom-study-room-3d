@@ -201,6 +201,8 @@ describe('getting in', () => {
     const listed = (await jod.get('/api/rooms/listed?tag=Study').expect(200)).body;
     expect(listed).toMatchObject([{ id, visibility: 'open', me: { role: null } }]);
     expect((await jod.get('/api/rooms/listed?tag=Games').expect(200)).body).toHaveLength(0);
+    // Signed-out visitors browse Discover too (the cards say "Sign up to join")
+    expect((await browser(app).get('/api/rooms/listed?tag=Study').expect(200)).body).toMatchObject([{ id, me: { role: null } }]);
 
     await jod.post(`/api/rooms/${id}/join`).expect(200);
     expect((await jod.get(`/api/rooms/${id}`)).body.me.role).toBe('member');

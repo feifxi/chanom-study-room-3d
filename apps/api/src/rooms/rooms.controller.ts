@@ -1,7 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query } from '@nestjs/common';
-import { ApiConflictResponse, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, Res } from '@nestjs/common';
+import {
+  ApiConflictResponse,
+  ApiCreatedResponse,
+  ApiFoundResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ROOM_LANGUAGES, ROOM_TAGS } from '@connecta/shared';
-import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
+import { AllowAnonymous, OptionalAuth, Session, type UserSession } from '@thallesp/nestjs-better-auth';
+import type { Response } from 'express';
 import { z } from 'zod';
 import {
   AskBodySchema,
@@ -19,6 +28,8 @@ import {
   RoleBodySchema,
   RoomSchema,
   RoomSettingsBodySchema,
+  ThumbnailBodySchema,
+  ThumbnailSchema,
   TicketSchema,
   TimeoutBodySchema,
   TransferBodySchema,
@@ -31,6 +42,7 @@ import {
 } from './rooms.schemas.js';
 import type { Ticket } from './rooms.schemas.js';
 import { RoomsService } from './rooms.service.js';
+import { ThumbnailService } from './thumbnail.service.js';
 
 const Id = { schema: z.string().max(40) };
 
@@ -38,7 +50,10 @@ const Id = { schema: z.string().max(40) };
 @ApiTags('rooms')
 @Controller('rooms')
 export class RoomsController {
-  constructor(private readonly rooms: RoomsService) {}
+  constructor(
+    private readonly rooms: RoomsService,
+    private readonly thumbnails: ThumbnailService,
+  ) {}
 
   /** Home: the rooms you're a member of. */
   @Get()
@@ -55,17 +70,18 @@ export class RoomsController {
     return this.rooms.make(session.user.id, body);
   }
 
-  /** Discover: listed rooms (Ask to join and Open). Declared before :id so "listed" isn't read as an id. */
+  /** Discover: listed rooms (Ask to join and Open), signed in or not. Declared before :id so "listed" isn't read as an id. */
   @Get('listed')
+  @OptionalAuth()
   @ApiQuery({ name: 'q', required: false, type: String })
   @ApiQuery({ name: 'tag', required: false, enum: ROOM_TAGS })
   @ApiQuery({ name: 'language', required: false, enum: ROOM_LANGUAGES })
   @ApiOkResponse({ standardSchema: z.array(ListedRoomSchema) })
   listed(
-    @Session() session: UserSession,
+    @Session() session: UserSession | null,
     @Query({ schema: DiscoverQuerySchema }) query: z.infer<typeof DiscoverQuerySchema>,
   ): Promise<ListedRoom[]> {
-    return this.rooms.listed(session.user.id, query);
+    return this.rooms.listed(session?.user.id ?? null, query);
   }
 
   /** A room: for members, for anyone when it's listed, or for a guest pass holder. 404 otherwise. */
@@ -96,6 +112,36 @@ export class RoomsController {
     @Body({ schema: DeleteRoomBodySchema }) body: z.infer<typeof DeleteRoomBodySchema>,
   ): Promise<void> {
     return this.rooms.remove(id, session.user.id, body.name);
+  }
+
+  /** The room's thumbnail, for anyone (Discover and invite pages show it). */
+  @Get(':id/thumbnail')
+  @AllowAnonymous()
+  @ApiFoundResponse({ description: 'Redirects to a short-lived link to the WebP' })
+  async thumbnail(@Param('id', Id) id: string, @Res() res: Response) {
+    const link = await this.thumbnails.open(id);
+    // Shorter than the link's hour; the ?v= in the room's link changes with each new picture
+    res.setHeader('Cache-Control', 'public, max-age=3000');
+    res.redirect(302, link);
+  }
+
+  /** The owner sets the thumbnail from an upload (checked first: 400 flagged). */
+  @Put(':id/thumbnail')
+  @ApiOkResponse({ standardSchema: ThumbnailSchema })
+  async setThumbnail(
+    @Session() session: UserSession,
+    @Param('id', Id) id: string,
+    @Body({ schema: ThumbnailBodySchema }) body: z.infer<typeof ThumbnailBodySchema>,
+  ): Promise<z.infer<typeof ThumbnailSchema>> {
+    return { thumbnail: await this.thumbnails.set(id, session.user.id, body.pictureId) };
+  }
+
+  /** Back to the map's picture. */
+  @Delete(':id/thumbnail')
+  @HttpCode(204)
+  @ApiNoContentResponse()
+  clearThumbnail(@Session() session: UserSession, @Param('id', Id) id: string): Promise<void> {
+    return this.thumbnails.clear(id, session.user.id);
   }
 
   /** Hands the room to another member; you stay on as a mod. */

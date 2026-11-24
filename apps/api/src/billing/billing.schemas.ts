@@ -11,6 +11,18 @@ export const ReceiptSchema = z.object({
   method: z.enum(PAY_METHODS),
 });
 
+/** One receipt to print or save as a PDF (/receipt/<id>) */
+export const ReceiptDetailSchema = ReceiptSchema.extend({
+  /** Who paid: the account's name and email */
+  name: z.string(),
+  email: z.string().nullable(),
+  refundedAt: z.string().nullable(),
+}).meta({ id: 'ReceiptDetail' });
+export type ReceiptDetail = z.infer<typeof ReceiptDetailSchema>;
+
+/** Stripe's billing page for a card subscriber */
+export const ManageSchema = z.object({ url: z.string() }).meta({ id: 'Manage' });
+
 /** Settings → Plus & billing (spec 15) */
 export const BillingSchema = z
   .object({

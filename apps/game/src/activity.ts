@@ -6,8 +6,8 @@ import type { PieceSymbol, Square } from 'chess.js';
 import { Spot, type Chess, type Player } from './state.js';
 
 /**
- * The activity framework (feature 9) on the game server: one flow for every game at a spot, the
- * same rules the demo's hub plays in the browser (`apps/web/src/features/activities/hub.ts`).
+ * The activity framework (feature 9) on the game server: one flow for every game at a spot. The
+ * browser mirrors it (`apps/web/src/features/activities/hub.ts`).
  *
  * - **Being in the area is being in:** the spot's seats for a table, otherwise its rug.
  * - **Rounds:** whoever arrives mid-round plays the next one.
@@ -16,8 +16,8 @@ import { Spot, type Chess, type Player } from './state.js';
  * - **Host:** whoever started it (the first to sit); when they go, the next in arrival order.
  * - **📣 Call everyone:** the host's one invite card to the whole room.
  *
- * Games plug in with {@link RoundGame}: chess (below) and Slave (`slave.ts`) so far; the other spots
- * still run in each browser until their games come over (step 5's party and table games).
+ * Games plug in with {@link RoundGame}: chess (below), Slave (`slave.ts`), Pick a Side
+ * (`pickASide.ts`) and Draw & Guess (`drawGuess.ts`).
  */
 
 /** What the room lends the framework */

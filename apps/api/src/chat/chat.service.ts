@@ -64,7 +64,7 @@ export function toMessage(m: MessageRow): ChatMessage {
 }
 
 /**
- * Room chat (docs/v2/features/04-chat-and-dms.md): each room's one saved chat, for members. Writes
+ * Room chat (docs/features/04-chat-and-dms.md): each room's one saved chat, for members. Writes
  * happen here and go out live through the gateway; reading history is paged by message id. What you
  * do to a message (edit, delete, react) works the same in a DM; DmsService has the DM-only parts.
  */

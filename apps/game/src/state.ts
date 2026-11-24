@@ -45,7 +45,7 @@ export const Player = schema(
 );
 export type Player = SchemaType<typeof Player>;
 
-/** A cat or study buddy (part 5 of step 4 brings them to life; the map is empty of them until then). */
+/** A cat or study buddy (the Buddy Machine's, or the room's own cats). */
 export const Npc = schema(
   {
     kind: t.string(),
@@ -240,7 +240,7 @@ export const RoomState = schema(
     players: t.map(Player),
     npcs: t.map(Npc),
     watch: t.ref(Watch),
-    /** The activity spots the game server runs (the table games; the others still run in each browser) */
+    /** The activity spots and their rounds (feature 9) */
     spots: t.map(Spot),
     chess: t.ref(Chess),
     slave: t.ref(Slave),

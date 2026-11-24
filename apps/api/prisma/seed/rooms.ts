@@ -3,7 +3,7 @@ import type { PrismaClient, RoomRole, Visibility } from '../../src/generated/pri
 import { DAY, HOUR, ROOM, ago, id, type Who } from './kit.js';
 
 /**
- * Four rooms from the demo, one of each kind: Fei's private one (Plus, so Big), a study group you ask
+ * Four rooms, one of each kind: Fei's private one (Plus, so Big), a study group you ask
  * to join, and two open ones on Discover. Each has an owner, a mod and members; Chanom Friends has an
  * invite link and a past ban, CPE Year 3 a request waiting.
  */

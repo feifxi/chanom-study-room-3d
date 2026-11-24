@@ -8,7 +8,7 @@ import type { PlusStatus } from './plus.schemas.js';
 const DAY_MS = 86_400_000;
 
 /**
- * Connecta Plus on an account (spec 15): `users.plus_until`. Paying and gifts (later parts) move the
+ * Connecta Plus on an account (spec 15): `users.plus_until`. Paying and gifts move the
  * date on; everything that depends on Plus reads it through `hasPlus` / `planFor`.
  */
 @Injectable()

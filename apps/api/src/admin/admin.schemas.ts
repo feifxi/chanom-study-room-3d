@@ -1,3 +1,4 @@
+import { COMMON_CAPACITY_RANGE } from '@connecta/shared';
 import { z } from 'zod';
 import { LookSchema } from '../accounts/accounts.schemas.js';
 
@@ -163,7 +164,10 @@ export const AdminCommonSchema = z
 export type AdminCommon = z.infer<typeof AdminCommonSchema>;
 
 export const CommonSeatsBodySchema = z
-  .object({ capacity: z.number().int().min(5).max(50), friendSeats: z.number().int().min(0).max(20) })
+  .object({
+    capacity: z.number().int().min(COMMON_CAPACITY_RANGE.min).max(COMMON_CAPACITY_RANGE.max),
+    friendSeats: z.number().int().min(0).max(20),
+  })
   .refine((b) => b.friendSeats < b.capacity, { message: 'Keep at least one seat for strangers', path: ['friendSeats'] })
   .meta({ id: 'CommonSeatsBody' });
 export const CommonNoticeBodySchema = z.object({ text: z.string().trim().min(1).max(120) }).meta({ id: 'CommonNoticeBody' });

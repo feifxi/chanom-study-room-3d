@@ -116,6 +116,12 @@ export class StripeGateway {
     await this.need().subscriptions.update(subscriptionId, { trial_end: Math.floor(to.getTime() / 1000), proration_behavior: 'none' });
   }
 
+  /** Stripe's own billing page, where a card subscriber changes their card (and sees Stripe's invoices) */
+  async portal(customerId: string): Promise<string> {
+    const session = await this.need().billingPortal.sessions.create({ customer: customerId, return_url: `${this.web}/home/plus` });
+    return session.url;
+  }
+
   /** When a subscription's paid period ends (it's on the subscription's item) */
   async periodEnd(subscriptionId: string): Promise<Date | null> {
     const sub = await this.need().subscriptions.retrieve(subscriptionId);

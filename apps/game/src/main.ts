@@ -7,7 +7,7 @@ import { gameServer } from './server.js';
 import { liveKitVoice, voice } from './voice.js';
 
 /**
- * The game server (build step 4): the web app reaches it at /game on its own origin (nginx, or a
+ * The game server: the web app reaches it at /game on its own origin (nginx, or a
  * Next rewrite locally), with a join ticket from the API.
  */
 const env = loadEnv();

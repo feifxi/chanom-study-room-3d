@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, Param, Post, Put } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
+import { OptionalAuth, Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import { z } from 'zod';
 import {
   CommonRoomSchema,
@@ -17,11 +17,12 @@ import { CommonService } from './common.service.js';
 export class CommonController {
   constructor(private readonly common: CommonService) {}
 
-  /** The Common room types: how many are inside now and which of your friends. Guests too. */
+  /** The Common room types: how many are inside now and which of your friends. Guests and signed-out visitors too (Discover). */
   @Get()
+  @OptionalAuth()
   @ApiOkResponse({ standardSchema: z.array(CommonRoomSchema) })
-  list(@Session() session: UserSession): Promise<CommonRoomView[]> {
-    return this.common.list(session.user.id);
+  list(@Session() session: UserSession | null): Promise<CommonRoomView[]> {
+    return this.common.list(session?.user.id ?? null);
   }
 
   /** The Connecta team: time someone out in Common rooms (no bubbles for a while, in any copy). */

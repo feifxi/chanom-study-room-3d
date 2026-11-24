@@ -81,9 +81,10 @@ export class CommonService implements OnModuleDestroy {
   }
 
   /** Discover's and Home's cards: how many are in each type now, and which friends */
-  async list(userId: string, now = Date.now()): Promise<CommonRoomView[]> {
+  async list(userId: string | null, now = Date.now()): Promise<CommonRoomView[]> {
+    // Signed out (browsing Discover): the counts, with no friends to show
     const friends = new Set(
-      (await this.prisma.friendship.findMany({ where: { userId }, select: { friendId: true } })).map((f) => f.friendId),
+      userId ? (await this.prisma.friendship.findMany({ where: { userId }, select: { friendId: true } })).map((f) => f.friendId) : [],
     );
     return Promise.all(
       COMMON_TYPES.map(async (type) => {

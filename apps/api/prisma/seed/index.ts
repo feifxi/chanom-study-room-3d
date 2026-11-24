@@ -1,7 +1,7 @@
-// Local development data: `pnpm db:seed` (docs/v2-plan.md, step 6). One fill of every feature's
-// data for trying the whole app: the demo people, four rooms with their chat, friends, DMs, Pick a
+// Local development data: `pnpm db:seed`. One fill of every feature's
+// data for trying the whole app: the seed people, four rooms with their chat, friends, DMs, Pick a
 // Side decks, two weeks of focus, coins and Shop items, Plus and its payments, reports and the 🔔
-// inbox (who's who: docs/v2/manual-tests.md#the-seed). Running it again replaces what it made, and
+// inbox (who's who: docs/manual-tests.md#the-seed). Running it again replaces what it made, and
 // resets what you did as a seed person; your own accounts stay. Times are relative to the run, so
 // "today" and "the last 24 hours" always have something in them.
 import 'dotenv/config';

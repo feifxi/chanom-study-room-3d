@@ -6,7 +6,7 @@ import type { Env } from '../config/env.js';
 import { PresenceService } from '../presence/presence.service.js';
 
 /**
- * Who's in which room comes from the game server now (step 4): each connection there is a tab of
+ * Who's in which room comes from the game server: each connection there is a tab of
  * its own (`game:<session>`), refreshed every minute and closed when you leave. The gateway stays the
  * one writer of presence.
  */

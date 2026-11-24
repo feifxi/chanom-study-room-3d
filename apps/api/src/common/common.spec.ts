@@ -2,7 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import { Redis } from 'ioredis';
 import { decodeJwt } from 'jose';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { createTestApp, resetAccounts, signedUp, type Browser } from '../../test/test-app.js';
+import { browser, createTestApp, resetAccounts, signedUp, type Browser } from '../../test/test-app.js';
 import type { Mail } from '../mail/mail.service.js';
 import { PresenceService } from '../presence/presence.service.js';
 import type { PrismaService } from '../prisma/prisma.service.js';
@@ -66,6 +66,9 @@ describe('Common rooms', () => {
     });
     const list = (await mai.get('/api/common').expect(200)).body;
     expect(list.find((t: { id: string }) => t.id === 'library')).toMatchObject({ here: 21, copies: 2 });
+    // Signed out (Discover's landing link): the same counts, no friends
+    const visitor = (await browser(app).get('/api/common').expect(200)).body;
+    expect(visitor.find((t: { id: string }) => t.id === 'library')).toMatchObject({ here: 21, copies: 2, friendsInside: [] });
     await mai.post('/api/common/pool/ticket', {}).expect(404);
   });
 

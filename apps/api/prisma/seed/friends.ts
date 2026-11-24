@@ -2,7 +2,7 @@ import type { PrismaClient } from '../../src/generated/prisma/client.js';
 import { DAY, HOUR, ago, id, type Who } from './kit.js';
 
 /**
- * Friends as in the demo: Fei is friends with everyone but Bow, Pim and View (so suggestions and
+ * Friends: Fei is friends with everyone but Bow, Pim and View (so suggestions and
  * requests have someone to show), and Bow's request to Fei is waiting.
  */
 const PAIRS: [Who, Who][] = [

@@ -11,7 +11,8 @@ import { QuestsModule } from '../quests/quests.module.js';
   imports: [BullModule.registerQueue({ name: PICTURES_QUEUE }), QuestsModule],
   controllers: [ChatController, PicturesController],
   providers: [ChatService, PicturesService, PicturesProcessor, PictureCheck],
-  // Rooms show unread counts on Home; the admin site says whether the picture check can run
-  exports: [ChatService, PictureCheck],
+  // Rooms show unread counts on Home and take thumbnails through the same uploads; the admin site
+  // says whether the picture check can run
+  exports: [ChatService, PicturesService, PictureCheck],
 })
 export class ChatModule {}

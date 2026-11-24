@@ -45,7 +45,7 @@ export interface RawPresence {
 }
 
 /**
- * Presence (docs/v2/features/05-friends.md): who's online, away, and in which room, kept in Redis
+ * Presence (docs/features/05-friends.md): who's online, away, and in which room, kept in Redis
  * and pushed only to friends. The gateway reports each tab (open, active, in a room, closed); the
  * API reads it for lists. Only "last seen" is stored for good.
  */

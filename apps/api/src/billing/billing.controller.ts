@@ -19,11 +19,14 @@ import type { PayMethod, PlanId } from '@connecta/shared';
 import {
   BillingSchema,
   CheckoutBodySchema,
+  ManageSchema,
+  ReceiptDetailSchema,
   CheckoutStartSchema,
   GiftBodySchema,
   type Billing,
   type CheckoutStart,
   type GiftBody,
+  type ReceiptDetail,
 } from './billing.schemas.js';
 import { BillingService } from './billing.service.js';
 import { StripeGateway } from './stripe.gateway.js';
@@ -43,6 +46,21 @@ export class BillingController {
   @ApiOkResponse({ standardSchema: BillingSchema })
   view(@Session() session: UserSession): Promise<Billing> {
     return this.billing.view(session.user.id);
+  }
+
+  /** One receipt, to print or save as a PDF. */
+  @Get('receipts/:id')
+  @ApiOkResponse({ standardSchema: ReceiptDetailSchema })
+  receipt(@Session() session: UserSession, @Param('id', Id) id: string): Promise<ReceiptDetail> {
+    return this.billing.receipt(session.user.id, id);
+  }
+
+  /** Stripe's billing page, to change your card (404 no_card for PromptPay and the local stand-in). */
+  @Post('manage')
+  @HttpCode(200)
+  @ApiOkResponse({ standardSchema: ManageSchema })
+  manage(@Session() session: UserSession): Promise<{ url: string }> {
+    return this.billing.manage(session.user.id);
   }
 
   /** Start paying for Plus: Stripe's payment page, or null for the local stand-in (409 already_plus). */

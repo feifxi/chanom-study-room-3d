@@ -88,6 +88,24 @@ describe('presence', () => {
     expect(await leaving).toEqual({ roomId, inside: 0 });
   });
 
+  it('Discover counts who’s inside a listed room and puts the one with your friends first', async () => {
+    const { mai, jod, roomId } = await setup();
+    await mai.patch(`/api/rooms/${roomId}`, { visibility: 'open', tags: ['Study'] }).expect(200);
+    const ter = await person('ter');
+    const quiet = (await ter.post('/api/rooms', { name: 'Quiet Corner', mapId: 'library' }).expect(201)).body.id as string;
+    await ter.patch(`/api/rooms/${quiet}`, { visibility: 'open', tags: ['Study'] }).expect(200);
+    await jod.post(`/api/rooms/${quiet}/join`).expect(200);
+    const maiLive = await live(mai);
+    await maiLive.emitWithAck('presence', { roomId, idleMs: 0 });
+    await settled();
+
+    const listed = (await jod.get('/api/rooms/listed?tag=Study').expect(200)).body as { id: string; inside: number }[];
+    expect(listed.map((r) => [r.id, r.inside])).toEqual([
+      [roomId, 1],
+      [quiet, 0],
+    ]);
+  });
+
   it('can’t claim a room you can’t walk into', async () => {
     const { jod, roomId } = await setup();
     const jodLive = await live(jod);

@@ -91,7 +91,7 @@ interface Private {
 type Auth = GameTicket;
 
 /**
- * A Connecta room in 3D (build step 4, docs/v2/features/06-3d-room.md). Who may come in is decided by
+ * A Connecta room in 3D (docs/features/06-3d-room.md). Who may come in is decided by
  * the API, which signs a join ticket; this checks the ticket, the capacity, and the movement rules.
  */
 export class ConnectaRoom extends Room<{ state: RoomState }> {

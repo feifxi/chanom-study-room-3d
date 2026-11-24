@@ -686,6 +686,91 @@
         ]
       }
     },
+    "/api/rooms/{id}/thumbnail": {
+      "get": {
+        "operationId": "RoomsController_thumbnail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirects to a short-lived link to the WebP"
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      },
+      "put": {
+        "operationId": "RoomsController_setThumbnail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ThumbnailBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Thumbnail"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      },
+      "delete": {
+        "operationId": "RoomsController_clearThumbnail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
     "/api/rooms/{id}/owner": {
       "put": {
         "operationId": "RoomsController_transfer",
@@ -3010,6 +3095,58 @@
         ]
       }
     },
+    "/api/billing/receipts/{id}": {
+      "get": {
+        "operationId": "BillingController_receipt",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptDetail"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/billing/manage": {
+      "post": {
+        "operationId": "BillingController_manage",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Manage"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "billing"
+        ]
+      }
+    },
     "/api/billing/checkout": {
       "post": {
         "operationId": "BillingController_checkout",
@@ -4482,6 +4619,10 @@
               "rooftop"
             ]
           },
+          "thumbnail": {
+            "nullable": true,
+            "type": "string"
+          },
           "size": {
             "type": "string",
             "enum": [
@@ -4595,6 +4736,7 @@
           "emoji",
           "description",
           "mapId",
+          "thumbnail",
           "size",
           "time",
           "visibility",
@@ -4803,6 +4945,10 @@
               "rooftop"
             ]
           },
+          "thumbnail": {
+            "nullable": true,
+            "type": "string"
+          },
           "visibility": {
             "type": "string",
             "enum": [
@@ -4833,6 +4979,11 @@
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
           },
+          "inside": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
           "rules": {
             "nullable": true,
             "type": "string"
@@ -4847,12 +4998,14 @@
           "emoji",
           "description",
           "mapId",
+          "thumbnail",
           "visibility",
           "tags",
           "language",
           "owner",
           "memberCount",
           "capacity",
+          "inside",
           "rules",
           "me"
         ],
@@ -4981,6 +5134,30 @@
         "required": [
           "name"
         ]
+      },
+      "ThumbnailBody": {
+        "type": "object",
+        "properties": {
+          "pictureId": {
+            "type": "string",
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "pictureId"
+        ]
+      },
+      "Thumbnail": {
+        "type": "object",
+        "properties": {
+          "thumbnail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "thumbnail"
+        ],
+        "additionalProperties": false
       },
       "TransferBody": {
         "type": "object",
@@ -5293,6 +5470,10 @@
                   "rooftop"
                 ]
               },
+              "thumbnail": {
+                "nullable": true,
+                "type": "string"
+              },
               "memberCount": {
                 "type": "integer",
                 "minimum": -9007199254740991,
@@ -5308,6 +5489,7 @@
               "emoji",
               "description",
               "mapId",
+              "thumbnail",
               "memberCount",
               "allowGuests"
             ],
@@ -6770,6 +6952,66 @@
           "receipts",
           "giftsSent",
           "stripe"
+        ],
+        "additionalProperties": false
+      },
+      "ReceiptDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          },
+          "what": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "card",
+              "promptpay"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "nullable": true,
+            "type": "string"
+          },
+          "refundedAt": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "at",
+          "what",
+          "amount",
+          "method",
+          "name",
+          "email",
+          "refundedAt"
+        ],
+        "additionalProperties": false
+      },
+      "Manage": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
         ],
         "additionalProperties": false
       },

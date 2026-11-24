@@ -39,6 +39,11 @@ describe('paying for Plus with the local stand-in (no Stripe keys)', () => {
     expect((await mai.post(`/api/billing/checkout/${start.checkoutId}/dev-pay`).expect(200)).body.receipts).toHaveLength(1);
     // PromptPay renews by paying again (the reminder's link)
     await mai.post('/api/billing/checkout', { plan: 'monthly', method: 'promptpay' }).expect(200);
+    // Each receipt prints, for its payer alone; no card to change without Stripe
+    const receipt = (await mai.get(`/api/billing/receipts/${paid.receipts[0].id}`).expect(200)).body;
+    expect(receipt).toMatchObject({ what: 'Plus · Monthly', amount: 89, name: 'maimai', email: 'maimai@example.com', refundedAt: null });
+    await (await person('jod')).get(`/api/billing/receipts/${paid.receipts[0].id}`).expect(404);
+    await mai.post('/api/billing/manage').expect(404);
 
     const cancelled = (await mai.post('/api/billing/cancel').expect(200)).body;
     expect(cancelled).toMatchObject({ plus: true, renews: false });
@@ -138,6 +143,7 @@ describe('paying for Plus with Stripe (a fake Stripe: nothing leaves the machine
     moveRenewal: async (id: string, to: Date) => void calls.push(`move:${id}:${to.toISOString()}`),
     periodEnd: async () => periodEnd,
     cancelAtPeriodEnd: async (id: string, cancel: boolean) => void calls.push(`cancel:${id}:${cancel}`),
+    portal: async (customer: string) => `https://billing.stripe.test/${customer}`,
     event: (raw: Buffer, signature: string): StripeEvent => {
       if (signature !== 'good') throw new Error('bad signature');
       rawBodies.push(raw);
@@ -207,6 +213,9 @@ describe('paying for Plus with Stripe (a fake Stripe: nothing leaves the machine
     const renewed = (await mai.get('/api/billing').expect(200)).body;
     expect(Date.parse(renewed.until)).toBe(Math.floor(next.getTime() / 1000) * 1000);
     expect(renewed.receipts).toHaveLength(2);
+
+    // Change the card on Stripe's billing page
+    expect((await mai.post('/api/billing/manage').expect(200)).body.url).toBe('https://billing.stripe.test/cus_1');
   });
 
   it('cancelling stops renewal at Stripe too; Stripe’s own cancel shows here', async () => {

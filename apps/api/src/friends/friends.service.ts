@@ -18,7 +18,7 @@ import type { AddFriendResult, Blocked, Friend, FriendRequests } from './friends
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
- * Friends (docs/v2/features/05-friends.md): requests by exact @handle, accepting, ignoring and
+ * Friends (docs/features/05-friends.md): requests by exact @handle, accepting, ignoring and
  * removing (all silent), blocking. A friendship is two rows, one each way.
  */
 @Injectable()

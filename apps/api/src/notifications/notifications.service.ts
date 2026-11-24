@@ -36,7 +36,7 @@ export interface NewRoomMessage {
 }
 
 /**
- * The 🔔 inbox (docs/v2/features/01-app-shell.md#-inbox): friend requests, join requests, @mentions
+ * The 🔔 inbox (docs/features/01-app-shell.md): friend requests, join requests, @mentions
  * and a room's messages for those who asked for every one. In-app only (no email or push), sent live
  * to your tabs, kept 30 days. DMs aren't in it: Messages has its own badge.
  */

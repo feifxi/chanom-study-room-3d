@@ -13,7 +13,7 @@ datasource db {
   provider = "postgresql"
 }
 
-// ── Accounts (docs/v2/features/02-accounts.md) ──────────────────────────────────────────────────
+// ── Accounts (docs/features/02-accounts.md) ──────────────────────────────────────────────────
 // User, Session, Account and Verification are Better Auth's tables (its Prisma adapter reads and
 // writes them; field names must match its schema). Connecta's own fields sit on User and are only
 // written through the API's accounts module, never by Better Auth's update-user route.
@@ -176,7 +176,7 @@ model HandleHold {
   @@map("handle_holds")
 }
 
-// ── Rooms and membership (docs/v2/features/03-rooms-membership.md) ─────────────────────────────
+// ── Rooms and membership (docs/features/03-rooms-membership.md) ─────────────────────────────
 
 enum Visibility {
   /// Invite only, not listed
@@ -229,6 +229,8 @@ model Room {
   membersCanInvite Boolean    @default(true) @map("members_can_invite")
   allowGuests      Boolean    @default(true) @map("allow_guests")
   guestVoice       Boolean    @default(false) @map("guest_voice")
+  /// The owner's picture for cards and invites (a WebP in storage); null shows the map's picture
+  thumbnailKey     String?    @map("thumbnail_key")
   /// Who the owner picked to take over if their account is deleted
   heirId           String?    @map("heir_id")
   createdAt        DateTime   @default(now()) @map("created_at")
@@ -334,7 +336,7 @@ model GuestVisit {
   @@map("guest_visits")
 }
 
-// ── Friends (docs/v2/features/05-friends.md) ───────────────────────────────────────────────────
+// ── Friends (docs/features/05-friends.md) ───────────────────────────────────────────────────
 
 /// A friendship is two rows, one each way, so "my friends" is one simple lookup.
 model Friendship {
@@ -378,7 +380,7 @@ model Block {
   @@map("blocks")
 }
 
-// ── Chat (docs/v2/features/04-chat-and-dms.md) ─────────────────────────────────────────────────
+// ── Chat (docs/features/04-chat-and-dms.md) ─────────────────────────────────────────────────
 
 /// A chat message. Ids are UUIDv7, so they sort by time: pages, read markers and unread counts
 /// compare ids. A message is in a room's chat or in a DM (exactly one of the two).
@@ -481,7 +483,7 @@ model Reaction {
   @@map("reactions")
 }
 
-// ── Inbox (docs/v2/features/01-app-shell.md#-inbox) ───────────────────────────────────────────
+// ── Inbox (docs/features/01-app-shell.md) ───────────────────────────────────────────
 
 /// One item in the 🔔 inbox. Kept 30 days.
 model Notification {
@@ -615,7 +617,7 @@ model OwnedItem {
   @@map("owned_items")
 }
 
-// ── Plus (docs/v2/features/15-business-infra.md#paying-stripe) ────────────────────────────────────
+// ── Plus (docs/features/15-plus-coins-shop.md) ────────────────────────────────────
 
 /// Your Plus plan: how it's paid and whether it renews. users.plus_until is what counts for perks
 model PlusSubscription {

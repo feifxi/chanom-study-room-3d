@@ -70,6 +70,8 @@ export const RoomSchema = z
     emoji: z.string(),
     description: z.string(),
     mapId: z.enum(MAP_IDS),
+    /** The owner's picture (16:9); null shows the map's */
+    thumbnail: z.string().nullable(),
     size: z.enum(ROOM_SIZES),
     time: z.enum(ROOM_TIMES),
     visibility: z.enum(VISIBILITIES),
@@ -102,6 +104,10 @@ export const RoomSchema = z
   })
   .meta({ id: 'Room' });
 export type Room = z.infer<typeof RoomSchema>;
+
+/** A thumbnail: an upload from `POST /api/pictures`, already PUT to its link */
+export const ThumbnailBodySchema = z.object({ pictureId: z.string().max(40) }).meta({ id: 'ThumbnailBody' });
+export const ThumbnailSchema = z.object({ thumbnail: z.string() }).meta({ id: 'Thumbnail' });
 
 export const CreateRoomBodySchema = z.object({ name: RoomName, mapId: z.enum(MAP_IDS) }).meta({ id: 'CreateRoomBody' });
 
@@ -229,6 +235,7 @@ export const InvitePreviewSchema = z
       emoji: z.string(),
       description: z.string(),
       mapId: z.enum(MAP_IDS),
+      thumbnail: z.string().nullable(),
       memberCount: z.number().int(),
       allowGuests: z.boolean(),
     }),
@@ -248,12 +255,16 @@ export const ListedRoomSchema = z
     emoji: z.string(),
     description: z.string(),
     mapId: z.enum(MAP_IDS),
+    /** The owner's picture (16:9); null shows the map's */
+    thumbnail: z.string().nullable(),
     visibility: z.enum(['request', 'open']),
     tags: z.array(z.string()),
     language: z.string().nullable(),
     owner: PersonSchema,
     memberCount: z.number().int(),
     capacity: z.number().int(),
+    /** Inside right now (people appearing offline aren't counted) */
+    inside: z.number().int(),
     rules: z.string().nullable(),
     me: MyPlaceSchema,
   })

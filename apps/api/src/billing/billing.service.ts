@@ -9,7 +9,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { DmsService } from '../dms/dms.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { toPerson } from '../rooms/person.js';
-import type { Billing, CheckoutStart, GiftBody } from './billing.schemas.js';
+import type { Billing, CheckoutStart, GiftBody, ReceiptDetail } from './billing.schemas.js';
 import { StripeGateway, type StripeEvent } from './stripe.gateway.js';
 
 const addMonths = (from: Date, months: number) => {
@@ -66,6 +66,31 @@ export class BillingService {
       giftsSent: gifts.map((g) => ({ to: toPerson(g.giftTo!), months: g.giftMonths ?? 0, at: (g.paidAt ?? g.createdAt).toISOString() })),
       stripe: this.stripe.enabled,
     };
+  }
+
+  /** One of your receipts, to print or save as a PDF. Someone else's is a 404. */
+  async receipt(userId: string, id: string): Promise<ReceiptDetail> {
+    const r = await this.prisma.payment.findFirst({ where: { id, userId }, include: { user: true } });
+    if (!r) throw new NotFoundException();
+    return {
+      id: r.id,
+      at: r.createdAt.toISOString(),
+      what: r.what,
+      amount: r.amount,
+      method: r.method as PayMethod,
+      name: r.user?.name ?? '',
+      email: r.user?.email ?? null,
+      refundedAt: r.refundedAt?.toISOString() ?? null,
+    };
+  }
+
+  /** Stripe's billing page, to change the card a plan renews on (card plans paid through Stripe only). */
+  async manage(userId: string): Promise<{ url: string }> {
+    const sub = await this.prisma.plusSubscription.findUnique({ where: { userId } });
+    if (!this.stripe.enabled || sub?.method !== 'card' || !sub.stripeCustomerId) {
+      throw new NotFoundException({ code: 'no_card', message: 'There’s no card on file to change' });
+    }
+    return { url: await this.stripe.portal(sub.stripeCustomerId) };
   }
 
   /** The payment page's Continue: Stripe's page, or the local stand-in */

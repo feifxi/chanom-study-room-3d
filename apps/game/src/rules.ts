@@ -1,5 +1,5 @@
 /**
- * Pure movement rules (from V1), free of Colyseus so they're easy to test.
+ * Pure movement rules, free of Colyseus so they're easy to test.
  */
 import { RUN_SPEED, SPEED_TOLERANCE } from '@connecta/shared';
 

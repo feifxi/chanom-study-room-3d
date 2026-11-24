@@ -26,7 +26,7 @@ type LiveSocket = Socket<Record<string, never>, Record<string, never>, Record<st
 type Ack = { ok: true } | { ok: false; error: string };
 
 /**
- * The live connection (docs/v2/features/04-chat-and-dms.md): signed-in people's tabs connect here.
+ * The live connection (docs/features/04-chat-and-dms.md): signed-in people's tabs connect here.
  * It only delivers: writes go through the REST API, which publishes the results via Redis. The one
  * thing that comes in is "typing", which is never stored.
  */
