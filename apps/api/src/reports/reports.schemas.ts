@@ -2,7 +2,7 @@ import { REPORT_DETAILS_MAX, REPORT_REASON_IDS } from '@connecta/shared';
 import { z } from 'zod';
 
 /**
- * A report (docs/features/13-common-rooms.md). A person: `userId`, and `place` when it happened in a room or a Common copy
+ * A report (docs/features/12-moderation.md). A person: `userId`, and `place` when it happened in a room or a Common copy
  * (with the bubbles you saw them say, which nobody stores). A message: `messageId`. A room: `place`.
  */
 export const ReportBodySchema = z

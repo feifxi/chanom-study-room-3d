@@ -6,7 +6,7 @@ import { PresenceModule } from '../presence/presence.module.js';
 import { ReportsController } from './reports.controller.js';
 import { ReportsService } from './reports.service.js';
 
-/** Reports and their automatic steps (docs/features/16-admin.md). The admin site reads them later. */
+/** Reports and their automatic steps (docs/features/12-moderation.md). The admin site reads them later. */
 @Module({
   imports: [CommonModule, FriendsModule, GameModule, PresenceModule],
   controllers: [ReportsController],

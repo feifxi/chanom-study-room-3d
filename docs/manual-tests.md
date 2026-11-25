@@ -117,6 +117,8 @@ Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
 
 - [ ] Two people walk in: each sees the other move smoothly (keys, click, joystick), sit and
       stand; a taken seat can't be taken. Counts on the Room card, Home and the room page match.
+- [ ] Walking in, your character sparkles for a moment; the second person sparkles on the first's
+      screen when they arrive, but the first doesn't sparkle again on the second's screen.
 - [ ] Leave (Room card, or Back → Leave room) takes you out at once; closing the tab after ~20 s.
 - [ ] The same room in a second tab: "in another tab" with **Walk in here**. Another room in a
       second tab: "You walked into another room" with **Walk back in**. Other app tabs are fine.

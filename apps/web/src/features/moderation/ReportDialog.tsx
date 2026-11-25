@@ -14,7 +14,7 @@ import { api } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 
 /**
- * Report a person or one of their messages (docs/features/16-admin.md). It goes to the Connecta team only (a room's
+ * Report a person or one of their messages (docs/features/12-moderation.md). It goes to the Connecta team only (a room's
  * mods may be the problem), and the person never learns who reported them. Enough reports from
  * different accounts in a room mute them there for a while; in Common rooms they're put out for an hour.
  */

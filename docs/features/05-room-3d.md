@@ -30,6 +30,9 @@ so a tampered client outside can't listen in.
 
 ## Bubbles, Away, Talk to everyone
 
+- **Walking in sparkles:** a short burst of pink and yellow sparks around whoever arrives, seen by
+  everyone there (the same burst as a new look). People already inside don't sparkle for someone
+  just walking in.
 - **Bubbles:** up to 120 characters, ~6 s over your head, then in the Bubbles tab. They reach the
   whole room, except from inside a private zone. One every 0.4 s.
 - **Away** after 10 minutes without input: 💤, and the mic turns off. **Focusing is never away.**

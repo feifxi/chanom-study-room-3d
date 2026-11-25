@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { sanitizeLook, type PlayerView } from '@connecta/shared';
@@ -26,7 +26,7 @@ interface Props {
   bubble?: Bubble;
   board: LabelBoard;
   detail?: CharacterDetail;
-  /** Just changed outfit: a short sparkle burst as the new look appears. */
+  /** Just changed outfit: a short sparkle burst as the new look appears (also plays on walking in). */
   sparkle?: boolean;
   /** Your just-saved look, ahead of the synced state catching up. */
   lookOverride?: string;
@@ -47,6 +47,8 @@ export function Avatar({ id, player, isLocal, local, bubble, board, detail = 'fu
   const anchor = useMemo(() => new THREE.Vector3(), []);
   const burst = useRef<THREE.Group>(null);
   const burstStart = useRef<number | null>(null);
+  // Walking in sparkles for everyone to see; gone once played, so a full room keeps no extra meshes
+  const [bursting, setBursting] = useState(true);
 
   useEffect(() => {
     board.anchors.set(id, anchor);
@@ -57,11 +59,17 @@ export function Avatar({ id, player, isLocal, local, bubble, board, detail = 'fu
 
   useFrame((state, dt) => {
     const t = state.clock.elapsedTime;
-    if (burst.current) {
+    // People already here when the scene starts (you just walked in) don't all sparkle at once:
+    // only you, and whoever arrives after you
+    if (burst.current && burstStart.current === null && !isLocal && !sparkle && t < ARRIVAL_GRACE_S) {
+      burst.current.visible = false;
+      setBursting(false);
+    } else if (burst.current) {
       burstStart.current ??= t;
       const k = (t - burstStart.current) / SPARKLE_S;
       burst.current.visible = k < 1;
-      if (k < 1) {
+      if (k >= 1) setBursting(false);
+      else {
         burst.current.rotation.y = k * 2;
         burst.current.children.forEach((c, i) => {
           const a = (i / SPARKS) * Math.PI * 2;
@@ -110,7 +118,7 @@ export function Avatar({ id, player, isLocal, local, bubble, board, detail = 'fu
     <group ref={root}>
       <BlobShadow />
       <primitive object={rig.group} />
-      {sparkle && (
+      {bursting && (
         <group ref={burst}>
           {Array.from({ length: SPARKS }, (_, i) => (
             <mesh key={i}>
@@ -133,6 +141,8 @@ export function Avatar({ id, player, isLocal, local, bubble, board, detail = 'fu
 
 const SPARKS = 10;
 const SPARKLE_S = 0.9;
+/** Avatars that appear this soon after the scene starts were already in the room */
+const ARRIVAL_GRACE_S = 1.5;
 
 function safeParse(json: string): unknown {
   try {

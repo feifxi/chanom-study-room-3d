@@ -691,7 +691,7 @@ model Payment {
   @@map("payments")
 }
 
-/// A report for the Connecta team (docs/features/16-admin.md); a room's mods never see these. Ids are plain strings so
+/// A report for the Connecta team (docs/features/12-moderation.md); a room's mods never see these. Ids are plain strings so
 /// a report outlives the message, room or account it points at.
 model Report {
   id          String    @id @default(uuid(7))

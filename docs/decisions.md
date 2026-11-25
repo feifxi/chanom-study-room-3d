@@ -88,6 +88,8 @@ decision changes, edit its line ("reversed on …") instead of adding a contradi
 
 ## The 3D room
 
+- **Walking in sparkles, for everyone** (2026-11-25): arrivals get noticed and the room feels
+  welcoming; it reuses the new-look burst (10 sparks, under a second), so it costs almost nothing.
 - **Nothing inside a room navigates away silently** (2026-11-09): leaving costs your voice, seat
   and timer. Back asks too (2026-11-22); keeping the connection alive across pages was turned down.
 - **Chat:** Bubbles / Room chat / Messages. No "Nearby" text chat. Emoji go in chat; no emotes.

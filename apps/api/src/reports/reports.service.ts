@@ -29,7 +29,7 @@ const PERSON = new Set<string>(PERSON_REASONS.map((r) => r.id));
 const ROOM = new Set<string>(ROOM_REASONS.map((r) => r.id));
 
 /**
- * Reports (docs/features/16-admin.md). Every report is kept for the Connecta team, with what they need to judge
+ * Reports (docs/features/12-moderation.md). Every report is kept for the Connecta team, with what they need to judge
  * it; a room's owner and mods never see them. Reports about someone in a room or a Common copy, from
  * accounts that are there, count toward the automatic steps:
  * - a room: 3 in 10 minutes → muted there for 15 (the same as a mod's timeout)

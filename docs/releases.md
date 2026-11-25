@@ -86,7 +86,7 @@ strangers need.
 | 3D-1  | Game server and join ticket: walk in, capacity checked, kick/ban/role felt at once  | R1      |
 | 3D-2  | Move: keys, click to walk around furniture, joystick on phones; sit with E or a tap | R1      |
 | 3D-3  | Proximity voice: stereo, 12 nearest, mute and deafen                                | R1      |
-| 3D-4  | Bubbles and Away                                                                    | R1      |
+| 3D-4  | Bubbles and Away; a sparkle when someone walks in                                   | R1      |
 | 3D-5  | Private zones (voice and bubbles stay inside)                                       | R1      |
 | 3D-6  | Leaving: Leave only, links out confirm, one tab and one room at a time, why-cards   | R1      |
 | 3D-7  | The HUD: Room card, people panel, chat, dock, zoom; phone layout                    | R1      |

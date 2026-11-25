@@ -11,7 +11,7 @@ import { api } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 
 /**
- * Report a whole room (docs/features/16-admin.md): goes to the Connecta team only (the room's own mods may be the
+ * Report a whole room (docs/features/12-moderation.md): goes to the Connecta team only (the room's own mods may be the
  * problem), anonymous. The team can delist it from Discover or close it. People are reported from
  * their own "…" menu instead.
  */

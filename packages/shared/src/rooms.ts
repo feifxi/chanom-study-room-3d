@@ -1,6 +1,5 @@
 /**
- * Room rules shared by the web app (what to show) and the API (the final say). docs/features/02-rooms.md:
- * docs/features/02-rooms.md.
+ * Room rules shared by the web app (what to show) and the API (the final say): docs/features/02-rooms.md.
  */
 
 export const ROOM_NAME_MAX = 32;

@@ -48,7 +48,7 @@ rooms, a room's page is its chat, and inside 3D everything is a panel over the r
 - Panels close on a press elsewhere or Escape, and that press never walks you.
 - **A big panel is a theater:** it fills the screen above the dock and dims the room
   ([Activities](features/08-activities.md#on-screen)).
-- Changing your look is live (no rejoin), at most once every 5 s.
+- Changing your look is live (no rejoin, with a sparkle), at most once every 5 s.
 - **Phones:** compact HUD, chat as a sheet, a joystick and an action button.
 
 ## In the code

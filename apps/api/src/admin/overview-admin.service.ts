@@ -20,7 +20,7 @@ type Health = AdminOverview['health'][number];
 /**
  * The admin site's Overview (docs/features/16-admin.md): how Connecta is doing right now and what needs a person.
  * The health strip asks each part if it's up; deep monitoring waits for the monitoring server
- * (docs/features/15-plus.md).
+ * (docs/infra.md).
  */
 @Injectable()
 export class OverviewAdminService {
