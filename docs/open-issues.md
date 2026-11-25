@@ -20,6 +20,9 @@ adds a line here; a fix removes it. Bigger planned work is in the [roadmap](road
 
 ## Moderation
 
+- A room's **Slow mode** and **New members wait 10 minutes to talk** switches are saved and shown in
+  Room settings, but nothing enforces them yet (Common rooms' 3-second bubble limit does work).
+
 - A mod's Mute for everyone isn't in the audit log (it lives only on the game server); kick, ban,
   time out and mod changes are.
 - Draw & Guess drawings can't be checked (only its writing is filtered).

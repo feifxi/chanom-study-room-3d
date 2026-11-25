@@ -17,9 +17,10 @@ Start at [`docs/README.md`](docs/README.md). In short:
 1. [`docs/roadmap.md`](docs/roadmap.md): where things stand and what's next.
 2. [`docs/features/`](docs/features/README.md): what each feature does and where its code lives,
    in build order. The app's layout is in [`docs/design.md`](docs/design.md).
-3. [`docs/decisions.md`](docs/decisions.md): why. Check it before proposing something "new".
-4. [`docs/dev-guide.md`](docs/dev-guide.md): UI checks, maps, gotchas.
-5. [`docs/manual-tests.md`](docs/manual-tests.md) and [`docs/open-issues.md`](docs/open-issues.md).
+3. [`docs/guide/`](docs/guide/README.md): how the code works, from scratch (new to the repo? start here).
+4. [`docs/decisions.md`](docs/decisions.md): why. Check it before proposing something "new".
+5. [`docs/dev-guide.md`](docs/dev-guide.md): UI checks, maps, gotchas.
+6. [`docs/manual-tests.md`](docs/manual-tests.md) and [`docs/open-issues.md`](docs/open-issues.md).
 
 ## What's next
 
