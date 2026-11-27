@@ -1,5 +1,7 @@
 # 6. Maps
 
+PBIs: [MAP-1 to MAP-5](../releases.md#6-maps) · How the code works: [Release 1](../guide/04-release-1.md#the-library-map-1), [Release 2](../guide/05-release-2.md#the-librarys-activity-spots-and-map--look-map-2-map-3), [Release 3](../guide/06-release-3.md#bigger-and-more-maps-map-4-map-5)
+
 Owners pick a template; only the Connecta team builds templates. Maps are code-built for now;
 Blender models come later. **Every map has the same standard
 kit** (so every activity works everywhere) **but its own layout**.

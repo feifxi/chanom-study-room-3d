@@ -1,5 +1,7 @@
 # 5. The 3D room
 
+PBIs: [3D-1 to 3D-11](../releases.md#5-the-3d-room) · How the code works: [Release 1](../guide/04-release-1.md#the-3d-room-3d-1-to-3d-8), [Release 2](../guide/05-release-2.md#more-in-the-3d-room-3d-9-to-3d-11)
+
 Walking around a room together: click to walk, stereo proximity voice for crowds, private zones,
 bubbles, Away, and an announcement tool for owners and mods. Everything here runs on the **game
 server**. The HUD layout is in [Design](../design.md#inside-a-room-3d); the maps in [Maps](06-maps.md).

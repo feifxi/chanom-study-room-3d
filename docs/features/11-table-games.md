@@ -1,5 +1,7 @@
 # 11. Table games: chess and Slave
 
+PBIs: [TG-1 to TG-2](../releases.md#11-table-games) · How the code works: [Release 2](../guide/05-release-2.md#table-games-tg-1-tg-2)
+
 Two table games on the activity flow ([Activities](08-activities.md)). Both live **only in their
 panels**: the 3D tables are decor, and people who want to follow a game step onto the table's rug
 for a small read-only view that grows when clicked (never anyone's hand).

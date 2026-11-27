@@ -4,8 +4,9 @@ One spec per feature, listed in **build order**: each one needs only what's abov
 this order to learn the app. Every feature is built unless its spec says otherwise; the app's
 layout (header, pages, the 3D HUD) is in [Design](../design.md), not here.
 
-Each spec has the same shape: what it is, how it works, **In the code**, then **Not built yet** or
-**Not doing**.
+Each spec has the same shape: a line linking its PBIs ([releases](../releases.md)) and its code
+walkthrough ([guide](../guide/README.md)), what it is, how it works, **In the code** (the entry
+points; the guide walks through them), then **Not built yet** or **Not doing**.
 
 ## Foundations: people and rooms
 

@@ -1,5 +1,7 @@
 # 9. Watch together and photo mode
 
+PBIs: [WATCH-1 to WATCH-3](../releases.md#9-watch-together-and-photo-mode) · How the code works: [Release 2](../guide/05-release-2.md#watch-together-and-photo-mode-watch-1-to-watch-3)
+
 Watch YouTube in sync with whoever stands at the big screen, share your screen on it, and take
 photos anywhere. No jukebox: music is personal lo-fi.
 

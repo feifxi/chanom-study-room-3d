@@ -1,5 +1,7 @@
 # 7. Study tools
 
+PBIs: [STUDY-1 to STUDY-5](../releases.md#7-study-tools) · How the code works: [Release 1](../guide/04-release-1.md#study-tools-study-1-to-study-4), [Release 2](../guide/05-release-2.md#rankings-study-5)
+
 A personal focus timer, a private to-do list, and rankings of real focus minutes. Minimal on
 purpose: two presets, no streaks, no shared sessions.
 

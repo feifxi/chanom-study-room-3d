@@ -11,6 +11,8 @@ Each section says how it works inside, then lists the files: **shared** (rules b
 
 ## Accounts (ACC-1 to ACC-7)
 
+Spec: [1. Accounts and guests](../features/01-accounts.md) · All its PBIs: [release plan](../releases.md#1-accounts-and-guests)
+
 **How it works**
 
 1. **Sign in** ([`/login`](../../apps/web/src/app/login/page.tsx)): one page walks through steps
@@ -53,6 +55,8 @@ Each section says how it works inside, then lists the files: **shared** (rules b
 
 ## Rooms and membership (ROOM-1 to ROOM-7)
 
+Spec: [2. Rooms and membership](../features/02-rooms.md) · All its PBIs: [release plan](../releases.md#2-rooms-and-membership)
+
 **How it works**
 
 1. **Make a room** (`POST /api/rooms`): a short readable id, you as owner, a map. Home lists your
@@ -88,6 +92,8 @@ Each section says how it works inside, then lists the files: **shared** (rules b
 
 ## Friends and presence (FR-1 to FR-5)
 
+Spec: [3. Friends and presence](../features/03-friends.md) · All its PBIs: [release plan](../releases.md#3-friends-and-presence)
+
 **How it works**
 
 1. **Requests** (`POST /api/friends/requests` with a handle): stored in `FriendRequest`; accepting
@@ -114,6 +120,8 @@ Each section says how it works inside, then lists the files: **shared** (rules b
 ---
 
 ## Chat, DMs and the inbox (CHAT-1 to CHAT-6)
+
+Spec: [4. Chat, DMs and the inbox](../features/04-chat.md) · All its PBIs: [release plan](../releases.md#4-chat-dms-and-the-inbox)
 
 **How it works**
 
@@ -146,6 +154,8 @@ Each section says how it works inside, then lists the files: **shared** (rules b
 ---
 
 ## The 3D room (3D-1 to 3D-8)
+
+Spec: [5. The 3D room](../features/05-room-3d.md) · All its PBIs: [release plan](../releases.md#5-the-3d-room)
 
 **How it works**
 
@@ -195,6 +205,8 @@ Each section says how it works inside, then lists the files: **shared** (rules b
 
 ## The Library (MAP-1)
 
+Spec: [6. Maps](../features/06-maps.md) · All its PBIs: [release plan](../releases.md#6-maps)
+
 **How it works:** a map has two halves.
 
 - **Data** ([`packages/shared/src/maps/library.ts`](../../packages/shared/src/maps/library.ts)):
@@ -209,6 +221,8 @@ Each section says how it works inside, then lists the files: **shared** (rules b
 ---
 
 ## Study tools (STUDY-1 to STUDY-4)
+
+Spec: [7. Study tools](../features/07-study-tools.md) · All its PBIs: [release plan](../releases.md#7-study-tools)
 
 **How it works**
 
@@ -237,6 +251,8 @@ Each section says how it works inside, then lists the files: **shared** (rules b
 
 ## Safety basics (MOD-1, MOD-2)
 
+Spec: [12. Moderation and reports](../features/12-moderation.md) · All its PBIs: [release plan](../releases.md#12-moderation-and-reports)
+
 **How it works**
 
 1. **Word filter:** `maskWords` ([`moderate.ts`](../../packages/shared/src/moderate.ts)) masks chat
@@ -256,6 +272,8 @@ Each section says how it works inside, then lists the files: **shared** (rules b
 ---
 
 ## Team accounts and the admin site basics (ADM-1 to ADM-4)
+
+Spec: [16. Team accounts and the admin site](../features/16-admin.md) · All its PBIs: [release plan](../releases.md#16-team-accounts-and-the-admin-site)
 
 **How it works**
 

@@ -1,5 +1,7 @@
 # 14. Coins, quests and the Shop
 
+PBIs: [COIN-1 to COIN-3](../releases.md#14-coins-quests-and-the-shop) · How the code works: [Release 3](../guide/06-release-3.md#coins-quests-and-the-shop-coin-1-to-coin-3)
+
 Earn-only coins from three daily quests, spent on cosmetics that really show on your character.
 **Coins are never sold.** Guests earn nothing; their 🎯 in a room invites them to sign up.
 

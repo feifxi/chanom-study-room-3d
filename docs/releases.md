@@ -21,9 +21,23 @@ what it builds on (the spec numbers are the build order). Safety comes with each
 word filter, reports and suspensions because real people use it; R3 adds the automatic steps that
 strangers need.
 
+## How PBIs are split
+
+- **A slice someone can use**, written as one sentence of what a person can do or notice ("Sign in
+  with Google or Discord"), never a layer ("the OAuth table"). It's done when it works end to end:
+  database, API, game server and UI.
+- **Testable on its own:** it maps to checks in [manual-tests.md](manual-tests.md).
+- **Split at natural seams:** the core flow, then extras (email sign-in, then Google); members, then
+  guests; the happy path, then edge cases (the under-13 lock); the action, then the clean-up behind it.
+- **Small enough to sit in one release:** if part of a feature belongs later, it's its own PBI.
+- **IDs:** the feature's prefix and a number in build order (`ACC-1`…). The guide's sections use
+  the same IDs, so a PBI's code is easy to find.
+
 ## PBIs by feature
 
 ### 1. [Accounts and guests](features/01-accounts.md)
+
+Code: [Release 1](guide/04-release-1.md#accounts-acc-1-to-acc-7) · [Release 2](guide/05-release-2.md#guests-acc-8-to-acc-10)
 
 | ID     | PBI                                                                         | Release |
 | ------ | --------------------------------------------------------------------------- | ------- |
@@ -39,6 +53,8 @@ strangers need.
 | ACC-10 | Old guest accounts are cleared out                                          | R2      |
 
 ### 2. [Rooms and membership](features/02-rooms.md)
+
+Code: [Release 1](guide/04-release-1.md#rooms-and-membership-room-1-to-room-7) · [Release 2](guide/05-release-2.md#rooms-others-can-find-room-8-to-room-11)
 
 | ID      | PBI                                                                                  | Release |
 | ------- | ------------------------------------------------------------------------------------ | ------- |
@@ -56,6 +72,8 @@ strangers need.
 
 ### 3. [Friends and presence](features/03-friends.md)
 
+Code: [Release 1](guide/04-release-1.md#friends-and-presence-fr-1-to-fr-5) · [Release 2](guide/05-release-2.md#friends-cards-and-status-fr-6-fr-7)
+
 | ID   | PBI                                                                        | Release |
 | ---- | -------------------------------------------------------------------------- | ------- |
 | FR-1 | Add a friend by exact @handle; accept or ignore; silent requests           | R1      |
@@ -67,6 +85,8 @@ strangers need.
 | FR-7 | "Show what I'm doing" (📖 Focusing · Calculus)                             | R2      |
 
 ### 4. [Chat, DMs and the inbox](features/04-chat.md)
+
+Code: [Release 1](guide/04-release-1.md#chat-dms-and-the-inbox-chat-1-to-chat-6) · [Release 2](guide/05-release-2.md#pictures-and-notification-settings-chat-7-chat-8)
 
 | ID     | PBI                                                                     | Release |
 | ------ | ----------------------------------------------------------------------- | ------- |
@@ -80,6 +100,8 @@ strangers need.
 | CHAT-8 | Pictures in chat and DMs (up to 4, shrunk to WebP)                      | R2      |
 
 ### 5. [The 3D room](features/05-room-3d.md)
+
+Code: [Release 1](guide/04-release-1.md#the-3d-room-3d-1-to-3d-8) · [Release 2](guide/05-release-2.md#more-in-the-3d-room-3d-9-to-3d-11)
 
 | ID    | PBI                                                                                 | Release |
 | ----- | ----------------------------------------------------------------------------------- | ------- |
@@ -97,6 +119,8 @@ strangers need.
 
 ### 6. [Maps](features/06-maps.md)
 
+Code: [Release 1](guide/04-release-1.md#the-library-map-1) · [Release 2](guide/05-release-2.md#the-librarys-activity-spots-and-map--look-map-2-map-3) · [Release 3](guide/06-release-3.md#bigger-and-more-maps-map-4-map-5)
+
 | ID    | PBI                                                                                    | Release |
 | ----- | -------------------------------------------------------------------------------------- | ------- |
 | MAP-1 | The Library: study spots, lounge, private zones, spawn                                 | R1      |
@@ -106,6 +130,8 @@ strangers need.
 | MAP-5 | More templates (Cat Café, Starry Rooftop)                                              | R3      |
 
 ### 7. [Study tools](features/07-study-tools.md)
+
+Code: [Release 1](guide/04-release-1.md#study-tools-study-1-to-study-4) · [Release 2](guide/05-release-2.md#rankings-study-5)
 
 | ID      | PBI                                                               | Release |
 | ------- | ----------------------------------------------------------------- | ------- |
@@ -117,6 +143,8 @@ strangers need.
 
 ### 8. [Activities](features/08-activities.md)
 
+Code: [Release 2](guide/05-release-2.md#activities-one-flow-for-every-game-act-1-to-act-5)
+
 | ID    | PBI                                                                            | Release |
 | ----- | ------------------------------------------------------------------------------ | ------- |
 | ACT-1 | One flow for every activity: spot, gathering, host, Start, results, Play again | R2      |
@@ -127,6 +155,8 @@ strangers need.
 
 ### 9. [Watch together and photo mode](features/09-watch-and-photo.md)
 
+Code: [Release 2](guide/05-release-2.md#watch-together-and-photo-mode-watch-1-to-watch-3)
+
 | ID      | PBI                                                                | Release |
 | ------- | ------------------------------------------------------------------ | ------- |
 | WATCH-1 | YouTube on the TV in sync, controls for everyone watching, Up next | R2      |
@@ -134,6 +164,8 @@ strangers need.
 | WATCH-3 | Photo mode: save, copy or share to Room chat                       | R2      |
 
 ### 10. [Party games](features/10-party-games.md)
+
+Code: [Release 2](guide/05-release-2.md#party-games-pg-1-to-pg-3) · [Release 3](guide/06-release-3.md#room-decks-for-pick-a-side-pg-4)
 
 | ID   | PBI                                                          | Release |
 | ---- | ------------------------------------------------------------ | ------- |
@@ -144,12 +176,16 @@ strangers need.
 
 ### 11. [Table games](features/11-table-games.md)
 
+Code: [Release 2](guide/05-release-2.md#table-games-tg-1-tg-2)
+
 | ID   | PBI                                                    | Release |
 | ---- | ------------------------------------------------------ | ------- |
 | TG-1 | Chess at the chess table, with a watch view on the rug | R2      |
 | TG-2 | Slave at the card table (3–6 players), private hands   | R2      |
 
 ### 12. [Moderation and reports](features/12-moderation.md)
+
+Code: [Release 1](guide/04-release-1.md#safety-basics-mod-1-mod-2) · [Release 2](guide/05-release-2.md#picture-check-and-slow-mode-mod-3-mod-4) · [Release 3](guide/06-release-3.md#automatic-report-steps-mod-5)
 
 | ID    | PBI                                                                         | Release |
 | ----- | --------------------------------------------------------------------------- | ------- |
@@ -161,6 +197,8 @@ strangers need.
 
 ### 13. [Common rooms](features/13-common-rooms.md)
 
+Code: [Release 3](guide/06-release-3.md#common-rooms-com-1-to-com-4)
+
 | ID    | PBI                                                                        | Release |
 | ----- | -------------------------------------------------------------------------- | ------- |
 | COM-1 | Common rooms in copies: 25 a copy, 5 kept for friends; land with friends   | R3      |
@@ -170,6 +208,8 @@ strangers need.
 
 ### 14. [Coins, quests and the Shop](features/14-coins-and-shop.md)
 
+Code: [Release 3](guide/06-release-3.md#coins-quests-and-the-shop-coin-1-to-coin-3)
+
 | ID     | PBI                                                  | Release |
 | ------ | ---------------------------------------------------- | ------- |
 | COIN-1 | Daily quests (3 a day) that pay earn-only coins      | R3      |
@@ -177,6 +217,8 @@ strangers need.
 | COIN-3 | Pets: Shop cats brought out of the Buddy Machine     | R3      |
 
 ### 15. [Connecta Plus and payments](features/15-plus.md)
+
+Code: [Release 3](guide/06-release-3.md#connecta-plus-and-payments-plus-1-to-plus-5)
 
 | ID     | PBI                                                                  | Release |
 | ------ | -------------------------------------------------------------------- | ------- |
@@ -187,6 +229,8 @@ strangers need.
 | PLUS-5 | When Plus ends: 7 days of grace, nobody sent out                     | R3      |
 
 ### 16. [Team accounts and the admin site](features/16-admin.md)
+
+Code: [Release 1](guide/04-release-1.md#team-accounts-and-the-admin-site-basics-adm-1-to-adm-4) · [Release 2](guide/05-release-2.md#more-of-the-admin-site-adm-5-to-adm-7) · [Release 3](guide/06-release-3.md#the-admin-sites-common-rooms-and-money-adm-8-adm-9)
 
 | ID    | PBI                                                                                       | Release |
 | ----- | ----------------------------------------------------------------------------------------- | ------- |

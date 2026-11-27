@@ -11,7 +11,7 @@ import { randomPrompt } from './content';
 import { REACTIONS, chainOf, sourceFor, stepKind, type Entry, type TelGame } from './game';
 
 /**
- * Draw & Guess happens entirely in this panel, like Gartic Phone: your turn (write, draw,
+ * Draw & Guess happens entirely in this panel: your turn (write, draw,
  * describe, or copy from memory), then the album. The room and voice carry on around it.
  */
 export function TelephonePanel({

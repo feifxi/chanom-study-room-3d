@@ -1,5 +1,7 @@
 # 2. Rooms and membership
 
+PBIs: [ROOM-1 to ROOM-11](../releases.md#2-rooms-and-membership) · How the code works: [Release 1](../guide/04-release-1.md#rooms-and-membership-room-1-to-room-7), [Release 2](../guide/05-release-2.md#rooms-others-can-find-room-8-to-room-11)
+
 A room is the top-level thing in Connecta. Like Discord, you're a **member** of a room before you
 walk in. Three fixed roles, two kinds of invite link, and kick, ban and time out wherever you see
 the person.

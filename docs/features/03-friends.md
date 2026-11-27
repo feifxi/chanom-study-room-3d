@@ -1,5 +1,7 @@
 # 3. Friends and presence
 
+PBIs: [FR-1 to FR-7](../releases.md#3-friends-and-presence) · How the code works: [Release 1](../guide/04-release-1.md#friends-and-presence-fr-1-to-fr-5), [Release 2](../guide/05-release-2.md#friends-cards-and-status-fr-6-fr-7)
+
 Only friends DM and only friends see where you are. You add people by exact @handle, from a room,
 or by a friend link. Nothing is ever pushed at you.
 

@@ -38,7 +38,9 @@ deploy. [The roadmap](docs/roadmap.md) is the source of truth.
 - **Ask in plain text** with options and a recommendation. Don't use pop-up question dialogs.
 - **In the same change:** update the feature's spec; add a dated line to `docs/decisions.md` for
   any decision; add hand-test checks to `docs/manual-tests.md` (tell the owner which); add anything
-  noticed but not fixed to `docs/open-issues.md`; update `docs/roadmap.md` if the status changed.
+  noticed but not fixed to `docs/open-issues.md`; update `docs/roadmap.md` if the status changed;
+  update the `docs/guide/` section if files, endpoints, messages or flows changed; give new work PBIs
+  in `docs/releases.md` (specs, releases and guide stay cross-linked: see `docs/README.md`).
 - **Each fact lives in one place:** specs hold the what, the decision log the why, the roadmap the
   status. Link instead of copying. Keep docs short.
 - **One seed for the whole app** (`apps/api/prisma/seed/`, one file per area): a feature that adds

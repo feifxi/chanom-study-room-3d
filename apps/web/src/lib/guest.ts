@@ -1,9 +1,9 @@
 import type { AvatarLook } from '@connecta/shared';
 
 /**
- * A guest's name and character, also kept for this browser tab: the room page still reads it from
- * here until rooms are on the API (the server keeps the real copy on the guest's session, and that
- * one carries over on sign-up).
+ * A guest's name and character, also kept for this browser tab so the room screen can draw your own
+ * character straight away. The real copy is on the guest's account (the API): that's the one the
+ * game server shows everyone, and it carries over on sign-up.
  */
 export type GuestProfile = { name: string; look: AvatarLook };
 

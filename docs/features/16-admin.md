@@ -1,5 +1,7 @@
 # 16. Team accounts and the admin site
 
+PBIs: [ADM-1 to ADM-9](../releases.md#16-team-accounts-and-the-admin-site) · How the code works: [Release 1](../guide/04-release-1.md#team-accounts-and-the-admin-site-basics-adm-1-to-adm-4), [Release 2](../guide/05-release-2.md#more-of-the-admin-site-adm-5-to-adm-7), [Release 3](../guide/06-release-3.md#the-admin-sites-common-rooms-and-money-adm-8-adm-9)
+
 How the Connecta team runs the platform: who counts as team, what `/admin` shows, and what the
 team can do to an account or a room. Build it last: it reads every other feature.
 

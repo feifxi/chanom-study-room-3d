@@ -1,5 +1,7 @@
 # 8. Activities
 
+PBIs: [ACT-1 to ACT-5](../releases.md#8-activities) · How the code works: [Release 2](../guide/05-release-2.md#activities-one-flow-for-every-game-act-1-to-act-5)
+
 **One flow for every activity.** Joining, starting, inviting, leaving and ending work the same
 everywhere; each game only designs what happens while it's played. Build this before any game:
 [Watch together](09-watch-and-photo.md), [Party games](10-party-games.md) and

@@ -1,5 +1,7 @@
 # 4. Chat, DMs and the inbox
 
+PBIs: [CHAT-1 to CHAT-8](../releases.md#4-chat-dms-and-the-inbox) · How the code works: [Release 1](../guide/04-release-1.md#chat-dms-and-the-inbox-chat-1-to-chat-6), [Release 2](../guide/05-release-2.md#pictures-and-notification-settings-chat-7-chat-8)
+
 Each room has one saved chat, every DM is 1-to-1 between friends, and every thread works the same:
 react, reply, edit, delete, @mentions, pictures. No threads, no read receipts. The 🔔 inbox
 gathers what needs you.

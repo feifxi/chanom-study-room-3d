@@ -1,5 +1,7 @@
 # 15. Connecta Plus and payments
 
+PBIs: [PLUS-1 to PLUS-5](../releases.md#15-connecta-plus-and-payments) · How the code works: [Release 3](../guide/06-release-3.md#connecta-plus-and-payments-plus-1-to-plus-5)
+
 One subscription. **Never sell power, no ads in rooms, never charge to join.** Paid perks either
 cost us money to run or are purely cosmetic.
 

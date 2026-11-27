@@ -10,6 +10,8 @@ mirrors it.
 
 ## Guests (ACC-8 to ACC-10)
 
+Spec: [1. Accounts and guests](../features/01-accounts.md) · All its PBIs: [release plan](../releases.md#1-accounts-and-guests)
+
 **How it works**
 
 1. A guest pass page (`/g/<code>`, [`InvitePage`](../../apps/web/src/features/rooms/InvitePage.tsx))
@@ -33,6 +35,8 @@ database `GuestVisit`; web [`app/g/[code]`](../../apps/web/src/app/g/[code]/page
 ---
 
 ## Rooms others can find (ROOM-8 to ROOM-11)
+
+Spec: [2. Rooms and membership](../features/02-rooms.md) · All its PBIs: [release plan](../releases.md#2-rooms-and-membership)
 
 **How it works**
 
@@ -59,6 +63,8 @@ database `GuestVisit`; web [`app/g/[code]`](../../apps/web/src/app/g/[code]/page
 
 ## Friends: cards and status (FR-6, FR-7)
 
+Spec: [3. Friends and presence](../features/03-friends.md) · All its PBIs: [release plan](../releases.md#3-friends-and-presence)
+
 **How it works:** **Ask to join** and **Invite** are DM messages with a `card`
 (`POST /api/dms/with/:handle/ask`, `/invite`); answering an ask (`POST /api/dms/asks/:messageId`)
 makes a member invite if you may, else a 24-hour guest pass. "What I'm doing" is the focus status
@@ -71,6 +77,8 @@ the game server reports to presence.
 ---
 
 ## Pictures and notification settings (CHAT-7, CHAT-8)
+
+Spec: [4. Chat, DMs and the inbox](../features/04-chat.md) · All its PBIs: [release plan](../releases.md#4-chat-dms-and-the-inbox)
 
 **How it works**
 
@@ -89,6 +97,8 @@ database `Picture`; web the picture parts of [`components/chat/Chat.tsx`](../../
 ---
 
 ## More in the 3D room (3D-9 to 3D-11)
+
+Spec: [5. The 3D room](../features/05-room-3d.md) · All its PBIs: [release plan](../releases.md#5-the-3d-room)
 
 **How it works**
 
@@ -110,6 +120,8 @@ database `Picture`; web the picture parts of [`components/chat/Chat.tsx`](../../
 
 ## The Library's activity spots and Map & look (MAP-2, MAP-3)
 
+Spec: [6. Maps](../features/06-maps.md) · All its PBIs: [release plan](../releases.md#6-maps)
+
 **How it works**
 
 1. **Spots** (the TV rug, card and chess tables, the open floor, the whiteboard strip, the art
@@ -128,6 +140,8 @@ database `Picture`; web the picture parts of [`components/chat/Chat.tsx`](../../
 
 ## Rankings (STUDY-5)
 
+Spec: [7. Study tools](../features/07-study-tools.md) · All its PBIs: [release plan](../releases.md#7-study-tools)
+
 `GET /api/focus/rankings` sums `FocusSession` minutes for friends or everyone, today or this week,
 capped at 12 hours a day. Everyone is opt-in ([`everyone.ts`](../../apps/api/src/focus/everyone.ts))
 and cached for 5 minutes. Files: [`focus/focus.service.ts`](../../apps/api/src/focus/focus.service.ts),
@@ -136,6 +150,8 @@ the [Focus page](<../../apps/web/src/app/(app)/(home)/home/focus/page.tsx>).
 ---
 
 ## Activities: one flow for every game (ACT-1 to ACT-5)
+
+Spec: [8. Activities](../features/08-activities.md) · All its PBIs: [release plan](../releases.md#8-activities)
 
 **How it works.** Learn this before any game: every game plugs into it.
 
@@ -160,6 +176,8 @@ the [Focus page](<../../apps/web/src/app/(app)/(home)/home/focus/page.tsx>).
 
 ## Watch together and photo mode (WATCH-1 to WATCH-3)
 
+Spec: [9. Watch together and photo mode](../features/09-watch-and-photo.md) · All its PBIs: [release plan](../releases.md#9-watch-together-and-photo-mode)
+
 **How it works**
 
 1. **The TV is game state** ([`watch.ts`](../../apps/game/src/watch.ts)): the video, when it
@@ -179,6 +197,8 @@ web [`WatchPanel.tsx`](../../apps/web/src/features/activities/WatchPanel.tsx),
 ---
 
 ## Party games (PG-1 to PG-3)
+
+Spec: [10. Party games](../features/10-party-games.md) · All its PBIs: [release plan](../releases.md#10-party-games)
 
 **Pick a Side.** The server ([`pickASide.ts`](../../apps/game/src/pickASide.ts)) picks questions
 from the deck, runs the timer, and when it ends reads **where each player stands** on the rug to
@@ -203,6 +223,8 @@ message limit. Writing is masked by the word filter. Web:
 
 ## Table games (TG-1, TG-2)
 
+Spec: [11. Table games](../features/11-table-games.md) · All its PBIs: [release plan](../releases.md#11-table-games)
+
 **Chess.** `ChessTable` in [`activity.ts`](../../apps/game/src/activity.ts) checks every move with
 the shared rules ([`packages/shared/src/chess.ts`](../../packages/shared/src/chess.ts), on chess.js);
 the browser uses the same code to show legal squares. Web: [`features/activities/chess/`](../../apps/web/src/features/activities/chess).
@@ -216,6 +238,8 @@ state holds only the public part; **each hand goes to its player alone** (`slave
 
 ## Picture check and slow mode (MOD-3, MOD-4)
 
+Spec: [12. Moderation and reports](../features/12-moderation.md) · All its PBIs: [release plan](../releases.md#12-moderation-and-reports)
+
 - **Picture check:** OpenAI's free moderation endpoint, called by the pictures worker
   ([`picture-check.ts`](../../apps/api/src/chat/picture-check.ts)); off until `OPENAI_API_KEY` is set.
 - **Slow mode:** Common rooms' 3-second bubble limit is enforced on the game server
@@ -225,6 +249,8 @@ state holds only the public part; **each hand goes to its player alone** (`slave
 ---
 
 ## More of the admin site (ADM-5 to ADM-7)
+
+Spec: [16. Team accounts and the admin site](../features/16-admin.md) · All its PBIs: [release plan](../releases.md#16-team-accounts-and-the-admin-site)
 
 - **Rooms** (`POST /api/admin/rooms/:id/actions`): delist, close, and undo
   ([`rooms-admin.service.ts`](../../apps/api/src/admin/rooms-admin.service.ts)). Closing sends a

@@ -8,6 +8,8 @@ coins and the Shop, Plus and payments, and the admin site's money pages. It buil
 
 ## Bigger and more maps (MAP-4, MAP-5)
 
+Spec: [6. Maps](../features/06-maps.md) · All its PBIs: [release plan](../releases.md#6-maps)
+
 - **Sizes:** a room's `size` (`cosy` or `big`) picks how the map is laid out; Big needs the owner's
   Plus, checked by the API when the setting changes and by the grace rules when Plus ends.
 - **More templates:** each map is a data file in [`packages/shared/src/maps/`](../../packages/shared/src/maps)
@@ -18,6 +20,8 @@ coins and the Shop, Plus and payments, and the admin site's money pages. It buil
 ---
 
 ## Room decks for Pick a Side (PG-4)
+
+Spec: [10. Party games](../features/10-party-games.md) · All its PBIs: [release plan](../releases.md#10-party-games)
 
 **How it works:** decks are rows in the API (`RoomDeck`), written by members
 (`POST /api/rooms/:id/decks`) and masked by the word filter. To play one, the host's page asks for
@@ -33,6 +37,8 @@ the game server never reads the database.
 ---
 
 ## Automatic report steps (MOD-5)
+
+Spec: [12. Moderation and reports](../features/12-moderation.md) · All its PBIs: [release plan](../releases.md#12-moderation-and-reports)
 
 **How it works**
 
@@ -53,6 +59,8 @@ the game server never reads the database.
 ---
 
 ## Common rooms (COM-1 to COM-4)
+
+Spec: [13. Common rooms](../features/13-common-rooms.md) · All its PBIs: [release plan](../releases.md#13-common-rooms)
 
 **How it works**
 
@@ -79,6 +87,8 @@ game the `common` flag in [`room.ts`](../../apps/game/src/room.ts); web
 ---
 
 ## Coins, quests and the Shop (COIN-1 to COIN-3)
+
+Spec: [14. Coins, quests and the Shop](../features/14-coins-and-shop.md) · All its PBIs: [release plan](../releases.md#14-coins-quests-and-the-shop)
 
 **How it works**
 
@@ -109,6 +119,8 @@ web [`features/quests/useQuests.ts`](../../apps/web/src/features/quests/useQuest
 ---
 
 ## Connecta Plus and payments (PLUS-1 to PLUS-5)
+
+Spec: [15. Connecta Plus and payments](../features/15-plus.md) · All its PBIs: [release plan](../releases.md#15-connecta-plus-and-payments)
 
 **How it works**
 
@@ -145,6 +157,8 @@ Stripe setup for testing: [spec](../features/15-plus.md#setting-up-stripe-the-ow
 ---
 
 ## The admin site's Common rooms and Money (ADM-8, ADM-9)
+
+Spec: [16. Team accounts and the admin site](../features/16-admin.md) · All its PBIs: [release plan](../releases.md#16-team-accounts-and-the-admin-site)
 
 - **Common rooms page:** each copy and how full, the seats setting, a notice banner sent to every
   Common room as a `notice` room event ([`platform-admin.service.ts`](../../apps/api/src/admin/platform-admin.service.ts)).

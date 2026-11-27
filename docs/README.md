@@ -17,6 +17,21 @@ Each fact lives in one place; the others link to it.
 
 Commands, repo layout and working agreements are in [`AGENTS.md`](../AGENTS.md).
 
+## How the docs fit together
+
+The same 16 features, numbered the same everywhere, seen three ways:
+
+| Question                         | Doc                                    | Keyed by                                     |
+| -------------------------------- | -------------------------------------- | -------------------------------------------- |
+| **What** does the feature do?    | its spec, `features/NN-name.md`        | the feature number (1–16)                    |
+| **When** is each part delivered? | [releases.md](releases.md)             | PBI IDs (ACC-1, ROOM-3…), each in R1, R2, R3 |
+| **How** does its code work?      | the guide's release chapters (4, 5, 6) | sections headed with the same PBI IDs        |
+
+Every spec starts with a line linking its PBIs and its code walkthrough; every feature in the
+release plan links its guide sections; every guide section links back to its spec and PBIs. So from
+any one of them you're one click from the other two.
+
 **When you change something:** update its spec; add a dated line to the decision log if a decision
 was made; add hand-test checks for a new feature; add anything you noticed but didn't fix to open
-issues; update the roadmap if the status changed.
+issues; update the roadmap if the status changed. If files, endpoints, messages or flows changed,
+update the guide section that describes them; new work gets PBIs in the release plan.

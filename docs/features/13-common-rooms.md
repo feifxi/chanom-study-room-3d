@@ -1,5 +1,7 @@
 # 13. Common rooms
 
+PBIs: [COM-1 to COM-4](../releases.md#13-common-rooms) · How the code works: [Release 3](../guide/06-release-3.md#common-rooms-com-1-to-com-4)
+
 Connecta's own rooms, open to anyone, guests too, and **safe for strangers by design**. They're
 how new people try Connecta. One per map, in copies: "Library Common Room #2".
 

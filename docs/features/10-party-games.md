@@ -1,5 +1,7 @@
 # 10. Party games: Pick a Side, whiteboard, Draw & Guess
 
+PBIs: [PG-1 to PG-4](../releases.md#10-party-games) · How the code works: [Release 2](../guide/05-release-2.md#party-games-pg-1-to-pg-3), [Release 3](../guide/06-release-3.md#room-decks-for-pick-a-side-pg-4)
+
 Three party pieces on the shared activity flow ([Activities](08-activities.md)): a walk-to-answer
 game, a free drawing wall, and a pass-it-along drawing game.
 
