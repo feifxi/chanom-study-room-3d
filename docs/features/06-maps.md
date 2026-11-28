@@ -1,6 +1,6 @@
 # 6. Maps
 
-PBIs: [MAP-1 to MAP-5](../releases.md#6-maps) · How the code works: [Release 1](../guide/04-release-1.md#the-library-map-1), [Release 2](../guide/05-release-2.md#the-librarys-activity-spots-and-map--look-map-2-map-3), [Release 3](../guide/06-release-3.md#bigger-and-more-maps-map-4-map-5)
+PBIs: [MAP-1 to MAP-4](../releases.md#6-maps) · How the code works: [Release 1](../guide/04-release-1.md#the-library-map-1), [Release 2](../guide/05-release-2.md#the-librarys-activity-spots-and-map--look-map-2-map-3), [Release 3](../guide/06-release-3.md#more-maps-map-4)
 
 Owners pick a template; only the Connecta team builds templates. Maps are code-built for now;
 Blender models come later. **Every map has the same standard
@@ -11,35 +11,35 @@ selectable, not polished, and their future is decided with the Blender work.
 
 ## The standard kit
 
-| Piece          | Needs                       | Library (main)                                 |
-| -------------- | --------------------------- | ---------------------------------------------- |
-| Study spots    | 12+ seats (Cosy), 24+ (Big) | 4 small tables, a 10- and an 8-seat long table |
-| Lounge         | a corner to hang out        | TV lounge                                      |
-| Private zones  | at least 2                  | Fireside, Window booth                         |
-| Big screen     | Watch together              | TV on a console                                |
-| Card table     | card games                  | 1, six stools                                  |
-| Chess table    | chess                       | 2 stools by the door                           |
-| Lantern circle | 12 cushions, decor          | cushions round a lantern                       |
-| Open floor     | 12 m²+ for Pick a Side      | 5.4 m square four-colour rug                   |
-| Whiteboard     | draw together               | 3 m board, no rug                              |
-| Art corner     | Draw & Guess                | round table, 10 stools                         |
-| Buddy Machine  | cats and study buddies      | by the door                                    |
-| Nap spots      | where cats sleep            | hearth, shelf, sofa                            |
-| Spawn          | where you walk in           | front door                                     |
+| Piece          | Needs                  | Library (main)                                 |
+| -------------- | ---------------------- | ---------------------------------------------- |
+| Study spots    | 12+ seats              | 4 small tables, a 10- and an 8-seat long table |
+| Lounge         | a corner to hang out   | TV lounge                                      |
+| Private zones  | at least 2             | Fireside, Window booth                         |
+| Big screen     | Watch together         | TV on a console                                |
+| Card table     | card games             | 1, six stools                                  |
+| Chess table    | chess                  | 2 stools by the door                           |
+| Lantern circle | 12 cushions, decor     | cushions round a lantern                       |
+| Open floor     | 12 m²+ for Pick a Side | 5.4 m square four-colour rug                   |
+| Whiteboard     | draw together          | 3 m board, no rug                              |
+| Art corner     | Draw & Guess           | round table, 10 stools                         |
+| Buddy Machine  | cats and study buddies | by the door                                    |
+| Nap spots      | where cats sleep       | hearth, shelf, sofa                            |
+| Spawn          | where you walk in      | front door                                     |
 
 The Café and Rooftop still have two 4-stool card tables, no chess table, and hanging zone plaques.
 
-## Sizes and layout rules
+## Size and layout rules
 
-- **Cosy** 26 × 18 m, up to 50 people (every room starts here). **Big** ~34 × 24 m, up to 100,
-  needs the owner's Plus. People at once is still capped by the plan.
+- **One size, built for 30** (26 × 18 m): the most any room holds (Plus), plus its owner and mods.
+  Free rooms stop at 15. Common rooms use the same maps and the same 30.
 - Quiet at the back (study), loud at the front (games), private zones against walls.
 - **The rug is the area:** every activity spot and private zone is a rug; areas never overlap. The
   whiteboard is the exception (just a strip in front of it).
 
 ## What owners change (Room settings → Map & look)
 
-Owner only. Template and size (switches live), time of day (Follow the clock / Always day /
+Owner only. Template (switches live), time of day (Follow the clock / Always day /
 Always night, the same for everyone inside). No colours or signs. **Live switch:** a loading
 screen, then everyone lands at the new door; voice, chat, bubbles, timers and music carry on.
 

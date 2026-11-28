@@ -11,7 +11,11 @@ decision changes, edit its line ("reversed on …") instead of adding a contradi
   in the app: two copies of every page confused the team.
 - **Three releases** (2026-11-24): core first (study with friends), then fun (hang out and play),
   then scale (open to strangers, and paying for itself), each usable on its own. Every feature is
-  split into PBIs in [releases.md](releases.md).
+  split into PBIs in [releases.md](releases.md). **Rebalanced** (2026-11-28): R1 was too big (44
+  PBIs), so it keeps only the core loop (28): Google/Discord, profile edits, DMs, the inbox,
+  @mentions, private zones, music, the Focus page and room mods moved to R2. The word filter,
+  reports and the whole admin site moved to R3 with guests and Discover: until strangers can get
+  in, rooms are private and invite-only, and block plus the owner's kick and ban are enough.
 - **No mock data in the app** (2026-11-24): every room, Common rooms too, runs on the game server, so
   the browser copies of the games, the scripted people and the mock room went with the demo. The
   Test tools' pretend crowd (development only) is the one stand-in left. Every button does what
@@ -68,14 +72,25 @@ decision changes, edit its line ("reversed on …") instead of adding a contradi
 ## Rooms and people
 
 - **Fixed roles** (Owner, Mod, Member), no custom ones: they're much of why Discord feels heavy.
-- **Full is full:** a room never opens copies; only Common rooms do. The owner and mods always fit.
+- **Rooms are for groups, 30 at most** (2026-11-28): Connecta is built for groups of about 10, and
+  100 people in one 3D room costs every phone in it. So 15 at once and 30 members on Free, 30 and
+  100 with Plus (twice the space stays Plus's main perk), Common rooms 30 a copy. **One map size**,
+  built for 30: Big maps (Plus, up to 100) were dropped, and the room's size setting with them.
+- **Held seats, not overflow** (2026-11-28, the owner's design): the cap never bends. One seat is
+  kept for the owner and one for a mod, inside the 30 (28 for everyone else), so the people running
+  a room can always get in and the 3D budget is set for exactly 30. Letting the owner and mods in
+  past the cap was the first version, dropped the same day.
+- **Up to 5 mods a room** (2026-11-28): a few mods cover a group across the day; only the first
+  inside gets the held seat. Handing over with all 5 mod places taken leaves the old owner a member.
+- **Full is full:** a room never opens copies; only Common rooms do. **No "notify me"** (2026-11-28,
+  removed as unneeded): a full room says Full and Walk in comes back when someone leaves.
 - **Invite links have no use limit** (2026-11-21): only an expiry. Inviting one person is what a
   friend request is for; expiry and cancelling cover a link that spread.
 - **A private room you're not in is a 404** and is never named to friends ("🔒 A private room").
 - **Room thumbnails are public and the owner's** (2026-11-24): they're on Discover and invite
   links, like the room's name. They go through the picture check before they show.
 - **Ban works on non-members too** (a guest, someone asking); handing a room over makes the old
-  owner a mod.
+  owner a mod (a member when the 5 mod seats are taken).
 - **DMs are 1-to-1, friends only.** No group DMs, no calls. Pictures yes.
 - **No "Seen" receipts**, no threads. Notifications default to @mentions.
 - **Friends:** no favourites, no suggestions, no "a friend walked in" notifications (visible,
@@ -95,7 +110,7 @@ decision changes, edit its line ("reversed on …") instead of adding a contradi
 - **Chat:** Bubbles / Room chat / Messages. No "Nearby" text chat. Emoji go in chat; no emotes.
 - **The dock stays short:** owner and mod tools under 🛡️ Room; your settings and Photo mode under
   ⋯ More (2026-11-20: the Room card was too long, and room and personal settings belong apart).
-- **One people panel built for 100.** **Away after 10 minutes**, never while a timer runs.
+- **One people panel built for a full room.** **Away after 10 minutes**, never while a timer runs.
 - **Private zones are rugs** with a floating "🔇 Private zone" tag, no locks. **Zone voice is
   enforced by LiveKit** through each speaker's own client (2026-11-22): LiveKit's server API can't
   set who receives someone else's track, and a LiveKit room per zone would drop your voice every
@@ -172,7 +187,7 @@ decision changes, edit its line ("reversed on …") instead of adding a contradi
 ## Moderation
 
 - **Common rooms are text only for everyone** (2026-11-09): nobody runs them and the team can't
-  watch every copy. 25 per copy, 5 kept for friends.
+  watch every copy. 30 per copy (25 before 2026-11-28), 5 kept for friends.
 - **Cheap layers first:** a word filter that **masks** messages but **refuses** names (a name of
   asterisks helps nobody); OpenAI's free picture check behind a key.
 - **10 reports an hour per person** (2026-11-24): plenty for a bad night, not enough to flood the

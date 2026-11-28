@@ -6,6 +6,8 @@ import {
   GAME_CLOSE,
   MIN_COUNTED_FOCUS_MIN,
   PATCH_RATE_MS,
+  hasSeat,
+  ROOM_PLANS,
   RECONNECT_SECONDS,
   SAY_COOLDOWN_MS,
   COMMON_SAY_MS,
@@ -66,8 +68,12 @@ const NPC_TICK_MS = 100;
 /** Focus timers run out to within this */
 const TIMER_TICK_MS = 250;
 
-/** Owners and mods always fit (docs/features/02-rooms.md: "the owner and mods always fit"), so the hard cap sits well above capacity. */
-const HARD_CAP = 250;
+/**
+ * Connections, a safety net under the real limit (people, checked in onAuth: never past the
+ * biggest plan's 30). Doubled because on a reload the old connection keeps its slot while it waits
+ * to reconnect, so a full room briefly holds two connections for that person.
+ */
+const HARD_CAP = ROOM_PLANS.plus.capacity * 2;
 
 const finite = z.number().refine(Number.isFinite);
 
@@ -111,8 +117,6 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
   private map: MapData = mapDataFor('library');
   private priv = new Map<string, Private>();
   private clients_ = new Map<string, Client>();
-  /** Full when someone was turned away; the next leave tells the waiting list */
-  private turnedAway = false;
   /** Room settings → Guests can use voice (the newest ticket, then live changes) */
   private guestVoice = false;
   /** A Common room copy (docs/features/13-common-rooms.md): text only for everyone, slow mode, no big screen */
@@ -498,12 +502,16 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     this.roomWideGames = ticket.roomWideGames ?? true;
     // The team's notice, for a copy opened after it was posted
     if (this.common && ticket.notice && ticket.notice.until > (this.state.noticeUntil ?? 0)) this.showNotice(ticket.notice);
-    const staff = ticket.role === 'owner' || ticket.role === 'mod';
-    const others = [...this.priv.values()].filter((s) => s.userId !== ticket.sub).length;
-    if (!staff && others >= this.capacity) {
-      this.turnedAway = true;
-      throw new ServerError(403, 'full');
-    }
+    // Everyone else inside (your own older tab is about to be replaced, so it doesn't count)
+    const others = [...this.state.players.values()].filter((p) => p.userId !== ticket.sub);
+    const inside = {
+      people: others.length,
+      ownerIn: others.some((p) => p.role === 'owner'),
+      modsIn: others.filter((p) => p.role === 'mod').length,
+    };
+    // Common rooms have nobody in charge, so no seats are held back there
+    const seat = this.common ? inside.people < this.capacity : hasSeat(this.capacity, ticket.role, inside);
+    if (!seat) throw new ServerError(403, 'full');
     return ticket;
   }
 
@@ -805,7 +813,6 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
       const { ended } = stopTimer(s.timer, Date.now());
       if (ended) this.roundEnded(sessionId, ended);
     }
-    const wasFull = this.priv.size >= this.capacity;
     this.activities.gone(sessionId);
     this.priv.delete(sessionId);
     this.clients_.delete(sessionId);
@@ -813,10 +820,6 @@ export class ConnectaRoom extends Room<{ state: RoomState }> {
     voice.current?.remove(this.connectaId, sessionId);
     links.presence({ userId: s.userId, tabId: tabId(sessionId), roomId: null });
     if (!replaced && !this.sessionsOf(s.userId).length) this.npc.ownerLeft(s.userId);
-    if (wasFull && this.turnedAway && this.priv.size < this.capacity) {
-      this.turnedAway = false;
-      links.space(this.connectaId);
-    }
   }
 
   /** A new map (Room settings, live switch): everyone stands up at its door. */

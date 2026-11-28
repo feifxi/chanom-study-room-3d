@@ -23,7 +23,7 @@ import { SettingsService } from '../settings/settings.service.js';
 import { toPerson } from '../rooms/person.js';
 import type { CommonRoomView, CommonTicket } from './common.schemas.js';
 
-/** A ticket holds a seat this long before its person is inside (two people never get the 20th seat) */
+/** A ticket holds a seat this long before its person is inside (two people never get the last stranger seat) */
 const HOLD_MS = 30_000;
 
 /**
@@ -56,8 +56,8 @@ const key = {
  * the game server makes it text only. Who's in each copy comes from presence (the game server
  * reports it); seats a fresh ticket was given are held for 30 s on top.
  *
- * Walk in: the copy with the most friends (any seat up to 25), else the busiest copy still taking
- * strangers (under 20), else a new copy. Joining a friend: their copy, unless it's at 25.
+ * Walk in: the copy with the most friends (any seat up to 30), else the busiest copy still taking
+ * strangers (under 25), else a new copy. Joining a friend: their copy, unless it's at 30.
  */
 @Injectable()
 export class CommonService implements OnModuleDestroy {

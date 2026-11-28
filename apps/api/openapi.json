@@ -943,30 +943,6 @@
         ]
       }
     },
-    "/api/rooms/{id}/space": {
-      "post": {
-        "operationId": "RoomsController_notifyWhenSpace",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string",
-              "maxLength": 40
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "rooms"
-        ]
-      }
-    },
     "/api/rooms/{id}/join": {
       "post": {
         "operationId": "RoomsController_join",
@@ -4641,13 +4617,6 @@
             "nullable": true,
             "type": "string"
           },
-          "size": {
-            "type": "string",
-            "enum": [
-              "cosy",
-              "big"
-            ]
-          },
           "time": {
             "type": "string",
             "enum": [
@@ -4744,6 +4713,9 @@
               "$ref": "#/components/schemas/Person"
             }
           },
+          "full": {
+            "type": "boolean"
+          },
           "me": {
             "$ref": "#/components/schemas/MyPlace"
           }
@@ -4755,7 +4727,6 @@
           "description",
           "mapId",
           "thumbnail",
-          "size",
           "time",
           "visibility",
           "capacity",
@@ -4778,6 +4749,7 @@
           "maxMembers",
           "requestCount",
           "inside",
+          "full",
           "me"
         ],
         "additionalProperties": false
@@ -5002,6 +4974,9 @@
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
           },
+          "full": {
+            "type": "boolean"
+          },
           "rules": {
             "nullable": true,
             "type": "string"
@@ -5024,6 +4999,7 @@
           "memberCount",
           "capacity",
           "inside",
+          "full",
           "rules",
           "me"
         ],
@@ -5054,13 +5030,6 @@
               "rooftop"
             ]
           },
-          "size": {
-            "type": "string",
-            "enum": [
-              "cosy",
-              "big"
-            ]
-          },
           "time": {
             "type": "string",
             "enum": [
@@ -5079,7 +5048,7 @@
           },
           "capacity": {
             "type": "integer",
-            "minimum": 2,
+            "minimum": 3,
             "maximum": 9007199254740991
           },
           "tags": {
@@ -7955,7 +7924,7 @@
           "capacity": {
             "type": "integer",
             "minimum": 5,
-            "maximum": 50
+            "maximum": 30
           },
           "friendSeats": {
             "type": "integer",
@@ -8425,7 +8394,6 @@
               "joined",
               "mention",
               "messages",
-              "space",
               "gift",
               "plus"
             ]

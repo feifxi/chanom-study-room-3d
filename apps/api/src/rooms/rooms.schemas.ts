@@ -3,12 +3,12 @@ import {
   INVITE_EXPIRIES,
   JOIN_NOTE_MAX,
   MAP_IDS,
+  MIN_CAPACITY,
   ROOM_DESCRIPTION_MAX,
   ROOM_LANGUAGES,
   ROOM_NAME_MAX,
   ROOM_ROLES,
   ROOM_RULES_MAX,
-  ROOM_SIZES,
   ROOM_TAGS,
   ROOM_TAGS_MAX,
   ROOM_TIMES,
@@ -72,12 +72,11 @@ export const RoomSchema = z
     mapId: z.enum(MAP_IDS),
     /** The owner's picture (16:9); null shows the map's */
     thumbnail: z.string().nullable(),
-    size: z.enum(ROOM_SIZES),
     time: z.enum(ROOM_TIMES),
     visibility: z.enum(VISIBILITIES),
-    /** Most people inside at once (the owner's setting within the plan and map size) */
+    /** Most people inside at once (the owner's setting within the plan) */
     capacity: z.number().int(),
-    /** The most the owner could set, from their plan and the map size */
+    /** The most the owner could set, from their plan */
     maxCapacity: z.number().int(),
     tags: z.array(z.string()),
     language: z.string().nullable(),
@@ -90,7 +89,7 @@ export const RoomSchema = z
     membersCanInvite: z.boolean(),
     allowGuests: z.boolean(),
     guestVoice: z.boolean(),
-    /** The owner has Connecta Plus (the room gets Plus space, Big maps and 1080p shares) */
+    /** The owner has Connecta Plus (the room gets Plus space and 1080p shares) */
     ownerPlus: z.boolean(),
     owner: PersonSchema,
     mods: z.array(PersonSchema),
@@ -100,6 +99,8 @@ export const RoomSchema = z
     requestCount: z.number().int(),
     /** Who's inside (3D open) right now; members only (empty for everyone else) */
     inside: z.array(PersonSchema),
+    /** No seat for you right now (seats are held for the owner and a mod); members only */
+    full: z.boolean(),
     me: MyPlaceSchema,
   })
   .meta({ id: 'Room' });
@@ -125,10 +126,9 @@ export const RoomSettingsBodySchema = z
       .max(ROOM_DESCRIPTION_MAX)
       .refine((t) => !hasBlockedWord(t), 'That description has a word we don’t allow'),
     mapId: z.enum(MAP_IDS),
-    size: z.enum(ROOM_SIZES),
     time: z.enum(ROOM_TIMES),
     visibility: z.enum(VISIBILITIES),
-    capacity: z.number().int().min(2),
+    capacity: z.number().int().min(MIN_CAPACITY),
     tags: z.array(z.enum(ROOM_TAGS)).max(ROOM_TAGS_MAX),
     language: z.enum(ROOM_LANGUAGES).nullable(),
     rules: z
@@ -265,6 +265,8 @@ export const ListedRoomSchema = z
     capacity: z.number().int(),
     /** Inside right now (people appearing offline aren't counted) */
     inside: z.number().int(),
+    /** No seat for you right now (seats are held for the owner and a mod) */
+    full: z.boolean(),
     rules: z.string().nullable(),
     me: MyPlaceSchema,
   })

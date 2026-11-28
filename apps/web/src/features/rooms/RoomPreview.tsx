@@ -27,8 +27,10 @@ export function RoomPreview({ room: initial }: { room: Room }) {
     owner: room.owner,
     memberCount: room.memberCount,
     capacity: room.capacity,
-    // The join preview doesn't show it (and a non-member's room view doesn't carry who's inside)
+    // A non-member's room view doesn't carry who's inside, so the preview leaves the count out; the
+    // game server still says full at the door
     inside: room.inside.length,
+    full: room.full,
     rules: room.showRules ? room.rules : null,
     me: room.me,
   };

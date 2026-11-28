@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
-import { Bell, Home, MessageCircle, RotateCw } from 'lucide-react';
+import { Home, MessageCircle, RotateCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useGame, type GameEnd } from '@/features/game/useGame';
 import { placeRoom } from '@/features/place/model';
@@ -10,7 +10,7 @@ import { roomHere } from '@/features/room/here';
 import { Scene } from '@/features/place/Scene';
 import { useInRoom } from '@/features/presence/usePresence';
 import { RoomLoader } from '@/features/room/RoomLoader';
-import { notifyWhenSpace, roomsApi, useRoom, type Room } from './useRooms';
+import { roomsApi, useRoom, type Room } from './useRooms';
 
 /**
  * A room from the API, in 3D: you walk in through the game server, which also tells friends you're
@@ -70,7 +70,7 @@ function CantWalkIn({ room, why, guest, onRetry }: { room: Room; why: GameEnd; g
     full: {
       emoji: '🫧',
       title: `${room.name} is full`,
-      body: `All ${room.capacity} spots are taken right now. We can tell you the moment one opens.`,
+      body: `All ${room.capacity} spots are taken right now. Try again in a little while.`,
     },
     kicked: {
       emoji: '🚪',
@@ -104,12 +104,7 @@ function CantWalkIn({ room, why, guest, onRetry }: { room: Room; why: GameEnd; g
         <h1 className="mt-3 text-xl font-black tracking-[-0.01em]">{title}</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">{body}</p>
         <div className="mt-5 flex flex-col gap-2">
-          {why === 'full' && !guest && (
-            <Button className="h-11 rounded-full font-black" onClick={() => notifyWhenSpace(room.id, room.name)}>
-              <Bell /> Notify me
-            </Button>
-          )}
-          {(why === 'elsewhere' || why === 'otherRoom' || why === 'unreachable' || (why === 'full' && guest)) && (
+          {(why === 'elsewhere' || why === 'otherRoom' || why === 'unreachable' || why === 'full') && (
             <Button className="h-11 rounded-full font-black" onClick={onRetry}>
               <RotateCw /> {why === 'elsewhere' ? 'Walk in here' : why === 'otherRoom' ? 'Walk back in' : 'Try again'}
             </Button>

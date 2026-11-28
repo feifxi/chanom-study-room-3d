@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Bell, ChevronDown, Compass, Crown, MessageCircle, Pin, Play, Plus, Search, UserCheck } from 'lucide-react';
-import { MAP_IDS, ROOM_NAME_MAX, type MapId } from '@connecta/shared';
+import { ArrowRight, ChevronDown, Compass, Crown, MessageCircle, Pin, Play, Plus, Search, UserCheck } from 'lucide-react';
+import { MAP_IDS, ROOM_NAME_MAX, ROOM_PLANS, type MapId } from '@connecta/shared';
 import { toast } from 'sonner';
 import { OpenRoomCard } from '@/components/app/OpenRoomCard';
 import { PersonFace, personAvatar } from '@/components/PersonFace';
@@ -16,14 +16,14 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/compone
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useMe } from '@/features/account/useMe';
-import { notifyWhenSpace, ROOMS_KEY, roomsApi, useListedRooms, useMyRooms, useRoomAction } from '@/features/rooms/useRooms';
+import { ROOMS_KEY, roomsApi, useListedRooms, useMyRooms, useRoomAction } from '@/features/rooms/useRooms';
 import { api } from '@/lib/api/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn, ago } from '@/lib/utils';
 import { joinCommonHref, useCommonRooms } from '@/features/common/useCommon';
 import { MAPS } from '@/lib/maps';
 import { chatHref, placeRoom, walkInHref, type PlaceRoom } from './model';
-import { SizePicker, TemplateCard } from './MapPickers';
+import { TemplateCard } from './MapPickers';
 import { PlusEndingBanner } from './PlusEndingBanner';
 import { RoomMenu } from './RoomMenu';
 import { Scene } from './Scene';
@@ -359,13 +359,8 @@ function RoomCard({ room, pinned, unread, menu }: { room: PlaceRoom; pinned: boo
         </div>
         <div className="pointer-events-auto flex items-center gap-2">
           {room.full ? (
-            // Full is full: the chat still works, and you can ask to be told when a spot opens
-            <Button
-              onClick={() => notifyWhenSpace(room.id, room.name)}
-              className="rounded-full bg-white/90 font-extrabold text-[#45323d] hover:bg-white"
-            >
-              <Bell /> Full · notify me
-            </Button>
+            // Full is full: the chat still works, and Walk in comes back when someone leaves
+            <span className="rounded-full bg-white/70 px-4 py-2 text-sm font-extrabold text-[#45323d] backdrop-blur">Full</span>
           ) : (
             <Button asChild className="rounded-full bg-white font-extrabold text-[#45323d] hover:bg-primary hover:text-primary-foreground">
               <Link href={walkInHref(room)}>
@@ -468,7 +463,7 @@ function FirstRoom({ onMake }: { onMake: () => void }) {
   );
 }
 
-/** Making a room: a name and a template (Cosy size). Everything else has a sensible default and lives in settings. */
+/** Making a room: a name and a template. Everything else has a sensible default and lives in settings. */
 function CreateRoomDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const router = useRouter();
   const [mapId, setMapId] = useState<MapId>(MAP_IDS[0]);
@@ -483,7 +478,9 @@ function CreateRoomDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90dvh] max-w-[calc(100%-2rem)] overflow-y-auto rounded-3xl sm:max-w-2xl">
         <DialogTitle className="text-xl font-black">Make a room</DialogTitle>
-        <DialogDescription>Pick a template and name it. It’s private until you invite people; up to 25 at once for free.</DialogDescription>
+        <DialogDescription>
+          Pick a template and name it. It’s private until you invite people; up to {ROOM_PLANS.free.capacity} at once for free.
+        </DialogDescription>
         <form
           className="flex flex-col gap-4"
           onSubmit={(e) => {
@@ -508,7 +505,6 @@ function CreateRoomDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
               <TemplateCard key={m.id} map={m} picked={mapId === m.id} onPick={() => setMapId(m.id as MapId)} />
             ))}
           </div>
-          <SizePicker size="cosy" plus={false} onPick={() => {}} />
           <p className="-mt-2 text-xs text-muted-foreground">
             Every template has the same things to do; only the place differs. Colours, the sign, time of day and a thumbnail are in the
             room’s settings once it’s made.

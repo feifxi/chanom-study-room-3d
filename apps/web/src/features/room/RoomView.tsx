@@ -139,7 +139,7 @@ export default function RoomView({
     // The map first: seats, paths and the scene all come from it (a live map change rebuilds the room)
     const map = setActiveMap(mapId);
     // A guest walks in with the character they picked on the invite page (client-only, so storage is
-    // safe here). The Test tools' pretend crowd tops the room up to 50 or 100
+    // safe here). The Test tools' pretend crowd adds 14 or 29 people
     return new LiveRoom(
       map,
       game,

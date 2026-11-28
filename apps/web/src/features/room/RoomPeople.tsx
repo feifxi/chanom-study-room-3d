@@ -46,7 +46,7 @@ const FILTERS: [Filter, string, (p: RoomPerson) => boolean][] = [
 
 /**
  * Who's in the room, opened from the pill of faces top right (or the phone sheet). One roomy panel
- * that still works with 100 people:
+ * that still works with a full room:
  * - search and quick filters (mic on, focusing, friends, guests)
  * - the list is grouped: you, friends, everyone else (A–Z), guests
  * Tap someone and an arrow in the room points the way to them; their "…" has everything else

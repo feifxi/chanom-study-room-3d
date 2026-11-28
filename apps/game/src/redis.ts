@@ -43,7 +43,6 @@ export async function connectRedis(url: string, env: string) {
   quests.on('error', (err) => log.warn({ err: err.message }, 'quest queue'));
 
   links.presence = (update) => void pub.publish(GAME_CHANNELS.presence, JSON.stringify(update)).catch(() => {});
-  links.space = (roomId) => void pub.publish(GAME_CHANNELS.space, JSON.stringify({ roomId })).catch(() => {});
   links.walkedIn = (event) => void pub.publish(GAME_CHANNELS.walkedIn, JSON.stringify(event)).catch(() => {});
   links.quest = (event) => void quests.add('event', event).catch((err: unknown) => log.warn({ err, event }, 'quest event not queued'));
   links.focusRound = (round) =>

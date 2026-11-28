@@ -5,7 +5,7 @@
  * Templates differ only in the place, the props and the theme; `look` says how each piece looks.
  */
 export const KIT = [
-  { id: 'study', name: 'Study spots', need: '12+ seats (Cosy) · 24+ (Big)' },
+  { id: 'study', name: 'Study spots', need: '12+ seats' },
   { id: 'lounge', name: 'Lounge', need: 'a sofa corner to hang out' },
   { id: 'private', name: 'Private zones', need: 'at least 2' },
   { id: 'screen', name: 'Big screen', need: 'watch together' },
@@ -106,10 +106,3 @@ export const FUTURE_MAPS = [
   { name: 'Beach Hut', emoji: '🏖️', idea: 'Wooden deck, waves, hammocks' },
   { name: 'Space Station', emoji: '🚀', idea: 'Round windows on Earth, floating plants' },
 ];
-
-/** Cosy fits up to 50 people (25 while the owner is on Free); Big fits 100 and needs the owner's Plus. */
-export const MAP_SIZES = [
-  { id: 'cosy', name: 'Cosy', upTo: 50, plusOnly: false, text: 'Up to 50 people (25 on Free). Every room starts here.' },
-  { id: 'big', name: 'Big', upTo: 100, plusOnly: true, text: 'Up to 100 people, more seats and a second lounge.' },
-] as const;
-export type MapSize = (typeof MAP_SIZES)[number]['id'];

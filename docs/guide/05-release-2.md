@@ -1,112 +1,116 @@
 # 5. Release 2 in the code: hang out and play
 
-The code behind every [R2 PBI](../releases.md): guests, rooms others can find, pictures, the
-Buddy Machine, and everything to do together. It builds on [Release 1](04-release-1.md).
+The code behind every [R2 PBI](../releases.md): more for your account, room mods, DMs and the
+inbox, pictures, the Buddy Machine, and everything to do together. It builds on
+[Release 1](04-release-1.md).
 
 Most of this release lives on the **game server**: every activity runs there, and the browser
 mirrors it.
-
 ---
 
-## Guests (ACC-8 to ACC-10)
+## More ways in and account settings (ACC-5 to ACC-7)
 
 Spec: [1. Accounts and guests](../features/01-accounts.md) · All its PBIs: [release plan](../releases.md#1-accounts-and-guests)
 
 **How it works**
 
-1. A guest pass page (`/g/<code>`, [`InvitePage`](../../apps/web/src/features/rooms/InvitePage.tsx))
-   signs the browser in anonymously (Better Auth's `anonymous` plugin), then `PUT /api/me/guest`
-   with a name, a look and the age answer ([`GuestAge.tsx`](../../apps/web/src/features/account/GuestAge.tsx)).
-   Under 13 writes the same `AgeLock` as sign-up.
-2. Accepting the pass (`POST /api/invites/:code/accept`) writes a `GuestVisit` (the room, until
-   when); the ticket then says `role: 'guest'`, and the game server keeps guests listening only
-   unless the room allows guest voice.
-3. Signing up from inside keeps the look and name: the anonymous account becomes a full one.
-4. A nightly job deletes guest accounts 30 days after their last session ([`accounts-cleanup.ts`](../../apps/api/src/accounts/accounts-cleanup.ts)).
+1. **Google and Discord** are Better Auth's social providers, on only when their keys are in
+   `apps/api/.env`. They link to the same account when the provider has verified the address
+   (`accountLinking` in [`auth.ts`](../../apps/api/src/auth/auth.ts)); Settings connects and
+   disconnects them.
+2. **Changing things later** (Settings): `PATCH /api/me/profile` (name, look), `PUT /api/me/handle`
+   (once every 30 days; the old one is held in `HandleHold`). A new look is checked against what
+   you own in the Shop, then sent to every room you're in as a `look` room event, so it changes live.
+3. **Account settings:** `PATCH /api/me/privacy` (Appear offline, who can send me friend
+   requests). Presence settles at once, so friends see the change straight away.
 
-**Files:** API [`accounts/me.controller.ts`](../../apps/api/src/accounts/me.controller.ts) (`PUT guest`),
-[`accounts.service.ts`](../../apps/api/src/accounts/accounts.service.ts) (`setGuest`, `ageGate`),
-[`rooms/rooms.service.ts`](../../apps/api/src/rooms/rooms.service.ts) (passes, `GuestVisit`);
-database `GuestVisit`; web [`app/g/[code]`](../../apps/web/src/app/g/[code]/page.tsx),
-[`features/rooms/InvitePage.tsx`](../../apps/web/src/features/rooms/InvitePage.tsx),
-[`features/account/GuestAge.tsx`](../../apps/web/src/features/account/GuestAge.tsx),
-[`lib/guest.ts`](../../apps/web/src/lib/guest.ts).
-
+**Files:** API [`auth/auth.ts`](../../apps/api/src/auth/auth.ts),
+[`accounts/me.controller.ts`](../../apps/api/src/accounts/me.controller.ts),
+[`accounts.service.ts`](../../apps/api/src/accounts/accounts.service.ts); database `HandleHold`;
+web [`components/app/SettingsDialog.tsx`](../../apps/web/src/components/app/SettingsDialog.tsx),
+[`AccountTab.tsx`](../../apps/web/src/components/app/AccountTab.tsx).
 ---
 
-## Rooms others can find (ROOM-8 to ROOM-11)
+## Room mods (ROOM-8)
 
 Spec: [2. Rooms and membership](../features/02-rooms.md) · All its PBIs: [release plan](../releases.md#2-rooms-and-membership)
 
-**How it works**
+**How it works:** the owner makes or removes a mod with `PUT /api/rooms/:id/members/:userId/role`.
+Mods then pass the same `canActOn` check as the owner for kick, ban, time out and deleting
+messages ([`rooms.ts`](../../packages/shared/src/rooms.ts)), but never on the owner or another
+mod. A role change sends a `role` room event, so the 🛡️ tools appear in 3D at once.
 
-1. **Guest passes** are `Invite` rows of the guest kind, made from the Invite dialog when the room
-   has "Allow guests" on.
-2. **Ask to join and Open:** the room's `visibility` (`private`, `request` or `open`). Asking writes a `JoinRequest`
-   (`POST /api/rooms/:id/requests`) and an inbox item for mods; Open's **Join & walk in** is
-   `POST /api/rooms/:id/join`. A listed room you're not in shows a preview first
-   ([`JoinRoomDialog`](../../apps/web/src/features/place/JoinRoomDialog.tsx)).
-3. **Discover** (`GET /api/rooms/listed`): search, tags, language, ordered by friends inside, then
-   people inside now (from presence), then members. Live counts come over the gateway
-   (`watch:inside`).
-4. **Thumbnails** (`PUT /api/rooms/:id/thumbnail`): uploaded like a chat picture, cropped to 16:9,
-   made WebP and checked ([`thumbnail.service.ts`](../../apps/api/src/rooms/thumbnail.service.ts)).
-
-**Files:** API [`rooms/`](../../apps/api/src/rooms); database `JoinRequest`, `Invite`; web
-[`app/(browse)/discover/page.tsx`](<../../apps/web/src/app/(browse)/discover/page.tsx>),
-[`components/app/OpenRoomCard.tsx`](../../apps/web/src/components/app/OpenRoomCard.tsx),
-[`features/rooms/RoomPreview.tsx`](../../apps/web/src/features/rooms/RoomPreview.tsx),
-[`features/place/JoinRoomDialog.tsx`](../../apps/web/src/features/place/JoinRoomDialog.tsx),
-[`RoomSettingsDialog.tsx`](../../apps/web/src/features/place/RoomSettingsDialog.tsx) (Overview, Invites tabs).
-
+**Files:** API [`rooms/rooms.service.ts`](../../apps/api/src/rooms/rooms.service.ts); web
+[`features/place/RoomMembers.tsx`](../../apps/web/src/features/place/RoomMembers.tsx).
 ---
 
-## Friends: cards and status (FR-6, FR-7)
+## Friends: link, cards and status (FR-5 to FR-7)
 
 Spec: [3. Friends and presence](../features/03-friends.md) · All its PBIs: [release plan](../releases.md#3-friends-and-presence)
 
-**How it works:** **Ask to join** and **Invite** are DM messages with a `card`
-(`POST /api/dms/with/:handle/ask`, `/invite`); answering an ask (`POST /api/dms/asks/:messageId`)
-makes a member invite if you may, else a 24-hour guest pass. "What I'm doing" is the focus status
+**How it works:** the **friend link** `/f/<handle>` sends a request from a page
+([`FriendLinkPage`](../../apps/web/src/features/friends/FriendLinkPage.tsx)). **Ask to join** and
+**Invite** are DM messages with a `card` (`POST /api/dms/with/:handle/ask`, `/invite`); answering
+an ask (`POST /api/dms/asks/:messageId`) makes a member invite if you may, else a 24-hour guest
+pass ([guest passes](06-release-3.md#rooms-others-can-find-room-9-to-room-12) come in Release 3). "What I'm doing" is the focus status
 the game server reports to presence.
 
 **Files:** API [`dms/dms.service.ts`](../../apps/api/src/dms/dms.service.ts),
 [`presence/presence.service.ts`](../../apps/api/src/presence/presence.service.ts); web
-[`features/dms/DmCard.tsx`](../../apps/web/src/features/dms/DmCard.tsx).
+[`features/dms/DmCard.tsx`](../../apps/web/src/features/dms/DmCard.tsx),
+[`app/f/[handle]`](../../apps/web/src/app/f/[handle]/page.tsx).
 
 ---
 
-## Pictures and notification settings (CHAT-7, CHAT-8)
+## DMs, mentions, the inbox and pictures (CHAT-4 to CHAT-8)
 
 Spec: [4. Chat, DMs and the inbox](../features/04-chat.md) · All its PBIs: [release plan](../releases.md#4-chat-dms-and-the-inbox)
 
 **How it works**
 
-1. **Pictures** follow [presigned uploads](03-techniques.md#files-presigned-s3-links):
+1. **@mentions** are read from the text when a message is saved (`mentionedHandles` in
+   [`chat.ts`](../../packages/shared/src/chat.ts)); `@room` needs the owner or a mod.
+2. **DMs** are the same `Message` table with a `dmId` instead of a `roomId`
+   (`PUT /api/dms/with/:handle` opens one; only friends can send) and reuse the room chat's edit,
+   delete and reaction routes.
+3. **Inbox:** features call `NotificationsService` to add an item (grouped by `group_key`), which
+   also goes live to the person. Inside a room the same items show as toasts.
+4. **Pictures** follow [presigned uploads](03-techniques.md#files-presigned-s3-links):
    `POST /api/pictures` → upload to S3 → `POST /api/pictures/:id/uploaded` → the `pictures` worker
-   makes a WebP (longest side 2,048 px) and runs the picture check → the message shows. Viewing
-   (`GET /api/pictures/:id`) redirects members to a one-hour link.
-2. **Per-room notifications** (Every / Mentions / Nothing) is your membership's `notify`
+   makes a WebP (longest side 2,048 px) → the message shows. Viewing (`GET /api/pictures/:id`)
+   redirects members to a one-hour link. The [picture check](06-release-3.md#moderation-and-reports-mod-1-to-mod-5)
+   joins the worker in Release 3.
+5. **Per-room notifications** (Every / Mentions / Nothing) is your membership's `notify`
    (`PATCH /api/rooms/:id/me`); a DM's mute is `PUT /api/dms/:id/mute`.
 
-**Files:** API [`chat/pictures.service.ts`](../../apps/api/src/chat/pictures.service.ts),
-[`pictures.processor.ts`](../../apps/api/src/chat/pictures.processor.ts),
-[`picture-check.ts`](../../apps/api/src/chat/picture-check.ts), [`storage/`](../../apps/api/src/storage);
-database `Picture`; web the picture parts of [`components/chat/Chat.tsx`](../../apps/web/src/components/chat/Chat.tsx).
+**Files**
+
+- API: [`dms/`](../../apps/api/src/dms), [`notifications/`](../../apps/api/src/notifications),
+  [`chat/pictures.service.ts`](../../apps/api/src/chat/pictures.service.ts),
+  [`pictures.processor.ts`](../../apps/api/src/chat/pictures.processor.ts), [`storage/`](../../apps/api/src/storage)
+- Database: `Dm`, `DmMember`, `Notification`, `Picture`
+- Web: [`features/dms/`](../../apps/web/src/features/dms),
+  [`features/messages/MessagesSidebar.tsx`](../../apps/web/src/features/messages/MessagesSidebar.tsx),
+  [`app/(app)/(home)/home/messages/`](<../../apps/web/src/app/(app)/(home)/home/messages/layout.tsx>),
+  [`features/inbox/useInbox.ts`](../../apps/web/src/features/inbox/useInbox.ts),
+  [`features/place/Inbox.tsx`](../../apps/web/src/features/place/Inbox.tsx), the picture parts of
+  [`components/chat/Chat.tsx`](../../apps/web/src/components/chat/Chat.tsx)
 
 ---
 
-## More in the 3D room (3D-9 to 3D-11)
+## More in the 3D room (3D-8 to 3D-11)
 
 Spec: [5. The 3D room](../features/05-room-3d.md) · All its PBIs: [release plan](../releases.md#5-the-3d-room)
 
 **How it works**
 
-1. **Mod tools:** `mute` (Mute for everyone) and `stage` (Talk to everyone) are game messages the
+1. **Private zones** are areas in the map data; the game server sends bubbles said inside only to
+   the people inside, and voice there stays among them.
+2. **Mod tools:** `mute` (Mute for everyone) and `stage` (Talk to everyone) are game messages the
    server allows only for owners and mods; it changes who may talk in LiveKit at once.
-2. **Screen share** (`share`): the server records where you share (your table or the TV) and who
+3. **Screen share** (`share`): the server records where you share (your table or the TV) and who
    may watch; the picture and sound are LiveKit tracks only that audience receives.
-3. **Cats, study buddies, the Buddy Machine:** the game server runs every NPC
+4. **Cats, study buddies, the Buddy Machine:** the game server runs every NPC
    ([`npc/director.ts`](../../apps/game/src/npc/director.ts), ten times a second): resident cats
    nap and wander, `npc:summon` adds a cat or a buddy, `npc:pet` makes a cat follow you. They walk
    with A* paths. They're in the synced state, and the browser mirrors them like players.
@@ -128,7 +132,7 @@ Spec: [6. Maps](../features/06-maps.md) · All its PBIs: [release plan](../relea
    corner) are areas in the map data; [`features/activities/spots.ts`](../../apps/web/src/features/activities/spots.ts)
    says which activity each holds. Their furniture is built in
    [`Activity3D.tsx`](../../apps/web/src/features/activities/Activity3D.tsx).
-2. **Map & look** is stored on the room (`mapId`, `size`, `time`). Changing it (`PATCH /api/rooms/:id`)
+2. **Map & look** is stored on the room (`mapId`, `time`). Changing it (`PATCH /api/rooms/:id`)
    sends a `map` room event; everyone inside sees a loading screen
    ([`MapMove.tsx`](../../apps/web/src/features/room/MapMove.tsx)) and lands at the new door. The
    light follows the time setting ([`dayCycle.ts`](../../apps/web/src/features/room3d/dayCycle.ts)).
@@ -138,15 +142,21 @@ Spec: [6. Maps](../features/06-maps.md) · All its PBIs: [release plan](../relea
 
 ---
 
-## Rankings (STUDY-5)
+## Music, the Focus page and rankings (STUDY-3 to STUDY-5)
 
 Spec: [7. Study tools](../features/07-study-tools.md) · All its PBIs: [release plan](../releases.md#7-study-tools)
 
-`GET /api/focus/rankings` sums `FocusSession` minutes for friends or everyone, today or this week,
-capped at 12 hours a day. Everyone is opt-in ([`everyone.ts`](../../apps/api/src/focus/everyone.ts))
-and cached for 5 minutes. Files: [`focus/focus.service.ts`](../../apps/api/src/focus/focus.service.ts),
-the [Focus page](<../../apps/web/src/app/(app)/(home)/home/focus/page.tsx>).
+- **Music** is a local `<audio>` player with royalty-free tracks in `public/music`
+  ([`features/music/`](../../apps/web/src/features/music)).
+- **The Focus page** reads `GET /api/focus/me` (your numbers, in your time zone, from the
+  `FocusSession` rows Release 1 saves).
+- **Rankings:** `GET /api/focus/rankings` sums `FocusSession` minutes for friends or everyone, today
+  or this week, capped at 12 hours a day. Everyone is opt-in ([`everyone.ts`](../../apps/api/src/focus/everyone.ts))
+  and cached for 5 minutes.
 
+**Files:** API [`focus/focus.service.ts`](../../apps/api/src/focus/focus.service.ts); web
+[`features/focus/`](../../apps/web/src/features/focus) (`useFocusStats`, `useRoomToday`), the
+[Focus page](<../../apps/web/src/app/(app)/(home)/home/focus/page.tsx>).
 ---
 
 ## Activities: one flow for every game (ACT-1 to ACT-5)
@@ -233,32 +243,3 @@ the browser uses the same code to show legal squares. Web: [`features/activities
 ([`packages/shared/src/slave.ts`](../../packages/shared/src/slave.ts)) and runs the turn timer. The
 state holds only the public part; **each hand goes to its player alone** (`slave:hand`). Web:
 [`features/activities/slave/SlavePanel.tsx`](../../apps/web/src/features/activities/slave/SlavePanel.tsx).
-
----
-
-## Picture check and slow mode (MOD-3, MOD-4)
-
-Spec: [12. Moderation and reports](../features/12-moderation.md) · All its PBIs: [release plan](../releases.md#12-moderation-and-reports)
-
-- **Picture check:** OpenAI's free moderation endpoint, called by the pictures worker
-  ([`picture-check.ts`](../../apps/api/src/chat/picture-check.ts)); off until `OPENAI_API_KEY` is set.
-- **Slow mode:** Common rooms' 3-second bubble limit is enforced on the game server
-  ([`common.ts`](../../packages/shared/src/common.ts)). A room's own Slow mode switch is saved but
-  not enforced yet ([open issues](../open-issues.md)).
-
----
-
-## More of the admin site (ADM-5 to ADM-7)
-
-Spec: [16. Team accounts and the admin site](../features/16-admin.md) · All its PBIs: [release plan](../releases.md#16-team-accounts-and-the-admin-site)
-
-- **Rooms** (`POST /api/admin/rooms/:id/actions`): delist, close, and undo
-  ([`rooms-admin.service.ts`](../../apps/api/src/admin/rooms-admin.service.ts)). Closing sends a
-  `deleted` room event with `closed: true`, so people inside are told why.
-- **Moderation page:** the layers' switches and the word list
-  ([`platform-admin.service.ts`](../../apps/api/src/admin/platform-admin.service.ts)), applied
-  everywhere by [platform settings](03-techniques.md#platform-settings).
-- **Overview:** live counts and a health strip ([`overview-admin.service.ts`](../../apps/api/src/admin/overview-admin.service.ts)).
-
-Web: [`app/admin/rooms`](../../apps/web/src/app/admin/rooms/page.tsx), [`moderation`](../../apps/web/src/app/admin/moderation/page.tsx),
-[`app/admin/page.tsx`](../../apps/web/src/app/admin/page.tsx) (Overview).

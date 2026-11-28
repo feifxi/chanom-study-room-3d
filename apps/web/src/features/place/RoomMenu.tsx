@@ -239,9 +239,8 @@ export function AboutRoomDialog({
           </dl>
           <div className="flex flex-wrap gap-2">
             {inRoom ? null : room.full ? (
-              <Button className="rounded-full font-extrabold" onClick={() => toast.success('We’ll tell you when a spot opens')}>
-                <Bell /> Full · tell me when there’s space
-              </Button>
+              // Full is full: Walk in comes back when someone leaves
+              <span className="flex h-9 items-center rounded-full bg-muted px-4 text-sm font-extrabold text-muted-foreground">Full</span>
             ) : (
               <Button asChild className="rounded-full font-extrabold">
                 <Link href={walkInHref(room)}>

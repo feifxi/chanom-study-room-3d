@@ -1,6 +1,6 @@
 # 4. Chat, DMs and the inbox
 
-PBIs: [CHAT-1 to CHAT-8](../releases.md#4-chat-dms-and-the-inbox) · How the code works: [Release 1](../guide/04-release-1.md#chat-dms-and-the-inbox-chat-1-to-chat-6), [Release 2](../guide/05-release-2.md#pictures-and-notification-settings-chat-7-chat-8)
+PBIs: [CHAT-1 to CHAT-8](../releases.md#4-chat-dms-and-the-inbox) · How the code works: [Release 1](../guide/04-release-1.md#room-chat-chat-1-to-chat-3), [Release 2](../guide/05-release-2.md#dms-mentions-the-inbox-and-pictures-chat-4-to-chat-8)
 
 Each room has one saved chat, every DM is 1-to-1 between friends, and every thread works the same:
 react, reply, edit, delete, @mentions, pictures. No threads, no read receipts. The 🔔 inbox
@@ -32,8 +32,8 @@ gathers what needs you.
 
 ## 🔔 Inbox
 
-- **What goes in:** friend requests, Ask to join requests and replies, @mentions, space in a full
-  room, team actions on your account. Kept 30 days.
+- **What goes in:** friend requests, Ask to join requests and replies, @mentions, team actions on
+  your account. Kept 30 days.
 - **What doesn't:** DMs (Messages has its own badge) and never "a friend walked in".
 - **Per room:** Every message / Only @mentions (default) / Nothing. You can mute a DM (they're
   never told).

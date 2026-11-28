@@ -1,17 +1,67 @@
 # 6. Release 3 in the code: open to everyone
 
-The code behind every [R3 PBI](../releases.md): Common rooms for strangers, automatic moderation,
-coins and the Shop, Plus and payments, and the admin site's money pages. It builds on
-[Release 1](04-release-1.md) and [Release 2](05-release-2.md).
+The code behind every [R3 PBI](../releases.md): guests and rooms others can find, the word filter,
+reports and the team's admin site, Common rooms for strangers, coins and the Shop, and Plus. It
+builds on [Release 1](04-release-1.md) and [Release 2](05-release-2.md).
+---
+
+## Guests (ACC-8 to ACC-10)
+
+Spec: [1. Accounts and guests](../features/01-accounts.md) · All its PBIs: [release plan](../releases.md#1-accounts-and-guests)
+
+**How it works**
+
+1. A guest pass page (`/g/<code>`, [`InvitePage`](../../apps/web/src/features/rooms/InvitePage.tsx))
+   signs the browser in anonymously (Better Auth's `anonymous` plugin), then `PUT /api/me/guest`
+   with a name, a look and the age answer ([`GuestAge.tsx`](../../apps/web/src/features/account/GuestAge.tsx)).
+   Under 13 writes the same `AgeLock` as sign-up.
+2. Accepting the pass (`POST /api/invites/:code/accept`) writes a `GuestVisit` (the room, until
+   when); the ticket then says `role: 'guest'`, and the game server keeps guests listening only
+   unless the room allows guest voice.
+3. Signing up from inside keeps the look and name: the anonymous account becomes a full one.
+4. A nightly job deletes guest accounts 30 days after their last session ([`accounts-cleanup.ts`](../../apps/api/src/accounts/accounts-cleanup.ts)).
+
+**Files:** API [`accounts/me.controller.ts`](../../apps/api/src/accounts/me.controller.ts) (`PUT guest`),
+[`accounts.service.ts`](../../apps/api/src/accounts/accounts.service.ts) (`setGuest`, `ageGate`),
+[`rooms/rooms.service.ts`](../../apps/api/src/rooms/rooms.service.ts) (passes, `GuestVisit`);
+database `GuestVisit`; web [`app/g/[code]`](../../apps/web/src/app/g/[code]/page.tsx),
+[`features/rooms/InvitePage.tsx`](../../apps/web/src/features/rooms/InvitePage.tsx),
+[`features/account/GuestAge.tsx`](../../apps/web/src/features/account/GuestAge.tsx),
+[`lib/guest.ts`](../../apps/web/src/lib/guest.ts).
 
 ---
 
-## Bigger and more maps (MAP-4, MAP-5)
+## Rooms others can find (ROOM-9 to ROOM-12)
+
+Spec: [2. Rooms and membership](../features/02-rooms.md) · All its PBIs: [release plan](../releases.md#2-rooms-and-membership)
+
+**How it works**
+
+1. **Guest passes** are `Invite` rows of the guest kind, made from the Invite dialog when the room
+   has "Allow guests" on.
+2. **Ask to join and Open:** the room's `visibility` (`private`, `request` or `open`). Asking writes a `JoinRequest`
+   (`POST /api/rooms/:id/requests`) and an inbox item for mods; Open's **Join & walk in** is
+   `POST /api/rooms/:id/join`. A listed room you're not in shows a preview first
+   ([`JoinRoomDialog`](../../apps/web/src/features/place/JoinRoomDialog.tsx)).
+3. **Discover** (`GET /api/rooms/listed`): search, tags, language, ordered by friends inside, then
+   people inside now (from presence), then members. Live counts come over the gateway
+   (`watch:inside`).
+4. **Thumbnails** (`PUT /api/rooms/:id/thumbnail`): uploaded like a chat picture, cropped to 16:9,
+   made WebP and checked ([`thumbnail.service.ts`](../../apps/api/src/rooms/thumbnail.service.ts)).
+
+**Files:** API [`rooms/`](../../apps/api/src/rooms); database `JoinRequest`, `Invite`; web
+[`app/(browse)/discover/page.tsx`](<../../apps/web/src/app/(browse)/discover/page.tsx>),
+[`components/app/OpenRoomCard.tsx`](../../apps/web/src/components/app/OpenRoomCard.tsx),
+[`features/rooms/RoomPreview.tsx`](../../apps/web/src/features/rooms/RoomPreview.tsx),
+[`features/place/JoinRoomDialog.tsx`](../../apps/web/src/features/place/JoinRoomDialog.tsx),
+[`RoomSettingsDialog.tsx`](../../apps/web/src/features/place/RoomSettingsDialog.tsx) (Overview, Invites tabs).
+
+---
+
+## More maps (MAP-4)
 
 Spec: [6. Maps](../features/06-maps.md) · All its PBIs: [release plan](../releases.md#6-maps)
 
-- **Sizes:** a room's `size` (`cosy` or `big`) picks how the map is laid out; Big needs the owner's
-  Plus, checked by the API when the setting changes and by the grace rules when Plus ends.
 - **More templates:** each map is a data file in [`packages/shared/src/maps/`](../../packages/shared/src/maps)
   (`cafe.ts`, `rooftop.ts`) plus a look in [`features/room3d/`](../../apps/web/src/features/room3d)
   (`Cafe.tsx`, `Rooftop.tsx`), joined in [`features/map/active.ts`](../../apps/web/src/features/map/active.ts).
@@ -36,11 +86,24 @@ the game server never reads the database.
 
 ---
 
-## Automatic report steps (MOD-5)
+## Moderation and reports (MOD-1 to MOD-5)
 
 Spec: [12. Moderation and reports](../features/12-moderation.md) · All its PBIs: [release plan](../releases.md#12-moderation-and-reports)
 
 **How it works**
+
+1. **Word filter:** `maskWords` ([`moderate.ts`](../../packages/shared/src/moderate.ts)) masks chat
+   in the API and bubbles on the game server. Names and room text with a blocked word are refused
+   (the Zod schemas call it). The room's `filterWords` setting turns masking off for its chat.
+2. **Reports** (`POST /api/reports`): a person, a message or a room, with context (nearby messages,
+   the bubbles the reporter saw). Kept for the team only, never shown to room mods.
+3. **Picture check:** OpenAI's free moderation endpoint, called by the pictures worker
+   ([`picture-check.ts`](../../apps/api/src/chat/picture-check.ts)); off until `OPENAI_API_KEY` is set.
+4. **Slow mode:** Common rooms' 3-second bubble limit is enforced on the game server
+   ([`common.ts`](../../packages/shared/src/common.ts)). A room's own Slow mode switch is saved but
+   not enforced yet ([open issues](../open-issues.md)).
+
+**Automatic report steps (MOD-5)**
 
 1. Each report also counts in a **Redis sorted set** per person and place, over a time window
    ([`reports.service.ts`](../../apps/api/src/reports/reports.service.ts)). Only accounts that are
@@ -52,9 +115,16 @@ Spec: [12. Moderation and reports](../features/12-moderation.md) · All its PBIs
 4. **The muted person is told why:** the game server answers a blocked bubble with
    `quiet { until, by }`, and room chat answers 403 `timed_out` with the reason.
 
-**Files:** API [`reports/`](../../apps/api/src/reports); shared thresholds in
-[`reports.ts`](../../packages/shared/src/reports.ts); game the `timeout` case in `apply()` of
-[`room.ts`](../../apps/game/src/room.ts); web the `onQuiet` toast in [`RoomView.tsx`](../../apps/web/src/features/room/RoomView.tsx).
+**Files**
+
+- Shared: [`moderate.ts`](../../packages/shared/src/moderate.ts), [`reports.ts`](../../packages/shared/src/reports.ts) (thresholds)
+- API: [`reports/`](../../apps/api/src/reports), word filter calls in [`chat/chat.service.ts`](../../apps/api/src/chat/chat.service.ts),
+  [`chat/picture-check.ts`](../../apps/api/src/chat/picture-check.ts)
+- Database: `Report`
+- Game: the `timeout` case in `apply()` of [`room.ts`](../../apps/game/src/room.ts)
+- Web: [`features/moderation/ReportDialog.tsx`](../../apps/web/src/features/moderation/ReportDialog.tsx),
+  [`features/place/ReportRoomDialog.tsx`](../../apps/web/src/features/place/ReportRoomDialog.tsx),
+  the `onQuiet` toast in [`RoomView.tsx`](../../apps/web/src/features/room/RoomView.tsx)
 
 ---
 
@@ -69,7 +139,7 @@ Spec: [13. Common rooms](../features/13-common-rooms.md) · All its PBIs: [relea
    server room (`common-library-2`).
 2. **Walking in** (`/common/library`) calls `POST /api/common/:type/ticket`. The API picks the copy
    ([`common.service.ts`](../../apps/api/src/common/common.service.ts)): your friends' copy, else
-   the busiest still taking strangers (20 of 25 seats), else a new one. Who's in each copy comes from
+   the busiest still taking strangers (25 of 30 seats), else a new one. Who's in each copy comes from
    presence; a fresh ticket holds its seat in Redis for 30 s so two people never get the same last
    seat.
 3. **The ticket says `common: true`**, and the game server turns on the safe rules: text only, the
@@ -156,13 +226,49 @@ Stripe setup for testing: [spec](../features/15-plus.md#setting-up-stripe-the-ow
 
 ---
 
-## The admin site's Common rooms and Money (ADM-8, ADM-9)
+## Team accounts and the admin site (ADM-1 to ADM-9)
 
 Spec: [16. Team accounts and the admin site](../features/16-admin.md) · All its PBIs: [release plan](../releases.md#16-team-accounts-and-the-admin-site)
 
+**How it works**
+
+1. **Team** is a flag on the user, set only by a script:
+   `pnpm --filter @connecta/api team <handle>` ([`scripts/team.ts`](../../apps/api/scripts/team.ts)).
+2. **`/admin`** checks the flag on the server and answers 404 to everyone else
+   ([`app/admin/layout.tsx`](../../apps/web/src/app/admin/layout.tsx)); every `/api/admin/*` route
+   checks it again ([`admin/team.ts`](../../apps/api/src/admin/team.ts)).
+3. **Reports queue** groups reports into cases (one per person, message or room), urgent first
+   ([`reports-admin.service.ts`](../../apps/api/src/admin/reports-admin.service.ts)).
+4. **Account actions** (`POST /api/admin/users/:id/actions`): warn, suspend, ban, lift, reset name.
+   Each one emails the reason ([`mail/account-mail.ts`](../../apps/api/src/mail/account-mail.ts)),
+   writes an `AccountAction` and an audit entry, and a suspension signs the person out everywhere
+   (sessions deleted, `LiveService.signOut`, a `kick` room event).
+5. **Audit log** (`GET /api/admin/audit`) reads `AuditEntry`.
+
+**Files**
+
+- API: [`admin/`](../../apps/api/src/admin) (`admin.controller`, `accounts-admin.service`,
+  `reports-admin.service`, `audit-admin.service`), [`audit/audit.service.ts`](../../apps/api/src/audit/audit.service.ts)
+- Database: `AccountAction`, `AuditEntry`
+- Web: [`app/admin/`](../../apps/web/src/app/admin) (`users`, `reports`, `audit`),
+  [`features/admin/`](../../apps/web/src/features/admin) (`AdminFrame`, `useAdmin`, `auditLabels`),
+  [`features/account/AccountListener.tsx`](../../apps/web/src/features/account/AccountListener.tsx)
+  (a suspended tab goes to sign-in)
+
+**More pages**
+
+- **Rooms** (`POST /api/admin/rooms/:id/actions`): delist, close, and undo
+  ([`rooms-admin.service.ts`](../../apps/api/src/admin/rooms-admin.service.ts)). Closing sends a
+  `deleted` room event with `closed: true`, so people inside are told why.
+- **Moderation page:** the layers' switches and the word list
+  ([`platform-admin.service.ts`](../../apps/api/src/admin/platform-admin.service.ts)), applied
+  everywhere by [platform settings](03-techniques.md#platform-settings).
+- **Overview:** live counts and a health strip ([`overview-admin.service.ts`](../../apps/api/src/admin/overview-admin.service.ts)).
 - **Common rooms page:** each copy and how full, the seats setting, a notice banner sent to every
   Common room as a `notice` room event ([`platform-admin.service.ts`](../../apps/api/src/admin/platform-admin.service.ts)).
 - **Money:** revenue against Stripe's fees, payments, and refunds
   (`POST /api/admin/money/payments/:id/refund`) ([`money-admin.service.ts`](../../apps/api/src/admin/money-admin.service.ts)).
 
-Web: [`app/admin/common`](../../apps/web/src/app/admin/common/page.tsx), [`app/admin/money`](../../apps/web/src/app/admin/money/page.tsx).
+Web: [`app/admin/page.tsx`](../../apps/web/src/app/admin/page.tsx) (Overview),
+[`rooms`](../../apps/web/src/app/admin/rooms/page.tsx), [`moderation`](../../apps/web/src/app/admin/moderation/page.tsx),
+[`common`](../../apps/web/src/app/admin/common/page.tsx), [`money`](../../apps/web/src/app/admin/money/page.tsx).

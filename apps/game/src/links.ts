@@ -7,8 +7,6 @@ import type { FocusRound, GamePresence, GameRoomEvent, GameWalkedIn, QuestEvent 
 export interface Links {
   /** Tell the gateway who's in which room (presence, docs/features/03-friends.md) */
   presence(update: GamePresence): void;
-  /** A room that was full has space again ("Full · notify me") */
-  space(roomId: string): void;
   /** A member's focus round of 1+ minute ended: the API saves it (a job, so it survives an API restart) */
   focusRound(round: FocusRound): void;
   /** Someone walked into a room: any other room they're in, on any game server, lets them go */
@@ -17,7 +15,7 @@ export interface Links {
   quest(event: QuestEvent): void;
 }
 
-export const links: Links = { presence: () => {}, space: () => {}, focusRound: () => {}, walkedIn: () => {}, quest: () => {} };
+export const links: Links = { presence: () => {}, focusRound: () => {}, walkedIn: () => {}, quest: () => {} };
 
 interface LiveRoom {
   apply(event: GameRoomEvent): void;

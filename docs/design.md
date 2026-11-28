@@ -28,7 +28,7 @@ rooms, a room's page is its chat, and inside 3D everything is a panel over the r
 - **Phones:** the five pages move to a bottom tab bar (hidden inside a DM thread).
 - **Guests and signed-out visitors** see only Discover and Sign up; other pages show what an
   account adds. The landing page's "Try a room as a guest" opens Discover.
-- A full room offers **Full · notify me**.
+- A full room shows **Full**; its chat still works, and Walk in comes back when someone leaves.
 
 ## Inside a room (3D)
 
@@ -37,7 +37,7 @@ rooms, a room's page is its chat, and inside 3D everything is a panel over the r
 | **Room card** | top left      | name, map, who's here; Invite, Room settings; Leave         |
 | **My tools**  | left rail     | Study session, Music, Quests, How to play                   |
 | **Chat**      | bottom left   | Bubbles (default), Room chat, Messages                      |
-| **People**    | top right     | one panel built for 100 people, actions per person          |
+| **People**    | top right     | one panel built for a full room, actions per person         |
 | **Zoom**      | bottom right  | 37%–260%, opens at 100% (touch screens pinch)               |
 | **Dock**      | bottom centre | Mic, Sound, Chat, Activities; 🛡️ Room (owner, mods); ⋯ More |
 

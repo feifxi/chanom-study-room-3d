@@ -4,6 +4,7 @@ import { ArrowRight, ChevronDown, Crown, Flag, Link2, Lock, MessageCircle, Shiel
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ROOM_PLANS } from '@connecta/shared';
 import { SIGN_UP_HREF } from '@/features/account/links';
 
 const ACTIVITIES = [
@@ -20,7 +21,7 @@ const ACTIVITIES = [
 const FAQ: [string, string][] = [
   [
     'Is it free?',
-    'Yes. Rooms, voice, chat and every activity are free, for up to 25 people at once. Plus (฿89 a month) makes your rooms bigger and dresses you up.',
+    `Yes. Rooms, voice, chat and every activity are free, for up to ${ROOM_PLANS.free.capacity} people at once. Plus (฿89 a month) makes your rooms bigger and dresses you up.`,
   ],
   ['Do I need to download anything?', 'No. Connecta runs in your browser, on a laptop or a phone. Friends join from a link.'],
   [
@@ -262,8 +263,8 @@ export default function Landing() {
               </p>
               <h2 className="mt-1 text-3xl font-black tracking-[-0.03em] sm:text-4xl">Free for friends. Cuter with Plus.</h2>
               <p className="mt-2 max-w-lg">
-                Everything above is free for up to 25 at once. Plus makes your rooms fit 100, unlocks premium maps, skins and pets, and your
-                whole room enjoys it. Only the owner pays.
+                Everything above is free for up to {ROOM_PLANS.free.capacity} at once. Plus makes your rooms fit {ROOM_PLANS.plus.capacity},
+                unlocks premium maps, skins and pets, and your whole room enjoys it. Only the owner pays.
               </p>
             </div>
             <div className="flex flex-col items-start gap-2 md:items-end">

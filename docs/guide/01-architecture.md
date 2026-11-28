@@ -92,14 +92,14 @@ Example: you walk into a room and move.
 All through **Redis**, never direct calls. Channel names are in
 [`packages/shared/src/game.ts`](../../packages/shared/src/game.ts) (`GAME_CHANNELS`).
 
-| From → to      | What                                                                        | Code                                                                                                                                        |
-| -------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| API → browsers | live events (new message, friend request, inbox item…)                      | `LiveService` → gateway                                                                                                                     |
-| API → game     | room events: kick, ban, role, map, delete, timeout, look, notice            | `GameService.roomEvent` → [`game/src/redis.ts`](../../apps/game/src/redis.ts) → `ConnectaRoom.apply`                                        |
-| game → gateway | who's in which room (presence)                                              | [`gateway/game-presence.ts`](../../apps/api/src/gateway/game-presence.ts)                                                                   |
-| game → API     | finished focus rounds, quest steps (BullMQ queues); "a full room has space" | [`focus.processor.ts`](../../apps/api/src/focus/focus.processor.ts), [`quests.processor.ts`](../../apps/api/src/quests/quests.processor.ts) |
-| game → game    | "you walked into another room" (one room at a time)                         | `GAME_CHANNELS.walkedIn`                                                                                                                    |
-| API → everyone | platform settings changed (word list, switches, Common seats)               | [`settings.service.ts`](../../apps/api/src/settings/settings.service.ts)                                                                    |
+| From → to      | What                                                             | Code                                                                                                                                        |
+| -------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| API → browsers | live events (new message, friend request, inbox item…)           | `LiveService` → gateway                                                                                                                     |
+| API → game     | room events: kick, ban, role, map, delete, timeout, look, notice | `GameService.roomEvent` → [`game/src/redis.ts`](../../apps/game/src/redis.ts) → `ConnectaRoom.apply`                                        |
+| game → gateway | who's in which room (presence)                                   | [`gateway/game-presence.ts`](../../apps/api/src/gateway/game-presence.ts)                                                                   |
+| game → API     | finished focus rounds, quest steps (BullMQ queues)               | [`focus.processor.ts`](../../apps/api/src/focus/focus.processor.ts), [`quests.processor.ts`](../../apps/api/src/quests/quests.processor.ts) |
+| game → game    | "you walked into another room" (one room at a time)              | `GAME_CHANNELS.walkedIn`                                                                                                                    |
+| API → everyone | platform settings changed (word list, switches, Common seats)    | [`settings.service.ts`](../../apps/api/src/settings/settings.service.ts)                                                                    |
 
 ## Trust
 

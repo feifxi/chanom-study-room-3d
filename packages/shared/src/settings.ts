@@ -33,5 +33,5 @@ export const DEFAULT_SETTINGS: PlatformSettings = {
 export const settingsKey = (env: string) => `connecta:${env}:settings`;
 export const settingsChannel = (env: string) => `connecta:${env}:settings`;
 
-/** How full a Common room copy can be set on the admin site */
-export const COMMON_CAPACITY_RANGE = { min: 5, max: 50 } as const;
+/** How full a Common room copy can be set on the admin site: never past the 30 a map is built for */
+export const COMMON_CAPACITY_RANGE = { min: 5, max: 30 } as const;

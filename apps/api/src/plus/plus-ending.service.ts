@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { GRACE_DAYS, maxInside, PLUS_PLANS, REMIND_DAYS, type PlanId, type RoomSize } from '@connecta/shared';
+import { GRACE_DAYS, maxInside, PLUS_PLANS, REMIND_DAYS, type PlanId } from '@connecta/shared';
 import type { Env } from '../config/env.js';
 import { MailService } from '../mail/mail.service.js';
 import { plusMail } from '../mail/plus-mail.js';
@@ -26,9 +26,9 @@ const day = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 
  *   cancelled plan or a gift gets "Plus ends on …".
  * - **ended:** the ✨ name and personal limits go (rooms and tabs are told), and "your rooms keep their
  *   space for 7 more days" (or just "Plus ended").
- * - **graceSoon** (a day before the grace ends), room owners only: "tomorrow your rooms go back to 25".
- * - **over:** their rooms go back to Free: a Big map switches to Cosy, a people limit set above 25
- *   comes down. Nobody inside is sent out; new people wait at the door until there's space.
+ * - **graceSoon** (a day before the grace ends), room owners only: "tomorrow your rooms go back to 15".
+ * - **over:** their rooms go back to Free: a people limit set above 15 comes down. Nobody inside
+ *   is sent out; new people wait at the door until there's space.
  * Each step is a 🔔 notice and an email. A missed step is skipped if a later one is due (a late
  * server sends only the newest news).
  */
@@ -118,15 +118,13 @@ export class PlusEndingService {
     }
     const rooms = await this.prisma.room.findMany({
       where: { members: { some: { userId: person.id, role: 'owner' } } },
-      select: { id: true, name: true, size: true, capacity: true },
+      select: { id: true, name: true, capacity: true },
     });
     if (due === 'over') {
       for (const room of rooms) {
-        const max = maxInside(false, 'cosy');
-        await this.prisma.room.update({
-          where: { id: room.id },
-          data: { size: 'cosy', ...(room.capacity !== null && room.capacity > max && { capacity: max }) },
-        });
+        const max = maxInside(false);
+        if (room.capacity !== null && room.capacity > max)
+          await this.prisma.room.update({ where: { id: room.id }, data: { capacity: max } });
       }
       if (rooms.length) this.plus.roomsChanged(person.id);
       return true;
@@ -147,7 +145,7 @@ export class PlusEndingService {
       sub,
       rooms,
       now,
-    }: { until: Date; sub: { plan: string; method: string; renews: boolean } | null; rooms: { name: string; size: string }[]; now: Date },
+    }: { until: Date; sub: { plan: string; method: string; renews: boolean } | null; rooms: { name: string }[]; now: Date },
   ): { subject: string; line: string; button: string; href: string } | null {
     const date = day(until);
     const left = Math.max(1, Math.ceil((until.getTime() + GRACE_DAYS * DAY_MS - now.getTime()) / DAY_MS));
@@ -185,10 +183,9 @@ export class PlusEndingService {
         };
       case 'graceSoon': {
         if (!rooms.length) return null;
-        const big = rooms.some((r) => r.size === 'big');
         return {
           subject: 'Tomorrow your rooms go back to Free',
-          line: `Tomorrow your rooms go back to ${maxInside(false, 'cosy' as RoomSize)} people at once${big ? ' and Big maps switch to Cosy' : ''}. Nobody is sent out, and nothing is deleted.`,
+          line: `Tomorrow your rooms go back to ${maxInside(false)} people at once. Nobody is sent out, and nothing is deleted.`,
           button: 'Keep Plus',
           href: '/home/plus',
         };

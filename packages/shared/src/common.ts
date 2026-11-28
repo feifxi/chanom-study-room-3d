@@ -14,9 +14,9 @@ export type CommonType = (typeof COMMON_TYPES)[number];
 export const COMMON_TYPE_IDS = COMMON_TYPES.map((t) => t.id) as CommonTypeId[];
 export const commonType = (id: string): CommonType | undefined => COMMON_TYPES.find((t) => t.id === id);
 
-/** People in one copy at most */
-export const COMMON_CAPACITY = 25;
-/** Of those, seats only for people joining a friend inside: strangers are placed up to 20 */
+/** People in one copy at most: the same 30 every map is built for */
+export const COMMON_CAPACITY = 30;
+/** Of those, seats only for people joining a friend inside: strangers are placed up to 25 */
 export const COMMON_FRIEND_SEATS = 5;
 /** Slow mode for everyone: one bubble every 3 s */
 export const COMMON_SAY_MS = 3000;

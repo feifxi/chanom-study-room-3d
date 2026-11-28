@@ -324,22 +324,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/rooms/{id}/space": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["RoomsController_notifyWhenSpace"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/rooms/{id}/join": {
         parameters: {
             query?: never;
@@ -1836,8 +1820,6 @@ export interface components {
             mapId: "library" | "cafe" | "rooftop";
             thumbnail: string | null;
             /** @enum {string} */
-            size: "cosy" | "big";
-            /** @enum {string} */
             time: "clock" | "day" | "night";
             /** @enum {string} */
             visibility: "private" | "request" | "open";
@@ -1861,6 +1843,7 @@ export interface components {
             maxMembers: number;
             requestCount: number;
             inside: components["schemas"]["Person"][];
+            full: boolean;
             me: components["schemas"]["MyPlace"];
         };
         Person: {
@@ -1915,6 +1898,7 @@ export interface components {
             memberCount: number;
             capacity: number;
             inside: number;
+            full: boolean;
             rules: string | null;
             me: components["schemas"]["MyPlace"];
         };
@@ -1924,8 +1908,6 @@ export interface components {
             description?: string;
             /** @enum {string} */
             mapId?: "library" | "cafe" | "rooftop";
-            /** @enum {string} */
-            size?: "cosy" | "big";
             /** @enum {string} */
             time?: "clock" | "day" | "night";
             /** @enum {string} */
@@ -2685,7 +2667,7 @@ export interface components {
         Notification: {
             id: string;
             /** @enum {string} */
-            kind: "friend_request" | "friend_accepted" | "join_request" | "joined" | "mention" | "messages" | "space" | "gift" | "plus";
+            kind: "friend_request" | "friend_accepted" | "join_request" | "joined" | "mention" | "messages" | "gift" | "plus";
             text: string;
             href: string;
             person: components["schemas"]["Person"] | null;
@@ -3393,25 +3375,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Ticket"];
                 };
-            };
-        };
-    };
-    RoomsController_notifyWhenSpace: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };

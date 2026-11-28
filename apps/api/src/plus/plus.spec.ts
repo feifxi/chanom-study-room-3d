@@ -44,17 +44,17 @@ describe('Connecta Plus', () => {
     expect((await mai.get('/api/plus').expect(200)).body.plus).toBe(false);
   });
 
-  it('a room follows its owner’s plan: people at once, members and Big maps', async () => {
+  it('a room follows its owner’s plan: people at once and members', async () => {
     const mai = await person('maimai');
     const room = (await mai.post('/api/rooms', { name: 'Plus room', mapId: 'library' }).expect(201)).body;
-    expect(room).toMatchObject({ ownerPlus: false, maxCapacity: 25, maxMembers: 150 });
-    await mai.patch(`/api/rooms/${room.id}`, { size: 'big' }).expect(403);
+    expect(room).toMatchObject({ ownerPlus: false, capacity: 15, maxCapacity: 15, maxMembers: 30 });
+    await mai.patch(`/api/rooms/${room.id}`, { capacity: 30 }).expect(400);
 
     await mai.post('/api/plus/dev', { state: 'plus' }).expect(200);
     const plus = (await mai.get(`/api/rooms/${room.id}`).expect(200)).body;
-    expect(plus).toMatchObject({ ownerPlus: true, maxCapacity: 50, maxMembers: 1000 });
-    const big = (await mai.patch(`/api/rooms/${room.id}`, { size: 'big', capacity: 100 }).expect(200)).body;
-    expect(big).toMatchObject({ size: 'big', capacity: 100, maxCapacity: 100 });
+    expect(plus).toMatchObject({ ownerPlus: true, capacity: 30, maxCapacity: 30, maxMembers: 100 });
+    // 30 is the most on any plan: every map is built for it
+    await mai.patch(`/api/rooms/${room.id}`, { capacity: 31 }).expect(400);
 
     // A member's own Plus doesn't change someone else's room
     const jod = await person('jod.dev');
@@ -62,7 +62,7 @@ describe('Connecta Plus', () => {
     const { code } = (await mai.post(`/api/rooms/${room.id}/invites`, { kind: 'member' }).expect(200)).body;
     await jod.post(`/api/invites/${code}/accept`).expect(200);
     await mai.post('/api/plus/dev', { state: 'free' }).expect(200);
-    expect((await jod.get(`/api/rooms/${room.id}`).expect(200)).body).toMatchObject({ ownerPlus: false, capacity: 25 });
+    expect((await jod.get(`/api/rooms/${room.id}`).expect(200)).body).toMatchObject({ ownerPlus: false, capacity: 15 });
   });
 
   it('you can make 10 rooms, 30 with Plus; pictures up to 10 MB, 50 MB with Plus', async () => {
@@ -89,7 +89,7 @@ describe('when Plus ends (the sweep)', () => {
     const mai = await person('maimai');
     await mai.post('/api/plus/dev', { state: 'plus' }).expect(200);
     const room = (await mai.post('/api/rooms', { name: 'Chanom Friends', mapId: 'library' }).expect(201)).body;
-    await mai.patch(`/api/rooms/${room.id}`, { size: 'big', capacity: 80 }).expect(200);
+    await mai.patch(`/api/rooms/${room.id}`, { capacity: 28 }).expect(200);
     await mai.post('/api/billing/cancel').expect(200);
     const until = new Date(Date.now() + 2 * DAY);
     await prisma.user.update({ where: { id: mai.id }, data: { plusUntil: until } });
@@ -113,11 +113,11 @@ describe('when Plus ends (the sweep)', () => {
     expect(ended[0]!.text).toContain('Chanom Friends keeps its space for 7 more days');
 
     expect(await sweep(at(6.5))).toBe(1);
-    expect((await inbox(mai))[0]!.text).toContain('Tomorrow your rooms go back to 25 people at once and Big maps switch to Cosy');
-    expect(await prisma.room.findUniqueOrThrow({ where: { id: room.id } })).toMatchObject({ size: 'big', capacity: 80 });
+    expect((await inbox(mai))[0]!.text).toContain('Tomorrow your rooms go back to 15 people at once.');
+    expect(await prisma.room.findUniqueOrThrow({ where: { id: room.id } })).toMatchObject({ capacity: 28 });
 
     expect(await sweep(at(7.01))).toBe(1);
-    expect(await prisma.room.findUniqueOrThrow({ where: { id: room.id } })).toMatchObject({ size: 'cosy', capacity: 25 });
+    expect(await prisma.room.findUniqueOrThrow({ where: { id: room.id } })).toMatchObject({ capacity: 15 });
     expect(await sweep(at(9))).toBe(0);
     expect(plusMails().length - mails).toBe(3);
     expect(plusMails().at(-1)).toMatchObject({ to: 'maimai@example.com', subject: 'Tomorrow your rooms go back to Free' });
@@ -150,14 +150,10 @@ describe('when Plus ends (the sweep)', () => {
     const mai = await person('maimai');
     await mai.post('/api/plus/dev', { state: 'plus' }).expect(200);
     const room = (await mai.post('/api/rooms', { name: 'Chanom Friends', mapId: 'library' }).expect(201)).body;
-    await mai.patch(`/api/rooms/${room.id}`, { size: 'big' }).expect(200);
     await mai.post('/api/plus/dev', { state: 'grace' }).expect(200);
     expect((await mai.get('/api/me').expect(200)).body.plus).toBe(false);
     const seen = (await mai.get(`/api/rooms/${room.id}`).expect(200)).body;
-    expect(seen).toMatchObject({ ownerPlus: true, size: 'big' });
-    // Still Big, so other settings save; switching a Cosy room to Big needs Plus itself
+    expect(seen).toMatchObject({ ownerPlus: true, capacity: 30 });
     await mai.patch(`/api/rooms/${room.id}`, { slowMode: true }).expect(200);
-    const other = (await mai.post('/api/rooms', { name: 'Second', mapId: 'cafe' }).expect(201)).body;
-    expect((await mai.patch(`/api/rooms/${other.id}`, { size: 'big' }).expect(403)).body.code).toBe('plus_only');
   });
 });

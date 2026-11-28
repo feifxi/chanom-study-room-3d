@@ -3,11 +3,11 @@
 import { useSyncExternalStore } from 'react';
 
 /**
- * Test tools (development only): fill a room with 50 or 100 pretend people to see how the people
+ * Test tools (development only): fill a room with 14 or 29 pretend people (with you, a full Free room and a full Plus room) to see how the people
  * panel and the 3D room cope; the perf check (`pnpm --filter @connecta/web perf`) sets it too. They
  * walk around in 3D (two in three wander) and fill the people list, in your browser only.
  */
-export const CROWDS = [0, 50, 100] as const;
+export const CROWDS = [0, 14, 29] as const;
 export type Crowd = (typeof CROWDS)[number];
 
 const KEY = 'connecta:crowd';

@@ -7,7 +7,6 @@ import { browser, createTestApp, createTestGateway, LOOK, resetAccounts, signedU
 import type { Mail } from '../mail/mail.service.js';
 import { PresenceService } from '../presence/presence.service.js';
 import type { PrismaService } from '../prisma/prisma.service.js';
-import { GameService } from './game.service.js';
 
 let app: INestApplication;
 let sent: Mail[];
@@ -63,7 +62,7 @@ describe('join tickets', () => {
       name: 'maimai',
       look: LOOK,
       role: 'owner',
-      capacity: 25,
+      capacity: 15,
       mapId: 'library',
       timedOutUntil: 0,
       guestVoice: false,
@@ -139,23 +138,6 @@ describe('room events for the game server', () => {
     const { mai, id } = await maisRoom();
     await mai.delete(`/api/rooms/${id}`).send({ name: 'Chanom Friends' }).expect(204);
     await eventually(() => events.some((e) => e.type === 'deleted' && e.roomId === id));
-  });
-});
-
-describe('Full · notify me', () => {
-  it('puts one 🔔 item in for each person waiting, once', async () => {
-    const { mai, id } = await maisRoom();
-    const ken = await joinByInvite(mai, id, 'kenken');
-    await ken.post(`/api/rooms/${id}/space`).expect(204);
-    await ken.post(`/api/rooms/${id}/space`).expect(204);
-    await (await person('jod')).post(`/api/rooms/${id}/space`).expect(404);
-
-    const game = app.get(GameService);
-    await game.space(id);
-    await game.space(id);
-    const { items } = (await ken.get('/api/notifications').expect(200)).body;
-    expect(items).toHaveLength(1);
-    expect(items[0]).toMatchObject({ kind: 'space', text: 'There’s space in **Chanom Friends** now', href: `/r/${id}/walk` });
   });
 });
 

@@ -88,8 +88,6 @@ export const GAME_CHANNELS = {
   rooms: 'game:rooms',
   /** Game → gateway: who's in which room, per connection (presence, docs/features/03-friends.md) */
   presence: 'game:presence',
-  /** Game → API: a full room has space again ("Full · notify me") */
-  space: 'game:space',
   /** Game → game: someone walked into a room ({@link GameWalkedIn}); any other room they're in lets them go */
   walkedIn: 'game:walked-in',
 } as const;

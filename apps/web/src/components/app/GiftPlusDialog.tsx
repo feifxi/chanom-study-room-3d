@@ -93,7 +93,7 @@ export function GiftPlusDialog({ open, onOpenChange, to }: { open: boolean; onOp
             value={note}
             maxLength={GIFT_NOTE_MAX}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="for the Big map, thanks for hosting 🫶"
+            placeholder="for the room, thanks for hosting 🫶"
             className="rounded-xl"
           />
         </section>

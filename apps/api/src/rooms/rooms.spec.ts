@@ -3,6 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { browser, createTestApp, LOOK, resetAccounts, signedUp } from '../../test/test-app.js';
 import { AccountsService } from '../accounts/accounts.service.js';
 import type { Mail } from '../mail/mail.service.js';
+import { PresenceService } from '../presence/presence.service.js';
 import type { PrismaService } from '../prisma/prisma.service.js';
 
 let app: INestApplication;
@@ -42,8 +43,8 @@ describe('making a room', () => {
       name: 'Chanom Friends',
       emoji: '📚',
       visibility: 'private',
-      capacity: 25,
-      maxMembers: 150,
+      capacity: 15,
+      maxMembers: 30,
       memberCount: 1,
       owner: { handle: 'maimai' },
       me: { role: 'owner' },
@@ -85,12 +86,31 @@ describe('room settings', () => {
     await ken.patch(`/api/rooms/${id}`, { visibility: 'open' }).expect(403);
   });
 
-  it('keeps capacity within the plan and Big maps for Plus', async () => {
+  it('keeps capacity within the plan, and above the held seats', async () => {
     const { mai, id } = await maisRoom();
     await mai.patch(`/api/rooms/${id}`, { capacity: 10 }).expect(200);
-    await mai.patch(`/api/rooms/${id}`, { capacity: 40 }).expect(400);
-    const res = await mai.patch(`/api/rooms/${id}`, { size: 'big' }).expect(403);
-    expect(res.body).toMatchObject({ code: 'plus_only' });
+    await mai.patch(`/api/rooms/${id}`, { capacity: 16 }).expect(400);
+    await mai.patch(`/api/rooms/${id}`, { capacity: 2 }).expect(400);
+  });
+
+  it('says full for you when only the seats held for the owner and a mod are left', async () => {
+    const { mai, id } = await maisRoom({ capacity: 3 });
+    const ken = await joinByInvite(mai, id, 'kenken');
+    const ploy = await joinByInvite(mai, id, 'ployy');
+    const jod = await joinByInvite(mai, id, 'jod');
+    await mai.put(`/api/rooms/${id}/members/${jod.id}/role`, { role: 'mod' }).expect(204);
+    const full = async (b: typeof mai) => (await b.get(`/api/rooms/${id}`).expect(200)).body.full;
+    expect(await full(ploy)).toBe(false);
+
+    // Ken takes the one ordinary seat
+    const presence = app.get(PresenceService);
+    await presence.openTab(ken.id, 'tab');
+    await presence.tab(ken.id, 'tab', { roomId: id });
+    expect(await full(ploy)).toBe(true);
+    expect(await full(jod)).toBe(false);
+    expect(await full(mai)).toBe(false);
+    // Ken's own view: his seat is his
+    expect(await full(ken)).toBe(false);
   });
 
   it('keeps members out of settings; the owner deletes by typing the name', async () => {
@@ -112,6 +132,27 @@ describe('roles', () => {
     await mai.put(`/api/rooms/${id}/owner`, { userId: ken.id }).expect(200);
     expect((await ken.get(`/api/rooms/${id}`)).body.me.role).toBe('owner');
     expect((await mai.get(`/api/rooms/${id}`)).body.me.role).toBe('mod');
+  });
+
+  it('allows 5 mods; handing over with every mod seat taken leaves the old owner a member', async () => {
+    const { mai, id } = await maisRoom();
+    const mods = [];
+    for (const handle of ['mod.one', 'mod.two', 'mod.three', 'mod.four', 'mod.five']) {
+      const m = await joinByInvite(mai, id, handle);
+      await mai.put(`/api/rooms/${id}/members/${m.id}/role`, { role: 'mod' }).expect(204);
+      mods.push(m);
+    }
+    const ken = await joinByInvite(mai, id, 'kenken');
+    const res = await mai.put(`/api/rooms/${id}/members/${ken.id}/role`, { role: 'mod' }).expect(409);
+    expect(res.body).toMatchObject({ code: 'too_many_mods' });
+    // Making a mod a mod again is no new seat
+    await mai.put(`/api/rooms/${id}/members/${mods[0]!.id}/role`, { role: 'mod' }).expect(204);
+
+    await mai.put(`/api/rooms/${id}/owner`, { userId: ken.id }).expect(200);
+    expect((await mai.get(`/api/rooms/${id}`)).body.me.role).toBe('member');
+    // A mod who takes over frees a seat for the old owner
+    await ken.put(`/api/rooms/${id}/owner`, { userId: mods[1]!.id }).expect(200);
+    expect((await ken.get(`/api/rooms/${id}`)).body.me.role).toBe('mod');
   });
 
   it('lets mods act on members only, never on the owner or other mods', async () => {

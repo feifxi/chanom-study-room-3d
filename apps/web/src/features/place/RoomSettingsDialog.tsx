@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Globe, Link2, Lock, Map as MapIcon, ScrollText, Shield, UserCheck, Users } from 'lucide-react';
 import {
   maxInside,
+  MIN_CAPACITY,
   ROOM_DESCRIPTION_MAX,
   ROOM_LANGUAGES,
   ROOM_NAME_MAX,
@@ -27,7 +28,7 @@ import { roomsApi, useMembers, useRoomAction, type RoomSettings } from '@/featur
 import { cn } from '@/lib/utils';
 import { MAPS } from '@/lib/maps';
 import { type PlaceRoom } from './model';
-import { SizePicker, TemplateCard } from './MapPickers';
+import { TemplateCard } from './MapPickers';
 import { InvitesPanel, MembersPanel } from './RoomMembers';
 import { mapById, ROOM_TIMES, toThumbnail, type RoomLook } from './roomLook';
 import { Scene } from './Scene';
@@ -43,7 +44,7 @@ type TabId = (typeof TABS)[number][0];
 /**
  * Where each setting lives (settings audit, 2026-11-09):
  * - Overview: what the room is and who it's for (name, picture, description, tags, who can join, how many at once)
- * - Map & look: only the place itself (template, size, time of day)
+ * - Map & look: only the place itself (template, time of day)
  * - Invites: links, and who may use them (guests)
  * - Rules & safety: the rules people read, and what's allowed inside (filters, room-wide games)
  *
@@ -238,9 +239,10 @@ function Overview({ room }: { room: PlaceRoom }) {
         <Label>
           People at once · <span className="font-mono">{capacity}</span>
         </Label>
-        <Slider value={[capacity]} onValueChange={([v]) => setCapacity(v!)} min={2} max={r.maxCapacity} />
+        <Slider value={[capacity]} onValueChange={([v]) => setCapacity(v!)} min={MIN_CAPACITY} max={r.maxCapacity} />
         <p className="text-xs text-muted-foreground">
-          Free: 25 · Plus: 50 on a Cosy map, 100 on a Big one (the size is in Map & look). When it’s full, it’s full.
+          Free: {maxInside(false)} · Plus: {maxInside(true)}. One seat is always kept for the owner and one for a mod. When it’s full, it’s
+          full.
         </p>
       </div>
       <Button className="w-fit rounded-full font-extrabold" disabled={!name.trim() || save.isPending} onClick={submit}>
@@ -365,12 +367,12 @@ function DeleteRoomDialog({ room, open, onOpenChange }: { room: PlaceRoom; open:
 
 function MapAndLook({ room }: { room: PlaceRoom }) {
   const r = room.room;
-  const [look, setLook] = useState<RoomLook>({ mapId: r.mapId, size: r.size, time: r.time });
+  const [look, setLook] = useState<RoomLook>({ mapId: r.mapId, time: r.time });
   const set = (patch: Partial<RoomLook>) => setLook((l) => ({ ...l, ...patch }));
   const someoneInside = room.people.length > 0;
-  const mapChanged = look.mapId !== r.mapId || look.size !== r.size;
+  const mapChanged = look.mapId !== r.mapId;
   const save = useRoomAction(
-    () => roomsApi.update({ id: room.id, mapId: look.mapId as MapId, size: look.size, time: look.time }),
+    () => roomsApi.update({ id: room.id, mapId: look.mapId as MapId, time: look.time }),
     () => {
       // Everyone inside (this tab too) hears it from the game server and the gateway
       toast.success(mapChanged && someoneInside ? `Moving everyone to ${mapById(look.mapId).name}` : 'Saved for everyone in the room');
@@ -390,14 +392,6 @@ function MapAndLook({ room }: { room: PlaceRoom }) {
           Every template has the same things to do (study spots, private zones, big screen, games, whiteboard, Buddy Machine); only the
           place and its look differ. Premium maps for rooms whose owner has Plus are on the way.
         </p>
-      </section>
-
-      <section>
-        <p className="mb-2 text-sm font-extrabold">Size</p>
-        <SizePicker size={look.size} plus={room.ownerPlus} onPick={(size) => set({ size })} />
-        {maxInside(room.ownerPlus, look.size) < r.capacity && (
-          <p className="mt-2 text-xs text-muted-foreground">People at once drops to {maxInside(room.ownerPlus, look.size)}.</p>
-        )}
       </section>
 
       {mapChanged && (

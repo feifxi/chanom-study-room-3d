@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Bell, MessageCircle, Play, Crown, UserPlus } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Play, Crown, UserPlus } from 'lucide-react';
 import { RoomChat } from '@/features/chat/RoomChat';
 import { useWatchInside } from '@/features/presence/usePresence';
 import { InviteDialog } from '@/features/rooms/InviteDialog';
 import { UserAvatar } from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
-import { notifyWhenSpace, roomsApi, useMembers, useRoom, useRoomAction, type Room } from '@/features/rooms/useRooms';
+import { roomsApi, useMembers, useRoom, useRoomAction, type Room } from '@/features/rooms/useRooms';
 import { cn } from '@/lib/utils';
 import { ROLE_LABEL, placeRoom, walkInHref } from './model';
 import { RoomMenu } from './RoomMenu';
@@ -86,9 +86,8 @@ export function PlaceChat({ initial }: { initial: Room }) {
           className="text-muted-foreground hover:bg-muted hover:text-foreground"
         />
         {room.full ? (
-          <Button className="h-10 rounded-full px-4 font-black sm:px-5" onClick={() => notifyWhenSpace(room.id, room.name)}>
-            <Bell /> Full<span className="hidden sm:inline"> · notify me</span>
-          </Button>
+          // Full is full: the chat still works, and Walk in comes back when someone leaves
+          <span className="flex h-10 items-center rounded-full bg-muted px-4 text-sm font-black text-muted-foreground sm:px-5">Full</span>
         ) : (
           <Button asChild className="h-10 rounded-full px-3 font-black sm:px-5">
             <Link href={walkInHref(room)}>

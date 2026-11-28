@@ -10,8 +10,8 @@ import type * as THREE from 'three';
  * - JS time is ours per frame (scene updates + render submission): 8 ms leaves the rest of a 60 fps
  *   frame to the browser and the GPU.
  * - The map share was 120 draw calls for the first 20 × 14 m room; the redesigned 26 × 18 m library
- *   (2026-11-10) measures about 122 after batching, so it is 130 now. Still under a fifth of the
- *   total with 100 people in the room.
+ *   (2026-11-10) measures about 122 after batching, so it is 130 now. Still under half of the
+ *   total with a full room (30 people, the most any room holds).
  */
 export const PERF_BUDGET = {
   map: { drawCalls: 130, triangles: 150_000, textures: 32 },

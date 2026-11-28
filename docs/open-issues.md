@@ -15,6 +15,8 @@ adds a line here; a fix removes it. Bigger planned work is in the [roadmap](road
 ## Code cleanup
 
 - The perf check isn't in CI (it needs the whole app and the seed).
+- On a phone, a room's chat header cuts its count without an ellipsis ("0/15" reads "0/1") when the
+  name and map are long (`PlaceChat.tsx`).
 - The game test "a reload mid-game keeps your cards" (Slave) sometimes times out in a full
   `pnpm check` (about 1 run in 5 on a busy machine); it passes alone. Its 5 s wait is tight.
 
@@ -50,7 +52,7 @@ adds a line here; a fix removes it. Bigger planned work is in the [roadmap](road
 - A card plan bought while gifted Plus is left starts today (the overlap is lost).
 - Gift Plus's hint can't say whether the friend has Plus already.
 - Plus ending runs up to 10 minutes late (the sweep's pace). Grace's end applies to the next
-  people in; a Big → Cosy switch has no 3D difference yet.
+  people in.
 - PromptPay renewal uses our payment page, not Stripe's invoice reminders.
 - Screen-share quality is capped only in the browser.
 

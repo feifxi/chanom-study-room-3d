@@ -21,8 +21,8 @@ const ROWS: { group: string; rows: [string, string | boolean, string | boolean][
   {
     group: 'Rooms you own',
     rows: [
-      ['People at once', `${PLANS.free.capacity}`, `${PLANS.plus.capacity} (Big maps)`],
-      ['Members', `${PLANS.free.members}`, PLANS.plus.members.toLocaleString()],
+      ['People at once', `${PLANS.free.capacity}`, `${PLANS.plus.capacity}`],
+      ['Members', `${PLANS.free.members}`, `${PLANS.plus.members}`],
       ['Basic maps (Library, Café, Rooftop)', true, true],
       ['Premium maps (coming soon)', false, true],
       ['Screen share', '720p', '1080p'],
@@ -58,7 +58,7 @@ const FAQ: [string, string][] = [
   ],
   [
     'What happens to my rooms if Plus ends?',
-    'Nothing is deleted. Your rooms keep their space for 7 more days, then go back to 25 people at once, and a Big or premium map switches to its basic version while everyone stays inside.',
+    `Nothing is deleted. Your rooms keep their space for 7 more days, then go back to ${PLANS.free.capacity} people at once, and a premium map switches to its basic version while everyone stays inside.`,
   ],
   ['Can I cancel?', 'Any time, in Settings → Plus & billing. You keep Plus until the end of what you paid for.'],
   ['Refunds?', 'If something went wrong (charged twice, a bug), reply to your receipt email and the team will sort it out.'],
@@ -129,7 +129,9 @@ export default function PlusPage() {
             <div className="absolute inset-x-6 bottom-2 h-10 rounded-[50%] bg-card/50 blur-md" />
             <AvatarPreview look={look} />
             <span className="absolute top-6 -left-2 rounded-full bg-card px-2.5 py-1 text-xs font-black shadow-md">🖥️ 1080p</span>
-            <span className="absolute top-24 -right-1 rounded-full bg-card px-2.5 py-1 text-xs font-black shadow-md">100 people</span>
+            <span className="absolute top-24 -right-1 rounded-full bg-card px-2.5 py-1 text-xs font-black shadow-md">
+              {PLANS.plus.capacity} people
+            </span>
             <span className="absolute bottom-10 left-0 rounded-full bg-foreground px-2.5 py-1 text-xs font-black shadow-md">
               ✨ <span className="shimmer">{account.name}</span>
             </span>
@@ -143,20 +145,15 @@ export default function PlusPage() {
         <div className="grid auto-rows-[minmax(10rem,auto)] gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Perk
             className="bg-lavender text-lavender-ink lg:col-span-2 lg:row-span-2"
-            title="Rooms for 100"
-            text="Your rooms fit 100 at once on Big maps, and 1,000 members. Everyone inside gets it, only you pay."
+            title={`Rooms for ${PLANS.plus.capacity}`}
+            text={`Your rooms fit ${PLANS.plus.capacity} at once, twice as many, and ${PLANS.plus.members} members. Everyone inside gets it, only you pay.`}
           >
             <div className="mt-auto flex flex-col gap-3">
-              <Dots n={25} label="Free" />
-              <Dots n={100} label="Plus" strong />
+              <Dots n={PLANS.free.capacity} label="Free" />
+              <Dots n={PLANS.plus.capacity} label="Plus" strong />
             </div>
           </Perk>
-          <Perk
-            className="bg-peach text-peach-ink lg:col-span-2"
-            title="Premium maps"
-            text="New places for your room as they arrive, Big versions of every map."
-            soon
-          >
+          <Perk className="bg-peach text-peach-ink lg:col-span-2" title="Premium maps" text="New places for your room as they arrive." soon>
             <div className="mt-auto flex gap-2">
               {FUTURE_MAPS.slice(0, 4).map((m) => (
                 <span key={m.name} title={m.name} className="grid size-12 place-items-center rounded-2xl bg-card/70 text-2xl shadow-sm">

@@ -1,4 +1,5 @@
-// Performance check for the 3D room: loads every map with nobody, 50 and 100 extra people (with them,
+// Performance check for the 3D room: loads every map with nobody, 14 and 29 extra people (with you, a
+// full Free room and a full Plus room, the most any room holds; with them,
 // a full Buddy Machine: 9 cats and study buddies and 4 pets), in smooth
 // and battery-saver mode, zoomed all the way out, and fails if a frame goes over the budget
 // (src/features/room3d/perf.ts). Zoomed out is the worst case: the whole map is on screen, so nothing
@@ -13,10 +14,10 @@ import { chromium } from 'playwright';
 import { signIn } from './sign-in.mjs';
 
 const BASE = process.env.WEB_URL ?? 'http://localhost:3000';
-// A seed room Fei is in, on each map (Chanom Friends is Big, the worst case for the Library)
+// A seed room Fei is in, on each map
 const ROOM_ON = { library: 'seedchanom', cafe: 'seedgamenc', rooftop: 'seedlofish' };
 const MAPS = (process.env.MAPS ?? 'library,cafe,rooftop').split(',');
-const CROWDS = [0, 50, 100];
+const CROWDS = [0, 14, 29];
 const launch = () =>
   chromium
     .launch({ channel: 'chrome', args: ['--mute-audio', '--enable-gpu', '--ignore-gpu-blocklist'] })

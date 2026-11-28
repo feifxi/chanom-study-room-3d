@@ -1,6 +1,6 @@
 # 5. The 3D room
 
-PBIs: [3D-1 to 3D-11](../releases.md#5-the-3d-room) · How the code works: [Release 1](../guide/04-release-1.md#the-3d-room-3d-1-to-3d-8), [Release 2](../guide/05-release-2.md#more-in-the-3d-room-3d-9-to-3d-11)
+PBIs: [3D-1 to 3D-11](../releases.md#5-the-3d-room) · How the code works: [Release 1](../guide/04-release-1.md#the-3d-room-3d-1-to-3d-7), [Release 2](../guide/05-release-2.md#more-in-the-3d-room-3d-8-to-3d-11)
 
 Walking around a room together: click to walk, stereo proximity voice for crowds, private zones,
 bubbles, Away, and an announcement tool for owners and mods. Everything here runs on the **game
@@ -16,7 +16,7 @@ server**. The HUD layout is in [Design](../design.md#inside-a-room-3d); the maps
 ## Voice
 
 - Full volume within **2.5 m**, silent at **9 m**, in **stereo**.
-- At most the **12 nearest** voices are streamed (a phone can't take 100).
+- At most the **12 nearest** voices are streamed (a phone can't take a full room).
 - Deafen turns the mic off too. Guests listen only, unless the room lets them talk.
 - **Mute for me** (remembered per browser) and **Mute for everyone** (mods; lasts until lifted or
   the room empties, survives rejoining).
@@ -47,8 +47,8 @@ so a tampered client outside can't listen in.
   "Leave {room}?" with Stay as the default (`LeaveRoomLink`, `useLeaveRoom().ask(href)`).
 - **One of you per room** (the newest tab wins) and **one room at a time per account** (walking
   into another room takes you out of this one).
-- Can't walk in or sent out: a card says why, mood first, with the one next step (full: Notify
-  me; removed; banned; in another tab: Walk in here; the room is gone; can't connect: Try again).
+- Can't walk in or sent out: a card says why, mood first, with the one next step (full: Try
+  again; removed; banned; in another tab: Walk in here; the room is gone; can't connect: Try again).
 
 ## Cats, study buddies and the Buddy Machine
 
@@ -81,8 +81,9 @@ Checked while building. Budget per frame (`apps/web/src/features/room3d/perf.ts`
   batches.
 - **Battery saver:** half-detail characters, no shadows, 60 fps while you're active and 30 while
   you're still. On by default on touch screens; a slow device steps down quietly.
-- **Check:** `pnpm --filter @connecta/web perf` loads every map zoomed out with 3, 52 and 102
-  people and fails over budget; the crowd runs add a full Buddy Machine (4 cats, 5 buddies, 4
+- **Check:** `pnpm --filter @connecta/web perf` loads every map zoomed out with you alone, then 14
+  and 29 more people (a full Free room, and a full Plus room: the most any room holds),
+  and fails over budget; the crowd runs add a full Buddy Machine (4 cats, 5 buddies, 4
   pets). Overlay: `?perf` or Test tools.
 - **Clocks:** countdowns and timers read the game server's clock (the room asks it on joining,
   `lib/serverClock.ts`), so a computer clock that's off doesn't show them off.

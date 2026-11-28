@@ -8,7 +8,6 @@ export const NOTIFICATION_KINDS = [
   'joined',
   'mention',
   'messages',
-  'space',
   'gift',
   'plus',
 ] as const;

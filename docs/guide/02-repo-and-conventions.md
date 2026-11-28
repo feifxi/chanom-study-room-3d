@@ -100,7 +100,7 @@ src/
   room.ts       ConnectaRoom: joining, every message handler, room events, timers
   state.ts      the synced state (players, cats, spots, games, the TV)
   ticket.ts     checks the API's signed ticket and deck pass
-  redis.ts      room events in; presence, space, focus rounds and quest steps out
+  redis.ts      room events in; presence, focus rounds and quest steps out
   links.ts      what the room reports outward (so tests can swap Redis for functions)
   voice.ts      LiveKit: voice passes and who may talk
   rules.ts      pure movement checks

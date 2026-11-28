@@ -24,15 +24,15 @@ at phone and desktop width, light and dark, and as a guest.
 | Mook  | `mookie`  | Mod in Game Night Club; a pet                                                      |
 | Earth | `earth.k` | Plus as Fei's gift; mod in Lo-fi Study Hall                                        |
 
-Rooms: **Chanom Friends** (private, Library, Big), **CPE Year 3** (ask to join), **Game Night
+Rooms: **Chanom Friends** (private, Library, Plus: 30 at once), **CPE Year 3** (ask to join), **Game Night
 Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
 
 - [ ] As Fei after `pnpm db:reset`: four rooms on Home (Chanom Friends "4 new"), 4 unread in 🔔,
       Ter's DMs, two weeks of Focus, coins and worn items in the Shop, reports and payments on the
       admin site.
 - [ ] `pnpm db:seed` again: same data, no doubles; your own accounts stay.
-- [ ] **Test tools** (dashed tab, right edge): theme, a pretend crowd of 100 in a room (yours
-      only), the perf overlay, "Go away now", "Your Plus". A production build has no tab.
+- [ ] **Test tools** (dashed tab, right edge): theme, a pretend crowd of 14 or 35 in a room
+      (yours only), the perf overlay, "Go away now", "Your Plus". A production build has no tab.
 
 ## Sign-in and accounts
 
@@ -60,7 +60,9 @@ Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
 - [ ] Member invite joins; guest pass lets in for 24 h; Invites lists and cancels links.
 - [ ] Ask to join: let in, or decline (then 7 days before asking again).
 - [ ] Make and remove a mod; kick; time out (can't post); ban (can't rejoin or use a pass); unban.
-- [ ] Hand the room over; leave; delete (type its name).
+- [ ] A 6th mod is refused: "A room can have up to 5 mods".
+- [ ] Hand the room over; leave; delete (type its name). With 5 mods already, handing over to a
+      member leaves you a member; to one of the mods, you stay a mod.
 - [ ] Thumbnail (owner, Settings → Overview): upload a photo → it shows cropped on Home, Discover,
       the room's page and an invite link (also signed out). Use the map's picture puts it back. A
       mod doesn't see the picker; a non-picture is turned down.
@@ -84,7 +86,7 @@ Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
 - [ ] Remove (silent); block (their room messages fold away); unblock.
 - [ ] A friend online shows green on Friends, Messages and the DM header; 10 quiet minutes →
       Away; closing their tabs → "Last seen just now".
-- [ ] A friend walks into: your room → Walk in card, "Friends out right now", live `1/25` with
+- [ ] A friend walks into: your room → Walk in card, "Friends out right now", live `1/15` with
       their face; an Open room → named with Join; a private room you're not in → "🔒 A private
       room" with Ask to join.
 - [ ] Ask to join → their DM card → Send invite → your invite card → Join works. With "Members
@@ -126,10 +128,13 @@ Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
 - [ ] Made mod while inside: "Mod" shows at once. Room deleted: everyone out.
 - [ ] Map switched in Room settings: everyone moves to the new door, no reload; the room card names
       the new map. Time of day changed in Room settings shows for people walking in.
-- [ ] Room settings opened from Home (without walking in) starts from the room's saved map, size
-      and time of day.
-- [ ] Capacity lower than who's inside: the next member gets "full" with Notify me (owner and mods
-      still get in); Notify me puts "There's space" in the 🔔 once someone leaves.
+- [ ] Room settings opened from Home (without walking in) starts from the room's saved map and
+      time of day. Map & look has no size picker.
+- [ ] Held seats (Room settings → People at once 3, the fewest it allows): one member walks in;
+      a second member gets the "full" card with Try again, and Home, the room's page and "…" →
+      About show a plain **Full** (no Notify me). A mod still sees Walk in and gets in; a second mod
+      doesn't; the owner always does. Walk in comes back once someone leaves. A full Open room's
+      Join says "Join (full right now)".
 - [ ] Bubbles over heads and in everyone's Bubbles tab, typing dots. On the Fireside rug bubbles
       reach only the rug.
 - [ ] 10 quiet minutes (or "Go away now") → 💤; never while focusing. Away during a break shows
@@ -270,8 +275,9 @@ Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
 
 ## Plus
 
-- [ ] Free: 25 at once, 150 members, no Big map, 10 rooms, 10 MB pictures. Plus (Test tools or
-      checkout): 50/100, 1,000, Big maps, 30 rooms, 50 MB, sharper shares, ✨ name live.
+- [ ] Free: 15 at once, 30 members, 10 rooms, 10 MB pictures. Plus (Test tools or checkout): 30
+      at once (the slider stops there), 100 members, 30 rooms, 50 MB, sharper shares, ✨ name live.
+      The Plus page and the landing page say 15 and 30.
 - [ ] Only the owner's plan changes a room. Coming soon on premium maps, skins and pets, AI decks.
 - [ ] Stand-in checkout (monthly and yearly, card and PromptPay) → "Welcome to Plus ✨"; billing
       shows the plan, date and receipt. Cancel and turn renewal back on. Paying again while
@@ -282,8 +288,8 @@ Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
       QR. On a card plan, Change card opens Stripe's billing page in a new tab.
 - [ ] Gift Plus to a friend (Friends "…", DM "…", Plus page): you land in the DM with a 🎁 card;
       they get a 🔔 item, Plus, and no price. Gifting someone with Plus extends it. Not for non-friends.
-- [ ] Test tools → Cancelled: 🔔, email, Home banner with Keep Plus. Ended · grace (owner of a Big
-      room): ✨ gone, the room stays Big for the grace. Plus / Free put you back.
+- [ ] Test tools → Cancelled: 🔔, email, Home banner with Keep Plus. Ended · grace (owner of a room
+      set to 30): ✨ gone, the room keeps 30 for the grace, then the banner says it goes back to 15. Plus / Free put you back.
 
 ## Admin site
 
@@ -295,7 +301,7 @@ Club** (open, Café), **Lo-fi Study Hall** (open, Rooftop, slow mode).
       automatic step → urgent, on top. Warn (with or without a reason), Delete + warn (message gone
       at once), Delist, Close (everyone out, chat refused), Dismiss. Done lists decisions.
 - [ ] Rooms: Delist / Relist, Close / Reopen, each emails the owner.
-- [ ] Common rooms: copies and counts; change seats → the next walk-in uses them; Post notice
+- [ ] Common rooms: copies and counts (30 a copy); change seats (30 at most) → the next walk-in uses them; Post notice
       shows the banner for 10 minutes, to latecomers too.
 - [ ] Moderation: add and remove a word (live); Word filter off; Report steps off; picture check
       says whether the key is set.

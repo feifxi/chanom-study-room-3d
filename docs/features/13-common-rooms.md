@@ -17,8 +17,9 @@ Needs: [Rooms](02-rooms.md), [The 3D room](05-room-3d.md), [Moderation](12-moder
 
 ## Copies
 
-- **A copy holds 25, with 5 seats kept for friends:** strangers stop being placed at 20; a new
-  copy opens when every copy has 20; empty copies close. Both numbers are admin settings.
+- **A copy holds 30, with 5 seats kept for friends:** strangers stop being placed at 25; a new
+  copy opens when every copy has 25; empty copies close. Both numbers are admin settings (30 at
+  most: the maps are built for it).
 - **Walk in** lands in the copy with the most friends, else the busiest still taking strangers.
 - **Joining a friend** lands in their copy (if it's full, the busiest other one, and you're told).
 

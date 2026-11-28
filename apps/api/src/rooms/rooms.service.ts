@@ -8,7 +8,10 @@ import {
   GUEST_PASS_HOURS,
   INVITE_EXPIRY_HOURS,
   MAP_EMOJI,
+  hasSeat,
   maxInside,
+  MODS_MAX,
+  roomCapacity,
   planOf,
   REQUEST_COOLDOWN_DAYS,
   TIMEOUT_MINUTES,
@@ -16,7 +19,6 @@ import {
   type MapId,
   type QuietBy,
   type RoomRole,
-  type RoomSize,
   type PlayerRole,
   type Timeout,
 } from '@connecta/shared';
@@ -164,17 +166,11 @@ export class RoomsService {
     }
     const room = await this.prisma.room.findUniqueOrThrow({ where: { id: roomId } });
     const owner = await this.ownerOf(roomId);
-    // During the grace a Big room stays Big, but only Plus switches a room to Big
-    const plus = roomPlus(owner, now);
-    const size = (input.size ?? room.size) as RoomSize;
-    if (size === 'big' && room.size !== 'big' && !hasPlus(owner, now)) {
-      throw new ForbiddenException({ code: 'plus_only', message: 'Big maps need the owner’s Plus' });
-    }
-    const max = maxInside(plus, size);
+    const max = maxInside(roomPlus(owner, now));
     if (input.capacity !== undefined && input.capacity > max) throw new BadRequestException(`At most ${max} people at once`);
 
     const data: Prisma.RoomUpdateInput = { ...input };
-    // A smaller map or plan lowers the cap with it
+    // A smaller plan lowers the cap with it
     if (input.capacity === undefined && room.capacity !== null && room.capacity > max) data.capacity = max;
     await this.prisma.room.update({ where: { id: roomId }, data });
     // Live switch (docs/features/06-maps.md): everyone inside moves to the new map's door
@@ -202,19 +198,22 @@ export class RoomsService {
     this.game.roomEvent({ roomId, type: 'deleted' });
   }
 
-  /** Hands the room to another member; the old owner stays on as a mod. */
+  /** Hands the room to another member; the old owner stays on as a mod while there's a mod seat. */
   async transfer(roomId: string, userId: string, toUserId: string, now = new Date()): Promise<Room> {
     const me = await this.membership(roomId, userId);
     if (me.role !== 'owner') throw new ForbiddenException('Only the owner hands the room over');
     if (toUserId === userId) throw new BadRequestException('You already own it');
-    await this.membership(roomId, toUserId, 'They’re not a member');
+    const to = await this.membership(roomId, toUserId, 'They’re not a member');
+    // A mod who becomes owner frees their seat; a member doesn't
+    const mods = (await this.modCount(roomId)) - (to.role === 'mod' ? 1 : 0);
+    const was: 'mod' | 'member' = mods < MODS_MAX ? 'mod' : 'member';
     await this.prisma.$transaction([
       this.prisma.membership.update({ where: { roomId_userId: { roomId, userId: toUserId } }, data: { role: 'owner' } }),
-      this.prisma.membership.update({ where: { roomId_userId: { roomId, userId } }, data: { role: 'mod' } }),
+      this.prisma.membership.update({ where: { roomId_userId: { roomId, userId } }, data: { role: was } }),
       this.prisma.room.update({ where: { id: roomId }, data: { heirId: null } }),
     ]);
     this.game.roomEvent({ roomId, type: 'role', userId: toUserId, role: 'owner' });
-    this.game.roomEvent({ roomId, type: 'role', userId, role: 'mod' });
+    this.game.roomEvent({ roomId, type: 'role', userId, role: was });
     return this.get(roomId, userId, now);
   }
 
@@ -324,9 +323,17 @@ export class RoomsService {
     if (me.role !== 'owner') throw new ForbiddenException('Only the owner makes mods');
     const them = await this.membership(roomId, whoId, 'They’re not a member');
     if (them.role === 'owner') throw new ForbiddenException('The owner stays the owner; hand the room over instead');
+    // A few mods cover a group across the day; only the first one inside gets the held seat
+    if (role === 'mod' && them.role !== 'mod' && (await this.modCount(roomId)) >= MODS_MAX) {
+      throw new ConflictException({ code: 'too_many_mods', message: `A room can have up to ${MODS_MAX} mods` });
+    }
     await this.prisma.membership.update({ where: { roomId_userId: { roomId, userId: whoId } }, data: { role } });
     this.game.roomEvent({ roomId, type: 'role', userId: whoId, role });
     await this.logMod(role === 'mod' ? 'make_mod' : 'remove_mod', roomId, userId, whoId);
+  }
+
+  private modCount(roomId: string) {
+    return this.prisma.membership.count({ where: { roomId, role: 'mod' } });
   }
 
   /** Removed from the room (a member, or a guest whose pass ends); a new invite brings them back. */
@@ -415,7 +422,7 @@ export class RoomsService {
     const role: PlayerRole | null = member ? member.role : guest && guest.until > now ? 'guest' : null;
     if (!role) throw new NotFoundException();
     const person = toPerson(user);
-    const max = maxInside(roomPlus(await this.ownerOf(roomId), now), room.size as RoomSize);
+    const max = maxInside(roomPlus(await this.ownerOf(roomId), now));
     const ticket = await this.game.ticket({
       sub: userId,
       roomId,
@@ -423,7 +430,7 @@ export class RoomsService {
       name: person.name,
       look: person.look,
       role,
-      capacity: Math.min(room.capacity ?? max, max),
+      capacity: roomCapacity(room.capacity, max),
       mapId: room.mapId,
       timedOutUntil: Math.max(
         member?.timedOutUntil && member.timedOutUntil > now ? member.timedOutUntil.getTime() : 0,
@@ -438,16 +445,6 @@ export class RoomsService {
       plus: hasPlus(user, now),
     });
     return { ticket, place: roomId };
-  }
-
-  /** "Full · notify me": a 🔔 item once someone leaves (members and guest pass holders). */
-  async notifyWhenSpace(roomId: string, userId: string, now = new Date()): Promise<void> {
-    const [member, guest] = await Promise.all([
-      this.prisma.membership.findUnique({ where: { roomId_userId: { roomId, userId } } }),
-      this.prisma.guestVisit.findUnique({ where: { roomId_userId: { roomId, userId } } }),
-    ]);
-    if (!member && !(guest && guest.until > now)) throw new NotFoundException();
-    await this.game.waitForSpace(roomId, userId);
   }
 
   // ── Invites ───────────────────────────────────────────────────────────────────────────────────
@@ -610,10 +607,15 @@ export class RoomsService {
         : [],
     );
     const inside = await Promise.all(rooms.map((r) => this.presence.inside(r.id, now.getTime())));
-    const rank = rooms.map((r, i) => ({ r, inside: inside[i]!.length, friends: inside[i]!.filter((id) => friends.has(id)).length }));
+    const rank = rooms.map((r, i) => ({
+      r,
+      ids: inside[i]!,
+      inside: inside[i]!.length,
+      friends: inside[i]!.filter((id) => friends.has(id)).length,
+    }));
     // Stable: equal rooms keep the database's order (most members, then newest)
     rank.sort((a, b) => b.friends - a.friends || b.inside - a.inside);
-    return rank.map(({ r, inside }) => {
+    return rank.map(({ r, ids, inside }) => {
       const room = this.toRoom(r, userId, now);
       return {
         id: room.id,
@@ -629,6 +631,7 @@ export class RoomsService {
         memberCount: room.memberCount,
         capacity: room.capacity,
         inside,
+        full: this.fullFor(r, room.me.role ?? 'member', ids, userId, room.capacity),
         rules: room.showRules ? room.rules : null,
         me: room.me,
       };
@@ -694,7 +697,24 @@ export class RoomsService {
     if (!mine) return view;
     const [unread, insideIds] = await Promise.all([this.chat.unread(userId, mine), this.presence.inside(room.id)]);
     const inside = insideIds.length ? await this.prisma.user.findMany({ where: { id: { in: insideIds } } }) : [];
-    return { ...view, inside: inside.map(toPerson), me: { ...view.me, ...unread } };
+    return {
+      ...view,
+      inside: inside.map(toPerson),
+      full: this.fullFor(room, mine.role, insideIds, userId, view.capacity),
+      me: { ...view.me, ...unread },
+    };
+  }
+
+  /** The game server's seat rule, from presence: so Home says Full before Walk in is refused. */
+  private fullFor(room: RoomRow, role: RoomRole, insideIds: string[], userId: string, capacity: number): boolean {
+    const others = insideIds.filter((id) => id !== userId);
+    // The room view loads its owner and mods
+    const roleOf = new Map(room.members.map((m) => [m.userId, m.role]));
+    return !hasSeat(capacity, role, {
+      people: others.length,
+      ownerIn: others.some((id) => roleOf.get(id) === 'owner'),
+      modsIn: others.filter((id) => roleOf.get(id) === 'mod').length,
+    });
   }
 
   private toRoom(room: RoomRow, userId: string, now: Date): Room {
@@ -704,7 +724,7 @@ export class RoomsService {
     const mine = room.members.find((m) => m.userId === userId);
     const request = room.requests[0];
     const guest = room.guests[0];
-    const maxCapacity = maxInside(plus, room.size as RoomSize);
+    const maxCapacity = maxInside(plus);
     const askAgainAt = request?.declinedAt && new Date(request.declinedAt.getTime() + REQUEST_COOLDOWN_DAYS * DAY_MS);
     const me: MyPlace = {
       role: mine?.role ?? null,
@@ -725,10 +745,9 @@ export class RoomsService {
       description: room.description,
       mapId: room.mapId as MapId,
       thumbnail: thumbnailUrl(room.id, room.thumbnailKey),
-      size: room.size as RoomSize,
       time: room.time as Room['time'],
       visibility: room.visibility,
-      capacity: Math.min(room.capacity ?? maxCapacity, maxCapacity),
+      capacity: roomCapacity(room.capacity, maxCapacity),
       maxCapacity,
       tags: room.tags,
       language: room.language,
@@ -749,6 +768,7 @@ export class RoomsService {
       maxMembers: planOf(plus).members,
       requestCount: mine && mine.role !== 'member' ? room._count.requests : 0,
       inside: [],
+      full: false,
       me,
     };
   }

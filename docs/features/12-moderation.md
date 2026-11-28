@@ -1,6 +1,6 @@
 # 12. Moderation and reports
 
-PBIs: [MOD-1 to MOD-5](../releases.md#12-moderation-and-reports) · How the code works: [Release 1](../guide/04-release-1.md#safety-basics-mod-1-mod-2), [Release 2](../guide/05-release-2.md#picture-check-and-slow-mode-mod-3-mod-4), [Release 3](../guide/06-release-3.md#automatic-report-steps-mod-5)
+PBIs: [MOD-1 to MOD-5](../releases.md#12-moderation-and-reports) · How the code works: [Release 3](../guide/06-release-3.md#moderation-and-reports-mod-1-to-mod-5)
 
 What keeps rooms safe without the team watching: a word filter, slow mode, automatic steps when
 people report someone, and a picture check. Room owners and mods have their own tools

@@ -11,9 +11,8 @@ cost us money to run or are purely cosmetic.
 
 |                              | Free     | Plus                       |
 | ---------------------------- | -------- | -------------------------- |
-| Your rooms: people at once   | 25       | 50 Cosy, 100 Big           |
-| Your rooms: members          | 150      | 1,000                      |
-| Big maps                     | no       | yes                        |
+| Your rooms: people at once   | 15       | 30                         |
+| Your rooms: members          | 30       | 100                        |
 | Screen share                 | 720p     | 1080p                      |
 | Rooms you can make / be in   | 10 / 100 | 30 / 200                   |
 | Uploads                      | 10 MB    | 50 MB                      |
@@ -21,7 +20,7 @@ cost us money to run or are purely cosmetic.
 | Premium maps, skins and pets | no       | Coming soon                |
 | AI decks (Pick a Side)       | no       | Coming soon (3 / 30 a day) |
 
-- **A room follows its owner's plan** (people at once, members, Big maps, share quality). Your own
+- **A room follows its owner's plan** (people at once, members, share quality). Your own
   plan sets how many rooms you make and join, your uploads and your name tag. Friends chip in by
   **gifting Plus**.
 - The numbers live in one place, `ROOM_PLANS` in `packages/shared/src/rooms.ts`.
@@ -48,8 +47,8 @@ card and a 🔔 item, never the price. A friend paying by card has their next ch
 ## When Plus ends
 
 **Nothing is deleted and nobody is sent out.** Personal perks end on the date. Rooms keep their
-space and Big map for **7 days of grace**, then go back to 25 and Cosy; people inside stay, new
-people wait at the door.
+space for **7 days of grace**, then go back to 15 at once; people inside stay, new people wait at
+the door.
 
 ## In the code
 

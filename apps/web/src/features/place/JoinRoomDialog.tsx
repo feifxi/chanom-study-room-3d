@@ -23,8 +23,7 @@ import { ReportRoomDialog } from './ReportRoomDialog';
 export function JoinRoomDialog({ room, open, onOpenChange }: { room: ListedRoom; open: boolean; onOpenChange: (o: boolean) => void }) {
   const router = useRouter();
   const map = mapFor(room.mapId);
-  const inside = 0;
-  const full = inside >= room.capacity;
+  const { inside, full } = room;
   const [note, setNote] = useState('');
   const [report, setReport] = useState(false);
   const rules =
@@ -37,7 +36,7 @@ export function JoinRoomDialog({ room, open, onOpenChange }: { room: ListedRoom;
   const join = useRoomAction(roomsApi.join, () => {
     onOpenChange(false);
     if (full) {
-      toast.success(`You joined ${room.name}. It’s full right now: we’ll tell you when a spot opens.`);
+      toast.success(`You joined ${room.name}. It’s full right now: Walk in from Home once someone leaves.`);
       return;
     }
     toast.success(`Welcome to ${room.name}! Walking you in…`);
@@ -62,9 +61,11 @@ export function JoinRoomDialog({ room, open, onOpenChange }: { room: ListedRoom;
             <span className="rounded-full bg-muted px-2.5 py-1">
               {map.emoji} {map.name}
             </span>
-            <span className={cn('rounded-full px-2.5 py-1', full ? 'bg-peach text-peach-ink' : 'bg-muted')}>
-              {inside}/{room.capacity} inside{full ? ' · full' : ''}
-            </span>
+            {inside > 0 && (
+              <span className={cn('rounded-full px-2.5 py-1', full ? 'bg-peach text-peach-ink' : 'bg-muted')}>
+                {inside}/{room.capacity} inside{full ? ' · full' : ''}
+              </span>
+            )}
             <span className="flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
               <Users className="size-3" /> {room.memberCount.toLocaleString()} {room.memberCount === 1 ? 'member' : 'members'}
             </span>
@@ -117,7 +118,7 @@ export function JoinRoomDialog({ room, open, onOpenChange }: { room: ListedRoom;
             )
           ) : (
             <Button onClick={() => join.mutate(room.id)} disabled={join.isPending} className="h-11 rounded-2xl font-extrabold">
-              {full ? 'Join · tell me when there’s a spot' : 'Join & walk in'}
+              {full ? 'Join (full right now)' : 'Join & walk in'}
             </Button>
           )}
           <p className="text-center text-xs text-muted-foreground">

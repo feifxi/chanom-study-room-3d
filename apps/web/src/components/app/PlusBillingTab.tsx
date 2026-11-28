@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { CreditCard, Gift, QrCode, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
+import { ROOM_PLANS } from '@connecta/shared';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { cancelPlus, manageBilling, PLUS_PLANS, REMIND_DAYS, resumePlus, usePlus } from '@/lib/plus';
@@ -67,8 +68,8 @@ export function PlusBillingTab() {
             <p className="font-black">Cancel Plus?</p>
             <p className="text-muted-foreground">
               You keep Plus until {plus.date}
-              {card ? '' : ' and we stop sending payment QRs'}. After that your rooms keep their space for 7 more days, then go back to 25
-              at once and Big or premium maps switch to their basic version. Nothing is deleted.
+              {card ? '' : ' and we stop sending payment QRs'}. After that your rooms keep their space for 7 more days, then go back to{' '}
+              {ROOM_PLANS.free.capacity} at once and premium maps switch to their basic version. Nothing is deleted.
             </p>
             <div className="mt-2 flex gap-2">
               <Button

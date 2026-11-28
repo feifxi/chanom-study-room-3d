@@ -1,6 +1,6 @@
 # 1. Accounts and guests
 
-PBIs: [ACC-1 to ACC-10](../releases.md#1-accounts-and-guests) · How the code works: [Release 1](../guide/04-release-1.md#accounts-acc-1-to-acc-7), [Release 2](../guide/05-release-2.md#guests-acc-8-to-acc-10)
+PBIs: [ACC-1 to ACC-10](../releases.md#1-accounts-and-guests) · How the code works: [Release 1](../guide/04-release-1.md#accounts-acc-1-to-acc-4), [Release 2](../guide/05-release-2.md#more-ways-in-and-account-settings-acc-5-to-acc-7), [Release 3](../guide/06-release-3.md#guests-acc-8-to-acc-10)
 
 Passwordless sign-in (Google, Discord or a 6-digit email code). Accounts are 13+. Anyone can try a
 room first as a guest, and a guest who signs up keeps their character.

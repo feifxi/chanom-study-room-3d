@@ -3,15 +3,15 @@
 A walkthrough of how Connecta's code works, from scratch, for people new to the repo. Read it in
 order the first time; later, jump to the feature you're working on.
 
-| Chapter                                                       | What you'll learn                                                                     |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| [1. The big picture](01-architecture.md)                      | the four servers, what each one owns, and how a click travels through them            |
-| [2. The repo and its conventions](02-repo-and-conventions.md) | where files go in each app, naming, style, tests, the seed, the docs                  |
-| [3. Techniques](03-techniques.md)                             | sign-in, the typed API client, live events, the game server, voice, jobs, files, 3D   |
-| [4. Release 1 in the code](04-release-1.md)                   | study with friends: accounts, rooms, friends, chat, the 3D room, focus, safety basics |
-| [5. Release 2 in the code](05-release-2.md)                   | hang out and play: guests, Discover, pictures, cats, activities and every game        |
-| [6. Release 3 in the code](06-release-3.md)                   | open to everyone: Common rooms, report steps, coins and the Shop, Plus, money         |
-| [7. How to…](07-recipes.md)                                   | add an endpoint, a page, a database field, a game message; run and debug things       |
+| Chapter                                                       | What you'll learn                                                                          |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| [1. The big picture](01-architecture.md)                      | the four servers, what each one owns, and how a click travels through them                 |
+| [2. The repo and its conventions](02-repo-and-conventions.md) | where files go in each app, naming, style, tests, the seed, the docs                       |
+| [3. Techniques](03-techniques.md)                             | sign-in, the typed API client, live events, the game server, voice, jobs, files, 3D        |
+| [4. Release 1 in the code](04-release-1.md)                   | study with friends: accounts, rooms, friends, room chat, the 3D room, the focus timer      |
+| [5. Release 2 in the code](05-release-2.md)                   | hang out and play: DMs and the inbox, room mods, pictures, cats, activities and every game |
+| [6. Release 3 in the code](06-release-3.md)                   | open to everyone: guests, Discover, moderation, the admin site, Common rooms, coins, Plus  |
+| [7. How to…](07-recipes.md)                                   | add an endpoint, a page, a database field, a game message; run and debug things            |
 
 Chapters 4 to 6 follow the [release plan](../releases.md): each walks through the code behind that
 release's PBIs, saying how each part works inside and linking every file involved.

@@ -65,7 +65,6 @@ const presence: GamePresence[] = [];
 /** Each test walks into a room of its own (an empty room closes only a second after the last leave) */
 let ROOM = '';
 let rooms = 0;
-const spaces: string[] = [];
 const rounds: FocusRound[] = [];
 /** What daily quests heard: `userId:counts:amount` */
 const quests: string[] = [];
@@ -79,7 +78,7 @@ function ticket(over: Partial<GameTicket> = {}, opts: { secret?: string; expires
     name: 'Mai',
     look: null,
     role: 'member',
-    capacity: 25,
+    capacity: 30,
     mapId: 'library',
     ...over,
   };
@@ -124,7 +123,6 @@ beforeAll(async () => {
     remove: (room, id) => lk.push(`remove ${id}`),
   };
   links.presence = (p) => presence.push(p);
-  links.space = (id) => spaces.push(id);
   links.focusRound = (r) => rounds.push(r);
   links.quest = (e: QuestEvent) => quests.push(`${e.userId}:${e.counts}:${e.amount}`);
   links.walkedIn = dispatchWalkedIn;
@@ -138,7 +136,6 @@ beforeEach(() => {
 afterEach(async () => {
   await Promise.allSettled(open.splice(0).map((r) => r.leave()));
   presence.length = 0;
-  spaces.length = 0;
   rounds.length = 0;
   quests.length = 0;
   lk.length = 0;
@@ -187,14 +184,22 @@ describe('walking in', () => {
     expect(a.state.players.size).toBe(1);
   });
 
-  it('says full at capacity, but the owner and mods always fit; a leave then tells the waiting list', async () => {
-    const one = track(await walkIn({ capacity: 1 }));
-    await expect(walkIn({ sub: 'u-jod', capacity: 1 })).rejects.toThrow(/full/);
-    const owner = track(await walkIn({ sub: 'u-owner', role: 'owner', capacity: 1 }));
-    expect(owner.state.players.size).toBe(2);
-    await one.leave();
-    await owner.leave();
-    await until(() => spaces.includes(ROOM));
+  it('holds a seat for the owner and one for a mod, and never goes past capacity', async () => {
+    // 3 at once: one ordinary seat, the owner's and a mod's
+    track(await walkIn({ capacity: 3 }));
+    await expect(walkIn({ sub: 'u-jod', capacity: 3 })).rejects.toThrow(/full/);
+    const mod = track(await walkIn({ sub: 'u-mod', role: 'mod', capacity: 3 }));
+    // A second mod finds no ordinary seat, and can't take the owner's
+    await expect(walkIn({ sub: 'u-mod2', role: 'mod', capacity: 3 })).rejects.toThrow(/full/);
+    const owner = track(await walkIn({ sub: 'u-owner', role: 'owner', capacity: 3 }));
+    await until(() => owner.state.players.size === 3 && mod.state.players.size === 3);
+  });
+
+  it('holds nothing back in a Common room', async () => {
+    const roomId = 'common-cafe-9';
+    track(await walkIn({ roomId, common: true, capacity: 2 }));
+    track(await walkIn({ roomId, common: true, capacity: 2, sub: 'u-jod', name: 'Jod' }));
+    await expect(walkIn({ roomId, common: true, capacity: 2, sub: 'u-ploy', name: 'Ploy' })).rejects.toThrow(/full/);
   });
 
   it('one of you per room: a second tab takes over and the first is told why', async () => {

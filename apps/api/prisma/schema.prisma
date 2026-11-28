@@ -211,8 +211,6 @@ model Room {
   description      String     @default("")
   /// A template from @connecta/shared MAP_IDS
   mapId            String     @map("map_id")
-  /// cosy or big (big needs the owner's Plus)
-  size             String     @default("cosy")
   /// clock, day or night: the same for everyone inside
   time             String     @default("clock")
   visibility       Visibility @default(private)

@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { Ban, Check, Clock, MoreHorizontal, ShieldCheck, ShieldOff, UserMinus, X } from 'lucide-react';
-import { canActOn, REQUEST_COOLDOWN_DAYS, type RoomRole, type Timeout } from '@connecta/shared';
+import { canActOn, REQUEST_COOLDOWN_DAYS, ROOM_PLANS, type RoomRole, type Timeout } from '@connecta/shared';
 import { toast } from 'sonner';
 import { PersonFace } from '@/components/PersonFace';
 import { Button } from '@/components/ui/button';
@@ -58,15 +58,16 @@ export function MembersPanel({ room }: { room: PlaceRoom }) {
       <div className="grid gap-2 sm:grid-cols-2">
         <p className="rounded-2xl bg-muted p-3 text-sm">
           <span className="block text-lg font-black">
-            {r.memberCount}/{r.maxMembers.toLocaleString()}
+            {r.memberCount}/{r.maxMembers}
           </span>
-          members. They have the Room chat any time, from anywhere. Free rooms hold 150; the owner’s Plus raises it to 1,000.
+          members. They have the Room chat any time, from anywhere. Free rooms hold {ROOM_PLANS.free.members}; the owner’s Plus raises it to{' '}
+          {ROOM_PLANS.plus.members}.
         </p>
         <p className="rounded-2xl bg-muted p-3 text-sm">
           <span className="block text-lg font-black">
             {room.inside}/{room.capacity}
           </span>
-          inside right now. When it’s full, members wait for a spot (or ask to be told). The owner and mods always fit.
+          inside right now. One seat is always kept for the owner and one for a mod; when the rest are taken, it’s full.
         </p>
       </div>
 

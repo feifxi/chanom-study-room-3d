@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { maxInside, type RoomSize } from '@connecta/shared';
+import { maxInside, roomCapacity } from '@connecta/shared';
 import type { Prisma } from '../generated/prisma/client.js';
 import { AuditService } from '../audit/audit.service.js';
 import { GameService } from '../game/game.service.js';
@@ -134,7 +134,7 @@ export class RoomsAdminService {
       plus,
       members: room._count.members,
       inside: inside.length,
-      capacity: room.capacity ?? maxInside(plus, room.size as RoomSize),
+      capacity: roomCapacity(room.capacity, maxInside(plus)),
       reports,
       state: room.closedAt ? 'closed' : room.delistedAt ? 'delisted' : 'ok',
       createdAt: room.createdAt.toISOString(),

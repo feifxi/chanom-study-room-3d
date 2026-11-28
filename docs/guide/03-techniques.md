@@ -82,7 +82,7 @@ Who's online, away, and in which room ([`presence/presence.service.ts`](../../ap
 **Colyseus** keeps one room per Connecta room ([`apps/game/src/room.ts`](../../apps/game/src/room.ts)).
 
 - **Joining:** `onAuth` checks the ticket; `onJoin` adds a `Player` to the state with the ticket's
-  name, role and look; capacity is checked against the ticket (owners and mods always fit).
+  name, role and look; capacity is checked against the ticket, with a seat held for the owner and one for a mod (`hasSeat`).
 - **State** ([`state.ts`](../../apps/game/src/state.ts)) is declared with Colyseus's `schema()`;
   every field change is synced to every client 20 times a second (`PATCH_RATE_MS`). Only put in the
   state what everyone may see.
@@ -93,7 +93,7 @@ Who's online, away, and in which room ([`presence/presence.service.ts`](../../ap
 - **Room events in** from the API through Redis: `apply(event)` handles kick, ban, role, map, look,
   timeout, notice, deleted.
 - **Timers** run on the server's clock (`setInterval` in the room), never the browser's.
-- **Out:** presence, "space in a full room", focus rounds and quest steps go through
+- **Out:** presence, focus rounds and quest steps go through
   [`links.ts`](../../apps/game/src/links.ts), wired to Redis in [`redis.ts`](../../apps/game/src/redis.ts)
   and to plain functions in tests.
 
@@ -172,7 +172,7 @@ turns them into words ([`auditLabels.ts`](../../apps/web/src/features/admin/audi
 ## 3D rendering and performance
 
 The room is React Three Fiber ([`RoomCanvas.tsx`](../../apps/web/src/features/room3d/RoomCanvas.tsx)).
-It has to run 100 people on a phone, so:
+It has to run a full room on a phone (30 people, the most any room holds), so:
 
 - **Static furniture is merged** into a few meshes by `<StaticBatch>`
   ([`StaticBatch.tsx`](../../apps/web/src/features/room3d/StaticBatch.tsx)).
@@ -185,7 +185,7 @@ It has to run 100 people on a phone, so:
 - **Name tags and bubbles are one DOM layer** over the canvas, not 3D text
   ([`labels.tsx`](../../apps/web/src/features/room3d/labels.tsx)).
 - **A budget per frame** ([`perf.ts`](../../apps/web/src/features/room3d/perf.ts)) is checked by
-  `pnpm --filter @connecta/web perf` on every map with 3, 50 and 100 people. Run it after any 3D
+  `pnpm --filter @connecta/web perf` on every map with you alone, a full Free room (15) and a full Plus room (30). Run it after any 3D
   change.
 
 ## Clocks

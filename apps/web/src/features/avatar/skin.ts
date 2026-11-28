@@ -11,7 +11,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
  *   vertex, so same-kind materials of any colour share one draw call.
  * - Hidden parts (happy eyes, open mouth) are hidden by scaling their bone to zero: see `show`.
  *
- * Materials are shared by every character, so 100 people compile the same 4 shaders once.
+ * Materials are shared by every character, so a full room compiles the same 4 shaders once.
  */
 
 let shared: Record<Bucket, THREE.Material> | null = null;

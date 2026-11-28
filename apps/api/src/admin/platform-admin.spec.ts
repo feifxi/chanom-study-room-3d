@@ -109,9 +109,21 @@ describe('the admin site: moderation', () => {
 });
 
 describe('the admin site: Common rooms', () => {
+  it('holds a copy to 30 even when a bigger number was saved before the limit', async () => {
+    await prisma.setting.upsert({
+      where: { key: 'platform' },
+      create: { key: 'platform', value: { commonCapacity: 50, commonFriendSeats: 5 } },
+      update: { value: { commonCapacity: 50, commonFriendSeats: 5 } },
+    });
+    const settings = await app.get(SettingsService).publish();
+    expect(settings).toMatchObject({ commonCapacity: 30, commonFriendSeats: 5 });
+  });
+
   it('sets how full a copy gets, and posts a notice that walking in carries', async () => {
     const { t, jod } = await setup();
     await t.put('/api/admin/common/seats', { capacity: 10, friendSeats: 10 }).expect(400);
+    // Never past the 30 a map is built for
+    await t.put('/api/admin/common/seats', { capacity: 31, friendSeats: 5 }).expect(400);
     const after = (await t.put('/api/admin/common/seats', { capacity: 12, friendSeats: 2 }).expect(200)).body;
     expect(after).toMatchObject({ capacity: 12, friendSeats: 2, notice: null });
     const walk = (await jod.post('/api/common/cafe/ticket', {}).expect(200)).body;

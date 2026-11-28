@@ -51,32 +51,32 @@ const befriend = (a: string, b: string) =>
   });
 
 describe('Common rooms', () => {
-  it('places strangers up to 20 in a copy, then opens the next; the ticket says Common', async () => {
+  it('places strangers up to 25 in a copy, then opens the next; the ticket says Common', async () => {
     const mai = await person('maimai');
-    const ids = await crowd(20);
+    const ids = await crowd(25);
     for (const id of ids) expect((await common.ticket(id, 'library', {})).n).toBe(1);
     const mine = (await mai.post('/api/common/library/ticket', {}).expect(200)).body;
     expect(mine).toMatchObject({ n: 2, place: 'common-library-2', name: 'Library Common Room #2', note: null });
     expect(decodeJwt(mine.ticket)).toMatchObject({
       roomId: 'common-library-2',
       role: 'member',
-      capacity: 25,
+      capacity: 30,
       mapId: 'library',
       common: true,
     });
     const list = (await mai.get('/api/common').expect(200)).body;
-    expect(list.find((t: { id: string }) => t.id === 'library')).toMatchObject({ here: 21, copies: 2 });
+    expect(list.find((t: { id: string }) => t.id === 'library')).toMatchObject({ here: 26, copies: 2 });
     // Signed out (Discover's landing link): the same counts, no friends
     const visitor = (await browser(app).get('/api/common').expect(200)).body;
-    expect(visitor.find((t: { id: string }) => t.id === 'library')).toMatchObject({ here: 21, copies: 2, friendsInside: [] });
+    expect(visitor.find((t: { id: string }) => t.id === 'library')).toMatchObject({ here: 26, copies: 2, friendsInside: [] });
     await mai.post('/api/common/pool/ticket', {}).expect(404);
   });
 
-  it('friends land together: the friend seats above 20, and joining a friend’s full copy says so', async () => {
+  it('friends land together: the friend seats above 25, and joining a friend’s full copy says so', async () => {
     const mai = await person('maimai');
-    const ids = await crowd(20);
+    const ids = await crowd(25);
     for (const id of ids) await common.ticket(id, 'cafe', {});
-    // Mai's friend is in copy 1 (at 20): Walk in puts her there anyway
+    // Mai's friend is in copy 1 (at 25): Walk in puts her there anyway
     await befriend(mai.id, ids[0]!);
     expect((await mai.post('/api/common/cafe/ticket', {}).expect(200)).body.n).toBe(1);
     // Joining a friend goes by where presence says they are
@@ -86,7 +86,7 @@ describe('Common rooms', () => {
     // Four more people joining p0 take the last seats
     const more = await crowd(4, 'q');
     for (const id of more) expect((await common.ticket(id, 'cafe', { with: ids[0] })).n).toBe(1);
-    // 25: full, so p0's next friend lands elsewhere and is told
+    // 30: full, so p0's next friend lands elsewhere and is told
     const late = (await crowd(1, 'late'))[0]!;
     await befriend(late, ids[0]!);
     const t = await common.ticket(late, 'cafe', { with: ids[0] });

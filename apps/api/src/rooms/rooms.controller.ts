@@ -182,14 +182,6 @@ export class RoomsController {
     return this.rooms.ticket(id, session.user.id);
   }
 
-  /** The room is full: a 🔔 item when someone leaves. */
-  @Post(':id/space')
-  @HttpCode(204)
-  @ApiNoContentResponse()
-  notifyWhenSpace(@Session() session: UserSession, @Param('id', Id) id: string): Promise<void> {
-    return this.rooms.notifyWhenSpace(id, session.user.id);
-  }
-
   /** Join an Open room. */
   @Post(':id/join')
   @HttpCode(200)

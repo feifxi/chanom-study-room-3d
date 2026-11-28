@@ -1,6 +1,6 @@
 # 2. Rooms and membership
 
-PBIs: [ROOM-1 to ROOM-11](../releases.md#2-rooms-and-membership) · How the code works: [Release 1](../guide/04-release-1.md#rooms-and-membership-room-1-to-room-7), [Release 2](../guide/05-release-2.md#rooms-others-can-find-room-8-to-room-11)
+PBIs: [ROOM-1 to ROOM-12](../releases.md#2-rooms-and-membership) · How the code works: [Release 1](../guide/04-release-1.md#rooms-and-membership-room-1-to-room-7), [Release 2](../guide/05-release-2.md#room-mods-room-8), [Release 3](../guide/06-release-3.md#rooms-others-can-find-room-9-to-room-12)
 
 A room is the top-level thing in Connecta. Like Discord, you're a **member** of a room before you
 walk in. Three fixed roles, two kinds of invite link, and kick, ban and time out wherever you see
@@ -26,7 +26,7 @@ Fixed roles, no custom ones (they're much of why Discord feels complicated).
 
 | Role       | Can                                                                                         | Can't                                     |
 | ---------- | ------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| **Owner**  | everything: name, map, visibility, mods, hand over, delete                                  | act on themselves                         |
+| **Owner**  | everything: name, map, visibility, mods (up to 5), hand over, delete                        | act on themselves                         |
 | **Mod**    | kick, ban, time out members and guests; requests; invites; delete messages; safety settings | act on the owner or mods; map, visibility |
 | **Member** | chat, walk in, invite if "Members can invite" is on                                         |                                           |
 
@@ -74,19 +74,30 @@ check. Anyone can see it: it's on Home cards, Discover and invites.
 
 ## Limits
 
-- **Members** belong to the room: 150 Free, 1,000 Plus. **People at once** is capacity: 25 Free;
-  Plus 50 on a Cosy map, 100 on a Big one. A room follows its **owner's** plan ([Plus](15-plus.md)).
-- **The owner and mods always fit.**
+- **Members** belong to the room: 30 Free, 100 Plus. **People at once** is capacity: 15 Free, 30
+  Plus, never more: rooms are for groups, and every map is built for 30. A room follows its
+  **owner's** plan ([Plus](15-plus.md)); the owner can set it lower.
+- **Up to 5 mods** per room, on every plan.
+- **Two seats are held inside the cap:** one only the owner takes, one the first mod takes. Everyone
+  else fills the rest (28 on Plus, 13 on Free); more mods take an ordinary seat if there's one. So
+  the owner and a mod can always walk in, and a room never holds more than its capacity. Common
+  rooms hold nothing back. The owner can't set fewer than 3 at once.
+- **Full is for you:** Home, the room's page and Discover say Full when there's no seat for _you_
+  (a mod can still see Walk in when members can't).
+- **Full is full:** the room shows Full (its chat still works) and Walk in comes back when someone
+  leaves. No waiting list.
 - You can make 10 rooms and be in 100 (30 and 200 with Plus).
 
 ## In the code
 
 - `apps/api/src/rooms/`: rooms, memberships, requests, bans, invites, guest passes, Discover
   (`GET /api/rooms/listed`), thumbnails (`thumbnail.service.ts`). Role rules:
-  `packages/shared/src/rooms.ts` (`canActOn`); plan numbers: `ROOM_PLANS` in the same file.
+  `packages/shared/src/rooms.ts` (`canActOn`); plan numbers: `ROOM_PLANS`; seats: `hasSeat` (the
+  game server's check, and the API's `full` from presence), all in the same file.
 - **Every action is checked on the server;** the web app only hides buttons.
 - A write people inside the 3D room should feel (kick, ban, leave, role, map, delete) also calls
   `GameService.roomEvent`. Capacity is enforced by the game server from the join ticket.
+- Handing the room over keeps the old owner as a mod, or a member when all 5 mod seats are taken.
 - Deleting an account hands each room to the picked heir, else the longest-serving mod, else the
   longest-standing member.
 - Web: `apps/web/src/features/rooms/`, `features/place/` (Home, room pages, settings).

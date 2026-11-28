@@ -107,18 +107,6 @@ export class NotificationsService {
     if (room) await this.push(userId, 'joined', { text: `You’re in! **${room.name}** let you in`, href: `/r/${roomId}`, person: null });
   }
 
-  /** A full room you asked about has space now ("Full · notify me"). */
-  async space(userId: string, roomId: string) {
-    const room = await this.prisma.room.findUnique({ where: { id: roomId } });
-    if (room)
-      await this.push(
-        userId,
-        'space',
-        { text: `There’s space in **${room.name}** now`, href: `/r/${roomId}/walk`, person: null },
-        `space:${roomId}`,
-      );
-  }
-
   /** Your Plus is ending or ended (PlusEndingService); one item at a time, the newest news */
   async plus(userId: string, text: string, href: string) {
     await this.push(userId, 'plus', { text, href, person: null }, 'plus');

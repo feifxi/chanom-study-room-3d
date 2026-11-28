@@ -1,7 +1,7 @@
 import { Global, Injectable, Logger, Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
-import { DEFAULT_SETTINGS, settingsChannel, settingsKey, type PlatformSettings } from '@connecta/shared';
+import { COMMON_CAPACITY_RANGE, DEFAULT_SETTINGS, settingsChannel, settingsKey, type PlatformSettings } from '@connecta/shared';
 import { setWordFilter } from '@connecta/shared/moderate';
 import type { Env } from '../config/env.js';
 import type { Prisma } from '../generated/prisma/client.js';
@@ -99,9 +99,14 @@ export class SettingsService implements OnModuleInit, OnModuleDestroy {
       this.prisma.setting.findUnique({ where: { key: ROW } }),
       this.prisma.blockedWord.findMany({ orderBy: { createdAt: 'desc' }, select: { word: true } }),
     ]);
+    const saved = { ...DEFAULT_SETTINGS, ...((row?.value ?? {}) as Partial<Switches>) };
+    // A copy never holds more than a map is built for, even if a bigger number was saved before
+    // the 30 limit (2026-11-28); friend seats stay below it so strangers always get one
+    const commonCapacity = Math.min(saved.commonCapacity, COMMON_CAPACITY_RANGE.max);
     const next: PlatformSettings = {
-      ...DEFAULT_SETTINGS,
-      ...((row?.value ?? {}) as Partial<Switches>),
+      ...saved,
+      commonCapacity,
+      commonFriendSeats: Math.min(saved.commonFriendSeats, commonCapacity - 1),
       words: words.map((w) => w.word),
     };
     this.use(next);
