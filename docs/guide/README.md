@@ -16,6 +16,9 @@ order the first time; later, jump to the feature you're working on.
 Chapters 4 to 6 follow the [release plan](../releases.md): each walks through the code behind that
 release's PBIs, saying how each part works inside and linking every file involved.
 
+**Prefer pictures?** [`docs/visual/how-connecta-works.html`](../visual/how-connecta-works.html) draws
+every flow as a diagram, including how Colyseus and LiveKit work together (open it in a browser).
+
 **Other docs:** what each feature does for people is in its [spec](../features/README.md); why
 things are the way they are in the [decision log](../decisions.md); test tools, maps and gotchas in
 the [developer guide](../dev-guide.md); setup commands in [`AGENTS.md`](../../AGENTS.md#commands).
