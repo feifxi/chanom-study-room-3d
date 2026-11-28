@@ -58,4 +58,10 @@ cycle crashed the module loader). The standard kit every map needs is in
   files. Don't run Prettier over `apps/web/src/lib/api/schema.d.ts`; it's committed as generated.
 - **`/login` logs a 401 when signed out** (the "who's signed in?" check), so `screens` marks it ✗
   as a guest. Harmless.
+- **Don't run `pnpm build` while `pnpm dev` runs:** the build rewrites `apps/api/dist` and the API
+  dev server crashes on missing files. Stop dev first, then start it again after.
+- **Sign-in is rate limited:** several `screens` or `perf` runs back to back get a 429 from sign-in.
+  Wait a minute and run again.
+- **Right after `pnpm dev` starts, the first 3D page compiles slowly:** a `perf` run straight away
+  can time out on its first room. Open one room first, or run it again.
 - **Next.js 16 and NestJS 12 differ from older versions:** see `AGENTS.md`.
